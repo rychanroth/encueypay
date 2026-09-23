@@ -33,7 +33,9 @@ abstract final class AppRoutes {
   // Business tabs.
   static const businessDashboard = 'businessDashboard';
   static const businessProducts = 'businessProducts';
+  static const businessProductForm = 'businessProductForm';
   static const businessOrders = 'businessOrders';
+  static const businessOrderDetail = 'businessOrderDetail';
 
   // Driver tabs.
   static const driverAvailable = 'driverAvailable';
