@@ -20,6 +20,7 @@ abstract final class AppRoutes {
   static const profileEdit = 'profileEdit';
   static const addresses = 'addresses';
   static const addressEdit = 'addressEdit';
+  static const wishlist = 'wishlist';
   static const settings = 'settings';
 
   // Business tabs.

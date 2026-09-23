@@ -6,10 +6,13 @@ import '../../../../core/router/app_routes.dart';
 import '../controllers/profile_controller.dart';
 
 /// Shared Profile tab (all roles). Shows the user's profile and links to
-/// edit, addresses, and settings. Sign-out lives in Settings and is wired
-/// through the composition root (profile branch), not imported here.
+/// edit, addresses, and settings. Customer-only links are gated by
+/// [isCustomer] (injected by the composition root). Sign-out lives in
+/// Settings and is wired through the composition root, not imported here.
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.isCustomer = true});
+
+  final bool isCustomer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,12 +83,20 @@ class ProfileScreen extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.profileEdit),
             ),
-            ListTile(
-              leading: const Icon(Icons.location_on_outlined),
-              title: const Text('Addresses'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.addresses),
-            ),
+            if (isCustomer) ...[
+              ListTile(
+                leading: const Icon(Icons.location_on_outlined),
+                title: const Text('Addresses'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.addresses),
+              ),
+              ListTile(
+                leading: const Icon(Icons.favorite_outline),
+                title: const Text('Wishlist'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.wishlist),
+              ),
+            ],
             ListTile(
               leading: const Icon(Icons.settings_outlined),
               title: const Text('Settings'),

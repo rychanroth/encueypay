@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../features/profile/domain/entities/address.dart';
 import '../../../features/profile/presentation/screens/address_edit_screen.dart';
@@ -8,19 +9,30 @@ import '../../../features/profile/presentation/screens/addresses_screen.dart';
 import '../../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
+import '../../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../app_routes.dart';
 
 /// Shared tab — Profile (all roles). Nested routes of this tab are declared
 /// here (ROUTE-04).
 ///
 /// The composition root wires the auth feature into Settings via callback
-/// so features/profile never imports features/auth (ARCH-04, ROUTE-08).
+/// and passes the role in, so features/profile never imports features/auth
+/// (ARCH-04, ROUTE-08).
 final profileBranch = StatefulShellBranch(
   routes: [
     GoRoute(
       name: AppRoutes.profile,
       path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
+      builder: (context, state) => Consumer(
+        builder: (context, ref, _) {
+          final role = ref.watch(
+            authControllerProvider.select(
+              (auth) => auth.value?.user?.activeRole ?? UserRole.customer,
+            ),
+          );
+          return ProfileScreen(isCustomer: role == UserRole.customer);
+        },
+      ),
       routes: [
         GoRoute(
           name: AppRoutes.profileEdit,
@@ -37,6 +49,11 @@ final profileBranch = StatefulShellBranch(
           path: 'addresses/edit',
           builder: (context, state) =>
               AddressEditScreen(address: state.extra as Address?),
+        ),
+        GoRoute(
+          name: AppRoutes.wishlist,
+          path: 'wishlist',
+          builder: (context, state) => const WishlistScreen(),
         ),
         GoRoute(
           name: AppRoutes.settings,
