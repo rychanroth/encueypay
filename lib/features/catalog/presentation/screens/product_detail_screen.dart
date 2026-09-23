@@ -160,19 +160,43 @@ class ProductDetailScreen extends ConsumerWidget {
                               ],
                             ),
                           ],
-                          const SizedBox(height: 16),
-                          Text(
-                            'Description',
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Description',
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.description.isEmpty
+                          ? 'No description available.'
+                          : product.description,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    if (detail.reviews.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Reviews (${detail.reviews.length})'
+                        '${detail.averageRating == null ? '' : ' · ${detail.averageRating!.toStringAsFixed(1)}★'}',
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      for (final review in detail.reviews)
+                        ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.star,
+                              color: Colors.amber, size: 20),
+                          title: Text(review.authorName),
+                          subtitle: Text(
+                            review.text.isEmpty ? '—' : review.text,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            product.description.isEmpty
-                                ? 'No description available.'
-                                : product.description,
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                          trailing: Text('${review.rating}/5',
+                              style: theme.textTheme.bodySmall),
+                        ),
+                    ],
                         ],
                       ),
                     ),

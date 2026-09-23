@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
 
@@ -218,8 +219,45 @@ class OrderDetailScreen extends ConsumerWidget {
               _SummaryRow('Delivery fee', Money(order.deliveryFeeMinor).format()),
               _SummaryRow('Total', Money(order.totalMinor).format(), bold: true),
 
+              const SizedBox(height: 24),
+              if (order.derivedStatus == CustomerOrderStatus.delivered) ...[
+                FilledButton.tonalIcon(
+                  onPressed: () => context.pushNamed(
+                    AppRoutes.returnRequest,
+                    pathParameters: {'id': order.id},
+                  ),
+                  icon: const Icon(Icons.assignment_return_outlined),
+                  label: const Text('Request return'),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Review purchased items below.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+              for (final part in order.businessParts)
+                if (order.derivedStatus == CustomerOrderStatus.delivered)
+                  for (final item in part.items)
+                    ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        item.variantName == null
+                            ? item.productName
+                            : '${item.productName} (${item.variantName})',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: TextButton(
+                        onPressed: () => context.pushNamed(
+                          AppRoutes.reviewCompose,
+                          extra: (item.id, item.productName),
+                        ),
+                        child: const Text('Review'),
+                      ),
+                    ),
               if (order.cancellable) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: () => _confirmCancel(context, ref),
                   icon: const Icon(Icons.cancel_outlined),

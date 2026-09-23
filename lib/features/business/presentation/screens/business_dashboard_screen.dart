@@ -1,8 +1,10 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/business_profile.dart';
 import '../controllers/business_profile_controller.dart';
 
@@ -121,6 +123,12 @@ class _Dashboard extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
+        ListTile(
+          leading: const Icon(Icons.assignment_return_outlined),
+          title: const Text('Returns'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.pushNamed(AppRoutes.businessReturns),
+        ),
         const Text('Analytics arrive in Phase 12.'),
       ],
     );

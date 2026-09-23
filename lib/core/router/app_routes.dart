@@ -16,6 +16,11 @@ abstract final class AppRoutes {
 
   // Orders (nested under Orders tab).
   static const orderDetail = 'orderDetail';
+  static const returnRequest = 'returnRequest';
+  static const reviewCompose = 'reviewCompose';
+
+  // Business (nested under Business dashboard).
+  static const businessReturns = 'businessReturns';
 
   // Catalog (nested under Home).
   static const products = 'products';

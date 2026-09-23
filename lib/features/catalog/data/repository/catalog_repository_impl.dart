@@ -13,6 +13,7 @@ import '../dtos/business_dto.dart';
 import '../dtos/category_dto.dart';
 import '../dtos/product_dto.dart';
 import '../dtos/product_image_ref_dto.dart';
+import '../dtos/product_review_join_dto.dart';
 import '../dtos/product_variant_dto.dart';
 import '../mappers/business_mapper.dart';
 import '../mappers/category_mapper.dart';
@@ -130,7 +131,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final data = await _client
           .from('products')
           .select(
-            '*, businesses(name), product_variants(*), product_images(*)',
+            '*, businesses(name), product_variants(*), product_images(*), '
+            'reviews(id, rating, text, created_at, users(full_name))',
           )
           .eq('id', productId)
           .maybeSingle();
@@ -148,11 +150,22 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .map(ProductVariantDto.fromJson)
           .map((d) => d.toDomain())
           .toList();
+      final reviews = ((data['reviews'] as List? ?? const [])
+              .whereType<Map<String, dynamic>>())
+          .map(ProductReviewJoinDto.fromJson)
+          .map((d) => ProductReviewInfo(
+                authorName: d.users?.fullName ?? 'Customer',
+                rating: d.rating,
+                text: d.text ?? '',
+                createdAt: d.createdAt,
+              ))
+          .toList();
 
       return ProductDetail(
         product: productDto.toDomain(imageUrls: _resolveUrls(productDto)),
         variants: variants,
         businessName: businessName,
+        reviews: reviews,
       );
     } on ServerFailure {
       rethrow;
