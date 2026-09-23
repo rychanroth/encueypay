@@ -1,0 +1,206 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/presentation/responsive/screen_size.dart';
+import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/product_sort.dart';
+import '../controllers/categories_provider.dart';
+import '../controllers/products_controller.dart';
+import '../widgets/category_chip.dart';
+import '../widgets/product_card.dart';
+
+/// Product discovery (spec §32): search, category filter, sort, pagination.
+/// Route parameters seed the initial filter set.
+class ProductsScreen extends ConsumerStatefulWidget {
+  const ProductsScreen({super.key, this.categoryId, this.query});
+
+  final String? categoryId;
+  final String? query;
+
+  @override
+  ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
+}
+
+class _ProductsScreenState extends ConsumerState<ProductsScreen> {
+  late final _searchController =
+      TextEditingController(text: widget.query ?? '');
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller =
+        ref.watch(productsControllerProvider(widget.categoryId, widget.query));
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final columns = switch (context.screenSize) {
+      ScreenSize.expanded => 4,
+      ScreenSize.medium => 3,
+      ScreenSize.compact => 2,
+    };
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Products'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search products',
+                prefixIcon: const Icon(Icons.search),
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+              ),
+              textInputAction: TextInputAction.search,
+              onSubmitted: (value) => ref
+                  .read(productsControllerProvider(widget.categoryId, widget.query)
+                      .notifier)
+                  .setQuery(value),
+            ),
+          ),
+        ),
+        actions: [
+          PopupMenuButton<ProductSort>(
+            icon: const Icon(Icons.sort),
+            tooltip: 'Sort',
+            onSelected: (sort) => ref
+                .read(productsControllerProvider(widget.categoryId, widget.query)
+                    .notifier)
+                .setSort(sort),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: ProductSort.newest,
+                child: Text('Newest'),
+              ),
+              const PopupMenuItem(
+                value: ProductSort.priceAsc,
+                child: Text('Price: low to high'),
+              ),
+              const PopupMenuItem(
+                value: ProductSort.priceDesc,
+                child: Text('Price: high to low'),
+              ),
+              const PopupMenuItem(
+                value: ProductSort.name,
+                child: Text('Name'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 48,
+            child: categoriesAsync.maybeWhen(
+              data: (categories) => ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: const Text('All'),
+                      selected: controller.value?.categoryId == null,
+                      onSelected: (_) => ref
+                          .read(productsControllerProvider(
+                                  widget.categoryId, widget.query)
+                              .notifier)
+                          .setCategory(null),
+                    ),
+                  ),
+                  ...categories.map(
+                    (category) => CategoryChip(
+                      category: category,
+                      selected:
+                          controller.value?.categoryId == category.id,
+                      onTap: () => ref
+                          .read(productsControllerProvider(
+                                  widget.categoryId, widget.query)
+                              .notifier)
+                          .setCategory(category.id),
+                    ),
+                  ),
+                ],
+              ),
+              orElse: () => const SizedBox.shrink(),
+            ),
+          ),
+          Expanded(
+            child: controller.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('$error', textAlign: TextAlign.center),
+                    const SizedBox(height: 8),
+                    FilledButton.tonal(
+                      onPressed: () => ref.invalidate(
+                        productsControllerProvider(
+                            widget.categoryId, widget.query),
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+              data: (listState) {
+                if (listState.items.isEmpty) {
+                  return const Center(child: Text('No products found.'));
+                }
+                return NotificationListener<ScrollEndNotification>(
+                  onNotification: (notification) {
+                    if (notification.metrics.extentAfter < 400) {
+                      ref
+                          .read(productsControllerProvider(
+                                  widget.categoryId, widget.query)
+                              .notifier)
+                          .loadMore();
+                    }
+                    return false;
+                  },
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 0.62,
+                    ),
+                    itemCount: listState.items.length +
+                        (listState.hasMore ? columns : 0),
+                    itemBuilder: (context, index) {
+                      if (index >= listState.items.length) {
+                        return const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        );
+                      }
+                      final product = listState.items[index];
+                      return ProductCard(
+                        product: product,
+                        onTap: () => context.pushNamed(
+                          AppRoutes.productDetail,
+                          pathParameters: {'id': product.id},
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -10,6 +10,11 @@ abstract final class AppRoutes {
   static const cart = 'cart';
   static const orders = 'orders';
 
+  // Catalog (nested under Home).
+  static const products = 'products';
+  static const productDetail = 'productDetail';
+  static const businessDetail = 'businessDetail';
+
   // Shared tab (all roles).
   static const profile = 'profile';
   static const profileEdit = 'profileEdit';
