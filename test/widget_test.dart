@@ -1,30 +1,44 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:encueypay/main.dart';
+import 'package:encueypay/core/domain/money.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('Money (spec §22 — exact decimal handling, no binary floating point)', () {
+    test('parses plain integers', () {
+      expect(Money.parse('10').minorUnits, 1000);
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('parses two-decimal strings', () {
+      expect(Money.parse('125.50').minorUnits, 12550);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    test('pads single decimal digit', () {
+      expect(Money.parse('999.9').minorUnits, 99990);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('formats back to a display string', () {
+      expect(Money.parse('10.00').format(), '10.00');
+      expect(Money.parse('125.5').format(symbol: r'$'), r'$125.50');
+    });
+
+    test('adds without floating-point error', () {
+      // 0.1 + 0.2 != 0.3 in binary floating point — must be exact here.
+      final sum = Money.parse('0.1') + Money.parse('0.2');
+      expect(sum.format(), '0.30');
+    });
+
+    test('multiplies quantities exactly', () {
+      expect(Money.parse('10.10').multipliedBy(3).format(), '30.30');
+    });
+
+    test('rejects more than two decimal places', () {
+      expect(() => Money.parse('1.234'), throwsFormatException);
+    });
+
+    test('rejects garbage input', () {
+      expect(() => Money.parse('abc'), throwsFormatException);
+      expect(() => Money.parse(''), throwsFormatException);
+      expect(() => Money.parse('1.2.3'), throwsFormatException);
+    });
   });
 }
