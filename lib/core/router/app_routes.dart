@@ -12,6 +12,10 @@ abstract final class AppRoutes {
 
   // Shared tab (all roles).
   static const profile = 'profile';
+  static const profileEdit = 'profileEdit';
+  static const addresses = 'addresses';
+  static const addressEdit = 'addressEdit';
+  static const settings = 'settings';
 
   // Business tabs.
   static const businessDashboard = 'businessDashboard';
