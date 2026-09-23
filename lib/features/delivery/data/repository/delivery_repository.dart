@@ -1,7 +1,14 @@
+import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/delivery.dart';
 
 /// Driver delivery contract (spec §58 Delivery ops) (DATA-03).
 abstract interface class IDeliveryRepository {
+  /// Realtime sync signals (§31/§54): available-delivery changes and
+  /// changes to the driver's own deliveries.
+  Stream<StreamResult<bool>> watchAvailableChanges();
+
+  Stream<StreamResult<bool>> watchMyDeliveryChanges();
+
   Future<List<AvailableDelivery>> fetchAvailableDeliveries();
 
   /// The driver's currently assigned/in-progress delivery, if any.

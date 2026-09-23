@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/business_profile.dart';
 import '../../domain/entities/managed_business_order.dart';
@@ -25,6 +26,23 @@ class BusinessRepositoryImpl implements IBusinessRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw const ServerFailure('Not authenticated');
     return user.id;
+  }
+
+  @override
+  Stream<StreamResult<bool>> watchOrderChanges() async* {
+    final business = await fetchMyBusiness();
+    if (business == null) return;
+    yield* _client
+        .from('business_orders')
+        .stream(primaryKey: ['id'])
+        .eq('business_id', business.id)
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
+
+  Failure _mapError(Object error) {
+    if (error is PostgrestException) return ServerFailure(error.message);
+    return const NetworkFailure();
   }
 
   @override

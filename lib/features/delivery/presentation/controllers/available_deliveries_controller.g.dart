@@ -8,23 +8,23 @@ part of 'available_deliveries_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Available deliveries for drivers. Realtime (§31) arrives in Phase 11;
-/// pull-to-refresh until then.
+/// Available deliveries for drivers. Realtime is a sync signal (§31/§54):
+/// stream events trigger a refetch of ground truth.
 
 @ProviderFor(AvailableDeliveriesController)
 final availableDeliveriesControllerProvider =
     AvailableDeliveriesControllerProvider._();
 
-/// Available deliveries for drivers. Realtime (§31) arrives in Phase 11;
-/// pull-to-refresh until then.
+/// Available deliveries for drivers. Realtime is a sync signal (§31/§54):
+/// stream events trigger a refetch of ground truth.
 final class AvailableDeliveriesControllerProvider
     extends
         $AsyncNotifierProvider<
           AvailableDeliveriesController,
           List<AvailableDelivery>
         > {
-  /// Available deliveries for drivers. Realtime (§31) arrives in Phase 11;
-  /// pull-to-refresh until then.
+  /// Available deliveries for drivers. Realtime is a sync signal (§31/§54):
+  /// stream events trigger a refetch of ground truth.
   AvailableDeliveriesControllerProvider._()
     : super(
         from: null,
@@ -45,10 +45,10 @@ final class AvailableDeliveriesControllerProvider
 }
 
 String _$availableDeliveriesControllerHash() =>
-    r'a062a335e1f5aba4dfa4599ee12febf61c7326da';
+    r'0903e79dd0b1761befd3f519a747352d113c25a3';
 
-/// Available deliveries for drivers. Realtime (§31) arrives in Phase 11;
-/// pull-to-refresh until then.
+/// Available deliveries for drivers. Realtime is a sync signal (§31/§54):
+/// stream events trigger a refetch of ground truth.
 
 abstract class _$AvailableDeliveriesController
     extends $AsyncNotifier<List<AvailableDelivery>> {

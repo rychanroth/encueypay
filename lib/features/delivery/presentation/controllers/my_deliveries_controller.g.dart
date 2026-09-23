@@ -34,7 +34,7 @@ final class MyDeliveriesControllerProvider
 }
 
 String _$myDeliveriesControllerHash() =>
-    r'9002d449918ffd11160b415d86c2b1d515f1d051';
+    r'6df93ef8a00590f773663a65d66d0393bdce65da';
 
 abstract class _$MyDeliveriesController
     extends $AsyncNotifier<MyDeliveriesState> {

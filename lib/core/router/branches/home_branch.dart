@@ -6,6 +6,7 @@ import '../../../features/catalog/presentation/screens/business_detail_screen.da
 import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
 import '../../../features/catalog/presentation/screens/products_screen.dart';
+import '../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../app_routes.dart';
 
 /// Customer tab 1 — Home + catalog nested routes (ROUTE-04: nested routes
@@ -43,6 +44,11 @@ final homeBranch = StatefulShellBranch(
               },
             ),
           ),
+        ),
+        GoRoute(
+          name: AppRoutes.notifications,
+          path: 'notifications',
+          builder: (context, state) => const NotificationsScreen(),
         ),
         GoRoute(
           name: AppRoutes.businessDetail,

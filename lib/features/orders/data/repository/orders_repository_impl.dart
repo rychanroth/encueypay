@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/order.dart';
 import '../dtos/order_dtos.dart';
@@ -36,6 +37,32 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw const ServerFailure('Not authenticated');
     return user.id;
+  }
+
+  @override
+  Stream<StreamResult<bool>> watchOrderChanges(String orderId) {
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('id', orderId)
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
+
+  @override
+  Stream<StreamResult<bool>> watchDeliveryChanges(String orderId) {
+    return _client
+        .from('deliveries')
+        .stream(primaryKey: ['id'])
+        .eq('order_id', orderId)
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
+
+  Failure _mapError(Object error) {
+    if (error is PostgrestException) return ServerFailure(error.message);
+    if (error is StorageException) return ServerFailure(error.message);
+    return const NetworkFailure();
   }
 
   CustomerOrder _mapRow(Map<String, dynamic> row) =>

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/stream_result.dart';
 import '../../data/repository/delivery_repository_impl.dart';
 import '../../domain/entities/delivery.dart';
 
@@ -38,6 +39,11 @@ class MyDeliveriesController extends _$MyDeliveriesController {
   @override
   Future<MyDeliveriesState> build() async {
     final repository = ref.watch(deliveryRepositoryProvider);
+    final subscription =
+        repository.watchMyDeliveryChanges().listen((result) {
+      if (result is StreamData) ref.invalidateSelf();
+    });
+    ref.onDispose(subscription.cancel);
     final results = await (
       repository.fetchMyActiveDelivery(),
       repository.fetchMyHistory(),

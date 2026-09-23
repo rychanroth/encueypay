@@ -8,25 +8,22 @@ part of 'business_orders_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Incoming/active business orders. Realtime arrives in Phase 11; until
-/// then the list refreshes via invalidate (pull-to-refresh + after each
-/// transition).
+/// Incoming/active business orders. Realtime is a sync signal (§31/§54):
+/// stream events trigger a refetch of ground truth.
 
 @ProviderFor(BusinessOrdersController)
 final businessOrdersControllerProvider = BusinessOrdersControllerProvider._();
 
-/// Incoming/active business orders. Realtime arrives in Phase 11; until
-/// then the list refreshes via invalidate (pull-to-refresh + after each
-/// transition).
+/// Incoming/active business orders. Realtime is a sync signal (§31/§54):
+/// stream events trigger a refetch of ground truth.
 final class BusinessOrdersControllerProvider
     extends
         $AsyncNotifierProvider<
           BusinessOrdersController,
           List<ManagedBusinessOrder>
         > {
-  /// Incoming/active business orders. Realtime arrives in Phase 11; until
-  /// then the list refreshes via invalidate (pull-to-refresh + after each
-  /// transition).
+  /// Incoming/active business orders. Realtime is a sync signal (§31/§54):
+  /// stream events trigger a refetch of ground truth.
   BusinessOrdersControllerProvider._()
     : super(
         from: null,
@@ -47,11 +44,10 @@ final class BusinessOrdersControllerProvider
 }
 
 String _$businessOrdersControllerHash() =>
-    r'988e731d35e8b4814bc0d78f2a0aa12da922a874';
+    r'6e074d5763c2c2eb18001223fb4af8beba9ac15a';
 
-/// Incoming/active business orders. Realtime arrives in Phase 11; until
-/// then the list refreshes via invalidate (pull-to-refresh + after each
-/// transition).
+/// Incoming/active business orders. Realtime is a sync signal (§31/§54):
+/// stream events trigger a refetch of ground truth.
 
 abstract class _$BusinessOrdersController
     extends $AsyncNotifier<List<ManagedBusinessOrder>> {

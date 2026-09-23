@@ -1,7 +1,14 @@
+import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/order.dart';
 
 /// Orders contract (spec §58 Orders ops) (DATA-03).
 abstract interface class IOrdersRepository {
+  /// Realtime sync signals (§31/§54): order record changes and its
+  /// delivery changes.
+  Stream<StreamResult<bool>> watchOrderChanges(String orderId);
+
+  Stream<StreamResult<bool>> watchDeliveryChanges(String orderId);
+
   Future<List<CustomerOrder>> fetchMyOrders({int limit = 10, int offset = 0});
 
   Future<CustomerOrder> fetchOrder(String orderId);

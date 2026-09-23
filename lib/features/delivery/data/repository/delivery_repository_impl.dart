@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/delivery.dart';
 import '../dtos/delivery_dtos.dart';
@@ -119,5 +120,30 @@ class DeliveryRepositoryImpl implements IDeliveryRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw const ServerFailure('Not authenticated');
     return user.id;
+  }
+
+  @override
+  Stream<StreamResult<bool>> watchAvailableChanges() {
+    return _client
+        .from('deliveries')
+        .stream(primaryKey: ['id'])
+        .eq('status', 'available')
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
+
+  @override
+  Stream<StreamResult<bool>> watchMyDeliveryChanges() {
+    return _client
+        .from('deliveries')
+        .stream(primaryKey: ['id'])
+        .eq('driver_id', _uid)
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
+
+  Failure _mapError(Object error) {
+    if (error is PostgrestException) return ServerFailure(error.message);
+    return const NetworkFailure();
   }
 }

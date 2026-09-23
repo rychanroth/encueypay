@@ -31,6 +31,7 @@ abstract final class AppRoutes {
   static const products = 'products';
   static const productDetail = 'productDetail';
   static const businessDetail = 'businessDetail';
+  static const notifications = 'notifications';
 
   // Shared tab (all roles).
   static const profile = 'profile';
