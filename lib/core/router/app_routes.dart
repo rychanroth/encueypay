@@ -23,6 +23,10 @@ abstract final class AppRoutes {
   static const businessReturns = 'businessReturns';
   static const businessPromotions = 'businessPromotions';
 
+  // Admin (nested under Admin dashboard).
+  static const adminAudit = 'adminAudit';
+  static const adminSettings = 'adminSettings';
+
   // Catalog (nested under Home).
   static const products = 'products';
   static const productDetail = 'productDetail';
@@ -35,6 +39,7 @@ abstract final class AppRoutes {
   static const addressEdit = 'addressEdit';
   static const wishlist = 'wishlist';
   static const settings = 'settings';
+  static const roleApplication = 'roleApplication';
 
   // Business tabs.
   static const businessDashboard = 'businessDashboard';

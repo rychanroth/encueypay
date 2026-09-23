@@ -9,6 +9,7 @@ import '../../../features/profile/presentation/screens/addresses_screen.dart';
 import '../../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
+import '../../../features/role_applications/presentation/screens/role_application_screen.dart';
 import '../../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../app_routes.dart';
 
@@ -54,6 +55,11 @@ final profileBranch = StatefulShellBranch(
           name: AppRoutes.wishlist,
           path: 'wishlist',
           builder: (context, state) => const WishlistScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.roleApplication,
+          path: 'apply',
+          builder: (context, state) => const RoleApplicationScreen(),
         ),
         GoRoute(
           name: AppRoutes.settings,

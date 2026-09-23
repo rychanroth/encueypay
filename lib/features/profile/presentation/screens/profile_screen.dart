@@ -96,6 +96,12 @@ class ProfileScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.pushNamed(AppRoutes.wishlist),
               ),
+              ListTile(
+                leading: const Icon(Icons.badge_outlined),
+                title: const Text('Become a business or driver'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.roleApplication),
+              ),
             ],
             ListTile(
               leading: const Icon(Icons.settings_outlined),
