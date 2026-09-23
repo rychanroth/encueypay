@@ -56,6 +56,8 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
+          _SectionTitle('Featured'),
+          const _BannersStrip(),
           _SectionTitle('Categories'),
           _CategoriesStrip(onCategoryTap: (category) {
             context.pushNamed(
@@ -94,6 +96,60 @@ class _SectionTitle extends StatelessWidget {
             .titleMedium
             ?.copyWith(fontWeight: FontWeight.bold),
       ),
+    );
+  }
+}
+
+class _BannersStrip extends ConsumerWidget {
+  const _BannersStrip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bannersAsync = ref.watch(homeBannersProvider);
+    return bannersAsync.maybeWhen(
+      data: (banners) {
+        if (banners.isEmpty) return const SizedBox.shrink();
+        return SizedBox(
+          height: 120,
+          child: PageView.builder(
+            itemCount: banners.length,
+            itemBuilder: (context, index) {
+              final banner = banners[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.network(
+                        banner.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                      Positioned(
+                        left: 12,
+                        bottom: 8,
+                        child: Text(
+                          banner.name,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                shadows: const [Shadow(blurRadius: 8)],
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 }

@@ -21,6 +21,7 @@ abstract final class AppRoutes {
 
   // Business (nested under Business dashboard).
   static const businessReturns = 'businessReturns';
+  static const businessPromotions = 'businessPromotions';
 
   // Catalog (nested under Home).
   static const products = 'products';

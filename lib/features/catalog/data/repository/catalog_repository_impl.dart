@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/supabase_client_provider.dart';
+import '../../domain/entities/banner.dart';
 import '../../domain/entities/business.dart';
 import '../../domain/entities/business_detail.dart';
 import '../../domain/entities/category.dart';
@@ -191,6 +192,31 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .neq('id', excludeProductId)
           .limit(limit);
       return _mapProductRows(rows);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<List<CatalogBanner>> fetchApprovedBanners({int limit = 5}) async {
+    try {
+      final rows = await _client
+          .from('promotions')
+          .select('id, name, banner_image_path')
+          .eq('banner_status', 'approved')
+          .not('banner_image_path', 'is', null)
+          .order('created_at', ascending: false)
+          .limit(limit);
+      return rows.map((row) {
+        final path = row['banner_image_path'] as String;
+        return CatalogBanner(
+          id: row['id'] as String,
+          name: row['name'] as String? ?? '',
+          imageUrl: _client.storage.from('promo_assets').getPublicUrl(path),
+        );
+      }).toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {

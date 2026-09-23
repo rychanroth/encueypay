@@ -1,3 +1,4 @@
+import '../../domain/entities/banner.dart';
 import '../../domain/entities/business.dart';
 import '../../domain/entities/business_detail.dart';
 import '../../domain/entities/category.dart';
@@ -30,4 +31,7 @@ abstract interface class ICatalogRepository {
   });
 
   Future<BusinessDetail> fetchBusinessDetail(String businessId);
+
+  /// Approved banner feed for the home screen (§27).
+  Future<List<CatalogBanner>> fetchApprovedBanners({int limit = 5});
 }

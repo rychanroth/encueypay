@@ -8,14 +8,60 @@ part of 'home_feed_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Home feed sections (newest products + businesses). Plain one-shot
-/// fetches — controllers MAY call the repository directly (DOMAIN-03).
+/// Home feed sections (banners, newest products, businesses). Plain
+/// one-shot fetches — controllers MAY call the repository directly
+/// (DOMAIN-03).
+
+@ProviderFor(homeBanners)
+final homeBannersProvider = HomeBannersProvider._();
+
+/// Home feed sections (banners, newest products, businesses). Plain
+/// one-shot fetches — controllers MAY call the repository directly
+/// (DOMAIN-03).
+
+final class HomeBannersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<CatalogBanner>>,
+          List<CatalogBanner>,
+          FutureOr<List<CatalogBanner>>
+        >
+    with
+        $FutureModifier<List<CatalogBanner>>,
+        $FutureProvider<List<CatalogBanner>> {
+  /// Home feed sections (banners, newest products, businesses). Plain
+  /// one-shot fetches — controllers MAY call the repository directly
+  /// (DOMAIN-03).
+  HomeBannersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'homeBannersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$homeBannersHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<CatalogBanner>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<CatalogBanner>> create(Ref ref) {
+    return homeBanners(ref);
+  }
+}
+
+String _$homeBannersHash() => r'e244df33d977d29af6caa3c8a1b6d62004cdb141';
 
 @ProviderFor(homeProducts)
 final homeProductsProvider = HomeProductsProvider._();
-
-/// Home feed sections (newest products + businesses). Plain one-shot
-/// fetches — controllers MAY call the repository directly (DOMAIN-03).
 
 final class HomeProductsProvider
     extends
@@ -25,8 +71,6 @@ final class HomeProductsProvider
           FutureOr<List<Product>>
         >
     with $FutureModifier<List<Product>>, $FutureProvider<List<Product>> {
-  /// Home feed sections (newest products + businesses). Plain one-shot
-  /// fetches — controllers MAY call the repository directly (DOMAIN-03).
   HomeProductsProvider._()
     : super(
         from: null,

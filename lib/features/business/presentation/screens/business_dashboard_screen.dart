@@ -129,6 +129,12 @@ class _Dashboard extends ConsumerWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.pushNamed(AppRoutes.businessReturns),
         ),
+        ListTile(
+          leading: const Icon(Icons.campaign_outlined),
+          title: const Text('Promotions'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.pushNamed(AppRoutes.businessPromotions),
+        ),
         const Text('Analytics arrive in Phase 12.'),
       ],
     );
