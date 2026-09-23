@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
+import '../../domain/entities/analytics.dart';
 import '../../domain/entities/business_profile.dart';
 import '../../domain/entities/managed_business_order.dart';
 import '../dtos/business_dtos.dart';
@@ -26,6 +27,34 @@ class BusinessRepositoryImpl implements IBusinessRepository {
     final user = _client.auth.currentUser;
     if (user == null) throw const ServerFailure('Not authenticated');
     return user.id;
+  }
+
+  @override
+  Future<BusinessAnalytics> fetchMyAnalytics() async {
+    try {
+      final result =
+          await _client.rpc('get_business_analytics');
+      final map = Map<String, dynamic>.from(result as Map);
+      return BusinessAnalytics(
+        totalSalesMinor: (map['total_sales_minor'] as int?) ?? 0,
+        orderCount: (map['order_count'] as int?) ?? 0,
+        pendingCount: (map['pending_count'] as int?) ?? 0,
+        completedCount: (map['completed_count'] as int?) ?? 0,
+        rejectedCount: (map['rejected_count'] as int?) ?? 0,
+        topProducts: ((map['top_products'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>())
+            .map((t) => TopProduct(
+                  name: t['name'] as String? ?? '',
+                  quantity: (t['quantity'] as int?) ?? 0,
+                  revenueMinor: (t['revenue_minor'] as int?) ?? 0,
+                ))
+            .toList(),
+      );
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
   }
 
   @override

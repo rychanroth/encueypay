@@ -24,6 +24,8 @@ abstract interface class IAdminRepository {
 
   Future<List<AuditEntry>> fetchAuditLogs();
 
+  Future<PlatformAnalyticsReport> fetchPlatformReport();
+
   Future<PlatformSettings> fetchPlatformSettings();
 
   Future<void> updatePlatformSettings(PlatformSettings settings);

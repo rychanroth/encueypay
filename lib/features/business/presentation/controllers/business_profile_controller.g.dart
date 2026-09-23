@@ -65,3 +65,52 @@ abstract class _$BusinessProfileController
     return element.handleCreate(ref, build);
   }
 }
+
+/// Server-computed analytics (§58) — plain one-shot fetch consumed
+/// directly by the dashboard (DOMAIN-03).
+
+@ProviderFor(businessAnalytics)
+final businessAnalyticsProvider = BusinessAnalyticsProvider._();
+
+/// Server-computed analytics (§58) — plain one-shot fetch consumed
+/// directly by the dashboard (DOMAIN-03).
+
+final class BusinessAnalyticsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<BusinessAnalytics>,
+          BusinessAnalytics,
+          FutureOr<BusinessAnalytics>
+        >
+    with
+        $FutureModifier<BusinessAnalytics>,
+        $FutureProvider<BusinessAnalytics> {
+  /// Server-computed analytics (§58) — plain one-shot fetch consumed
+  /// directly by the dashboard (DOMAIN-03).
+  BusinessAnalyticsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'businessAnalyticsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$businessAnalyticsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<BusinessAnalytics> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<BusinessAnalytics> create(Ref ref) {
+    return businessAnalytics(ref);
+  }
+}
+
+String _$businessAnalyticsHash() => r'45c2c3d72311210b0b7a2e558033f9beacad20e6';

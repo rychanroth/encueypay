@@ -134,6 +134,26 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
+  Future<PlatformAnalyticsReport> fetchPlatformReport() async {
+    try {
+      final result = await _client.rpc('get_platform_report');
+      final map = Map<String, dynamic>.from(result as Map);
+      return PlatformAnalyticsReport(
+        orderCount: (map['order_count'] as int?) ?? 0,
+        gmvMinor: (map['gmv_minor'] as int?) ?? 0,
+        deliveryFeesMinor: (map['delivery_fees_minor'] as int?) ?? 0,
+        activeBusinesses: (map['active_businesses'] as int?) ?? 0,
+        activeProducts: (map['active_products'] as int?) ?? 0,
+        pendingApplications: (map['pending_applications'] as int?) ?? 0,
+      );
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<PlatformSettings> fetchPlatformSettings() async {
     try {
       final row = await _client

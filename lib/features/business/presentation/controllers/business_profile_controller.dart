@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/repository/business_repository_impl.dart';
+import '../../domain/entities/analytics.dart';
 import '../../domain/entities/business_profile.dart';
 
 part 'business_profile_controller.g.dart';
@@ -54,4 +55,11 @@ class BusinessProfileController extends _$BusinessProfileController {
           fileName: fileName,
         );
   }
+}
+
+/// Server-computed analytics (§58) — plain one-shot fetch consumed
+/// directly by the dashboard (DOMAIN-03).
+@riverpod
+Future<BusinessAnalytics> businessAnalytics(Ref ref) {
+  return ref.watch(businessRepositoryProvider).fetchMyAnalytics();
 }

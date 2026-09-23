@@ -41,6 +41,25 @@ class AuditEntry {
   final DateTime createdAt;
 }
 
+/// Platform-wide report for admins (spec §2.4) — server-computed.
+class PlatformAnalyticsReport {
+  const PlatformAnalyticsReport({
+    required this.orderCount,
+    required this.gmvMinor,
+    required this.deliveryFeesMinor,
+    required this.activeBusinesses,
+    required this.activeProducts,
+    required this.pendingApplications,
+  });
+
+  final int orderCount;
+  final int gmvMinor;
+  final int deliveryFeesMinor;
+  final int activeBusinesses;
+  final int activeProducts;
+  final int pendingApplications;
+}
+
 /// The singleton platform configuration (spec §47).
 class PlatformSettings {
   const PlatformSettings({

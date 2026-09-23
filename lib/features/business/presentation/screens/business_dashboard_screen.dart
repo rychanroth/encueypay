@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/money.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/business_profile.dart';
 import '../controllers/business_profile_controller.dart';
@@ -135,7 +136,7 @@ class _Dashboard extends ConsumerWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.pushNamed(AppRoutes.businessPromotions),
         ),
-        const Text('Analytics arrive in Phase 12.'),
+        const _AnalyticsSection(),
       ],
     );
   }
@@ -255,6 +256,108 @@ class _OnboardingWizardState extends ConsumerState<_OnboardingWizard> {
                     )
                   : const Text('Create business'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Server-computed analytics (§58 GetBusinessAnalytics) — display only.
+class _AnalyticsSection extends ConsumerWidget {
+  const _AnalyticsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final analyticsAsync = ref.watch(businessAnalyticsProvider);
+    final theme = Theme.of(context);
+
+    return analyticsAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+      error: (error, _) => Text('$error'),
+      data: (analytics) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Analytics',
+            style: theme.textTheme.titleSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: 'Total sales',
+                  value: Money(analytics.totalSalesMinor).format(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatCard(
+                  label: 'Orders',
+                  value: '${analytics.orderCount}',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatCard(
+                  label: 'Pending',
+                  value: '${analytics.pendingCount}',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (analytics.topProducts.isNotEmpty) ...[
+            Text('Top products', style: theme.textTheme.bodyMedium),
+            for (final product in analytics.topProducts)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.trending_up, size: 18),
+                title: Text(product.name, maxLines: 1),
+                trailing: Text(
+                  '${product.quantity} · ${Money(product.revenueMinor).format()}',
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 2),
+            Text(label, style: theme.textTheme.bodySmall),
           ],
         ),
       ),
