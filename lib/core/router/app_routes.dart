@@ -14,6 +14,9 @@ abstract final class AppRoutes {
   static const checkout = 'checkout';
   static const orderPlaced = 'orderPlaced';
 
+  // Orders (nested under Orders tab).
+  static const orderDetail = 'orderDetail';
+
   // Catalog (nested under Home).
   static const products = 'products';
   static const productDetail = 'productDetail';
