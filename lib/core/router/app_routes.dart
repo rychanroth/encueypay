@@ -10,6 +10,10 @@ abstract final class AppRoutes {
   static const cart = 'cart';
   static const orders = 'orders';
 
+  // Checkout (nested under Cart).
+  static const checkout = 'checkout';
+  static const orderPlaced = 'orderPlaced';
+
   // Catalog (nested under Home).
   static const products = 'products';
   static const productDetail = 'productDetail';

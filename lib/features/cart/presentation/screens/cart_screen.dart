@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/cart_item.dart';
 import '../controllers/cart_controller.dart';
 
@@ -135,9 +137,9 @@ class CartScreen extends ConsumerWidget {
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton(
-                          // Checkout arrives with Phase 4.
-                          onPressed: null,
-                          child: const Text('Checkout (coming soon)'),
+                          onPressed: () =>
+                              context.pushNamed(AppRoutes.checkout),
+                          child: const Text('Checkout'),
                         ),
                       ),
                     ],
