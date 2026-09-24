@@ -140,6 +140,11 @@ begin
   );
 
   if p_approve then
+    -- auth.uid() resolves to the CALLER even inside security-definer
+    -- functions (JWT claims are connection-scoped), so the role-guard
+    -- trigger on users would reject this update. Clear the claims
+    -- transaction-locally: the is_admin() check above is the authority.
+    perform set_config('request.jwt.claims', '', true);
     update public.users
     set active_role = v_application.requested_role
     where id = v_application.user_id;

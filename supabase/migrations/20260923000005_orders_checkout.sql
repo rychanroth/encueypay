@@ -328,7 +328,6 @@ declare
   v_code text;
   v_coupon record;
   v_coupon_discount bigint;
-  v_business uuid;
 begin
   if v_user is null then
     raise exception 'Not authenticated';
@@ -390,6 +389,12 @@ begin
     discount bigint not null
   ) on commit drop;
 
+  create temp table _coupon_discounts (
+    coupon_id uuid primary key,
+    business_id uuid,
+    discount bigint not null
+  ) on commit drop;
+
   foreach v_code in array p_coupon_codes loop
     if coalesce(trim(v_code), '') = '' then
       continue;
@@ -433,6 +438,9 @@ begin
         else (v_subtotal * v_coupon.discount_value) / 100
       end;
     end if;
+
+    insert into _coupon_discounts (coupon_id, business_id, discount)
+    values (v_coupon.id, v_coupon.business_id, v_coupon_discount);
 
     v_discount_total := v_discount_total + v_coupon_discount;
   end loop;
@@ -482,8 +490,10 @@ begin
     join public.product_variants pv on pv.id = ci.product_variant_id
     join public.products p on p.id = pv.product_id
     where ci.cart_id = v_cart_id and p.business_id = v_business.business_id;
-    select coalesce(discount, 0) into v_biz_discount
-    from _biz_discount where business_id = v_business.business_id;
+    -- scalar subquery: no coupon row -> 0 (SELECT INTO would assign NULL)
+    v_biz_discount := coalesce(
+      (select discount from _biz_discount where business_id = v_business.business_id),
+      0);
 
     insert into public.business_orders (order_id, business_id, subtotal_minor, discount_minor, status)
     values (v_order_id, v_business.business_id, v_biz_subtotal, v_biz_discount, 'pending')
@@ -520,40 +530,10 @@ begin
     values (v_delivery_id, v_business_order_id, v_seq, 'pending');
   end loop;
 
-  -- Historical coupon record (§26).
-  foreach v_code in array p_coupon_codes loop
-    if coalesce(trim(v_code), '') = '' then
-      continue;
-    end if;
-    select c.id, pr.scope, pr.business_id into v_coupon
-    from public.coupons c
-    join public.promotions pr on pr.id = c.promotion_id
-    where upper(c.code) = upper(trim(v_code)) and c.active;
-    -- Discount per coupon was computed in the first pass; recompute for the
-    -- record (same inputs, same transaction).
-    if v_coupon.scope = 'business' then
-      select coalesce(sum(coalesce(pv.price_minor, p.base_price_minor) * ci.quantity), 0)
-      into v_biz_subtotal
-      from public.cart_items ci
-      join public.product_variants pv on pv.id = ci.product_variant_id
-      join public.products p on p.id = pv.product_id
-      where ci.cart_id = v_cart_id and p.business_id = v_coupon.business_id;
-      v_coupon_discount := case v_coupon.discount_type
-        when 'fixed' then least(v_coupon.discount_value, v_biz_subtotal)
-        else (v_biz_subtotal * v_coupon.discount_value) / 100
-      end;
-      v_business := null;
-      insert into public.order_coupons (order_id, coupon_id, business_id, discount_minor)
-      values (v_order_id, v_coupon.id, v_coupon.business_id, v_coupon_discount);
-    else
-      v_coupon_discount := case v_coupon.discount_type
-        when 'fixed' then least(v_coupon.discount_value, v_subtotal)
-        else (v_subtotal * v_coupon.discount_value) / 100
-      end;
-      insert into public.order_coupons (order_id, coupon_id, business_id, discount_minor)
-      values (v_order_id, v_coupon.id, null, v_coupon_discount);
-    end if;
-  end loop;
+  -- Historical coupon record (§26): actual discounts computed in pass one.
+  insert into public.order_coupons (order_id, coupon_id, business_id, discount_minor)
+  select v_order_id, coupon_id, business_id, discount
+  from _coupon_discounts;
 
   delete from public.cart_items where cart_id = v_cart_id;
 

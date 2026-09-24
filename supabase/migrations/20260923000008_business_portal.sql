@@ -283,13 +283,28 @@ begin
       rejection_reason = p_reason
   where id = p_business_order_id;
 
-  -- Rejection releases reserved stock (§13).
+  -- Rejection releases reserved stock (§13)...
   if p_target = 'rejected' then
     update public.product_variants pv
     set stock = pv.stock + oi.quantity
     from public.order_items oi
     where oi.business_order_id = p_business_order_id
       and pv.id = oi.product_variant_id;
+
+    -- ...and a verified bank transfer becomes RefundRequired (§13/§21) —
+    -- but only when every business portion of the order is dead (no
+    -- partial refunds in the MVP).
+    update public.payments p
+    set status = 'refund_required'::public.payment_status
+    where p.order_id = (select order_id from public.business_orders where id = p_business_order_id)
+      and p.method = 'bank_transfer'
+      and p.status = 'transaction_verified'
+      and not exists (
+        select 1 from public.business_orders other
+        where other.order_id = p.order_id
+          and other.id <> p_business_order_id
+          and other.status not in ('rejected', 'cancelled')
+      );
   end if;
 end;
 $$;
