@@ -15,6 +15,11 @@ final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   return AuthRepositoryImpl(ref.watch(supabaseClientProvider));
 });
 
+/// Deep link the OAuth provider redirects back to (mobile). Must be
+/// registered in the dashboard (Auth → URL Configuration → Redirect URLs)
+/// and in the platform manifests (Android intent-filter / iOS URL scheme).
+const _oauthRedirect = 'io.supabase.encueypay://login-callback/';
+
 class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl(this._client);
 
@@ -80,7 +85,10 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> signInWithGoogle() async {
     try {
-      await _client.auth.signInWithOAuth(OAuthProvider.google);
+      await _client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: _oauthRedirect,
+      );
     } catch (error) {
       throw _mapError(error);
     }
