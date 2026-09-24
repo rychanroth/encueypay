@@ -9,20 +9,38 @@ part of 'auth_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Session stream controller — the single provider the router redirect
-/// (ROUTE-10) and the shell listen to. State is ground truth from the
-/// backend; mutations never set optimistic state (PRES-03).
+/// (ROUTE-10) and the shell listen to.
+///
+/// State is exactly what the docs-style pattern needs: `AsyncValue<AppUser?>`
+/// — loading while the first event arrives, `data: null` = signed out,
+/// `data: user` = signed in (with the role from the `users` table), error on
+/// failure. No custom auth state class. Mutations never set optimistic state
+/// (PRES-03); the SDK handles session persistence, token refreshes and deep
+/// links internally.
 
 @ProviderFor(AuthController)
 final authControllerProvider = AuthControllerProvider._();
 
 /// Session stream controller — the single provider the router redirect
-/// (ROUTE-10) and the shell listen to. State is ground truth from the
-/// backend; mutations never set optimistic state (PRES-03).
+/// (ROUTE-10) and the shell listen to.
+///
+/// State is exactly what the docs-style pattern needs: `AsyncValue<AppUser?>`
+/// — loading while the first event arrives, `data: null` = signed out,
+/// `data: user` = signed in (with the role from the `users` table), error on
+/// failure. No custom auth state class. Mutations never set optimistic state
+/// (PRES-03); the SDK handles session persistence, token refreshes and deep
+/// links internally.
 final class AuthControllerProvider
-    extends $StreamNotifierProvider<AuthController, AuthState> {
+    extends $StreamNotifierProvider<AuthController, AppUser?> {
   /// Session stream controller — the single provider the router redirect
-  /// (ROUTE-10) and the shell listen to. State is ground truth from the
-  /// backend; mutations never set optimistic state (PRES-03).
+  /// (ROUTE-10) and the shell listen to.
+  ///
+  /// State is exactly what the docs-style pattern needs: `AsyncValue<AppUser?>`
+  /// — loading while the first event arrives, `data: null` = signed out,
+  /// `data: user` = signed in (with the role from the `users` table), error on
+  /// failure. No custom auth state class. Mutations never set optimistic state
+  /// (PRES-03); the SDK handles session persistence, token refreshes and deep
+  /// links internally.
   AuthControllerProvider._()
     : super(
         from: null,
@@ -42,23 +60,29 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'c674f556aa8f83df715a44516d036891757e4f47';
+String _$authControllerHash() => r'47a8486ba77aa653af184be0317594932c7dd6eb';
 
 /// Session stream controller — the single provider the router redirect
-/// (ROUTE-10) and the shell listen to. State is ground truth from the
-/// backend; mutations never set optimistic state (PRES-03).
+/// (ROUTE-10) and the shell listen to.
+///
+/// State is exactly what the docs-style pattern needs: `AsyncValue<AppUser?>`
+/// — loading while the first event arrives, `data: null` = signed out,
+/// `data: user` = signed in (with the role from the `users` table), error on
+/// failure. No custom auth state class. Mutations never set optimistic state
+/// (PRES-03); the SDK handles session persistence, token refreshes and deep
+/// links internally.
 
-abstract class _$AuthController extends $StreamNotifier<AuthState> {
-  Stream<AuthState> build();
+abstract class _$AuthController extends $StreamNotifier<AppUser?> {
+  Stream<AppUser?> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AuthState>, AuthState>;
+    final ref = this.ref as $Ref<AsyncValue<AppUser?>, AppUser?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AuthState>, AuthState>,
-              AsyncValue<AuthState>,
+              AnyNotifier<AsyncValue<AppUser?>, AppUser?>,
+              AsyncValue<AppUser?>,
               Object?,
               Object?
             >;

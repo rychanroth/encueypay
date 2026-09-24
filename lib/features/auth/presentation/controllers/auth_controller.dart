@@ -2,24 +2,28 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/domain/stream_result.dart';
 import '../../data/repository/auth_repository_impl.dart';
-import '../states/auth_state.dart';
+import '../../domain/entities/app_user.dart';
 
 part 'auth_controller.g.dart';
 
 /// Session stream controller — the single provider the router redirect
-/// (ROUTE-10) and the shell listen to. State is ground truth from the
-/// backend; mutations never set optimistic state (PRES-03).
+/// (ROUTE-10) and the shell listen to.
+///
+/// State is exactly what the docs-style pattern needs: `AsyncValue<AppUser?>`
+/// — loading while the first event arrives, `data: null` = signed out,
+/// `data: user` = signed in (with the role from the `users` table), error on
+/// failure. No custom auth state class. Mutations never set optimistic state
+/// (PRES-03); the SDK handles session persistence, token refreshes and deep
+/// links internally.
 @riverpod
 class AuthController extends _$AuthController {
   @override
-  Stream<AuthState> build() {
+  Stream<AppUser?> build() {
     final repository = ref.watch(authRepositoryProvider);
     return repository.watchSession().map((result) {
       return switch (result) {
-        StreamData(:final data) => data.authenticated
-            ? AuthState.authenticated(data.user!)
-            : AuthState.unauthenticated(),
-        StreamError(:final failure) => AuthState.failure(failure.message),
+        StreamData(:final data) => data,
+        StreamError(:final failure) => throw failure,
       };
     });
   }

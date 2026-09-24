@@ -28,7 +28,7 @@ final profileBranch = StatefulShellBranch(
         builder: (context, ref, _) {
           final role = ref.watch(
             authControllerProvider.select(
-              (auth) => auth.value?.user?.activeRole ?? UserRole.customer,
+              (auth) => auth.value?.activeRole ?? UserRole.customer,
             ),
           );
           return ProfileScreen(isCustomer: role == UserRole.customer);

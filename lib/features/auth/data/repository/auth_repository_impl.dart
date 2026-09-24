@@ -5,7 +5,6 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/app_user.dart';
-import '../../domain/entities/auth_session.dart';
 import '../dtos/user_dto.dart';
 import '../mappers/user_mapper.dart';
 import 'auth_repository.dart';
@@ -18,6 +17,7 @@ final authRepositoryProvider = Provider<IAuthRepository>((ref) {
 /// Deep link the OAuth provider redirects back to (mobile). Must be
 /// registered in the dashboard (Auth → URL Configuration → Redirect URLs)
 /// and in the platform manifests (Android intent-filter / iOS URL scheme).
+/// The SDK subscribes to the deep links itself — no app-side listener.
 const _oauthRedirect = 'io.supabase.encueypay://login-callback/';
 
 class AuthRepositoryImpl implements IAuthRepository {
@@ -26,15 +26,15 @@ class AuthRepositoryImpl implements IAuthRepository {
   final SupabaseClient _client;
 
   @override
-  Stream<StreamResult<AuthSession>> watchSession() {
+  Stream<StreamResult<AppUser?>> watchSession() {
     return _client.auth.onAuthStateChange.asyncMap((event) async {
       final session = event.session;
-      if (session == null) return AuthSession.signedOut();
-      return _loadAuthenticatedSession(session);
+      if (session == null) return null;
+      return _loadAppUser(session);
     }).asStreamResult(_mapError);
   }
 
-  Future<AuthSession> _loadAuthenticatedSession(Session session) async {
+  Future<AppUser?> _loadAppUser(Session session) async {
     final user = session.user;
     final email = user.email;
 
@@ -44,13 +44,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       // trigger existed). Fall back to a minimal profile so the session
       // stays usable instead of failing the whole app.
       final metadataName = user.userMetadata?['full_name'] as String?;
-      return AuthSession.signedIn(
-        AppUser(id: user.id, email: email, fullName: metadataName ?? ''),
-      );
+      return AppUser(id: user.id, email: email, fullName: metadataName ?? '');
     }
-    return AuthSession.signedIn(
-      UserDto.fromJson(row).toDomain(email: email),
-    );
+    return UserDto.fromJson(row).toDomain(email: email);
   }
 
   @override

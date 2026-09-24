@@ -17,7 +17,7 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(
       authControllerProvider.select(
-        (auth) => auth.value?.user?.activeRole ?? UserRole.customer,
+        (auth) => auth.value?.activeRole ?? UserRole.customer,
       ),
     );
     final tabs = tabsForRole(role);

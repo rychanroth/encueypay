@@ -1,14 +1,14 @@
-import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/stream_result.dart';
-import '../../domain/entities/auth_session.dart';
+import '../../domain/entities/app_user.dart';
 
 /// Auth + session contract for the auth feature (DATA-03: interface lives
 /// here, impl in `auth_repository_impl.dart`).
 abstract interface class IAuthRepository {
-  /// Emits the current session snapshot on every auth state change
-  /// (sign-in, sign-out, token refresh). Failures surface as [StreamError]
-  /// data events — the stream never terminates (DATA-06).
-  Stream<StreamResult<AuthSession>> watchSession();
+  /// Emits the signed-in [AppUser] (fetched from the `users` table — the
+  /// role that drives the per-role UI lives there, not in the auth
+  /// session), or `null` when signed out. Failures surface as
+  /// [StreamError] data events — the stream never terminates (DATA-06).
+  Stream<StreamResult<AppUser?>> watchSession();
 
   /// Signs in with email/password. Throws [Failure] subtypes only (DATA-05).
   Future<void> signInWithPassword({

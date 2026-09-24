@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/domain/entities/user_role.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/states/auth_state.dart';
 import '../presentation/not_found_screen.dart';
 import 'app_routes.dart';
 import 'navigation_tabs.dart';
@@ -23,15 +23,15 @@ import 'presentation/app_shell.dart';
 /// feature code (ROUTE-08, exception to ARCH-05).
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshListenable =
-      ValueNotifier<AsyncValue<AuthState>>(ref.watch(authControllerProvider));
+      ValueNotifier<AsyncValue<AppUser?>>(ref.watch(authControllerProvider));
 
-  ref.listen<AsyncValue<AuthState>>(authControllerProvider, (prev, next) {
+  ref.listen<AsyncValue<AppUser?>>(authControllerProvider, (prev, next) {
     refreshListenable.value = next;
   });
 
   final role = ref.watch(
     authControllerProvider.select(
-      (auth) => auth.value?.user?.activeRole ?? UserRole.customer,
+      (auth) => auth.value?.activeRole ?? UserRole.customer,
     ),
   );
   final tabs = tabsForRole(role);
@@ -43,7 +43,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authAsync = ref.read(authControllerProvider);
       if (authAsync.isLoading) return null; // don't redirect while checking session
 
-      final isAuthenticated = authAsync.value?.isAuthenticated ?? false;
+      final isAuthenticated = authAsync.value != null;
       final isLoggingIn = state.matchedLocation == '/login';
 
       if (!isAuthenticated && !isLoggingIn) {
