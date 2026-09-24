@@ -1,6 +1,6 @@
 # Architecture Contract
 
-**Version:** 1.0.0 · **Status:** Ratified (2026-09-23) · **Owner:** Project maintainer
+**Version:** 2.0.0 · **Status:** Ratified (2026-09-24) · **Owner:** Project maintainer
 **Audience:** Every AI agent and human contributor modifying this codebase.
 
 This document is the single source of truth for how code is structured in this project.
@@ -329,10 +329,13 @@ outside `data/repository/`.
 
 ## 6. DOMAIN — Domain layer
 
-- **DOMAIN-01 (Entities).** Plain immutable Dart classes: `const` constructor, `final`
-  fields, no Flutter / json / Supabase imports. They model the business object after
-  mapper defaults are applied (e.g. `description` and `distance` are non-nullable on
-  `CelestialBody`).
+- **DOMAIN-01 (Entities).** Immutable classes generated with **freezed**
+  (`@freezed abstract class X with _$X` + `part 'x.freezed.dart'`; user
+  decision, 2026-09-24). No Flutter / json / Supabase imports. Computed
+  getters/methods live in the class body (declare `const X._();` so the
+  generated class inherits them); DTOs remain plain `json_serializable`
+  classes. They model the business object after mapper defaults are applied
+  (e.g. nullable wire fields become non-nullable on the entity).
 
 - **DOMAIN-02 (Use case shape).** A use case is one class with one purpose, a `call()`
   method, the repository **interface** constructor-injected, and its own manual
@@ -380,10 +383,11 @@ wrapped in a use case "for symmetry."
   build_runner. Manual providers are reserved for wiring: clients, repositories, use
   cases (DATA-07, DOMAIN-02).
 
-- **PRES-02 (State shape).** Controller states are immutable classes in `states/`, named
-  `<Thing>State`, with `const` constructor, `==`/`hashCode`, and `copyWith`. UI-only
-  flags (e.g. `isDescriptionExpanded`) live in the state class — not in loose fields on
-  the controller.
+- **PRES-02 (State shape).** Controller states are immutable classes in `states/`,
+  named `<Thing>State`, generated with freezed (`==`/`hashCode`/`copyWith` come
+  from the generator — do not hand-write them). UI-only flags (e.g.
+  `isDescriptionExpanded`) live in the state class — not in loose fields on the
+  controller.
 
 - **PRES-03 (Mutations).** Wrap mutations in `AsyncValue.guard`, then
   `ref.invalidateSelf()` to re-run `build()` and refetch ground truth. **No optimistic
@@ -598,9 +602,11 @@ constants per feature.
   | `supabase_flutter` ^2.17.2 | Backend (database, realtime, auth) |
   | `shared_preferences` | **Only** theme-mode persistence (THEME-02) |
   | `cupertino_icons` | Icons |
+  | `file_picker` ^13 | Proof/image picking (user-approved 2026-09-24) |
+  | `freezed` + `freezed_annotation` | Immutable entities & states (user-approved 2026-09-24 — DOMAIN-01/PRES-02) |
   | `dio` ^5.11.1 | *Role undefined in this contract — MUST NOT be used until the user defines it* |
   | `go_router_builder` ^4.5.0 | *Role undefined in this contract — MUST NOT be used; navigation is name-based (ROUTE-02)* |
-  | dev: `flutter_lints`, `build_runner`, `json_serializable`, `riverpod_annotation`, `riverpod_generator` | Toolchain |
+  | dev: `flutter_lints`, `build_runner`, `json_serializable`, `riverpod_annotation`, `riverpod_generator`, `freezed` | Toolchain |
 
 - **DEPS-02 (Scheduled removals).** `drift`, `sqlite3_flutter_libs`, `path_provider`
   (and `drift_dev`) are removed per the no-local-persistence decision (ACTION-01).

@@ -1,26 +1,26 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'product.dart';
+
+part 'product_variant.freezed.dart';
 
 /// A sellable variant of a product (spec §5.3). The variant is the selected
 /// sellable unit in the cart where applicable. A variant price of `null`
 /// falls back to the product's base price.
-class ProductVariant {
-  const ProductVariant({
-    required this.id,
-    required this.productId,
-    required this.name,
-    this.attributes,
-    required this.priceMinor,
-    required this.stock,
-    required this.status,
-  });
+@freezed
+abstract class ProductVariant with _$ProductVariant {
+  const factory ProductVariant({
+    required String id,
+    required String productId,
+    required String name,
+    Map<String, dynamic>? attributes,
+    required int? priceMinor,
+    required int stock,
+    required ProductStatus status,
+  }) = _ProductVariant;
 
-  final String id;
-  final String productId;
-  final String name;
-  final Map<String, dynamic>? attributes;
-  final int? priceMinor;
-  final int stock;
-  final ProductStatus status;
+  const ProductVariant._();
 
-  int effectivePriceMinor(Product product) => priceMinor ?? product.basePriceMinor;
+  int effectivePriceMinor(Product product) =>
+      priceMinor ?? product.basePriceMinor;
 }

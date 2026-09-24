@@ -42,7 +42,7 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'4164998d59f67548caa3327b9b81e3d7466a67f6';
+String _$authControllerHash() => r'c674f556aa8f83df715a44516d036891757e4f47';
 
 /// Session stream controller — the single provider the router redirect
 /// (ROUTE-10) and the shell listen to. State is ground truth from the

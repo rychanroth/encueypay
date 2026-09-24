@@ -1,30 +1,26 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'product.freezed.dart';
+
 /// A sellable product (spec §5.2/§6). Products are archived, never deleted;
 /// historical orders keep their own snapshots (spec §19).
-class Product {
-  const Product({
-    required this.id,
-    required this.businessId,
-    required this.categoryId,
-    required this.name,
-    required this.description,
-    required this.basePriceMinor,
-    required this.stock,
-    required this.status,
-    this.imageUrls = const [],
-  });
+@freezed
+abstract class Product with _$Product {
+  const factory Product({
+    required String id,
+    required String businessId,
+    required String categoryId,
+    required String name,
+    @Default('') String description,
+    required int basePriceMinor,
+    required int stock,
+    @Default(ProductStatus.active) ProductStatus status,
+    @Default([]) List<String> imageUrls,
+  }) = _Product;
 
-  final String id;
-  final String businessId;
-  final String categoryId;
-  final String name;
-  final String description;
-  final int basePriceMinor;
-  final int stock;
-  final ProductStatus status;
+  const Product._();
 
   /// Public URLs resolved from Storage references in the data layer (§48).
-  final List<String> imageUrls;
-
   String get thumbnailUrl => imageUrls.isEmpty ? '' : imageUrls.first;
 }
 

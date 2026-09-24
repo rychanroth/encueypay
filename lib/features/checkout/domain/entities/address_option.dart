@@ -1,22 +1,19 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'address_option.freezed.dart';
+
 /// A user address as offered at checkout. Slim, purpose-shaped duplicate —
 /// features never import each other (ARCH-04); the server copies the chosen
 /// address into the order as a historical snapshot (spec §17).
-class AddressOption {
-  const AddressOption({
-    required this.id,
-    required this.label,
-    required this.recipientName,
-    required this.phone,
-    required this.line1,
-    this.line2,
-    required this.city,
-  });
-
-  final String id;
-  final String label;
-  final String recipientName;
-  final String phone;
-  final String line1;
-  final String? line2;
-  final String city;
+@freezed
+abstract class AddressOption with _$AddressOption {
+  const factory AddressOption({
+    required String id,
+    required String label,
+    required String recipientName,
+    required String phone,
+    required String line1,
+    String? line2,
+    required String city,
+  }) = _AddressOption;
 }

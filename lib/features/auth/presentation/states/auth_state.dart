@@ -1,56 +1,33 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../domain/entities/app_user.dart';
+
+part 'auth_state.freezed.dart';
 
 enum AuthStatus { loading, authenticated, unauthenticated, failure }
 
 /// Immutable auth state consumed by the router redirect (ROUTE-10) and the
-/// shell (PRES-02: const constructor, ==/hashCode, copyWith).
-class AuthState {
-  const AuthState._({
-    required this.status,
-    this.user,
-    this.message,
-  });
+/// shell (PRES-02: immutability, ==/hashCode and copyWith via freezed).
+@freezed
+abstract class AuthState with _$AuthState {
+  const factory AuthState({
+    required AuthStatus status,
+    AppUser? user,
+    String? message,
+  }) = _AuthState;
 
-  const AuthState.loading()
-      : status = AuthStatus.loading,
-        user = null,
-        message = null;
+  const AuthState._();
 
-  const AuthState.authenticated(this.user)
-      : status = AuthStatus.authenticated,
-        message = null;
+  static AuthState loading() => const AuthState(status: AuthStatus.loading);
 
-  const AuthState.unauthenticated()
-      : status = AuthStatus.unauthenticated,
-        user = null,
-        message = null;
+  static AuthState authenticated(AppUser user) =>
+      AuthState(status: AuthStatus.authenticated, user: user);
 
-  const AuthState.failure(this.message)
-      : status = AuthStatus.failure,
-        user = null;
+  static AuthState unauthenticated() =>
+      const AuthState(status: AuthStatus.unauthenticated);
 
-  final AuthStatus status;
-  final AppUser? user;
-  final String? message;
+  static AuthState failure(String message) =>
+      AuthState(status: AuthStatus.failure, message: message);
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
-
-  AuthState copyWith({AppUser? user, String? message}) {
-    return AuthState._(
-      status: status,
-      user: user ?? this.user,
-      message: message ?? this.message,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AuthState &&
-          other.status == status &&
-          other.user == user &&
-          other.message == message;
-
-  @override
-  int get hashCode => Object.hash(status, user, message);
 }

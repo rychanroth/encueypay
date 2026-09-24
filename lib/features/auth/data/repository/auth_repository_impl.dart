@@ -29,7 +29,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   Stream<StreamResult<AuthSession>> watchSession() {
     return _client.auth.onAuthStateChange.asyncMap((event) async {
       final session = event.session;
-      if (session == null) return const AuthSession.unauthenticated();
+      if (session == null) return AuthSession.signedOut();
       return _loadAuthenticatedSession(session);
     }).asStreamResult(_mapError);
   }
@@ -44,11 +44,11 @@ class AuthRepositoryImpl implements IAuthRepository {
       // trigger existed). Fall back to a minimal profile so the session
       // stays usable instead of failing the whole app.
       final metadataName = user.userMetadata?['full_name'] as String?;
-      return AuthSession.authenticated(
+      return AuthSession.signedIn(
         AppUser(id: user.id, email: email, fullName: metadataName ?? ''),
       );
     }
-    return AuthSession.authenticated(
+    return AuthSession.signedIn(
       UserDto.fromJson(row).toDomain(email: email),
     );
   }

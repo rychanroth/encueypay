@@ -1,19 +1,22 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_variant.dart';
 import '../../domain/entities/product_detail.dart';
 
+part 'product_detail_state.freezed.dart';
+
 /// Immutable state for the product detail screen (PRES-02). The selected
 /// variant is UI-only state and lives here, not on the controller.
-class ProductDetailState {
-  const ProductDetailState({
-    required this.detail,
-    required this.relatedProducts,
-    this.selectedVariantId,
-  });
+@freezed
+abstract class ProductDetailState with _$ProductDetailState {
+  const factory ProductDetailState({
+    required ProductDetail detail,
+    @Default([]) List<Product> relatedProducts,
+    String? selectedVariantId,
+  }) = _ProductDetailState;
 
-  final ProductDetail detail;
-  final List<Product> relatedProducts;
-  final String? selectedVariantId;
+  const ProductDetailState._();
 
   ProductVariant? get selectedVariant {
     final id = selectedVariantId;
@@ -23,22 +26,4 @@ class ProductDetailState {
     }
     return null;
   }
-
-  ProductDetailState copyWith({String? selectedVariantId}) {
-    return ProductDetailState(
-      detail: detail,
-      relatedProducts: relatedProducts,
-      selectedVariantId: selectedVariantId,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ProductDetailState &&
-          other.detail.product.id == detail.product.id &&
-          other.selectedVariantId == selectedVariantId;
-
-  @override
-  int get hashCode => Object.hash(detail.product.id, selectedVariantId);
 }

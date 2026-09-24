@@ -1,63 +1,50 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'return_request.freezed.dart';
+
 /// Customer return request (spec §28): multiple items from one order,
 /// quantities capped at purchased, business decides the outcome (§28.1).
-class ReturnRequest {
-  const ReturnRequest({
-    required this.id,
-    required this.orderId,
-    required this.status,
-    required this.createdAt,
-    required this.items,
-  });
-
-  final String id;
-  final String orderId;
-  final ReturnStatus status;
-  final DateTime createdAt;
-  final List<ReturnItemInfo> items;
+@freezed
+abstract class ReturnRequest with _$ReturnRequest {
+  const factory ReturnRequest({
+    required String id,
+    required String orderId,
+    required ReturnStatus status,
+    required DateTime createdAt,
+    required List<ReturnItemInfo> items,
+  }) = _ReturnRequest;
 }
 
-class ReturnItemInfo {
-  const ReturnItemInfo({
-    required this.id,
-    required this.orderItemId,
-    required this.quantity,
-    required this.reason,
-    required this.productName,
-  });
-
-  final String id;
-  final String orderItemId;
-  final int quantity;
-  final String reason;
-  final String productName;
+@freezed
+abstract class ReturnItemInfo with _$ReturnItemInfo {
+  const factory ReturnItemInfo({
+    required String id,
+    required String orderItemId,
+    required int quantity,
+    required String reason,
+    required String productName,
+  }) = _ReturnItemInfo;
 }
 
 /// An order line offered for return in the request form.
-class ReturnableItem {
-  const ReturnableItem({
-    required this.orderItemId,
-    required this.productName,
-    required this.purchasedQuantity,
-    this.variantName,
-  });
-
-  final String orderItemId;
-  final String productName;
-  final String? variantName;
-  final int purchasedQuantity;
+@freezed
+abstract class ReturnableItem with _$ReturnableItem {
+  const factory ReturnableItem({
+    required String orderItemId,
+    required String productName,
+    required int purchasedQuantity,
+    String? variantName,
+  }) = _ReturnableItem;
 }
 
 /// Input shape for a requested return line.
-class ReturnItemDraft {
-  const ReturnItemDraft({
-    required this.orderItemId,
-    required this.quantity,
-    required this.reason,
-  });
-
-  final String orderItemId;
-  final int quantity;
-  final String reason;
+@freezed
+abstract class ReturnItemDraft with _$ReturnItemDraft {
+  const factory ReturnItemDraft({
+    required String orderItemId,
+    required int quantity,
+    required String reason,
+  }) = _ReturnItemDraft;
 }
 
 enum ReturnStatus {

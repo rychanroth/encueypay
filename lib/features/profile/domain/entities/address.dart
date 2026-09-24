@@ -1,42 +1,35 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'address.freezed.dart';
+
 /// A user-owned shipping address (spec §17). Addresses are mutable before
 /// checkout; the order later stores its own historical snapshot.
-class Address {
-  const Address({
-    required this.id,
-    required this.label,
-    required this.recipientName,
-    required this.phone,
-    required this.line1,
-    this.line2,
-    required this.city,
-  });
-
-  final String id;
-  final String label;
-  final String recipientName;
-  final String phone;
-  final String line1;
-  final String? line2;
-  final String city;
+@freezed
+abstract class Address with _$Address {
+  const factory Address({
+    required String id,
+    @Default('Home') String label,
+    required String recipientName,
+    @Default('') String phone,
+    required String line1,
+    String? line2,
+    required String city,
+  }) = _Address;
 }
 
 /// Input shape for creating/updating an address (no id, no timestamps).
-class AddressDraft {
-  const AddressDraft({
-    required this.label,
-    required this.recipientName,
-    required this.phone,
-    required this.line1,
-    this.line2,
-    required this.city,
-  });
+@freezed
+abstract class AddressDraft with _$AddressDraft {
+  const factory AddressDraft({
+    required String label,
+    required String recipientName,
+    required String phone,
+    required String line1,
+    String? line2,
+    required String city,
+  }) = _AddressDraft;
 
-  final String label;
-  final String recipientName;
-  final String phone;
-  final String line1;
-  final String? line2;
-  final String city;
+  const AddressDraft._();
 
   Address toEntity(String id) => Address(
         id: id,

@@ -1,92 +1,58 @@
-/// Admin management read models (spec §2.4/§35.4). Plain immutable
-/// entities (DOMAIN-01).
-class AdminApplication {
-  const AdminApplication({
-    required this.id,
-    required this.applicantName,
-    required this.requestedRole,
-    required this.status,
-    required this.createdAt,
-  });
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  final String id;
-  final String applicantName;
-  final String requestedRole;
-  final String status;
-  final DateTime createdAt;
+part 'admin.freezed.dart';
+
+/// Admin management read models (spec §2.4/§35.4). Immutable entities
+/// (DOMAIN-01, freezed).
+@freezed
+abstract class AdminApplication with _$AdminApplication {
+  const factory AdminApplication({
+    required String id,
+    required String applicantName,
+    required String requestedRole,
+    required String status,
+    required DateTime createdAt,
+  }) = _AdminApplication;
 }
 
-class AdminCategory {
-  const AdminCategory({required this.id, required this.name});
-
-  final String id;
-  final String name;
+@freezed
+abstract class AdminCategory with _$AdminCategory {
+  const factory AdminCategory({required String id, required String name})
+      = _AdminCategory;
 }
 
-class AuditEntry {
-  const AuditEntry({
-    required this.id,
-    required this.action,
-    required this.targetType,
-    required this.createdAt,
-    this.actor,
-    this.targetId,
-  });
-
-  final String id;
-  final String? actor;
-  final String action;
-  final String targetType;
-  final String? targetId;
-  final DateTime createdAt;
+@freezed
+abstract class AuditEntry with _$AuditEntry {
+  const factory AuditEntry({
+    required String id,
+    required String action,
+    required String targetType,
+    required DateTime createdAt,
+    String? actor,
+    String? targetId,
+  }) = _AuditEntry;
 }
 
 /// Platform-wide report for admins (spec §2.4) — server-computed.
-class PlatformAnalyticsReport {
-  const PlatformAnalyticsReport({
-    required this.orderCount,
-    required this.gmvMinor,
-    required this.deliveryFeesMinor,
-    required this.activeBusinesses,
-    required this.activeProducts,
-    required this.pendingApplications,
-  });
-
-  final int orderCount;
-  final int gmvMinor;
-  final int deliveryFeesMinor;
-  final int activeBusinesses;
-  final int activeProducts;
-  final int pendingApplications;
+@freezed
+abstract class PlatformAnalyticsReport with _$PlatformAnalyticsReport {
+  const factory PlatformAnalyticsReport({
+    required int orderCount,
+    required int gmvMinor,
+    required int deliveryFeesMinor,
+    required int activeBusinesses,
+    required int activeProducts,
+    required int pendingApplications,
+  }) = _PlatformAnalyticsReport;
 }
 
 /// The singleton platform configuration (spec §47).
-class PlatformSettings {
-  const PlatformSettings({
-    required this.deliveryFeeMinor,
-    required this.platformCommissionPercent,
-    required this.driverCommissionPercent,
-    required this.paymentAccount,
-  });
-
-  final int deliveryFeeMinor;
-  final int platformCommissionPercent;
-  final int driverCommissionPercent;
-  final String paymentAccount;
-
-  PlatformSettings copyWith({
-    int? deliveryFeeMinor,
-    int? platformCommissionPercent,
-    int? driverCommissionPercent,
-    String? paymentAccount,
-  }) {
-    return PlatformSettings(
-      deliveryFeeMinor: deliveryFeeMinor ?? this.deliveryFeeMinor,
-      platformCommissionPercent:
-          platformCommissionPercent ?? this.platformCommissionPercent,
-      driverCommissionPercent:
-          driverCommissionPercent ?? this.driverCommissionPercent,
-      paymentAccount: paymentAccount ?? this.paymentAccount,
-    );
-  }
+@freezed
+abstract class PlatformSettings with _$PlatformSettings {
+  const factory PlatformSettings({
+    required int deliveryFeeMinor,
+    required int platformCommissionPercent,
+    required int driverCommissionPercent,
+    required String paymentAccount,
+  }) = _PlatformSettings;
 }

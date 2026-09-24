@@ -18,7 +18,7 @@ class AuthController extends _$AuthController {
       return switch (result) {
         StreamData(:final data) => data.authenticated
             ? AuthState.authenticated(data.user!)
-            : const AuthState.unauthenticated(),
+            : AuthState.unauthenticated(),
         StreamError(:final failure) => AuthState.failure(failure.message),
       };
     });

@@ -1,36 +1,35 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'checkout_summary.freezed.dart';
+
 /// Checkout read model (spec §23): server-derived itemization and totals.
 /// These are display previews — the server recalculates authoritatively
 /// inside create_order_from_cart (§25/§53).
-class CheckoutItem {
-  const CheckoutItem({
-    required this.id,
-    required this.productName,
-    required this.businessName,
-    required this.unitPriceMinor,
-    required this.quantity,
-    this.variantName,
-  });
+@freezed
+abstract class CheckoutItem with _$CheckoutItem {
+  const factory CheckoutItem({
+    required String id,
+    required String productName,
+    required String businessName,
+    required int unitPriceMinor,
+    required int quantity,
+    String? variantName,
+  }) = _CheckoutItem;
 
-  final String id;
-  final String productName;
-  final String? variantName;
-  final String businessName;
-  final int unitPriceMinor;
-  final int quantity;
+  const CheckoutItem._();
 
   int get lineTotalMinor => unitPriceMinor * quantity;
 }
 
-class CheckoutSummary {
-  const CheckoutSummary({
-    required this.items,
-    required this.subtotalMinor,
-    required this.deliveryFeeMinor,
-  });
+@freezed
+abstract class CheckoutSummary with _$CheckoutSummary {
+  const factory CheckoutSummary({
+    required List<CheckoutItem> items,
+    required int subtotalMinor,
+    required int deliveryFeeMinor,
+  }) = _CheckoutSummary;
 
-  final List<CheckoutItem> items;
-  final int subtotalMinor;
-  final int deliveryFeeMinor;
+  const CheckoutSummary._();
 
   int get totalMinor => subtotalMinor + deliveryFeeMinor;
 }

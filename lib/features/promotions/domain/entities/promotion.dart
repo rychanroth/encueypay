@@ -1,48 +1,34 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'promotion.freezed.dart';
+
 /// Promotions & coupons (spec §24–§27). Business coupons need no approval;
 /// banners require admin moderation. Slim management view.
-class MyPromotion {
-  const MyPromotion({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.scope,
-    required this.discountType,
-    required this.discountValue,
-    required this.isBanner,
-    required this.bannerStatus,
-    required this.coupons,
-    this.bannerUrl,
-    this.endsAt,
-  });
-
-  final String id;
-  final String name;
-  final String description;
-  final PromotionScope scope;
-  final PromoDiscountType discountType;
-  final int discountValue;
-
-  /// Banner promotions carry an image and an approval workflow; coupon
-  /// promotions carry coupons.
-  final bool isBanner;
-  final BannerStatus bannerStatus;
-  final String? bannerUrl;
-  final DateTime? endsAt;
-  final List<MyCoupon> coupons;
+@freezed
+abstract class MyPromotion with _$MyPromotion {
+  const factory MyPromotion({
+    required String id,
+    required String name,
+    @Default('') String description,
+    required PromotionScope scope,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    required bool isBanner,
+    required BannerStatus bannerStatus,
+    required List<MyCoupon> coupons,
+    String? bannerUrl,
+    DateTime? endsAt,
+  }) = _MyPromotion;
 }
 
-class MyCoupon {
-  const MyCoupon({
-    required this.id,
-    required this.code,
-    required this.active,
-    this.expiresAt,
-  });
-
-  final String id;
-  final String code;
-  final bool active;
-  final DateTime? expiresAt;
+@freezed
+abstract class MyCoupon with _$MyCoupon {
+  const factory MyCoupon({
+    required String id,
+    required String code,
+    required bool active,
+    DateTime? expiresAt,
+  }) = _MyCoupon;
 }
 
 enum PromotionScope {

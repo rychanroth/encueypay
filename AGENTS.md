@@ -27,13 +27,14 @@ Silent invention is how architecture drifts.
   extensions; `I<Name>Repository` interface + `Impl` in separate files; exceptions map to
   `Failure` at the repository boundary only; streams surface `StreamError` events
   (DATA-01…08).
-- **Domain:** entities are plain immutable Dart; use cases = one class, `call()`,
-  interface-injected, own manual Provider. Pragmatic split: use cases for real domain
-  logic, controllers MAY call the repo for plain one-shot fetches (DOMAIN-01…04).
+- **Domain:** entities are immutable freezed classes (DTOs stay plain
+  json_serializable); use cases = one class, `call()`, interface-injected, own
+  manual Provider. Pragmatic split: use cases for real domain logic, controllers
+  MAY call the repo for plain one-shot fetches (DOMAIN-01…04).
 - **Presentation:** controllers use `@riverpod` codegen (manual providers are for
   wiring only); mutations via `AsyncValue.guard` + `ref.invalidateSelf()` — no optimistic
-  UI; state classes immutable with `copyWith`; screens never import repos/DTOs; extract
-  sub-widgets into `presentation/widgets/` (PRES-01…06).
+  UI; state classes immutable via freezed (`==`/`copyWith` generated); screens never
+  import repos/DTOs; extract sub-widgets into `presentation/widgets/` (PRES-01…06).
 - **Theme:** single `ThemeController` in `core/presentation/theme/`; `shared_preferences`
   stores only the `ThemeMode` — the one sanctioned local persistence (THEME-01/02,
   CORE-05: **no local DB / caching anywhere**).

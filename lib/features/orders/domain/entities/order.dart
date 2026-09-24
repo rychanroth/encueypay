@@ -1,56 +1,49 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'order.freezed.dart';
+
 /// Customer order read model (spec §9–§19). The overall status is DERIVED
 /// from the independent business/payment/delivery states (§10/§52) — there
 /// is no authoritative overall state machine.
-class CustomerOrder {
-  const CustomerOrder({
-    required this.id,
-    required this.createdAt,
-    required this.subtotalMinor,
-    required this.discountMinor,
-    required this.deliveryFeeMinor,
-    required this.totalMinor,
-    required this.shippingRecipientName,
-    required this.shippingPhone,
-    required this.shippingLine1,
-    required this.shippingCity,
-    required this.businessParts,
-    this.shippingLine2,
-    this.payment,
-    this.delivery,
-  });
+@freezed
+abstract class CustomerOrder with _$CustomerOrder {
+  const factory CustomerOrder({
+    required String id,
+    required DateTime createdAt,
+    required int subtotalMinor,
+    required int discountMinor,
+    required int deliveryFeeMinor,
+    required int totalMinor,
+    // Historical address snapshot (§17).
+    required String shippingRecipientName,
+    @Default('') String shippingPhone,
+    required String shippingLine1,
+    String? shippingLine2,
+    required String shippingCity,
+    required List<OrderBusinessPart> businessParts,
+    OrderPayment? payment,
+    OrderDelivery? delivery,
+  }) = _CustomerOrder;
 
-  final String id;
-  final DateTime createdAt;
-  final int subtotalMinor;
-  final int discountMinor;
-  final int deliveryFeeMinor;
-  final int totalMinor;
-
-  // Historical address snapshot (§17).
-  final String shippingRecipientName;
-  final String shippingPhone;
-  final String shippingLine1;
-  final String? shippingLine2;
-  final String shippingCity;
-
-  final List<OrderBusinessPart> businessParts;
-  final OrderPayment? payment;
-  final OrderDelivery? delivery;
+  const CustomerOrder._();
 
   /// Customer may cancel while every business order is still pending —
   /// mirrored from the server rule in cancel_order.
   bool get cancellable =>
       businessParts.isNotEmpty &&
-      businessParts.every((part) => part.status == BusinessOrderStatus.pending);
+      businessParts
+          .every((part) => part.status == BusinessOrderStatus.pending);
 
   /// Derived customer-facing status (§10).
   CustomerOrderStatus get derivedStatus {
-    if (businessParts.every((p) => p.status == BusinessOrderStatus.cancelled ||
-        p.status == BusinessOrderStatus.rejected)) {
+    if (businessParts.every(
+        (p) => p.status == BusinessOrderStatus.cancelled ||
+            p.status == BusinessOrderStatus.rejected)) {
       return CustomerOrderStatus.cancelled;
     }
     final payment = this.payment;
-    if (payment != null && payment.status == PaymentStatusState.refundRequired) {
+    if (payment != null &&
+        payment.status == PaymentStatusState.refundRequired) {
       return CustomerOrderStatus.refundRequired;
     }
     final delivery = this.delivery;
@@ -78,75 +71,55 @@ class CustomerOrder {
 }
 
 /// One business's portion of the order, with its own lifecycle (§11).
-class OrderBusinessPart {
-  const OrderBusinessPart({
-    required this.id,
-    required this.businessId,
-    required this.businessName,
-    required this.status,
-    required this.items,
-    required this.pickupStops,
-    this.rejectionReason,
-  });
-
-  final String id;
-  final String businessId;
-  final String businessName;
-  final BusinessOrderStatus status;
-  final String? rejectionReason;
-  final List<OrderItemSnapshot> items;
-  final List<PickupStopInfo> pickupStops;
+@freezed
+abstract class OrderBusinessPart with _$OrderBusinessPart {
+  const factory OrderBusinessPart({
+    required String id,
+    required String businessId,
+    required String businessName,
+    required BusinessOrderStatus status,
+    required List<OrderItemSnapshot> items,
+    required List<PickupStopInfo> pickupStops,
+    String? rejectionReason,
+  }) = _OrderBusinessPart;
 }
 
 /// Historical purchase line (§19) — current catalog edits never rewrite it.
-class OrderItemSnapshot {
-  const OrderItemSnapshot({
-    required this.id,
-    required this.productName,
-    required this.unitPriceMinor,
-    required this.quantity,
-    required this.lineTotalMinor,
-    this.variantName,
-    this.discountMinor = 0,
-  });
-
-  final String id;
-  final String productName;
-  final String? variantName;
-  final int unitPriceMinor;
-  final int discountMinor;
-  final int quantity;
-  final int lineTotalMinor;
+@freezed
+abstract class OrderItemSnapshot with _$OrderItemSnapshot {
+  const factory OrderItemSnapshot({
+    required String id,
+    required String productName,
+    required int unitPriceMinor,
+    required int quantity,
+    required int lineTotalMinor,
+    String? variantName,
+    @Default(0) int discountMinor,
+  }) = _OrderItemSnapshot;
 }
 
-class OrderPayment {
-  const OrderPayment({
-    required this.method,
-    required this.status,
-    required this.amountMinor,
-  });
-
-  final PaymentMethodKind method;
-  final PaymentStatusState status;
-  final int amountMinor;
+@freezed
+abstract class OrderPayment with _$OrderPayment {
+  const factory OrderPayment({
+    required PaymentMethodKind method,
+    required PaymentStatusState status,
+    required int amountMinor,
+  }) = _OrderPayment;
 }
 
-class OrderDelivery {
-  const OrderDelivery({required this.status});
-
-  final DeliveryState status;
+@freezed
+abstract class OrderDelivery with _$OrderDelivery {
+  const factory OrderDelivery({required DeliveryState status})
+      = _OrderDelivery;
 }
 
-class PickupStopInfo {
-  const PickupStopInfo({
-    required this.id,
-    required this.sequence,
-    required this.status,
-  });
-
-  final String id;
-  final int sequence;
-  final PickupStopState status;
+@freezed
+abstract class PickupStopInfo with _$PickupStopInfo {
+  const factory PickupStopInfo({
+    required String id,
+    required int sequence,
+    required PickupStopState status,
+  }) = _PickupStopInfo;
 }
 
 enum BusinessOrderStatus {

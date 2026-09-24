@@ -1,37 +1,20 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/domain/stream_result.dart';
 import '../../data/repository/delivery_repository_impl.dart';
 import '../../domain/entities/delivery.dart';
 
+part 'my_deliveries_controller.freezed.dart';
 part 'my_deliveries_controller.g.dart';
 
-class MyDeliveriesState {
-  const MyDeliveriesState({this.activeDelivery, this.history = const []});
-
-  final DriverDelivery? activeDelivery;
-  final List<DriverDelivery> history;
-
-  MyDeliveriesState copyWith({
+/// Immutable state for the driver's deliveries tab (PRES-02, freezed).
+@freezed
+abstract class MyDeliveriesState with _$MyDeliveriesState {
+  const factory MyDeliveriesState({
     DriverDelivery? activeDelivery,
-    List<DriverDelivery>? history,
-  }) {
-    return MyDeliveriesState(
-      activeDelivery: activeDelivery ?? this.activeDelivery,
-      history: history ?? this.history,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is MyDeliveriesState &&
-          other.activeDelivery?.id == activeDelivery?.id &&
-          other.history.length == history.length;
-
-  @override
-  int get hashCode =>
-      Object.hash(activeDelivery?.id, history.length);
+    @Default([]) List<DriverDelivery> history,
+  }) = _MyDeliveriesState;
 }
 
 @riverpod

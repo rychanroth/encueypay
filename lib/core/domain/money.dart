@@ -1,25 +1,30 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'money.freezed.dart';
+
 /// Exact monetary value in minor units (spec §22: never rely on binary
 /// floating point for financial calculations).
 ///
 /// Amounts are stored and computed everywhere as `int` minor units;
 /// [Money] exists only to parse user input and format display strings —
 /// no `double` ever touches an amount.
-class Money {
-  const Money(this.minorUnits);
+@freezed
+abstract class Money with _$Money {
+  const factory Money(int minorUnits) = _Money;
+
+  const Money._();
 
   static const Money zero = Money(0);
-
-  final int minorUnits;
 
   /// Parses a decimal string like `"10"`, `"10.5"`, `"10.50"` into minor
   /// units without touching binary floating point.
   ///
   /// Throws [FormatException] for empty input, more than two decimal
   /// places, or non-numeric characters.
-  factory Money.parse(String input) {
+  static Money parse(String input) {
     final text = input.trim();
     if (text.isEmpty) {
-      throw FormatException('Empty amount');
+      throw const FormatException('Empty amount');
     }
 
     final negative = text.startsWith('-');
@@ -65,13 +70,6 @@ class Money {
   Money operator -(Money other) => Money(minorUnits - other.minorUnits);
 
   Money multipliedBy(int quantity) => Money(minorUnits * quantity);
-
-  @override
-  bool operator ==(Object other) =>
-      other is Money && other.minorUnits == minorUnits;
-
-  @override
-  int get hashCode => minorUnits.hashCode;
 
   @override
   String toString() => 'Money(${format()})';

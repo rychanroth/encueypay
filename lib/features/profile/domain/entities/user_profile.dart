@@ -1,16 +1,16 @@
-/// The signed-in user's profile as edited within the profile feature.
-/// Plain immutable entity (DOMAIN-01). Email is not editable here (it lives
-/// with the auth identity) and is intentionally not part of this model.
-class UserProfile {
-  const UserProfile({
-    required this.id,
-    required this.fullName,
-    this.phone,
-    this.avatarUrl,
-  });
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  final String id;
-  final String fullName;
-  final String? phone;
-  final String? avatarUrl;
+part 'user_profile.freezed.dart';
+
+/// The signed-in user's profile as edited within the profile feature.
+/// Immutable via freezed (DOMAIN-01). Email is not editable here (it lives
+/// with the auth identity) and is intentionally not part of this model.
+@freezed
+abstract class UserProfile with _$UserProfile {
+  const factory UserProfile({
+    required String id,
+    @Default('') String fullName,
+    String? phone,
+    String? avatarUrl,
+  }) = _UserProfile;
 }
