@@ -55,7 +55,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
       return null;
     },
-    errorBuilder: (context, state) => const NotFoundScreen(), // ROUTE-09
+    errorBuilder: (context, state) => NotFoundScreen(path: state.uri.path), // ROUTE-09
     routes: [
       GoRoute(
         name: AppRoutes.login,
