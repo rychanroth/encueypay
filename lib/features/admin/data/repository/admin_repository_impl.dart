@@ -32,7 +32,8 @@ class AdminRepositoryImpl implements IAdminRepository {
     try {
       final rows = await _client
           .from('role_applications')
-          .select('id, requested_role, status, created_at, users(full_name)')
+          .select('id, requested_role, status, created_at, '
+              'users!role_applications_user_id_fkey(full_name)')
           .eq('status', 'pending')
           .order('created_at');
       return rows

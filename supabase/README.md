@@ -45,6 +45,50 @@ flutter run \
   --dart-define=SUPABASE_PUBLISHABLE_KEY=<publishable-key>
 ```
 
+## Local stack & physical device OAuth
+
+For local development against `supabase start`, the root `.env` splits the
+project URL into two roles:
+
+```
+SUPABASE_URL=http://<dev-machine-LAN-IP>:54321        # app API calls + /authorize hop
+SUPABASE_REDIRECT_URI=http://127.0.0.1:54321/auth/v1/callback   # Google-facing callback
+```
+
+The callback **must stay `127.0.0.1`**: Google only accepts plain-HTTP
+redirect URIs for loopback hosts, so the LAN IP can never be registered in
+Google Cloud Console (`redirect_uri_mismatch`). Register
+`http://127.0.0.1:54321/auth/v1/callback` there instead, and bridge the
+device's loopback to the dev machine:
+
+```bash
+adb reverse tcp:54321 tcp:54321
+```
+
+Gotchas (each of these has cost us a debugging session):
+
+- **`adb reverse` is ephemeral** — it dies whenever the device disconnects,
+  `flutter run` detaches, or USB/Wi-Fi debugging reconnects. Re-run it
+  before every device OAuth test; the symptom of a missing bridge is the
+  device browser failing to open `127.0.0.1:54321/auth/v1/callback`.
+- **Containers freeze `env(...)` at creation.** Changing `.env` or
+  `supabase/config.toml` does nothing until the stack is recreated with the
+  vars in the CLI's process environment:
+
+  ```bash
+  set -a; source .env; set +a
+  supabase stop && supabase start
+  ```
+
+  Verify what the running auth server actually advertises:
+  `docker inspect supabase_auth_encueypay | grep GOOGLE_REDIRECT_URI`.
+- **`[api] external_url` is not a real config field** (CLI 2.114) — the
+  Google-facing callback is overridden via
+  `[auth.external.google].redirect_uri` only.
+- If the dev machine's LAN IP changes (new network/DHCP), update
+  `.env`'s `SUPABASE_URL` **and** `android/app/src/main/res/xml/
+  network_security_config.xml`, then run the restart ritual above.
+
 ## Auth setup (dashboard)
 
 - **Google OAuth** is the primary sign-in method (DEPS-04): enable the

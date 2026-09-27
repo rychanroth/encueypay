@@ -1,6 +1,6 @@
 # Architecture Contract
 
-**Version:** 2.0.0 · **Status:** Ratified (2026-09-24) · **Owner:** Project maintainer
+**Version:** 2.1.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
 **Audience:** Every AI agent and human contributor modifying this codebase.
 
 This document is the single source of truth for how code is structured in this project.
@@ -161,7 +161,12 @@ another feature; shared code duplicated into two features instead of promoted to
 - **ROUTE-07 (Riverpod ↔ GoRouter bridge).** The router is built in `appRouterProvider`
   (a manual `Provider`). Auth-driven refresh uses a `ValueNotifier` fed by `ref.listen`
   — because a provider body does not re-run like a widget build, the listener is what
-  pushes state changes into GoRouter's `refreshListenable`.
+  pushes state changes into GoRouter's `refreshListenable`. The provider body MUST NOT
+  watch the full auth state — initialize the notifier with `ref.read`. Watching it
+  would rebuild the provider, recreating the GoRouter on every session transition and
+  stranding navigation mid-flow (observed: the OAuth deep-link return landed on a
+  stale login route). The GoRouter is recreated **only** when the active role changes,
+  via a `select` on the role.
 
 - **ROUTE-08 (Composition root).** `core/router` MAY import feature screens — the single
   exception to ARCH-05.
@@ -170,15 +175,21 @@ another feature; shared code duplicated into two features instead of promoted to
   `core/presentation`.
 
 - **ROUTE-10 (Auth redirect pattern).** Redirect logic follows the canonical shape:
-  return `null` while the initial auth state is loading; unauthenticated user on any
-  non-login route → login; authenticated user on login → default tab.
+  while the initial auth state is loading, return `null` **only for locations that
+  match a route** — unmatched locations redirect to login (the bare root `/` and the
+  OAuth deep-link landing both normalize to matchedLocation `/` in go_router: a
+  custom-scheme URI's host is not part of the path, so `io.supabase.<app>://login-callback/`
+  parses to `/`); unauthenticated user on any non-login route → login; authenticated
+  user on login **or on the deep-link landing (`/`)** → default tab.
 
 **Canonical — Riverpod → GoRouter bridge:**
 
 ```dart
 final appRouterProvider = Provider<GoRouter>((ref) {
+  // ref.read, never ref.watch: a watch on the full auth state would rebuild
+  // this provider — recreating the GoRouter — on every session transition.
   final refreshListenable =
-      ValueNotifier<AsyncValue<AuthState>>(ref.watch(authControllerProvider));
+      ValueNotifier<AsyncValue<AuthState>>(ref.read(authControllerProvider));
 
   // Bridge Riverpod state to GoRouter's Listenable API
   // (no re-run happens here like in a Widget class).
@@ -191,14 +202,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final authAsync = ref.read(authControllerProvider);
-      if (authAsync.isLoading) return null; // don't redirect while checking session
+      if (authAsync.isLoading) {
+        // While loading, hold only unmatched locations (the bare root and the
+        // OAuth deep-link landing — both normalize to `/`) on login; deep
+        // links into real routes pass through.
+        return state.matchedLocation == '/'
+            ? state.namedLocation(AppRoutes.login)
+            : null;
+      }
 
       final isAuthenticated = authAsync.value?.session != null;
       final isLoggingIn = state.matchedLocation == '/login';
       if (!isAuthenticated && !isLoggingIn) {
         return state.namedLocation(AppRoutes.login);
       }
-      if (isAuthenticated && isLoggingIn) {
+      if (isAuthenticated && (isLoggingIn || state.matchedLocation == '/')) {
         return state.namedLocation(AppRoutes.catalog);
       }
       return null;
@@ -209,7 +227,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 **Anti-patterns:** navigating with `context.go('/catalog')`; declaring a route name
 inline; putting a branch in `app_router.dart` instead of its own file; reordering
-branches without reordering `NavigationDestination`s.
+branches without reordering `NavigationDestination`s; watching the full auth state
+inside `appRouterProvider` (recreates the GoRouter on every session change —
+session updates flow through `ref.listen` only).
 
 ---
 
