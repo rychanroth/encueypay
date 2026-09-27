@@ -22,8 +22,12 @@ import 'presentation/app_shell.dart';
 /// `core/router` is the composition root — the one place allowed to import
 /// feature code (ROUTE-08, exception to ARCH-05).
 final appRouterProvider = Provider<GoRouter>((ref) {
+  // Read (not watch) the initial value: watching the full auth state here
+  // would rebuild this provider — and recreate the GoRouter — on every
+  // session transition, stranding navigation mid-OAuth. Session-level
+  // changes flow through the listen below (ROUTE-10).
   final refreshListenable =
-      ValueNotifier<AsyncValue<AppUser?>>(ref.watch(authControllerProvider));
+      ValueNotifier<AsyncValue<AppUser?>>(ref.read(authControllerProvider));
 
   ref.listen<AsyncValue<AppUser?>>(authControllerProvider, (prev, next) {
     refreshListenable.value = next;
@@ -41,7 +45,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final authAsync = ref.read(authControllerProvider);
-      if (authAsync.isLoading) return null; // don't redirect while checking session
+      if (authAsync.isLoading) {
+        // While the session resolves, hold unmatched locations (the bare root
+        // and the OAuth deep-link landing — both normalize to `/`) on the
+        // login route instead of letting go_router render NotFoundScreen.
+        // The redirect re-runs once auth resolves (ROUTE-10).
+        return state.matchedLocation == '/'
+            ? state.namedLocation(AppRoutes.login)
+            : null;
+      }
 
       final isAuthenticated = authAsync.value != null;
       final isLoggingIn = state.matchedLocation == '/login';

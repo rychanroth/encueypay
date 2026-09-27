@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../../features/auth/presentation/widgets/auth_error_snackbar.dart';
 import '../navigation_tabs.dart';
 
 /// Shell scaffold (ROUTE-06). Destinations derive from the same
@@ -21,6 +22,11 @@ class AppShell extends ConsumerWidget {
       ),
     );
     final tabs = tabsForRole(role);
+
+    // Signed-in-phase session failures (e.g. profile fetch on token refresh).
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.hasError) showAuthStreamError(context, next.error);
+    });
 
     return Scaffold(
       body: navigationShell,

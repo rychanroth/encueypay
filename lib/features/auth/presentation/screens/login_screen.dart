@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../controllers/auth_controller.dart';
 import '../controllers/login_controller.dart';
+import '../widgets/auth_error_snackbar.dart';
 
 /// Full-screen auth overlay — declared outside the shell (ROUTE-03).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -67,6 +69,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(error.message)));
       }
+    });
+
+    // The session stream runs through here on the way to the login redirect
+    // — surface its failures too (e.g. a failed profile fetch after OAuth).
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.hasError) showAuthStreamError(context, next.error);
     });
 
     return Scaffold(
