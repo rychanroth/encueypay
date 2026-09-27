@@ -99,24 +99,42 @@ class _Dashboard extends ConsumerWidget {
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  profile.name,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: theme.colorScheme.surfaceVariant,
+                  backgroundImage: profile.imageUrl != null && profile.imageUrl!.isNotEmpty
+                      ? NetworkImage(profile.imageUrl!)
+                      : null,
+                  child: profile.imageUrl == null || profile.imageUrl!.isEmpty
+                      ? const Icon(Icons.person, size: 32)
+                      : null,
                 ),
-                if (profile.description.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(profile.description),
-                  ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => _editProfile(context, ref),
-                    child: const Text('Edit'),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profile.name,
+                        style: theme.textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      if (profile.description.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(profile.description),
+                        ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => _editProfile(context, ref),
+                          child: const Text('Edit'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
