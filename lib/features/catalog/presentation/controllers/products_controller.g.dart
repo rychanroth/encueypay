@@ -60,7 +60,7 @@ final class ProductsControllerProvider
 }
 
 String _$productsControllerHash() =>
-    r'8774f6c02827e4195c169909d560dc76d93aeb34';
+    r'eec0a23630f33c9557cd678560ed51ca338e666d';
 
 /// Product discovery with server-side search/filter/sort and offset
 /// pagination. The controller instance is keyed by the INITIAL route

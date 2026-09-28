@@ -32,7 +32,9 @@ class CatalogRepositoryImpl implements ICatalogRepository {
 
   final SupabaseClient _client;
 
-  static const _imageSelect = 'product_images(storage_path)';
+  // `*` is required: an embed-only select makes PostgREST omit the product's
+  // own columns, which then fail ProductDto.fromJson's required fields.
+  static const _imageSelect = '*, product_images(storage_path)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
   /// resolved here in the data layer — never in the UI.

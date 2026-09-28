@@ -1,1 +1,1 @@
-select * from public.users;
+select * from products;

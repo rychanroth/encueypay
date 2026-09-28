@@ -37,26 +37,37 @@ class ProductsController extends _$ProductsController {
     );
   }
 
-  Future<void> setQuery(String query) => _resetWith(query: query);
+  Future<void> setQuery(String query) =>
+      _reset(query: query, categoryId: _base.categoryId, sort: _base.sort);
 
+  /// Passing null clears the category filter — the "All" chip.
   Future<void> setCategory(String? categoryId) =>
-      _resetWith(categoryId: categoryId);
+      _reset(query: _base.query, categoryId: categoryId, sort: _base.sort);
 
-  Future<void> setSort(ProductSort sort) => _resetWith(sort: sort);
+  Future<void> setSort(ProductSort sort) =>
+      _reset(query: _base.query, categoryId: _base.categoryId, sort: sort);
 
-  /// Re-fetch from page 0 with the new filter set.
-  Future<void> _resetWith({
-    String? query,
-    String? categoryId,
-    ProductSort? sort,
+  /// Filters as of the last completed fetch, or the route-seeded defaults.
+  /// [state.value] is null while the initial fetch is in flight and after an
+  /// error — falling back to the build seed keeps the chips responsive in
+  /// both cases instead of silently dropping taps.
+  ProductListState get _base =>
+      state.value ??
+      ProductListState.initial(categoryId: categoryId, query: query);
+
+  /// Re-fetch page 0 with a fully-resolved filter set. Parameters are the NEW
+  /// values for every filter — a null [categoryId] here means "no category",
+  /// never "keep the current one".
+  Future<void> _reset({
+    required String? query,
+    required String? categoryId,
+    required ProductSort sort,
   }) async {
-    final current = state.value;
-    if (current == null) return;
     state = await AsyncValue.guard(
       () => _fetch(ProductListState.initial(
-        query: query ?? current.query,
-        categoryId: categoryId ?? current.categoryId,
-        sort: sort ?? current.sort,
+        query: query,
+        categoryId: categoryId,
+        sort: sort,
       )),
     );
   }
