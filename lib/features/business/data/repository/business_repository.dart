@@ -56,6 +56,20 @@ abstract interface class IBusinessRepository {
 
   Future<void> updateVariantStock({required String variantId, required int stock});
 
+  /// Uploads the file to the product_images bucket and registers a row —
+  /// display order is server-computed (append) (§48).
+  Future<BusinessProductImage> addProductImage({
+    required String productId,
+    required String filePath,
+    required String fileName,
+  });
+
+  /// Deletes the image row, then best-effort removes the storage object.
+  Future<void> removeProductImage({
+    required String imageId,
+    required String storagePath,
+  });
+
   Future<List<ManagedBusinessOrder>> fetchMyBusinessOrders();
 
   Future<void> transitionBusinessOrder({

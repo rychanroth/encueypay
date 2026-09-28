@@ -38,15 +38,17 @@ class WishlistRepositoryImpl implements IWishlistRepository {
           .from('wishlist_items')
           .select(
             'id, product_id, products(name, base_price_minor, '
-            'product_images(storage_path))',
+            'product_images(storage_path, sort_order))',
           )
           .eq('wishlist_id', wishlist['id'] as String)
           .order('created_at', ascending: false);
 
       return rows.map((row) {
         final dto = WishlistItemDto.fromJson(row);
-        final storagePath =
-            dto.products?.productImages.firstOrNull?.storagePath;
+        // Thumbnail must match the product page's first (lowest sort_order).
+        final images = [...dto.products?.productImages ?? const []]
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        final storagePath = images.firstOrNull?.storagePath;
         return dto.toDomain(
           imageUrl:
               storagePath == null ? null : _publicUrl(storagePath),

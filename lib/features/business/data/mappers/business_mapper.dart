@@ -12,23 +12,36 @@ extension BusinessProfileDtoX on BusinessProfileDto {
 }
 
 extension BusinessProductDtoX on BusinessProductDto {
-  BusinessProduct toDomain() => BusinessProduct(
-        id: id,
-        categoryId: categoryId,
-        name: name,
-        description: description,
-        basePriceMinor: basePriceMinor,
-        stock: stock,
-        archived: status == 'archived',
-        variants: productVariants
-            .map((v) => ManagementVariant(
-                  id: v.id,
-                  name: v.name,
-                  priceMinor: v.priceMinor,
-                  stock: v.stock,
-                ))
-            .toList(),
-      );
+  /// [resolveUrl] turns a Storage reference into its public URL — supplied by
+  /// the repository (§48: URLs are resolved in the data layer only).
+  BusinessProduct toDomain({String Function(String storagePath)? resolveUrl}) {
+    final images = [...productImages]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return BusinessProduct(
+      id: id,
+      categoryId: categoryId,
+      name: name,
+      description: description,
+      basePriceMinor: basePriceMinor,
+      stock: stock,
+      archived: status == 'archived',
+      variants: productVariants
+          .map((v) => ManagementVariant(
+                id: v.id,
+                name: v.name,
+                priceMinor: v.priceMinor,
+                stock: v.stock,
+              ))
+          .toList(),
+      images: images
+          .map((i) => BusinessProductImage(
+                id: i.id,
+                storagePath: i.storagePath,
+                url: resolveUrl?.call(i.storagePath) ?? '',
+              ))
+          .toList(),
+    );
+  }
 }
 
 extension CategoryOptionDtoX on CategoryOptionDto {

@@ -19,10 +19,12 @@ class BusinessProductsController extends _$BusinessProductsController {
     required int basePriceMinor,
     required int stock,
     required List<VariantDraft> variants,
+    required List<ImagePickDraft> images,
   }) async {
     final current = state.value ?? const <BusinessProduct>[];
     state = await AsyncValue.guard(() async {
-      await ref.read(businessRepositoryProvider).createProduct(
+      final repository = ref.read(businessRepositoryProvider);
+      final productId = await repository.createProduct(
             categoryId: categoryId,
             name: name,
             description: description,
@@ -30,6 +32,16 @@ class BusinessProductsController extends _$BusinessProductsController {
             stock: stock,
             variants: variants,
           );
+      // If an image step fails after the product exists, the error surfaces
+      // via the guard; the product (and earlier images) persist and can be
+      // fixed through the edit form.
+      for (final image in images) {
+        await repository.addProductImage(
+          productId: productId,
+          filePath: image.filePath,
+          fileName: image.fileName,
+        );
+      }
       ref.invalidateSelf();
       return current;
     });
@@ -41,16 +53,32 @@ class BusinessProductsController extends _$BusinessProductsController {
     required String name,
     required String description,
     required int basePriceMinor,
+    required List<BusinessProductImage> removedImages,
+    required List<ImagePickDraft> newImages,
   }) async {
     final current = state.value ?? const <BusinessProduct>[];
     state = await AsyncValue.guard(() async {
-      await ref.read(businessRepositoryProvider).updateProduct(
+      final repository = ref.read(businessRepositoryProvider);
+      await repository.updateProduct(
             productId: productId,
             categoryId: categoryId,
             name: name,
             description: description,
             basePriceMinor: basePriceMinor,
           );
+      for (final image in removedImages) {
+        await repository.removeProductImage(
+          imageId: image.id,
+          storagePath: image.storagePath,
+        );
+      }
+      for (final image in newImages) {
+        await repository.addProductImage(
+          productId: productId,
+          filePath: image.filePath,
+          fileName: image.fileName,
+        );
+      }
       ref.invalidateSelf();
       return current;
     });

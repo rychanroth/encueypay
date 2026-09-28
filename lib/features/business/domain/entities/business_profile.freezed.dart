@@ -281,7 +281,7 @@ as String?,
 /// @nodoc
 mixin _$BusinessProduct {
 
- String get id; String get categoryId; String get name; String get description; int get basePriceMinor; int get stock; bool get archived; List<ManagementVariant> get variants;
+ String get id; String get categoryId; String get name; String get description; int get basePriceMinor; int get stock; bool get archived; List<ManagementVariant> get variants; List<BusinessProductImage> get images;
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -292,16 +292,16 @@ $BusinessProductCopyWith<BusinessProduct> get copyWith => _$BusinessProductCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other.variants, variants));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.images, images));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,stock,archived,const DeepCollectionEquality().hash(variants));
+int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,stock,archived,const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(images));
 
 @override
 String toString() {
-  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, archived: $archived, variants: $variants)';
+  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, archived: $archived, variants: $variants, images: $images)';
 }
 
 
@@ -312,7 +312,7 @@ abstract mixin class $BusinessProductCopyWith<$Res>  {
   factory $BusinessProductCopyWith(BusinessProduct value, $Res Function(BusinessProduct) _then) = _$BusinessProductCopyWithImpl;
 @useResult
 $Res call({
- String id, String categoryId, String name, String description, int basePriceMinor, int stock, bool archived, List<ManagementVariant> variants
+ String id, String categoryId, String name, String description, int basePriceMinor, int stock, bool archived, List<ManagementVariant> variants, List<BusinessProductImage> images
 });
 
 
@@ -329,7 +329,7 @@ class _$BusinessProductCopyWithImpl<$Res>
 
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? archived = null,Object? variants = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? archived = null,Object? variants = null,Object? images = null,}) {
   return _then(BusinessProduct(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
@@ -339,7 +339,8 @@ as String,basePriceMinor: null == basePriceMinor ? _self.basePriceMinor : basePr
 as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
 as int,archived: null == archived ? _self.archived : archived // ignore: cast_nullable_to_non_nullable
 as bool,variants: null == variants ? _self.variants : variants // ignore: cast_nullable_to_non_nullable
-as List<ManagementVariant>,
+as List<ManagementVariant>,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
+as List<BusinessProductImage>,
   ));
 }
 
@@ -424,10 +425,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BusinessProduct() when $default != null:
-return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants);case _:
+return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants,_that.images);case _:
   return orElse();
 
 }
@@ -445,10 +446,10 @@ return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.bas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)  $default,) {final _that = this;
 switch (_that) {
 case _BusinessProduct():
-return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants);case _:
+return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants,_that.images);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -465,10 +466,10 @@ return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.bas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)?  $default,) {final _that = this;
 switch (_that) {
 case _BusinessProduct() when $default != null:
-return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants);case _:
+return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants,_that.images);case _:
   return null;
 
 }
@@ -480,7 +481,7 @@ return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.bas
 
 
 class _BusinessProduct implements BusinessProduct {
-  const _BusinessProduct({required this.id, required this.categoryId, required this.name, this.description = '', required this.basePriceMinor, required this.stock, required this.archived, required  List<ManagementVariant> variants}): _variants = variants;
+  const _BusinessProduct({required this.id, required this.categoryId, required this.name, this.description = '', required this.basePriceMinor, required this.stock, required this.archived, required  List<ManagementVariant> variants,  List<BusinessProductImage> images = const []}): _variants = variants,_images = images;
   
 
 @override final  String id;
@@ -497,6 +498,13 @@ class _BusinessProduct implements BusinessProduct {
   return EqualUnmodifiableListView(_variants);
 }
 
+ final  List<BusinessProductImage> _images;
+@override@JsonKey() List<BusinessProductImage> get images {
+  if (_images is EqualUnmodifiableListView) return _images;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_images);
+}
+
 
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
@@ -508,16 +516,16 @@ _$BusinessProductCopyWith<_BusinessProduct> get copyWith => __$BusinessProductCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other._variants, _variants));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._images, _images));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,stock,archived,const DeepCollectionEquality().hash(_variants));
+int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,stock,archived,const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_images));
 
 @override
 String toString() {
-  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, archived: $archived, variants: $variants)';
+  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, archived: $archived, variants: $variants, images: $images)';
 }
 
 
@@ -528,7 +536,7 @@ abstract mixin class _$BusinessProductCopyWith<$Res> implements $BusinessProduct
   factory _$BusinessProductCopyWith(_BusinessProduct value, $Res Function(_BusinessProduct) _then) = __$BusinessProductCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String categoryId, String name, String description, int basePriceMinor, int stock, bool archived, List<ManagementVariant> variants
+ String id, String categoryId, String name, String description, int basePriceMinor, int stock, bool archived, List<ManagementVariant> variants, List<BusinessProductImage> images
 });
 
 
@@ -545,7 +553,7 @@ class __$BusinessProductCopyWithImpl<$Res>
 
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? archived = null,Object? variants = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? archived = null,Object? variants = null,Object? images = null,}) {
   return _then(_BusinessProduct(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
@@ -555,7 +563,531 @@ as String,basePriceMinor: null == basePriceMinor ? _self.basePriceMinor : basePr
 as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
 as int,archived: null == archived ? _self.archived : archived // ignore: cast_nullable_to_non_nullable
 as bool,variants: null == variants ? _self._variants : variants // ignore: cast_nullable_to_non_nullable
-as List<ManagementVariant>,
+as List<ManagementVariant>,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
+as List<BusinessProductImage>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$BusinessProductImage {
+
+ String get id; String get storagePath; String get url;
+/// Create a copy of BusinessProductImage
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BusinessProductImageCopyWith<BusinessProductImage> get copyWith => _$BusinessProductImageCopyWithImpl<BusinessProductImage>(this as BusinessProductImage, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BusinessProductImage&&(identical(other.id, id) || other.id == id)&&(identical(other.storagePath, storagePath) || other.storagePath == storagePath)&&(identical(other.url, url) || other.url == url));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,storagePath,url);
+
+@override
+String toString() {
+  return 'BusinessProductImage(id: $id, storagePath: $storagePath, url: $url)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BusinessProductImageCopyWith<$Res>  {
+  factory $BusinessProductImageCopyWith(BusinessProductImage value, $Res Function(BusinessProductImage) _then) = _$BusinessProductImageCopyWithImpl;
+@useResult
+$Res call({
+ String id, String storagePath, String url
+});
+
+
+
+
+}
+/// @nodoc
+class _$BusinessProductImageCopyWithImpl<$Res>
+    implements $BusinessProductImageCopyWith<$Res> {
+  _$BusinessProductImageCopyWithImpl(this._self, this._then);
+
+  final BusinessProductImage _self;
+  final $Res Function(BusinessProductImage) _then;
+
+/// Create a copy of BusinessProductImage
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? storagePath = null,Object? url = null,}) {
+  return _then(BusinessProductImage(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,storagePath: null == storagePath ? _self.storagePath : storagePath // ignore: cast_nullable_to_non_nullable
+as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [BusinessProductImage].
+extension BusinessProductImagePatterns on BusinessProductImage {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _BusinessProductImage value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _BusinessProductImage() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _BusinessProductImage value)  $default,){
+final _that = this;
+switch (_that) {
+case _BusinessProductImage():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _BusinessProductImage value)?  $default,){
+final _that = this;
+switch (_that) {
+case _BusinessProductImage() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String storagePath,  String url)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _BusinessProductImage() when $default != null:
+return $default(_that.id,_that.storagePath,_that.url);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String storagePath,  String url)  $default,) {final _that = this;
+switch (_that) {
+case _BusinessProductImage():
+return $default(_that.id,_that.storagePath,_that.url);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String storagePath,  String url)?  $default,) {final _that = this;
+switch (_that) {
+case _BusinessProductImage() when $default != null:
+return $default(_that.id,_that.storagePath,_that.url);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _BusinessProductImage implements BusinessProductImage {
+  const _BusinessProductImage({required this.id, required this.storagePath, required this.url});
+  
+
+@override final  String id;
+@override final  String storagePath;
+@override final  String url;
+
+/// Create a copy of BusinessProductImage
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$BusinessProductImageCopyWith<_BusinessProductImage> get copyWith => __$BusinessProductImageCopyWithImpl<_BusinessProductImage>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BusinessProductImage&&(identical(other.id, id) || other.id == id)&&(identical(other.storagePath, storagePath) || other.storagePath == storagePath)&&(identical(other.url, url) || other.url == url));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,storagePath,url);
+
+@override
+String toString() {
+  return 'BusinessProductImage(id: $id, storagePath: $storagePath, url: $url)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$BusinessProductImageCopyWith<$Res> implements $BusinessProductImageCopyWith<$Res> {
+  factory _$BusinessProductImageCopyWith(_BusinessProductImage value, $Res Function(_BusinessProductImage) _then) = __$BusinessProductImageCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String storagePath, String url
+});
+
+
+
+
+}
+/// @nodoc
+class __$BusinessProductImageCopyWithImpl<$Res>
+    implements _$BusinessProductImageCopyWith<$Res> {
+  __$BusinessProductImageCopyWithImpl(this._self, this._then);
+
+  final _BusinessProductImage _self;
+  final $Res Function(_BusinessProductImage) _then;
+
+/// Create a copy of BusinessProductImage
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? storagePath = null,Object? url = null,}) {
+  return _then(_BusinessProductImage(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,storagePath: null == storagePath ? _self.storagePath : storagePath // ignore: cast_nullable_to_non_nullable
+as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$ImagePickDraft {
+
+ String get filePath; String get fileName;
+/// Create a copy of ImagePickDraft
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ImagePickDraftCopyWith<ImagePickDraft> get copyWith => _$ImagePickDraftCopyWithImpl<ImagePickDraft>(this as ImagePickDraft, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImagePickDraft&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.fileName, fileName) || other.fileName == fileName));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,filePath,fileName);
+
+@override
+String toString() {
+  return 'ImagePickDraft(filePath: $filePath, fileName: $fileName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ImagePickDraftCopyWith<$Res>  {
+  factory $ImagePickDraftCopyWith(ImagePickDraft value, $Res Function(ImagePickDraft) _then) = _$ImagePickDraftCopyWithImpl;
+@useResult
+$Res call({
+ String filePath, String fileName
+});
+
+
+
+
+}
+/// @nodoc
+class _$ImagePickDraftCopyWithImpl<$Res>
+    implements $ImagePickDraftCopyWith<$Res> {
+  _$ImagePickDraftCopyWithImpl(this._self, this._then);
+
+  final ImagePickDraft _self;
+  final $Res Function(ImagePickDraft) _then;
+
+/// Create a copy of ImagePickDraft
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? filePath = null,Object? fileName = null,}) {
+  return _then(ImagePickDraft(
+filePath: null == filePath ? _self.filePath : filePath // ignore: cast_nullable_to_non_nullable
+as String,fileName: null == fileName ? _self.fileName : fileName // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ImagePickDraft].
+extension ImagePickDraftPatterns on ImagePickDraft {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ImagePickDraft value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ImagePickDraft() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ImagePickDraft value)  $default,){
+final _that = this;
+switch (_that) {
+case _ImagePickDraft():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ImagePickDraft value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ImagePickDraft() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String filePath,  String fileName)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ImagePickDraft() when $default != null:
+return $default(_that.filePath,_that.fileName);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String filePath,  String fileName)  $default,) {final _that = this;
+switch (_that) {
+case _ImagePickDraft():
+return $default(_that.filePath,_that.fileName);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String filePath,  String fileName)?  $default,) {final _that = this;
+switch (_that) {
+case _ImagePickDraft() when $default != null:
+return $default(_that.filePath,_that.fileName);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _ImagePickDraft implements ImagePickDraft {
+  const _ImagePickDraft({required this.filePath, required this.fileName});
+  
+
+@override final  String filePath;
+@override final  String fileName;
+
+/// Create a copy of ImagePickDraft
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ImagePickDraftCopyWith<_ImagePickDraft> get copyWith => __$ImagePickDraftCopyWithImpl<_ImagePickDraft>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImagePickDraft&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.fileName, fileName) || other.fileName == fileName));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,filePath,fileName);
+
+@override
+String toString() {
+  return 'ImagePickDraft(filePath: $filePath, fileName: $fileName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ImagePickDraftCopyWith<$Res> implements $ImagePickDraftCopyWith<$Res> {
+  factory _$ImagePickDraftCopyWith(_ImagePickDraft value, $Res Function(_ImagePickDraft) _then) = __$ImagePickDraftCopyWithImpl;
+@override @useResult
+$Res call({
+ String filePath, String fileName
+});
+
+
+
+
+}
+/// @nodoc
+class __$ImagePickDraftCopyWithImpl<$Res>
+    implements _$ImagePickDraftCopyWith<$Res> {
+  __$ImagePickDraftCopyWithImpl(this._self, this._then);
+
+  final _ImagePickDraft _self;
+  final $Res Function(_ImagePickDraft) _then;
+
+/// Create a copy of ImagePickDraft
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? filePath = null,Object? fileName = null,}) {
+  return _then(_ImagePickDraft(
+filePath: null == filePath ? _self.filePath : filePath // ignore: cast_nullable_to_non_nullable
+as String,fileName: null == fileName ? _self.fileName : fileName // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

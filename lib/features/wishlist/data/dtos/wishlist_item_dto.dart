@@ -46,12 +46,15 @@ class WishlistProductJoinDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class WishlistImageJoinDto {
-  const WishlistImageJoinDto({this.storagePath});
+  const WishlistImageJoinDto({this.storagePath, this.sortOrder = 0});
 
   factory WishlistImageJoinDto.fromJson(Map<String, dynamic> json) =>
       _$WishlistImageJoinDtoFromJson(json);
 
   final String? storagePath;
+
+  @JsonKey(defaultValue: 0)
+  final int sortOrder;
 
   Map<String, dynamic> toJson() => _$WishlistImageJoinDtoToJson(this);
 }

@@ -22,23 +22,27 @@ Map<String, dynamic> _$BusinessProfileDtoToJson(BusinessProfileDto instance) =>
       'image_url': instance.imageUrl,
     };
 
-BusinessProductDto _$BusinessProductDtoFromJson(Map<String, dynamic> json) =>
-    BusinessProductDto(
-      id: json['id'] as String,
-      categoryId: json['category_id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      basePriceMinor: (json['base_price_minor'] as num).toInt(),
-      stock: (json['stock'] as num).toInt(),
-      status: json['status'] as String?,
-      productVariants:
-          (json['product_variants'] as List<dynamic>?)
-              ?.map(
-                (e) => ManagementVariantDto.fromJson(e as Map<String, dynamic>),
-              )
-              .toList() ??
-          [],
-    );
+BusinessProductDto _$BusinessProductDtoFromJson(
+  Map<String, dynamic> json,
+) => BusinessProductDto(
+  id: json['id'] as String,
+  categoryId: json['category_id'] as String,
+  name: json['name'] as String,
+  description: json['description'] as String,
+  basePriceMinor: (json['base_price_minor'] as num).toInt(),
+  stock: (json['stock'] as num).toInt(),
+  status: json['status'] as String?,
+  productVariants:
+      (json['product_variants'] as List<dynamic>?)
+          ?.map((e) => ManagementVariantDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
+  productImages:
+      (json['product_images'] as List<dynamic>?)
+          ?.map((e) => ProductImageRowDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
+);
 
 Map<String, dynamic> _$BusinessProductDtoToJson(BusinessProductDto instance) =>
     <String, dynamic>{
@@ -50,6 +54,21 @@ Map<String, dynamic> _$BusinessProductDtoToJson(BusinessProductDto instance) =>
       'stock': instance.stock,
       'status': instance.status,
       'product_variants': instance.productVariants,
+      'product_images': instance.productImages,
+    };
+
+ProductImageRowDto _$ProductImageRowDtoFromJson(Map<String, dynamic> json) =>
+    ProductImageRowDto(
+      id: json['id'] as String,
+      storagePath: json['storage_path'] as String,
+      sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$ProductImageRowDtoToJson(ProductImageRowDto instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'storage_path': instance.storagePath,
+      'sort_order': instance.sortOrder,
     };
 
 ManagementVariantDto _$ManagementVariantDtoFromJson(

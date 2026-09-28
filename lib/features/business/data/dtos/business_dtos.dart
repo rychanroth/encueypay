@@ -35,6 +35,7 @@ class BusinessProductDto {
     required this.stock,
     this.status,
     this.productVariants = const [],
+    this.productImages = const [],
   });
 
   factory BusinessProductDto.fromJson(Map<String, dynamic> json) =>
@@ -51,7 +52,31 @@ class BusinessProductDto {
   @JsonKey(name: 'product_variants', defaultValue: [])
   final List<ManagementVariantDto> productVariants;
 
+  @JsonKey(name: 'product_images', defaultValue: [])
+  final List<ProductImageRowDto> productImages;
+
   Map<String, dynamic> toJson() => _$BusinessProductDtoToJson(this);
+}
+
+/// Wire shape of an embedded `product_images` row for the owner portal.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ProductImageRowDto {
+  const ProductImageRowDto({
+    required this.id,
+    required this.storagePath,
+    this.sortOrder = 0,
+  });
+
+  factory ProductImageRowDto.fromJson(Map<String, dynamic> json) =>
+      _$ProductImageRowDtoFromJson(json);
+
+  final String id;
+  final String storagePath;
+
+  @JsonKey(defaultValue: 0)
+  final int sortOrder;
+
+  Map<String, dynamic> toJson() => _$ProductImageRowDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

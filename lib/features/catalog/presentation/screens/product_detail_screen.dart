@@ -256,14 +256,22 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 }
 
-class _ImagePager extends StatelessWidget {
+class _ImagePager extends StatefulWidget {
   const _ImagePager({required this.imageUrls});
 
   final List<String> imageUrls;
 
   @override
+  State<_ImagePager> createState() => _ImagePagerState();
+}
+
+class _ImagePagerState extends State<_ImagePager> {
+  int _page = 0;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final imageUrls = widget.imageUrls;
     if (imageUrls.isEmpty) {
       return Container(
         height: 260,
@@ -274,17 +282,46 @@ class _ImagePager extends StatelessWidget {
     }
     return SizedBox(
       height: 260,
-      child: PageView.builder(
-        itemCount: imageUrls.length,
-        itemBuilder: (context, index) => Image.network(
-          imageUrls[index],
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => ColoredBox(
-            color: theme.colorScheme.surfaceContainerHighest,
-            child: Icon(Icons.image_outlined,
-                size: 56, color: theme.colorScheme.outline),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          PageView.builder(
+            itemCount: imageUrls.length,
+            onPageChanged: (index) => setState(() => _page = index),
+            itemBuilder: (context, index) => Image.network(
+              imageUrls[index],
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => ColoredBox(
+                color: theme.colorScheme.surfaceContainerHighest,
+                child: Icon(Icons.image_outlined,
+                    size: 56, color: theme.colorScheme.outline),
+              ),
+            ),
           ),
-        ),
+          if (imageUrls.length > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 12,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < imageUrls.length; i++)
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: i == _page
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceContainerHighest,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

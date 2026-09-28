@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../../../core/domain/money.dart';
 import '../../domain/entities/business_profile.dart';
 import '../controllers/business_categories_provider.dart';
 import '../controllers/business_products_controller.dart';
+import '../widgets/product_image_strip.dart';
 
 /// Create (product == null) or edit a product. Variants are defined at
 /// creation; afterwards stock is corrected per variant (spec §7).
@@ -22,12 +24,17 @@ class BusinessProductFormScreen extends ConsumerStatefulWidget {
 
 class _BusinessProductFormScreenState
     extends ConsumerState<BusinessProductFormScreen> {
+  static const _maxImages = 10;
+
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
   String? _categoryId;
   final _variantDrafts = <VariantDraft>[];
+  final _initialImages = <BusinessProductImage>[];
+  final _images = <BusinessProductImage>[];
+  final _imageDrafts = <ImagePickDraft>[];
 
   @override
   void initState() {
@@ -39,6 +46,8 @@ class _BusinessProductFormScreenState
       _priceController.text = Money(product.basePriceMinor).format();
       _stockController.text = '${product.stock}';
       _categoryId = product.categoryId;
+      _initialImages.addAll(product.images);
+      _images.addAll(product.images);
     }
   }
 
@@ -57,6 +66,24 @@ class _BusinessProductFormScreenState
     } on FormatException {
       return null;
     }
+  }
+
+  Future<void> _pickImage() async {
+    final file = await FilePicker.pickFile(type: FileType.image);
+    if (!mounted) return;
+    if (file == null || file.path == null) return;
+    if (_images.length + _imageDrafts.length >= _maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Up to $_maxImages images per product')),
+      );
+      return;
+    }
+    setState(() {
+      _imageDrafts.add(ImagePickDraft(
+        filePath: file.path!,
+        fileName: file.name,
+      ));
+    });
   }
 
   Future<void> _save() async {
@@ -79,14 +106,19 @@ class _BusinessProductFormScreenState
         basePriceMinor: price,
         stock: stock,
         variants: List.of(_variantDrafts),
+        images: List.of(_imageDrafts),
       );
     } else {
+      final removedImages =
+          _initialImages.where((image) => !_images.contains(image)).toList();
       await controller.updateProduct(
         productId: product.id,
         categoryId: categoryId,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         basePriceMinor: price,
+        removedImages: removedImages,
+        newImages: List.of(_imageDrafts),
       );
     }
     final hasError = ref.read(businessProductsControllerProvider).hasError;
@@ -233,6 +265,19 @@ class _BusinessProductFormScreenState
             controller: _descriptionController,
             decoration: const InputDecoration(labelText: 'Description'),
             maxLines: 3,
+          ),
+          const SizedBox(height: 16),
+          Text('Images', style: theme.textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          ProductImageStrip(
+            existingImages: _images,
+            newDrafts: _imageDrafts,
+            canAdd: _images.length + _imageDrafts.length < _maxImages,
+            onAdd: _pickImage,
+            onRemoveExisting: (image) =>
+                setState(() => _images.remove(image)),
+            onRemoveNew: (draft) => setState(() => _imageDrafts.remove(draft)),
           ),
           const SizedBox(height: 12),
           TextField(

@@ -13,7 +13,6 @@ import '../../domain/entities/product_sort.dart';
 import '../dtos/business_dto.dart';
 import '../dtos/category_dto.dart';
 import '../dtos/product_dto.dart';
-import '../dtos/product_image_ref_dto.dart';
 import '../dtos/product_review_join_dto.dart';
 import '../dtos/product_variant_dto.dart';
 import '../mappers/business_mapper.dart';
@@ -34,7 +33,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
 
   // `*` is required: an embed-only select makes PostgREST omit the product's
   // own columns, which then fail ProductDto.fromJson's required fields.
-  static const _imageSelect = '*, product_images(storage_path)';
+  static const _imageSelect = '*, product_images(storage_path, sort_order)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
   /// resolved here in the data layer — never in the UI.
@@ -43,8 +42,11 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   }
 
   List<String> _resolveUrls(ProductDto dto) {
-    return dto.productImages
-        .whereType<ProductImageRefDto>()
+    // Display order comes from sort_order (server-assigned); ties keep the
+    // embed's own order.
+    final images = [...dto.productImages]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return images
         .map((image) => image.storagePath)
         .whereType<String>()
         .map(_publicUrl)

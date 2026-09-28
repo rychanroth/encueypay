@@ -72,10 +72,16 @@ Map<String, dynamic> _$CartProductJoinDtoToJson(CartProductJoinDto instance) =>
     };
 
 CartImageJoinDto _$CartImageJoinDtoFromJson(Map<String, dynamic> json) =>
-    CartImageJoinDto(storagePath: json['storage_path'] as String?);
+    CartImageJoinDto(
+      storagePath: json['storage_path'] as String?,
+      sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+    );
 
 Map<String, dynamic> _$CartImageJoinDtoToJson(CartImageJoinDto instance) =>
-    <String, dynamic>{'storage_path': instance.storagePath};
+    <String, dynamic>{
+      'storage_path': instance.storagePath,
+      'sort_order': instance.sortOrder,
+    };
 
 CartBusinessJoinDto _$CartBusinessJoinDtoFromJson(Map<String, dynamic> json) =>
     CartBusinessJoinDto(

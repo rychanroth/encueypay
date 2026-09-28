@@ -78,12 +78,15 @@ class CartProductJoinDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CartImageJoinDto {
-  const CartImageJoinDto({this.storagePath});
+  const CartImageJoinDto({this.storagePath, this.sortOrder = 0});
 
   factory CartImageJoinDto.fromJson(Map<String, dynamic> json) =>
       _$CartImageJoinDtoFromJson(json);
 
   final String? storagePath;
+
+  @JsonKey(defaultValue: 0)
+  final int sortOrder;
 
   Map<String, dynamic> toJson() => _$CartImageJoinDtoToJson(this);
 }

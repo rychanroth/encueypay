@@ -59,8 +59,26 @@ class BusinessProductsScreen extends ConsumerWidget {
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
+                final thumbnail = product.images.isEmpty
+                    ? null
+                    : product.images.first.url;
                 return Card(
                   child: ListTile(
+                    leading: thumbnail == null
+                        ? const Icon(Icons.image_outlined)
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: Image.network(
+                                thumbnail,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    const Icon(Icons.image_outlined),
+                              ),
+                            ),
+                          ),
                     title: Text(
                       product.name,
                       style: TextStyle(

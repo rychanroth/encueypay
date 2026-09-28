@@ -28,7 +28,29 @@ abstract class BusinessProduct with _$BusinessProduct {
     required int stock,
     required bool archived,
     required List<ManagementVariant> variants,
+    @Default([]) List<BusinessProductImage> images,
   }) = _BusinessProduct;
+}
+
+/// An uploaded product image (spec §48): the Storage reference plus its
+/// public URL, both resolved in the data layer. Variants never carry their
+/// own images.
+@freezed
+abstract class BusinessProductImage with _$BusinessProductImage {
+  const factory BusinessProductImage({
+    required String id,
+    required String storagePath,
+    required String url,
+  }) = _BusinessProductImage;
+}
+
+/// A freshly picked image file awaiting upload on save.
+@freezed
+abstract class ImagePickDraft with _$ImagePickDraft {
+  const factory ImagePickDraft({
+    required String filePath,
+    required String fileName,
+  }) = _ImagePickDraft;
 }
 
 @freezed

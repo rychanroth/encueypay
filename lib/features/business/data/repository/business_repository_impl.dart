@@ -169,17 +169,85 @@ class BusinessRepositoryImpl implements IBusinessRepository {
           .from('products')
           .select(
             'id, category_id, name, description, base_price_minor, stock, status, '
-            'product_variants(id, name, price_minor, stock)',
+            'product_variants(id, name, price_minor, stock), '
+            'product_images(id, storage_path, sort_order)',
           )
           .order('created_at', ascending: false);
-      return rows
-          .map(BusinessProductDto.fromJson)
-          .map((dto) => dto.toDomain())
-          .toList();
+      return rows.map(BusinessProductDto.fromJson).map((dto) {
+        return dto.toDomain(resolveUrl: _productImageUrl);
+      }).toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();
+    }
+  }
+
+  String _productImageUrl(String storagePath) {
+    return _client.storage.from('product_images').getPublicUrl(storagePath);
+  }
+
+  @override
+  Future<BusinessProductImage> addProductImage({
+    required String productId,
+    required String filePath,
+    required String fileName,
+  }) async {
+    try {
+      // The storage path's first segment must be this product's business id —
+      // that's what product_images_owner_write enforces on storage.objects.
+      final row = await _client
+          .from('products')
+          .select('business_id')
+          .eq('id', productId)
+          .maybeSingle();
+      final businessId = row?['business_id'] as String?;
+      if (businessId == null) {
+        throw const ServerFailure('Product not found');
+      }
+      final bytes = await File(filePath).readAsBytes();
+      final path = '$businessId/'
+          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      await _client.storage.from('product_images').uploadBinary(path, bytes);
+      final imageId = await _client.rpc('add_product_image', params: {
+        'p_product_id': productId,
+        'p_storage_path': path,
+      }) as String;
+      return BusinessProductImage(
+        id: imageId,
+        storagePath: path,
+        url: _productImageUrl(path),
+      );
+    } on ServerFailure {
+      rethrow;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } on StorageException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> removeProductImage({
+    required String imageId,
+    required String storagePath,
+  }) async {
+    try {
+      await _client.from('product_images').delete().eq('id', imageId);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+    // The reference is gone — the binary is cleaned up best-effort. An
+    // orphaned public object is harmless, so storage failures don't fail
+    // the removal.
+    try {
+      await _client.storage.from('product_images').remove([storagePath]);
+    } on StorageException {
+      // ignored (§48: the DB reference is authoritative)
     }
   }
 

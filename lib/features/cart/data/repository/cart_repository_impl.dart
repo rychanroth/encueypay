@@ -39,15 +39,18 @@ class CartRepositoryImpl implements ICartRepository {
           .select(
             'id, quantity, product_variants(id, name, price_minor, stock, '
             'products(id, name, base_price_minor, '
-            'product_images(storage_path), businesses(id, name)))',
+            'product_images(storage_path, sort_order), businesses(id, name)))',
           )
           .eq('cart_id', cart['id'] as String)
           .order('created_at');
 
       return rows.map((row) {
         final dto = CartItemDto.fromJson(row);
-        final storagePath =
-            dto.productVariants?.products?.productImages.firstOrNull?.storagePath;
+        // Thumbnail must match the product page's first (lowest sort_order).
+        final images = [
+          ...dto.productVariants?.products?.productImages ?? const <CartImageJoinDto>[],
+        ]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        final storagePath = images.firstOrNull?.storagePath;
         final imageUrl =
             storagePath == null ? null : _publicUrl(storagePath);
         return dto.toDomain(imageUrl: imageUrl);
