@@ -340,6 +340,25 @@ class BusinessRepositoryImpl implements IBusinessRepository {
   }
 
   @override
+  Future<void> updateProductVariant({
+    required String variantId,
+    required String name,
+    required int? priceMinor,
+  }) async {
+    try {
+      await _client.rpc('update_product_variant', params: {
+        'p_variant_id': variantId,
+        'p_name': name,
+        'p_price_minor': priceMinor,
+      });
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<void> updateVariantImage({
     required String variantId,
     required String filePath,

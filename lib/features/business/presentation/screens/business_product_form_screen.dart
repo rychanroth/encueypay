@@ -150,14 +150,20 @@ class _BusinessProductFormScreenState
     if (!hasError && mounted) context.pop();
   }
 
-  /// Name + optional price prompt shared by the create and edit flows.
-  Future<(String, int?)?> _promptVariant() {
-    final nameController = TextEditingController();
-    final priceController = TextEditingController();
+  /// Name + optional price prompt shared by the create, add and edit flows.
+  Future<(String, int?)?> _promptVariant({
+    String title = 'Add variant',
+    String initialName = '',
+    int? initialPriceMinor,
+  }) {
+    final nameController = TextEditingController(text: initialName);
+    final priceController = TextEditingController(
+      text: initialPriceMinor == null ? '' : Money(initialPriceMinor).format(),
+    );
     return showDialog<(String, int?)>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Add variant'),
+        title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -209,6 +215,24 @@ class _BusinessProductFormScreenState
 
   /// Edit flow: the variant is created server-side immediately; on success
   /// the form pops back to the refetched list (same as variant image ops).
+  /// Edit flow: the variant is renamed/repriced server-side immediately; on
+  /// success the form pops back to the refetched list.
+  Future<void> _editVariant(ManagementVariant variant) async {
+    final draft = await _promptVariant(
+      title: 'Edit variant',
+      initialName: variant.name,
+      initialPriceMinor: variant.priceMinor,
+    );
+    if (draft == null || !mounted) return;
+    await ref.read(businessProductsControllerProvider.notifier).updateVariant(
+          variantId: variant.id,
+          name: draft.$1,
+          priceMinor: draft.$2,
+        );
+    final hasError = ref.read(businessProductsControllerProvider).hasError;
+    if (!hasError && mounted) context.pop();
+  }
+
   Future<void> _addVariantToProduct() async {
     final product = widget.product;
     if (product == null) return;
@@ -330,6 +354,7 @@ class _BusinessProductFormScreenState
             for (final variant in widget.product!.variants)
               ListTile(
                 dense: true,
+                onTap: () => _editVariant(variant),
                 leading: variant.imageUrl != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),

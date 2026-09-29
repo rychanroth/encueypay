@@ -115,6 +115,25 @@ class BusinessProductsController extends _$BusinessProductsController {
     });
   }
 
+  /// Renames/reprices an existing variant and refreshes the list. A failure
+  /// surfaces through the guard (e.g. duplicate variant name).
+  Future<void> updateVariant({
+    required String variantId,
+    required String name,
+    required int? priceMinor,
+  }) async {
+    final current = state.value ?? const <BusinessProduct>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(businessRepositoryProvider).updateProductVariant(
+            variantId: variantId,
+            name: name,
+            priceMinor: priceMinor,
+          );
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
   /// Replaces a variant's image (or clears it) and refreshes the list. A
   /// failure surfaces through the guard; the previous image stays if the
   /// swap itself failed.

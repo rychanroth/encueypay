@@ -61,6 +61,14 @@ abstract interface class IBusinessRepository {
     required int? priceMinor,
   });
 
+  /// Renames/reprices an existing variant; duplicate names (excluding the
+  /// edited variant) are rejected server-side.
+  Future<void> updateProductVariant({
+    required String variantId,
+    required String name,
+    required int? priceMinor,
+  });
+
   /// Uploads the file and sets it as the variant's image (§48); the replaced
   /// object is removed best-effort. Null image → clears the reference.
   Future<void> updateVariantImage({
