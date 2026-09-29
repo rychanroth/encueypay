@@ -65,11 +65,11 @@ BusinessOrderJoinDto _$BusinessOrderJoinDtoFromJson(
           ?.map((e) => OrderItemJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
-  pickupStops:
-      (json['pickup_stops'] as List<dynamic>?)
-          ?.map((e) => PickupStopJoinDto.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      [],
+  pickupStops: json['pickup_stops'] == null
+      ? null
+      : PickupStopJoinDto.fromJson(
+          json['pickup_stops'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$BusinessOrderJoinDtoToJson(

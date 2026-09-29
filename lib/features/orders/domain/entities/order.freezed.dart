@@ -365,7 +365,7 @@ $OrderDeliveryCopyWith<$Res>? get delivery {
 /// @nodoc
 mixin _$OrderBusinessPart {
 
- String get id; String get businessId; String get businessName; BusinessOrderStatus get status; List<OrderItemSnapshot> get items; List<PickupStopInfo> get pickupStops; String? get rejectionReason;
+ String get id; String get businessId; String get businessName; BusinessOrderStatus get status; List<OrderItemSnapshot> get items; PickupStopInfo? get pickupStop; String? get rejectionReason;
 /// Create a copy of OrderBusinessPart
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -376,16 +376,16 @@ $OrderBusinessPartCopyWith<OrderBusinessPart> get copyWith => _$OrderBusinessPar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderBusinessPart&&(identical(other.id, id) || other.id == id)&&(identical(other.businessId, businessId) || other.businessId == businessId)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.pickupStops, pickupStops)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderBusinessPart&&(identical(other.id, id) || other.id == id)&&(identical(other.businessId, businessId) || other.businessId == businessId)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.pickupStop, pickupStop) || other.pickupStop == pickupStop)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,businessId,businessName,status,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(pickupStops),rejectionReason);
+int get hashCode => Object.hash(runtimeType,id,businessId,businessName,status,const DeepCollectionEquality().hash(items),pickupStop,rejectionReason);
 
 @override
 String toString() {
-  return 'OrderBusinessPart(id: $id, businessId: $businessId, businessName: $businessName, status: $status, items: $items, pickupStops: $pickupStops, rejectionReason: $rejectionReason)';
+  return 'OrderBusinessPart(id: $id, businessId: $businessId, businessName: $businessName, status: $status, items: $items, pickupStop: $pickupStop, rejectionReason: $rejectionReason)';
 }
 
 
@@ -396,11 +396,11 @@ abstract mixin class $OrderBusinessPartCopyWith<$Res>  {
   factory $OrderBusinessPartCopyWith(OrderBusinessPart value, $Res Function(OrderBusinessPart) _then) = _$OrderBusinessPartCopyWithImpl;
 @useResult
 $Res call({
- String id, String businessId, String businessName, BusinessOrderStatus status, List<OrderItemSnapshot> items, List<PickupStopInfo> pickupStops, String? rejectionReason
+ String id, String businessId, String businessName, BusinessOrderStatus status, List<OrderItemSnapshot> items, PickupStopInfo? pickupStop, String? rejectionReason
 });
 
 
-
+$PickupStopInfoCopyWith<$Res>? get pickupStop;
 
 }
 /// @nodoc
@@ -413,19 +413,31 @@ class _$OrderBusinessPartCopyWithImpl<$Res>
 
 /// Create a copy of OrderBusinessPart
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? businessId = null,Object? businessName = null,Object? status = null,Object? items = null,Object? pickupStops = null,Object? rejectionReason = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? businessId = null,Object? businessName = null,Object? status = null,Object? items = null,Object? pickupStop = freezed,Object? rejectionReason = freezed,}) {
   return _then(OrderBusinessPart(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,businessId: null == businessId ? _self.businessId : businessId // ignore: cast_nullable_to_non_nullable
 as String,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as BusinessOrderStatus,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as List<OrderItemSnapshot>,pickupStops: null == pickupStops ? _self.pickupStops : pickupStops // ignore: cast_nullable_to_non_nullable
-as List<PickupStopInfo>,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as List<OrderItemSnapshot>,pickupStop: freezed == pickupStop ? _self.pickupStop : pickupStop // ignore: cast_nullable_to_non_nullable
+as PickupStopInfo?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
+/// Create a copy of OrderBusinessPart
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PickupStopInfoCopyWith<$Res>? get pickupStop {
+    if (_self.pickupStop == null) {
+    return null;
+  }
 
+  return $PickupStopInfoCopyWith<$Res>(_self.pickupStop!, (value) {
+    return _then(_self.copyWith(pickupStop: value));
+  });
+}
 }
 
 
@@ -507,10 +519,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String businessId,  String businessName,  BusinessOrderStatus status,  List<OrderItemSnapshot> items,  List<PickupStopInfo> pickupStops,  String? rejectionReason)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String businessId,  String businessName,  BusinessOrderStatus status,  List<OrderItemSnapshot> items,  PickupStopInfo? pickupStop,  String? rejectionReason)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderBusinessPart() when $default != null:
-return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.items,_that.pickupStops,_that.rejectionReason);case _:
+return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.items,_that.pickupStop,_that.rejectionReason);case _:
   return orElse();
 
 }
@@ -528,10 +540,10 @@ return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String businessId,  String businessName,  BusinessOrderStatus status,  List<OrderItemSnapshot> items,  List<PickupStopInfo> pickupStops,  String? rejectionReason)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String businessId,  String businessName,  BusinessOrderStatus status,  List<OrderItemSnapshot> items,  PickupStopInfo? pickupStop,  String? rejectionReason)  $default,) {final _that = this;
 switch (_that) {
 case _OrderBusinessPart():
-return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.items,_that.pickupStops,_that.rejectionReason);case _:
+return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.items,_that.pickupStop,_that.rejectionReason);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -548,10 +560,10 @@ return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String businessId,  String businessName,  BusinessOrderStatus status,  List<OrderItemSnapshot> items,  List<PickupStopInfo> pickupStops,  String? rejectionReason)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String businessId,  String businessName,  BusinessOrderStatus status,  List<OrderItemSnapshot> items,  PickupStopInfo? pickupStop,  String? rejectionReason)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderBusinessPart() when $default != null:
-return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.items,_that.pickupStops,_that.rejectionReason);case _:
+return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.items,_that.pickupStop,_that.rejectionReason);case _:
   return null;
 
 }
@@ -563,7 +575,7 @@ return $default(_that.id,_that.businessId,_that.businessName,_that.status,_that.
 
 
 class _OrderBusinessPart implements OrderBusinessPart {
-  const _OrderBusinessPart({required this.id, required this.businessId, required this.businessName, required this.status, required  List<OrderItemSnapshot> items, required  List<PickupStopInfo> pickupStops, this.rejectionReason}): _items = items,_pickupStops = pickupStops;
+  const _OrderBusinessPart({required this.id, required this.businessId, required this.businessName, required this.status, required  List<OrderItemSnapshot> items, required this.pickupStop, this.rejectionReason}): _items = items;
   
 
 @override final  String id;
@@ -577,13 +589,7 @@ class _OrderBusinessPart implements OrderBusinessPart {
   return EqualUnmodifiableListView(_items);
 }
 
- final  List<PickupStopInfo> _pickupStops;
-@override List<PickupStopInfo> get pickupStops {
-  if (_pickupStops is EqualUnmodifiableListView) return _pickupStops;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_pickupStops);
-}
-
+@override final  PickupStopInfo? pickupStop;
 @override final  String? rejectionReason;
 
 /// Create a copy of OrderBusinessPart
@@ -596,16 +602,16 @@ _$OrderBusinessPartCopyWith<_OrderBusinessPart> get copyWith => __$OrderBusiness
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderBusinessPart&&(identical(other.id, id) || other.id == id)&&(identical(other.businessId, businessId) || other.businessId == businessId)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._pickupStops, _pickupStops)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderBusinessPart&&(identical(other.id, id) || other.id == id)&&(identical(other.businessId, businessId) || other.businessId == businessId)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.pickupStop, pickupStop) || other.pickupStop == pickupStop)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,businessId,businessName,status,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_pickupStops),rejectionReason);
+int get hashCode => Object.hash(runtimeType,id,businessId,businessName,status,const DeepCollectionEquality().hash(_items),pickupStop,rejectionReason);
 
 @override
 String toString() {
-  return 'OrderBusinessPart(id: $id, businessId: $businessId, businessName: $businessName, status: $status, items: $items, pickupStops: $pickupStops, rejectionReason: $rejectionReason)';
+  return 'OrderBusinessPart(id: $id, businessId: $businessId, businessName: $businessName, status: $status, items: $items, pickupStop: $pickupStop, rejectionReason: $rejectionReason)';
 }
 
 
@@ -616,11 +622,11 @@ abstract mixin class _$OrderBusinessPartCopyWith<$Res> implements $OrderBusiness
   factory _$OrderBusinessPartCopyWith(_OrderBusinessPart value, $Res Function(_OrderBusinessPart) _then) = __$OrderBusinessPartCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String businessId, String businessName, BusinessOrderStatus status, List<OrderItemSnapshot> items, List<PickupStopInfo> pickupStops, String? rejectionReason
+ String id, String businessId, String businessName, BusinessOrderStatus status, List<OrderItemSnapshot> items, PickupStopInfo? pickupStop, String? rejectionReason
 });
 
 
-
+@override $PickupStopInfoCopyWith<$Res>? get pickupStop;
 
 }
 /// @nodoc
@@ -633,20 +639,32 @@ class __$OrderBusinessPartCopyWithImpl<$Res>
 
 /// Create a copy of OrderBusinessPart
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? businessId = null,Object? businessName = null,Object? status = null,Object? items = null,Object? pickupStops = null,Object? rejectionReason = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? businessId = null,Object? businessName = null,Object? status = null,Object? items = null,Object? pickupStop = freezed,Object? rejectionReason = freezed,}) {
   return _then(_OrderBusinessPart(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,businessId: null == businessId ? _self.businessId : businessId // ignore: cast_nullable_to_non_nullable
 as String,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as BusinessOrderStatus,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
-as List<OrderItemSnapshot>,pickupStops: null == pickupStops ? _self._pickupStops : pickupStops // ignore: cast_nullable_to_non_nullable
-as List<PickupStopInfo>,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as List<OrderItemSnapshot>,pickupStop: freezed == pickupStop ? _self.pickupStop : pickupStop // ignore: cast_nullable_to_non_nullable
+as PickupStopInfo?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
+/// Create a copy of OrderBusinessPart
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PickupStopInfoCopyWith<$Res>? get pickupStop {
+    if (_self.pickupStop == null) {
+    return null;
+  }
 
+  return $PickupStopInfoCopyWith<$Res>(_self.pickupStop!, (value) {
+    return _then(_self.copyWith(pickupStop: value));
+  });
+}
 }
 
 /// @nodoc

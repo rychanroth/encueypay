@@ -9,20 +9,35 @@ part of 'cart_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Cart state — server-authoritative contents (spec §8). Mutations persist
-/// first, then `ref.invalidateSelf()` refetches ground truth (PRES-03) —
-/// the client never applies optimistic quantity changes.
+/// first, then refetch ground truth (PRES-03) — the client never applies
+/// optimistic quantity changes.
+///
+/// Mutations may run while nothing listens (e.g. add-to-cart from the product
+/// detail sheet): the autoDispose element is then disposed during the RPC
+/// await, so afterwards `ref` is unmounted — the persisted mutation still
+/// stands and the next listener (opening the cart tab) refetches fresh.
 
 @ProviderFor(CartController)
 final cartControllerProvider = CartControllerProvider._();
 
 /// Cart state — server-authoritative contents (spec §8). Mutations persist
-/// first, then `ref.invalidateSelf()` refetches ground truth (PRES-03) —
-/// the client never applies optimistic quantity changes.
+/// first, then refetch ground truth (PRES-03) — the client never applies
+/// optimistic quantity changes.
+///
+/// Mutations may run while nothing listens (e.g. add-to-cart from the product
+/// detail sheet): the autoDispose element is then disposed during the RPC
+/// await, so afterwards `ref` is unmounted — the persisted mutation still
+/// stands and the next listener (opening the cart tab) refetches fresh.
 final class CartControllerProvider
     extends $AsyncNotifierProvider<CartController, List<CartItem>> {
   /// Cart state — server-authoritative contents (spec §8). Mutations persist
-  /// first, then `ref.invalidateSelf()` refetches ground truth (PRES-03) —
-  /// the client never applies optimistic quantity changes.
+  /// first, then refetch ground truth (PRES-03) — the client never applies
+  /// optimistic quantity changes.
+  ///
+  /// Mutations may run while nothing listens (e.g. add-to-cart from the product
+  /// detail sheet): the autoDispose element is then disposed during the RPC
+  /// await, so afterwards `ref` is unmounted — the persisted mutation still
+  /// stands and the next listener (opening the cart tab) refetches fresh.
   CartControllerProvider._()
     : super(
         from: null,
@@ -42,11 +57,16 @@ final class CartControllerProvider
   CartController create() => CartController();
 }
 
-String _$cartControllerHash() => r'75c9f5dfca0d0497377a1498b5c8abf8a57f7d73';
+String _$cartControllerHash() => r'28d7b5c345915c7effe4c475cbf84cf5b98aaeec';
 
 /// Cart state — server-authoritative contents (spec §8). Mutations persist
-/// first, then `ref.invalidateSelf()` refetches ground truth (PRES-03) —
-/// the client never applies optimistic quantity changes.
+/// first, then refetch ground truth (PRES-03) — the client never applies
+/// optimistic quantity changes.
+///
+/// Mutations may run while nothing listens (e.g. add-to-cart from the product
+/// detail sheet): the autoDispose element is then disposed during the RPC
+/// await, so afterwards `ref` is unmounted — the persisted mutation still
+/// stands and the next listener (opening the cart tab) refetches fresh.
 
 abstract class _$CartController extends $AsyncNotifier<List<CartItem>> {
   FutureOr<List<CartItem>> build();

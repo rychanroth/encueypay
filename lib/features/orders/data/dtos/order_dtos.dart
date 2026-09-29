@@ -61,7 +61,7 @@ class BusinessOrderJoinDto {
     this.rejectionReason,
     this.businesses,
     this.orderItems = const [],
-    this.pickupStops = const [],
+    this.pickupStops,
   });
 
   factory BusinessOrderJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -78,8 +78,10 @@ class BusinessOrderJoinDto {
   @JsonKey(name: 'order_items', defaultValue: [])
   final List<OrderItemJoinDto> orderItems;
 
-  @JsonKey(name: 'pickup_stops', defaultValue: [])
-  final List<PickupStopJoinDto> pickupStops;
+  /// One-to-one embed (unique FK on pickup_stops.business_order_id) —
+  /// PostgREST returns a single object or null, never a list.
+  @JsonKey(name: 'pickup_stops')
+  final PickupStopJoinDto? pickupStops;
 
   Map<String, dynamic> toJson() => _$BusinessOrderJoinDtoToJson(this);
 }

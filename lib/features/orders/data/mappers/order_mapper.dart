@@ -41,7 +41,7 @@ extension BusinessOrderJoinDtoX on BusinessOrderJoinDto {
       status: BusinessOrderStatus.fromName(status),
       rejectionReason: rejectionReason,
       items: orderItems.map((item) => item.toDomain()).toList(),
-      pickupStops: pickupStops.map((stop) => stop.toDomain()).toList(),
+      pickupStop: pickupStops?.toDomain(),
     );
   }
 }

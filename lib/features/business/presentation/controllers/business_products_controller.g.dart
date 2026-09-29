@@ -39,7 +39,7 @@ final class BusinessProductsControllerProvider
 }
 
 String _$businessProductsControllerHash() =>
-    r'a6b681202584f2761c76f71367d2d7a66660269f';
+    r'33dd752ef0213603a7d2a891b0c22292b7f337b7';
 
 abstract class _$BusinessProductsController
     extends $AsyncNotifier<List<BusinessProduct>> {

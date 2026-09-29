@@ -79,7 +79,7 @@ abstract class OrderBusinessPart with _$OrderBusinessPart {
     required String businessName,
     required BusinessOrderStatus status,
     required List<OrderItemSnapshot> items,
-    required List<PickupStopInfo> pickupStops,
+    required PickupStopInfo? pickupStop,
     String? rejectionReason,
   }) = _OrderBusinessPart;
 }
