@@ -53,7 +53,7 @@ final class ProductDetailControllerProvider
 }
 
 String _$productDetailControllerHash() =>
-    r'65e3202fe06fb177468f93faf423af31644a5e2f';
+    r'8e99fa1e7af11d7a06908ceec10eb10f77df7614';
 
 final class ProductDetailControllerFamily extends $Family
     with

@@ -6,7 +6,8 @@ part 'product_variant.freezed.dart';
 
 /// A sellable variant of a product (spec §5.3). The variant is the selected
 /// sellable unit in the cart where applicable. A variant price of `null`
-/// falls back to the product's base price.
+/// falls back to the product's base price; a null [imageUrl] falls back to
+/// the product's own images in the UI.
 @freezed
 abstract class ProductVariant with _$ProductVariant {
   const factory ProductVariant({
@@ -15,7 +16,7 @@ abstract class ProductVariant with _$ProductVariant {
     required String name,
     Map<String, dynamic>? attributes,
     required int? priceMinor,
-    required int stock,
+    String? imageUrl,
     required ProductStatus status,
   }) = _ProductVariant;
 

@@ -37,7 +37,7 @@ class CartRepositoryImpl implements ICartRepository {
       final rows = await _client
           .from('cart_items')
           .select(
-            'id, quantity, product_variants(id, name, price_minor, stock, '
+            'id, quantity, product_variants(id, name, price_minor, '
             'products(id, name, base_price_minor, '
             'product_images(storage_path, sort_order), businesses(id, name)))',
           )

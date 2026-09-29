@@ -10,8 +10,9 @@ import '../controllers/business_categories_provider.dart';
 import '../controllers/business_products_controller.dart';
 import '../widgets/product_image_strip.dart';
 
-/// Create (product == null) or edit a product. Variants are defined at
-/// creation; afterwards stock is corrected per variant (spec §7).
+/// Create (product == null) or edit a product. Variants can be added at
+/// creation or later from the edit form; each variant's image is managed
+/// individually.
 class BusinessProductFormScreen extends ConsumerStatefulWidget {
   const BusinessProductFormScreen({super.key, this.product});
 
@@ -29,7 +30,6 @@ class _BusinessProductFormScreenState
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
-  final _stockController = TextEditingController();
   String? _categoryId;
   final _variantDrafts = <VariantDraft>[];
   final _initialImages = <BusinessProductImage>[];
@@ -44,7 +44,6 @@ class _BusinessProductFormScreenState
       _nameController.text = product.name;
       _descriptionController.text = product.description;
       _priceController.text = Money(product.basePriceMinor).format();
-      _stockController.text = '${product.stock}';
       _categoryId = product.categoryId;
       _initialImages.addAll(product.images);
       _images.addAll(product.images);
@@ -56,7 +55,6 @@ class _BusinessProductFormScreenState
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
-    _stockController.dispose();
     super.dispose();
   }
 
@@ -89,8 +87,7 @@ class _BusinessProductFormScreenState
   Future<void> _save() async {
     final categoryId = _categoryId;
     final price = _parseMoney(_priceController.text);
-    final stock = int.tryParse(_stockController.text);
-    if (categoryId == null || price == null || stock == null) {
+    if (categoryId == null || price == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Fill in all fields correctly')),
       );
@@ -104,7 +101,6 @@ class _BusinessProductFormScreenState
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         basePriceMinor: price,
-        stock: stock,
         variants: List.of(_variantDrafts),
         images: List.of(_imageDrafts),
       );
@@ -125,43 +121,40 @@ class _BusinessProductFormScreenState
     if (!hasError && mounted) context.pop();
   }
 
-  Future<void> _editStock(ManagementVariant variant) async {
-    final controller = TextEditingController(text: '${variant.stock}');
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Stock — ${variant.name}'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'New stock'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    final stock = int.tryParse(controller.text);
-    if (stock == null) return;
+  /// Variant images upload immediately — each is a single self-contained op.
+  /// On success the form pops back to the refetched list.
+  Future<void> _pickVariantImage(ManagementVariant variant) async {
+    final file = await FilePicker.pickFile(type: FileType.image);
     if (!mounted) return;
+    if (file == null || file.path == null) return;
     await ref
         .read(businessProductsControllerProvider.notifier)
-        .updateStock(variantId: variant.id, stock: stock);
+        .updateVariantImage(
+          variantId: variant.id,
+          filePath: file.path!,
+          fileName: file.name,
+          previousPath: variant.imagePath,
+        );
+    final hasError = ref.read(businessProductsControllerProvider).hasError;
+    if (!hasError && mounted) context.pop();
   }
 
-  void _addVariantDraft() {
+  Future<void> _clearVariantImage(ManagementVariant variant) async {
+    await ref
+        .read(businessProductsControllerProvider.notifier)
+        .clearVariantImage(
+          variantId: variant.id,
+          previousPath: variant.imagePath!,
+        );
+    final hasError = ref.read(businessProductsControllerProvider).hasError;
+    if (!hasError && mounted) context.pop();
+  }
+
+  /// Name + optional price prompt shared by the create and edit flows.
+  Future<(String, int?)?> _promptVariant() {
     final nameController = TextEditingController();
     final priceController = TextEditingController();
-    final stockController = TextEditingController();
-    showDialog<void>(
+    return showDialog<(String, int?)>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Add variant'),
@@ -170,7 +163,8 @@ class _BusinessProductFormScreenState
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name (e.g. M / Black)'),
+              decoration:
+                  const InputDecoration(labelText: 'Name (e.g. M / Black)'),
             ),
             TextField(
               controller: priceController,
@@ -179,11 +173,6 @@ class _BusinessProductFormScreenState
               ),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-            ),
-            TextField(
-              controller: stockController,
-              decoration: const InputDecoration(labelText: 'Stock'),
-              keyboardType: TextInputType.number,
             ),
           ],
         ),
@@ -194,23 +183,44 @@ class _BusinessProductFormScreenState
           ),
           FilledButton(
             onPressed: () {
-              final stock = int.tryParse(stockController.text) ?? 0;
-              setState(() {
-                _variantDrafts.add(VariantDraft(
-                  name: nameController.text.trim(),
-                  priceMinor: priceController.text.trim().isEmpty
-                      ? null
-                      : _parseMoney(priceController.text),
-                  stock: stock,
-                ));
-              });
-              Navigator.of(dialogContext).pop();
+              final name = nameController.text.trim();
+              if (name.isEmpty) return;
+              Navigator.of(dialogContext).pop((
+                name,
+                priceController.text.trim().isEmpty
+                    ? null
+                    : _parseMoney(priceController.text),
+              ));
             },
             child: const Text('Add'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _addVariantDraft() async {
+    final draft = await _promptVariant();
+    if (draft == null || !mounted) return;
+    setState(() {
+      _variantDrafts.add(VariantDraft(name: draft.$1, priceMinor: draft.$2));
+    });
+  }
+
+  /// Edit flow: the variant is created server-side immediately; on success
+  /// the form pops back to the refetched list (same as variant image ops).
+  Future<void> _addVariantToProduct() async {
+    final product = widget.product;
+    if (product == null) return;
+    final draft = await _promptVariant();
+    if (draft == null || !mounted) return;
+    await ref.read(businessProductsControllerProvider.notifier).addVariant(
+          productId: product.id,
+          name: draft.$1,
+          priceMinor: draft.$2,
+        );
+    final hasError = ref.read(businessProductsControllerProvider).hasError;
+    if (!hasError && mounted) context.pop();
   }
 
   @override
@@ -287,14 +297,6 @@ class _BusinessProductFormScreenState
                 const TextInputType.numberWithOptions(decimal: true),
           ),
           if (widget.product == null) ...[
-            const SizedBox(height: 12),
-            TextField(
-              controller: _stockController,
-              decoration: const InputDecoration(
-                labelText: 'Stock (used when no variants are added)',
-              ),
-              keyboardType: TextInputType.number,
-            ),
             const SizedBox(height: 16),
             Text('Variants (optional)',
                 style: theme.textTheme.titleSmall
@@ -305,10 +307,9 @@ class _BusinessProductFormScreenState
                 dense: true,
                 leading: const Icon(Icons.layers_outlined),
                 title: Text(draft.name),
-                subtitle: Text(
-                  '${draft.priceMinor == null ? "base price" : Money(draft.priceMinor!).format()}'
-                  ' · stock ${draft.stock}',
-                ),
+                subtitle: Text(draft.priceMinor == null
+                    ? 'base price'
+                    : Money(draft.priceMinor!).format()),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline),
                   onPressed: () =>
@@ -323,21 +324,51 @@ class _BusinessProductFormScreenState
           ],
           if (widget.product != null) ...[
             const SizedBox(height: 16),
-            Text('Stock per variant',
+            Text('Variants',
                 style: theme.textTheme.titleSmall
                     ?.copyWith(fontWeight: FontWeight.bold)),
             for (final variant in widget.product!.variants)
               ListTile(
                 dense: true,
-                leading: const Icon(Icons.layers_outlined),
+                leading: variant.imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          variant.imageUrl!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) =>
+                              const Icon(Icons.image_outlined),
+                        ),
+                      )
+                    : const Icon(Icons.image_outlined),
                 title: Text(variant.name),
-                subtitle: Text(
-                  '${variant.priceMinor == null ? "base price" : Money(variant.priceMinor!).format()}'
-                  ' · stock ${variant.stock}',
+                subtitle: Text(variant.priceMinor == null
+                    ? 'base price'
+                    : Money(variant.priceMinor!).format()),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Set image',
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
+                      onPressed: () => _pickVariantImage(variant),
+                    ),
+                    if (variant.imagePath != null)
+                      IconButton(
+                        tooltip: 'Remove image',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _clearVariantImage(variant),
+                      ),
+                  ],
                 ),
-                trailing: const Icon(Icons.edit_outlined),
-                onTap: () => _editStock(variant),
               ),
+            OutlinedButton.icon(
+              onPressed: _addVariantToProduct,
+              icon: const Icon(Icons.add),
+              label: const Text('Add variant'),
+            ),
           ],
           const SizedBox(height: 24),
           FilledButton(

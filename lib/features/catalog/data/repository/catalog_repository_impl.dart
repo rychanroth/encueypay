@@ -153,7 +153,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final variants = ((data['product_variants'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())
           .map(ProductVariantDto.fromJson)
-          .map((d) => d.toDomain())
+          .map((d) => d.toDomain(resolveImageUrl: _publicUrl))
           .toList();
       final reviews = ((data['reviews'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())

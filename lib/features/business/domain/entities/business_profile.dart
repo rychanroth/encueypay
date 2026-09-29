@@ -16,7 +16,7 @@ abstract class BusinessProfile with _$BusinessProfile {
 }
 
 /// A product as managed by its business (spec §6–§7): all statuses visible,
-/// archive instead of delete, per-variant stock.
+/// archive instead of delete, per-variant image.
 @freezed
 abstract class BusinessProduct with _$BusinessProduct {
   const factory BusinessProduct({
@@ -25,7 +25,6 @@ abstract class BusinessProduct with _$BusinessProduct {
     required String name,
     @Default('') String description,
     required int basePriceMinor,
-    required int stock,
     required bool archived,
     required List<ManagementVariant> variants,
     @Default([]) List<BusinessProductImage> images,
@@ -59,7 +58,8 @@ abstract class ManagementVariant with _$ManagementVariant {
     required String id,
     required String name,
     required int? priceMinor,
-    required int stock,
+    String? imagePath,
+    String? imageUrl,
   }) = _ManagementVariant;
 }
 
@@ -69,7 +69,6 @@ abstract class VariantDraft with _$VariantDraft {
   const factory VariantDraft({
     required String name,
     required int? priceMinor,
-    required int stock,
   }) = _VariantDraft;
 }
 

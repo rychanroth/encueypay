@@ -13,7 +13,6 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
   name: json['name'] as String,
   description: json['description'] as String,
   basePriceMinor: (json['base_price_minor'] as num).toInt(),
-  stock: (json['stock'] as num).toInt(),
   status: json['status'] as String?,
   productImages:
       (json['product_images'] as List<dynamic>?)
@@ -30,7 +29,6 @@ Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
       'name': instance.name,
       'description': instance.description,
       'base_price_minor': instance.basePriceMinor,
-      'stock': instance.stock,
       'status': instance.status,
       'product_images': instance.productImages,
     };

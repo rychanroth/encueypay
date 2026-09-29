@@ -13,7 +13,6 @@ abstract class Product with _$Product {
     required String name,
     @Default('') String description,
     required int basePriceMinor,
-    required int stock,
     @Default(ProductStatus.active) ProductStatus status,
     @Default([]) List<String> imageUrls,
   }) = _Product;

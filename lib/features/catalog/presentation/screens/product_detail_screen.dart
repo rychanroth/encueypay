@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/router/app_routes.dart';
 import '../controllers/product_detail_controller.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_image_gallery.dart';
+import '../widgets/variant_picker_sheet.dart';
 
-/// Product detail (spec §32): images, variant selection, business link,
-/// related products. The add-to-cart action is injected by the composition
-/// root (home branch, ROUTE-08) so catalog never imports cart (ARCH-04).
+/// Product detail (spec §32): images, business link, related products. The
+/// add-to-cart flow opens the variant picker sheet; the cart action itself is
+/// injected by the composition root (home branch, ROUTE-08) so catalog never
+/// imports cart (ARCH-04).
 class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({
     super.key,
@@ -20,7 +22,7 @@ class ProductDetailScreen extends ConsumerWidget {
 
   final String productId;
 
-  /// (variantId, quantity) — the screen always resolves a concrete variant;
+  /// (variantId, quantity) — the sheet always resolves a concrete variant;
   /// server-side RPC re-validates availability (spec §53).
   final Future<void> Function(String variantId, int quantity) onAddToCart;
 
@@ -50,43 +52,6 @@ class ProductDetailScreen extends ConsumerWidget {
         data: (state) {
           final detail = state.detail;
           final product = detail.product;
-          final selected = state.selectedVariant;
-          final priceMinor =
-              selected?.effectivePriceMinor(product) ?? detail.fromPriceMinor;
-          // A variant must be chosen for varianted products. Products
-          // without variants cannot be added to the cart (spec §8: cart
-          // items reference ProductVariants).
-          final canAdd = !detail.hasVariants || selected != null;
-
-          Future<void> addToCart() async {
-            if (detail.hasVariants && selected == null) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(content: Text('Select an option first')),
-                );
-              return;
-            }
-            try {
-              await onAddToCart(selected!.id, 1);
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('Added to cart')));
-            } on Failure catch (failure) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(failure.message)));
-            } catch (_) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(content: Text('Something went wrong')),
-                );
-            }
-          }
 
           return Column(
             children: [
@@ -107,16 +72,11 @@ class ProductDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            Money(priceMinor).format(),
+                            Money(detail.fromPriceMinor).format(),
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'In stock: ${product.stock}',
-                            style: theme.textTheme.bodySmall,
                           ),
                           if (detail.businessName.isNotEmpty) ...[
                             const SizedBox(height: 8),
@@ -133,34 +93,7 @@ class ProductDetailScreen extends ConsumerWidget {
                               ),
                             ),
                           ],
-                          if (detail.hasVariants) ...[
-                            const SizedBox(height: 16),
-                            Text(
-                              'Options',
-                              style: theme.textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (final variant in detail.variants)
-                                  ChoiceChip(
-                                    label: Text(variant.name),
-                                    selected:
-                                        state.selectedVariantId == variant.id,
-                                    onSelected: (isSelected) => ref
-                                        .read(productDetailControllerProvider(
-                                                productId)
-                                            .notifier)
-                                        .selectVariant(
-                                            isSelected ? variant.id : null),
-                                  ),
-                              ],
-                            ),
-                          ],
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 16),
                     Text(
                       'Description',
                       style: theme.textTheme.titleSmall
@@ -242,7 +175,12 @@ class ProductDetailScreen extends ConsumerWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: canAdd ? addToCart : null,
+                      onPressed: () => showVariantPickerSheet(
+                        context,
+                        product: product,
+                        variants: detail.variants,
+                        onAddToCart: onAddToCart,
+                      ),
                       child: const Text('Add to cart'),
                     ),
                   ),
@@ -288,13 +226,20 @@ class _ImagePagerState extends State<_ImagePager> {
           PageView.builder(
             itemCount: imageUrls.length,
             onPageChanged: (index) => setState(() => _page = index),
-            itemBuilder: (context, index) => Image.network(
-              imageUrls[index],
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => ColoredBox(
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Icon(Icons.image_outlined,
-                    size: 56, color: theme.colorScheme.outline),
+            itemBuilder: (context, index) => GestureDetector(
+              onTap: () => showProductImageGallery(
+                context,
+                imageUrls: imageUrls,
+                initialIndex: index,
+              ),
+              child: Image.network(
+                imageUrls[index],
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => ColoredBox(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: Icon(Icons.image_outlined,
+                      size: 56, color: theme.colorScheme.outline),
+                ),
               ),
             ),
           ),

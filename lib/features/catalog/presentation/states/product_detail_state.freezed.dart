@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductDetailState {
 
- ProductDetail get detail; List<Product> get relatedProducts; String? get selectedVariantId;
+ ProductDetail get detail; List<Product> get relatedProducts;
 /// Create a copy of ProductDetailState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $ProductDetailStateCopyWith<ProductDetailState> get copyWith => _$ProductDetailS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductDetailState&&(identical(other.detail, detail) || other.detail == detail)&&const DeepCollectionEquality().equals(other.relatedProducts, relatedProducts)&&(identical(other.selectedVariantId, selectedVariantId) || other.selectedVariantId == selectedVariantId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductDetailState&&(identical(other.detail, detail) || other.detail == detail)&&const DeepCollectionEquality().equals(other.relatedProducts, relatedProducts));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,detail,const DeepCollectionEquality().hash(relatedProducts),selectedVariantId);
+int get hashCode => Object.hash(runtimeType,detail,const DeepCollectionEquality().hash(relatedProducts));
 
 @override
 String toString() {
-  return 'ProductDetailState(detail: $detail, relatedProducts: $relatedProducts, selectedVariantId: $selectedVariantId)';
+  return 'ProductDetailState(detail: $detail, relatedProducts: $relatedProducts)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $ProductDetailStateCopyWith<$Res>  {
   factory $ProductDetailStateCopyWith(ProductDetailState value, $Res Function(ProductDetailState) _then) = _$ProductDetailStateCopyWithImpl;
 @useResult
 $Res call({
- ProductDetail detail, List<Product> relatedProducts, String? selectedVariantId
+ ProductDetail detail, List<Product> relatedProducts
 });
 
 
@@ -63,12 +63,11 @@ class _$ProductDetailStateCopyWithImpl<$Res>
 
 /// Create a copy of ProductDetailState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? detail = null,Object? relatedProducts = null,Object? selectedVariantId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? detail = null,Object? relatedProducts = null,}) {
   return _then(ProductDetailState(
 detail: null == detail ? _self.detail : detail // ignore: cast_nullable_to_non_nullable
 as ProductDetail,relatedProducts: null == relatedProducts ? _self.relatedProducts : relatedProducts // ignore: cast_nullable_to_non_nullable
-as List<Product>,selectedVariantId: freezed == selectedVariantId ? _self.selectedVariantId : selectedVariantId // ignore: cast_nullable_to_non_nullable
-as String?,
+as List<Product>,
   ));
 }
 /// Create a copy of ProductDetailState
@@ -162,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ProductDetail detail,  List<Product> relatedProducts,  String? selectedVariantId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ProductDetail detail,  List<Product> relatedProducts)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductDetailState() when $default != null:
-return $default(_that.detail,_that.relatedProducts,_that.selectedVariantId);case _:
+return $default(_that.detail,_that.relatedProducts);case _:
   return orElse();
 
 }
@@ -183,10 +182,10 @@ return $default(_that.detail,_that.relatedProducts,_that.selectedVariantId);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ProductDetail detail,  List<Product> relatedProducts,  String? selectedVariantId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ProductDetail detail,  List<Product> relatedProducts)  $default,) {final _that = this;
 switch (_that) {
 case _ProductDetailState():
-return $default(_that.detail,_that.relatedProducts,_that.selectedVariantId);case _:
+return $default(_that.detail,_that.relatedProducts);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +202,10 @@ return $default(_that.detail,_that.relatedProducts,_that.selectedVariantId);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ProductDetail detail,  List<Product> relatedProducts,  String? selectedVariantId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ProductDetail detail,  List<Product> relatedProducts)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductDetailState() when $default != null:
-return $default(_that.detail,_that.relatedProducts,_that.selectedVariantId);case _:
+return $default(_that.detail,_that.relatedProducts);case _:
   return null;
 
 }
@@ -217,8 +216,8 @@ return $default(_that.detail,_that.relatedProducts,_that.selectedVariantId);case
 /// @nodoc
 
 
-class _ProductDetailState extends ProductDetailState {
-  const _ProductDetailState({required this.detail,  List<Product> relatedProducts = const [], this.selectedVariantId}): _relatedProducts = relatedProducts,super._();
+class _ProductDetailState implements ProductDetailState {
+  const _ProductDetailState({required this.detail,  List<Product> relatedProducts = const []}): _relatedProducts = relatedProducts;
   
 
 @override final  ProductDetail detail;
@@ -229,7 +228,6 @@ class _ProductDetailState extends ProductDetailState {
   return EqualUnmodifiableListView(_relatedProducts);
 }
 
-@override final  String? selectedVariantId;
 
 /// Create a copy of ProductDetailState
 /// with the given fields replaced by the non-null parameter values.
@@ -241,16 +239,16 @@ _$ProductDetailStateCopyWith<_ProductDetailState> get copyWith => __$ProductDeta
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductDetailState&&(identical(other.detail, detail) || other.detail == detail)&&const DeepCollectionEquality().equals(other._relatedProducts, _relatedProducts)&&(identical(other.selectedVariantId, selectedVariantId) || other.selectedVariantId == selectedVariantId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductDetailState&&(identical(other.detail, detail) || other.detail == detail)&&const DeepCollectionEquality().equals(other._relatedProducts, _relatedProducts));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,detail,const DeepCollectionEquality().hash(_relatedProducts),selectedVariantId);
+int get hashCode => Object.hash(runtimeType,detail,const DeepCollectionEquality().hash(_relatedProducts));
 
 @override
 String toString() {
-  return 'ProductDetailState(detail: $detail, relatedProducts: $relatedProducts, selectedVariantId: $selectedVariantId)';
+  return 'ProductDetailState(detail: $detail, relatedProducts: $relatedProducts)';
 }
 
 
@@ -261,7 +259,7 @@ abstract mixin class _$ProductDetailStateCopyWith<$Res> implements $ProductDetai
   factory _$ProductDetailStateCopyWith(_ProductDetailState value, $Res Function(_ProductDetailState) _then) = __$ProductDetailStateCopyWithImpl;
 @override @useResult
 $Res call({
- ProductDetail detail, List<Product> relatedProducts, String? selectedVariantId
+ ProductDetail detail, List<Product> relatedProducts
 });
 
 
@@ -278,12 +276,11 @@ class __$ProductDetailStateCopyWithImpl<$Res>
 
 /// Create a copy of ProductDetailState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? detail = null,Object? relatedProducts = null,Object? selectedVariantId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? detail = null,Object? relatedProducts = null,}) {
   return _then(_ProductDetailState(
 detail: null == detail ? _self.detail : detail // ignore: cast_nullable_to_non_nullable
 as ProductDetail,relatedProducts: null == relatedProducts ? _self._relatedProducts : relatedProducts // ignore: cast_nullable_to_non_nullable
-as List<Product>,selectedVariantId: freezed == selectedVariantId ? _self.selectedVariantId : selectedVariantId // ignore: cast_nullable_to_non_nullable
-as String?,
+as List<Product>,
   ));
 }
 

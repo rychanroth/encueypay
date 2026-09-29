@@ -168,8 +168,8 @@ class BusinessRepositoryImpl implements IBusinessRepository {
       final rows = await _client
           .from('products')
           .select(
-            'id, category_id, name, description, base_price_minor, stock, status, '
-            'product_variants(id, name, price_minor, stock), '
+            'id, category_id, name, description, base_price_minor, status, '
+            'product_variants(id, name, price_minor, image_path), '
             'product_images(id, storage_path, sort_order)',
           )
           .order('created_at', ascending: false);
@@ -257,7 +257,6 @@ class BusinessRepositoryImpl implements IBusinessRepository {
     required String name,
     required String description,
     required int basePriceMinor,
-    required int stock,
     required List<VariantDraft> variants,
   }) async {
     try {
@@ -266,12 +265,10 @@ class BusinessRepositoryImpl implements IBusinessRepository {
         'p_name': name,
         'p_description': description,
         'p_base_price_minor': basePriceMinor,
-        'p_stock': stock,
         'p_variants': variants
             .map((v) => {
                   'name': v.name,
                   'price_minor': v.priceMinor,
-                  'stock': v.stock,
                 })
             .toList(),
       });
@@ -324,20 +321,90 @@ class BusinessRepositoryImpl implements IBusinessRepository {
   }
 
   @override
-  Future<void> updateVariantStock({
-    required String variantId,
-    required int stock,
+  Future<void> addProductVariant({
+    required String productId,
+    required String name,
+    required int? priceMinor,
   }) async {
     try {
-      await _client.rpc('update_variant_stock', params: {
-        'p_variant_id': variantId,
-        'p_stock': stock,
+      await _client.rpc('add_product_variant', params: {
+        'p_product_id': productId,
+        'p_name': name,
+        'p_price_minor': priceMinor,
       });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();
     }
+  }
+
+  @override
+  Future<void> updateVariantImage({
+    required String variantId,
+    required String filePath,
+    required String fileName,
+    String? previousPath,
+  }) async {
+    String path = '';
+    try {
+      // The storage path's first segment must be the owning business id —
+      // that's what product_images_owner_write enforces on storage.objects.
+      final row = await _client
+          .from('product_variants')
+          .select('products(business_id)')
+          .eq('id', variantId)
+          .maybeSingle();
+      final businessId =
+          ((row?['products'] as Map<String, dynamic>?)?['business_id'])
+              as String?;
+      if (businessId == null) {
+        throw const ServerFailure('Variant not found');
+      }
+      final bytes = await File(filePath).readAsBytes();
+      path = '$businessId/'
+          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      await _client.storage.from('product_images').uploadBinary(path, bytes);
+      await _client.rpc('set_variant_image', params: {
+        'p_variant_id': variantId,
+        'p_image_path': path,
+      });
+    } on ServerFailure {
+      rethrow;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } on StorageException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+    _removeObjectBestEffort(previousPath);
+  }
+
+  @override
+  Future<void> clearVariantImage({
+    required String variantId,
+    required String previousPath,
+  }) async {
+    try {
+      await _client.rpc('set_variant_image', params: {
+        'p_variant_id': variantId,
+        'p_image_path': null,
+      });
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+    _removeObjectBestEffort(previousPath);
+  }
+
+  /// The DB reference is authoritative (§48) — a failed object deletion
+  /// leaves a harmless orphan in the public bucket, so it never fails the
+  /// operation that made it stale.
+  void _removeObjectBestEffort(String? storagePath) {
+    if (storagePath == null || storagePath.isEmpty) return;
+    _client.storage.from('product_images').remove([storagePath]);
   }
 
   @override

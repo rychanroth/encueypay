@@ -167,6 +167,8 @@ class CartScreen extends ConsumerWidget {
 class _CartItemTile extends ConsumerWidget {
   const _CartItemTile({required this.item});
 
+  static const _maxQuantity = 99;
+
   final CartItem item;
 
   @override
@@ -176,9 +178,19 @@ class _CartItemTile extends ConsumerWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
+      // Tapping the line opens its product page (same cross-tab push as the
+      // wishlist); the quantity/delete buttons keep their own handlers.
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: item.productId.isEmpty
+            ? null
+            : () => context.pushNamed(
+                  AppRoutes.productDetail,
+                  pathParameters: {'id': item.productId},
+                ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -234,7 +246,9 @@ class _CartItemTile extends ConsumerWidget {
                     Text('${item.quantity}'),
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      onPressed: item.quantity >= item.stock
+                      // Stock is out of scope — the stepper is capped at a
+                      // fixed sanity maximum instead.
+                      onPressed: item.quantity >= _maxQuantity
                           ? null
                           : () => controller.updateQuantity(
                                 itemId: item.id,
@@ -253,6 +267,7 @@ class _CartItemTile extends ConsumerWidget {
               ],
             ),
           ],
+          ),
         ),
       ),
     );

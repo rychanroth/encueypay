@@ -18,12 +18,4 @@ class ProductDetailController extends _$ProductDetailController {
     );
     return ProductDetailState(detail: detail, relatedProducts: related);
   }
-
-  /// UI-only selection change — no backend mutation involved, so a plain
-  /// state update is correct here (PRES-03 governs *mutations*).
-  void selectVariant(String? variantId) {
-    final current = state.value;
-    if (current == null) return;
-    state = AsyncData(current.copyWith(selectedVariantId: variantId));
-  }
 }

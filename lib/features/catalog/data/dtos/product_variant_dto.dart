@@ -11,7 +11,7 @@ class ProductVariantDto {
     required this.name,
     this.attributes,
     this.priceMinor,
-    required this.stock,
+    this.imagePath,
     this.status,
   });
 
@@ -23,7 +23,7 @@ class ProductVariantDto {
   final String name;
   final Map<String, dynamic>? attributes;
   final int? priceMinor;
-  final int stock;
+  final String? imagePath;
   final String? status;
 
   Map<String, dynamic> toJson() => _$ProductVariantDtoToJson(this);

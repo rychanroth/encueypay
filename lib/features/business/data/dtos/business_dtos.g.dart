@@ -30,7 +30,6 @@ BusinessProductDto _$BusinessProductDtoFromJson(
   name: json['name'] as String,
   description: json['description'] as String,
   basePriceMinor: (json['base_price_minor'] as num).toInt(),
-  stock: (json['stock'] as num).toInt(),
   status: json['status'] as String?,
   productVariants:
       (json['product_variants'] as List<dynamic>?)
@@ -51,7 +50,6 @@ Map<String, dynamic> _$BusinessProductDtoToJson(BusinessProductDto instance) =>
       'name': instance.name,
       'description': instance.description,
       'base_price_minor': instance.basePriceMinor,
-      'stock': instance.stock,
       'status': instance.status,
       'product_variants': instance.productVariants,
       'product_images': instance.productImages,
@@ -76,8 +74,8 @@ ManagementVariantDto _$ManagementVariantDtoFromJson(
 ) => ManagementVariantDto(
   id: json['id'] as String,
   name: json['name'] as String,
-  stock: (json['stock'] as num).toInt(),
   priceMinor: (json['price_minor'] as num?)?.toInt(),
+  imagePath: json['image_path'] as String?,
 );
 
 Map<String, dynamic> _$ManagementVariantDtoToJson(
@@ -86,7 +84,7 @@ Map<String, dynamic> _$ManagementVariantDtoToJson(
   'id': instance.id,
   'name': instance.name,
   'price_minor': instance.priceMinor,
-  'stock': instance.stock,
+  'image_path': instance.imagePath,
 };
 
 CategoryOptionDto _$CategoryOptionDtoFromJson(Map<String, dynamic> json) =>

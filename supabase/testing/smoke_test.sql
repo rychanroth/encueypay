@@ -36,13 +36,19 @@ select public.create_category('Apparel') as cat \gset
 -- ---------------------------------------------------------------- business 1
 set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
 select public.create_business('Test Business', 'desc') as b1 \gset
-select public.create_product(:'cat', 'T-Shirt', '', 1000, 10,
-  '[{"name":"M/Black","price_minor":1000,"stock":6},{"name":"L/Black","price_minor":1200,"stock":4}]'::jsonb) as p1 \gset
-select public.create_product(:'cat', 'Mug', '', 500, 5, '[]'::jsonb) as p2 \gset
+select public.create_product(:'cat', 'T-Shirt', '', 1000,
+  '[{"name":"M/Black","price_minor":1000},{"name":"L/Black","price_minor":1200}]'::jsonb) as p1 \gset
+select public.create_product(:'cat', 'Mug', '', 500, '[]'::jsonb) as p2 \gset
 
 DO $$ BEGIN
   assert (select count(*) from public.product_variants where product_id = (select id from public.products where name = 'Mug')) = 1,
     'product without variants gets an auto Default variant';
+END $$;
+
+select public.add_product_variant((select id from public.products where name = 'T-Shirt'), 'XL/Black', 1400) as v_xl \gset
+DO $$ BEGIN
+  assert (select count(*) from public.product_variants where product_id = (select id from public.products where name = 'T-Shirt')) = 3,
+    'add_product_variant appends to an existing product';
 END $$;
 
 select id as variant_m from public.product_variants where name = 'M/Black' \gset
@@ -52,7 +58,7 @@ select pv.id as variant_default from public.product_variants pv
 -- ---------------------------------------------------------------- business 2
 set request.jwt.claims to '{"sub":"55555555-5555-5555-5555-555555555555"}';
 select public.create_business('Second Shop', 'desc') as b2 \gset
-select public.create_product(:'cat', 'Candle', '', 700, 8, '[]'::jsonb) as p3 \gset
+select public.create_product(:'cat', 'Candle', '', 700, '[]'::jsonb) as p3 \gset
 select pv.id as variant_candle from public.product_variants pv
   join public.products p on p.id = pv.product_id where p.name = 'Candle' \gset
 
@@ -98,8 +104,6 @@ DO $$ BEGIN
   assert (select status from public.deliveries where order_id = current_setting('smoke.order1')::uuid) = 'available';
   assert (select count(*) from public.pickup_stops ps join public.deliveries d on d.id = ps.delivery_id
     where d.order_id = current_setting('smoke.order1')::uuid) = 2, 'one pickup stop per business order';
-  assert (select stock from public.product_variants where name = 'M/Black') = 3,
-    'stock reserved: 6 - 3';
   assert (select count(*) from public.order_coupons where order_id = current_setting('smoke.order1')::uuid) = 1,
     'historical coupon record';
   assert (select discount_minor from public.orders where id = current_setting('smoke.order1')::uuid) = 350;
@@ -159,8 +163,6 @@ select set_config('smoke.order2', :'order2', false) as _ \gset
 select public.cancel_order(:'order2');
 
 DO $$ BEGIN
-  assert (select stock from public.product_variants where name = 'M/Black') = 3,
-    'cancel restores stock (1 after order2 checkout, +2 on cancel)';
   assert (select status from public.deliveries where order_id = current_setting('smoke.order2')::uuid) = 'cancelled';
   assert (select count(*) from public.business_orders bo where bo.order_id = current_setting('smoke.order2')::uuid
     and bo.status = 'cancelled') = 1;
@@ -179,11 +181,9 @@ DO $$ BEGIN
 END $$;
 
 set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.transition_business_order(:'bo3', 'rejected', 'Out of stock');
+select public.transition_business_order(:'bo3', 'rejected', 'Damaged in handling');
 
 DO $$ BEGIN
-  assert (select stock from public.product_variants where name = 'M/Black') = 3,
-    'reject restores stock (2 after order3 checkout, +1 on reject)';
   assert (select status from public.payments where order_id = current_setting('smoke.order3')::uuid) = 'refund_required',
     'verified transfer -> refund required on rejection';
 END $$;

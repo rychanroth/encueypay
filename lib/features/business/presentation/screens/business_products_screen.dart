@@ -8,7 +8,7 @@ import '../../../../core/router/app_routes.dart';
 import '../controllers/business_products_controller.dart';
 
 /// Business tab 2 — Products (spec §2.2: manage products/variants, archive,
-/// maintain stock).
+/// manage images).
 class BusinessProductsScreen extends ConsumerWidget {
   const BusinessProductsScreen({super.key});
 
@@ -89,7 +89,6 @@ class BusinessProductsScreen extends ConsumerWidget {
                     ),
                     subtitle: Text(
                       '${Money(product.basePriceMinor).format()} · '
-                      'stock ${product.stock} · '
                       '${product.variants.length} variant(s)',
                     ),
                     trailing: Row(

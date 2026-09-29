@@ -32,8 +32,7 @@ class OrderDetailScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Cancel order?'),
         content: const Text(
-          'Reserved stock will be released. Verified bank transfers are '
-          'marked as refund-required.',
+          'Verified bank transfers are marked as refund-required.',
         ),
         actions: [
           TextButton(

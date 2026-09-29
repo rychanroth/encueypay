@@ -40,7 +40,6 @@ abstract interface class IBusinessRepository {
     required String name,
     required String description,
     required int basePriceMinor,
-    required int stock,
     required List<VariantDraft> variants,
   });
 
@@ -54,7 +53,27 @@ abstract interface class IBusinessRepository {
 
   Future<void> setProductArchived({required String productId, required bool archived});
 
-  Future<void> updateVariantStock({required String variantId, required int stock});
+  /// Adds a variant to an existing product (edit flow); duplicate names on
+  /// the same product are rejected server-side.
+  Future<void> addProductVariant({
+    required String productId,
+    required String name,
+    required int? priceMinor,
+  });
+
+  /// Uploads the file and sets it as the variant's image (§48); the replaced
+  /// object is removed best-effort. Null image → clears the reference.
+  Future<void> updateVariantImage({
+    required String variantId,
+    required String filePath,
+    required String fileName,
+    String? previousPath,
+  });
+
+  Future<void> clearVariantImage({
+    required String variantId,
+    required String previousPath,
+  });
 
   /// Uploads the file to the product_images bucket and registers a row —
   /// display order is server-computed (append) (§48).

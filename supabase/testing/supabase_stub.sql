@@ -28,3 +28,19 @@ alter table storage.objects enable row level security;
 create or replace function storage.foldername(name text) returns text[]
 language sql immutable as
 $$ select string_to_array(name, '/') $$;
+
+-- Data API roles: migration 20260926000015 grants table privileges to these;
+-- a real Supabase stack provides them, the scratch server needs them here.
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'anon') then
+    create role anon nologin;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create role authenticated nologin;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'service_role') then
+    create role service_role nologin;
+  end if;
+end
+$$;

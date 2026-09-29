@@ -32,7 +32,6 @@ class CartVariantJoinDto {
     this.id,
     this.name,
     this.priceMinor,
-    this.stock,
     this.products,
   });
 
@@ -42,7 +41,6 @@ class CartVariantJoinDto {
   final String? id;
   final String? name;
   final int? priceMinor;
-  final int? stock;
 
   @JsonKey(name: 'products')
   final CartProductJoinDto? products;

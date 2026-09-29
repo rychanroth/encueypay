@@ -23,14 +23,15 @@ extension BusinessProductDtoX on BusinessProductDto {
       name: name,
       description: description,
       basePriceMinor: basePriceMinor,
-      stock: stock,
       archived: status == 'archived',
       variants: productVariants
           .map((v) => ManagementVariant(
                 id: v.id,
                 name: v.name,
                 priceMinor: v.priceMinor,
-                stock: v.stock,
+                imagePath: v.imagePath,
+                imageUrl:
+                    v.imagePath == null ? null : resolveUrl?.call(v.imagePath!),
               ))
           .toList(),
       images: images

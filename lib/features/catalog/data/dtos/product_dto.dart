@@ -15,7 +15,6 @@ class ProductDto {
     required this.name,
     required this.description,
     required this.basePriceMinor,
-    required this.stock,
     this.status,
     this.productImages = const [],
   });
@@ -29,7 +28,6 @@ class ProductDto {
   final String name;
   final String description;
   final int basePriceMinor;
-  final int stock;
   final String? status;
 
   /// PostgREST embed key `product_images` (fieldRename.snake matches).

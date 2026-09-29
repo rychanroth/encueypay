@@ -32,7 +32,6 @@ class BusinessProductDto {
     required this.name,
     required this.description,
     required this.basePriceMinor,
-    required this.stock,
     this.status,
     this.productVariants = const [],
     this.productImages = const [],
@@ -46,7 +45,6 @@ class BusinessProductDto {
   final String name;
   final String description;
   final int basePriceMinor;
-  final int stock;
   final String? status;
 
   @JsonKey(name: 'product_variants', defaultValue: [])
@@ -84,8 +82,8 @@ class ManagementVariantDto {
   const ManagementVariantDto({
     required this.id,
     required this.name,
-    required this.stock,
     this.priceMinor,
+    this.imagePath,
   });
 
   factory ManagementVariantDto.fromJson(Map<String, dynamic> json) =>
@@ -94,7 +92,7 @@ class ManagementVariantDto {
   final String id;
   final String name;
   final int? priceMinor;
-  final int stock;
+  final String? imagePath;
 
   Map<String, dynamic> toJson() => _$ManagementVariantDtoToJson(this);
 }

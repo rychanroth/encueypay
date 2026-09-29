@@ -281,7 +281,7 @@ as String?,
 /// @nodoc
 mixin _$BusinessProduct {
 
- String get id; String get categoryId; String get name; String get description; int get basePriceMinor; int get stock; bool get archived; List<ManagementVariant> get variants; List<BusinessProductImage> get images;
+ String get id; String get categoryId; String get name; String get description; int get basePriceMinor; bool get archived; List<ManagementVariant> get variants; List<BusinessProductImage> get images;
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -292,16 +292,16 @@ $BusinessProductCopyWith<BusinessProduct> get copyWith => _$BusinessProductCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.images, images));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.images, images));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,stock,archived,const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(images));
+int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,archived,const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(images));
 
 @override
 String toString() {
-  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, archived: $archived, variants: $variants, images: $images)';
+  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, archived: $archived, variants: $variants, images: $images)';
 }
 
 
@@ -312,7 +312,7 @@ abstract mixin class $BusinessProductCopyWith<$Res>  {
   factory $BusinessProductCopyWith(BusinessProduct value, $Res Function(BusinessProduct) _then) = _$BusinessProductCopyWithImpl;
 @useResult
 $Res call({
- String id, String categoryId, String name, String description, int basePriceMinor, int stock, bool archived, List<ManagementVariant> variants, List<BusinessProductImage> images
+ String id, String categoryId, String name, String description, int basePriceMinor, bool archived, List<ManagementVariant> variants, List<BusinessProductImage> images
 });
 
 
@@ -329,14 +329,13 @@ class _$BusinessProductCopyWithImpl<$Res>
 
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? archived = null,Object? variants = null,Object? images = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? archived = null,Object? variants = null,Object? images = null,}) {
   return _then(BusinessProduct(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,basePriceMinor: null == basePriceMinor ? _self.basePriceMinor : basePriceMinor // ignore: cast_nullable_to_non_nullable
-as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
 as int,archived: null == archived ? _self.archived : archived // ignore: cast_nullable_to_non_nullable
 as bool,variants: null == variants ? _self.variants : variants // ignore: cast_nullable_to_non_nullable
 as List<ManagementVariant>,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
@@ -425,10 +424,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BusinessProduct() when $default != null:
-return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants,_that.images);case _:
+return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.archived,_that.variants,_that.images);case _:
   return orElse();
 
 }
@@ -446,10 +445,10 @@ return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.bas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)  $default,) {final _that = this;
 switch (_that) {
 case _BusinessProduct():
-return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants,_that.images);case _:
+return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.archived,_that.variants,_that.images);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -466,10 +465,10 @@ return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.bas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  int stock,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String categoryId,  String name,  String description,  int basePriceMinor,  bool archived,  List<ManagementVariant> variants,  List<BusinessProductImage> images)?  $default,) {final _that = this;
 switch (_that) {
 case _BusinessProduct() when $default != null:
-return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.archived,_that.variants,_that.images);case _:
+return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.basePriceMinor,_that.archived,_that.variants,_that.images);case _:
   return null;
 
 }
@@ -481,7 +480,7 @@ return $default(_that.id,_that.categoryId,_that.name,_that.description,_that.bas
 
 
 class _BusinessProduct implements BusinessProduct {
-  const _BusinessProduct({required this.id, required this.categoryId, required this.name, this.description = '', required this.basePriceMinor, required this.stock, required this.archived, required  List<ManagementVariant> variants,  List<BusinessProductImage> images = const []}): _variants = variants,_images = images;
+  const _BusinessProduct({required this.id, required this.categoryId, required this.name, this.description = '', required this.basePriceMinor, required this.archived, required  List<ManagementVariant> variants,  List<BusinessProductImage> images = const []}): _variants = variants,_images = images;
   
 
 @override final  String id;
@@ -489,7 +488,6 @@ class _BusinessProduct implements BusinessProduct {
 @override final  String name;
 @override@JsonKey() final  String description;
 @override final  int basePriceMinor;
-@override final  int stock;
 @override final  bool archived;
  final  List<ManagementVariant> _variants;
 @override List<ManagementVariant> get variants {
@@ -516,16 +514,16 @@ _$BusinessProductCopyWith<_BusinessProduct> get copyWith => __$BusinessProductCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._images, _images));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BusinessProduct&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.archived, archived) || other.archived == archived)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._images, _images));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,stock,archived,const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_images));
+int get hashCode => Object.hash(runtimeType,id,categoryId,name,description,basePriceMinor,archived,const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_images));
 
 @override
 String toString() {
-  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, archived: $archived, variants: $variants, images: $images)';
+  return 'BusinessProduct(id: $id, categoryId: $categoryId, name: $name, description: $description, basePriceMinor: $basePriceMinor, archived: $archived, variants: $variants, images: $images)';
 }
 
 
@@ -536,7 +534,7 @@ abstract mixin class _$BusinessProductCopyWith<$Res> implements $BusinessProduct
   factory _$BusinessProductCopyWith(_BusinessProduct value, $Res Function(_BusinessProduct) _then) = __$BusinessProductCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String categoryId, String name, String description, int basePriceMinor, int stock, bool archived, List<ManagementVariant> variants, List<BusinessProductImage> images
+ String id, String categoryId, String name, String description, int basePriceMinor, bool archived, List<ManagementVariant> variants, List<BusinessProductImage> images
 });
 
 
@@ -553,14 +551,13 @@ class __$BusinessProductCopyWithImpl<$Res>
 
 /// Create a copy of BusinessProduct
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? archived = null,Object? variants = null,Object? images = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? categoryId = null,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? archived = null,Object? variants = null,Object? images = null,}) {
   return _then(_BusinessProduct(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,basePriceMinor: null == basePriceMinor ? _self.basePriceMinor : basePriceMinor // ignore: cast_nullable_to_non_nullable
-as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
 as int,archived: null == archived ? _self.archived : archived // ignore: cast_nullable_to_non_nullable
 as bool,variants: null == variants ? _self._variants : variants // ignore: cast_nullable_to_non_nullable
 as List<ManagementVariant>,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
@@ -1097,7 +1094,7 @@ as String,
 /// @nodoc
 mixin _$ManagementVariant {
 
- String get id; String get name; int? get priceMinor; int get stock;
+ String get id; String get name; int? get priceMinor; String? get imagePath; String? get imageUrl;
 /// Create a copy of ManagementVariant
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1108,16 +1105,16 @@ $ManagementVariantCopyWith<ManagementVariant> get copyWith => _$ManagementVarian
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagementVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.stock, stock) || other.stock == stock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagementVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,priceMinor,stock);
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor,imagePath,imageUrl);
 
 @override
 String toString() {
-  return 'ManagementVariant(id: $id, name: $name, priceMinor: $priceMinor, stock: $stock)';
+  return 'ManagementVariant(id: $id, name: $name, priceMinor: $priceMinor, imagePath: $imagePath, imageUrl: $imageUrl)';
 }
 
 
@@ -1128,7 +1125,7 @@ abstract mixin class $ManagementVariantCopyWith<$Res>  {
   factory $ManagementVariantCopyWith(ManagementVariant value, $Res Function(ManagementVariant) _then) = _$ManagementVariantCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, int? priceMinor, int stock
+ String id, String name, int? priceMinor, String? imagePath, String? imageUrl
 });
 
 
@@ -1145,13 +1142,14 @@ class _$ManagementVariantCopyWithImpl<$Res>
 
 /// Create a copy of ManagementVariant
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? priceMinor = freezed,Object? stock = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? priceMinor = freezed,Object? imagePath = freezed,Object? imageUrl = freezed,}) {
   return _then(ManagementVariant(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int?,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
-as int,
+as int?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
+as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -1236,10 +1234,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int? priceMinor,  int stock)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int? priceMinor,  String? imagePath,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ManagementVariant() when $default != null:
-return $default(_that.id,_that.name,_that.priceMinor,_that.stock);case _:
+return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imageUrl);case _:
   return orElse();
 
 }
@@ -1257,10 +1255,10 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.stock);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int? priceMinor,  int stock)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int? priceMinor,  String? imagePath,  String? imageUrl)  $default,) {final _that = this;
 switch (_that) {
 case _ManagementVariant():
-return $default(_that.id,_that.name,_that.priceMinor,_that.stock);case _:
+return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imageUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1277,10 +1275,10 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.stock);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int? priceMinor,  int stock)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int? priceMinor,  String? imagePath,  String? imageUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _ManagementVariant() when $default != null:
-return $default(_that.id,_that.name,_that.priceMinor,_that.stock);case _:
+return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imageUrl);case _:
   return null;
 
 }
@@ -1292,13 +1290,14 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.stock);case _:
 
 
 class _ManagementVariant implements ManagementVariant {
-  const _ManagementVariant({required this.id, required this.name, required this.priceMinor, required this.stock});
+  const _ManagementVariant({required this.id, required this.name, required this.priceMinor, this.imagePath, this.imageUrl});
   
 
 @override final  String id;
 @override final  String name;
 @override final  int? priceMinor;
-@override final  int stock;
+@override final  String? imagePath;
+@override final  String? imageUrl;
 
 /// Create a copy of ManagementVariant
 /// with the given fields replaced by the non-null parameter values.
@@ -1310,16 +1309,16 @@ _$ManagementVariantCopyWith<_ManagementVariant> get copyWith => __$ManagementVar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagementVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.stock, stock) || other.stock == stock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagementVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,priceMinor,stock);
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor,imagePath,imageUrl);
 
 @override
 String toString() {
-  return 'ManagementVariant(id: $id, name: $name, priceMinor: $priceMinor, stock: $stock)';
+  return 'ManagementVariant(id: $id, name: $name, priceMinor: $priceMinor, imagePath: $imagePath, imageUrl: $imageUrl)';
 }
 
 
@@ -1330,7 +1329,7 @@ abstract mixin class _$ManagementVariantCopyWith<$Res> implements $ManagementVar
   factory _$ManagementVariantCopyWith(_ManagementVariant value, $Res Function(_ManagementVariant) _then) = __$ManagementVariantCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, int? priceMinor, int stock
+ String id, String name, int? priceMinor, String? imagePath, String? imageUrl
 });
 
 
@@ -1347,13 +1346,14 @@ class __$ManagementVariantCopyWithImpl<$Res>
 
 /// Create a copy of ManagementVariant
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? priceMinor = freezed,Object? stock = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? priceMinor = freezed,Object? imagePath = freezed,Object? imageUrl = freezed,}) {
   return _then(_ManagementVariant(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int?,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
-as int,
+as int?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
+as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -1363,7 +1363,7 @@ as int,
 /// @nodoc
 mixin _$VariantDraft {
 
- String get name; int? get priceMinor; int get stock;
+ String get name; int? get priceMinor;
 /// Create a copy of VariantDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1374,16 +1374,16 @@ $VariantDraftCopyWith<VariantDraft> get copyWith => _$VariantDraftCopyWithImpl<V
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.stock, stock) || other.stock == stock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,priceMinor,stock);
+int get hashCode => Object.hash(runtimeType,name,priceMinor);
 
 @override
 String toString() {
-  return 'VariantDraft(name: $name, priceMinor: $priceMinor, stock: $stock)';
+  return 'VariantDraft(name: $name, priceMinor: $priceMinor)';
 }
 
 
@@ -1394,7 +1394,7 @@ abstract mixin class $VariantDraftCopyWith<$Res>  {
   factory $VariantDraftCopyWith(VariantDraft value, $Res Function(VariantDraft) _then) = _$VariantDraftCopyWithImpl;
 @useResult
 $Res call({
- String name, int? priceMinor, int stock
+ String name, int? priceMinor
 });
 
 
@@ -1411,12 +1411,11 @@ class _$VariantDraftCopyWithImpl<$Res>
 
 /// Create a copy of VariantDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? priceMinor = freezed,Object? stock = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? priceMinor = freezed,}) {
   return _then(VariantDraft(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int?,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
-as int,
+as int?,
   ));
 }
 
@@ -1501,10 +1500,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int? priceMinor,  int stock)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int? priceMinor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VariantDraft() when $default != null:
-return $default(_that.name,_that.priceMinor,_that.stock);case _:
+return $default(_that.name,_that.priceMinor);case _:
   return orElse();
 
 }
@@ -1522,10 +1521,10 @@ return $default(_that.name,_that.priceMinor,_that.stock);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int? priceMinor,  int stock)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int? priceMinor)  $default,) {final _that = this;
 switch (_that) {
 case _VariantDraft():
-return $default(_that.name,_that.priceMinor,_that.stock);case _:
+return $default(_that.name,_that.priceMinor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1542,10 +1541,10 @@ return $default(_that.name,_that.priceMinor,_that.stock);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int? priceMinor,  int stock)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int? priceMinor)?  $default,) {final _that = this;
 switch (_that) {
 case _VariantDraft() when $default != null:
-return $default(_that.name,_that.priceMinor,_that.stock);case _:
+return $default(_that.name,_that.priceMinor);case _:
   return null;
 
 }
@@ -1557,12 +1556,11 @@ return $default(_that.name,_that.priceMinor,_that.stock);case _:
 
 
 class _VariantDraft implements VariantDraft {
-  const _VariantDraft({required this.name, required this.priceMinor, required this.stock});
+  const _VariantDraft({required this.name, required this.priceMinor});
   
 
 @override final  String name;
 @override final  int? priceMinor;
-@override final  int stock;
 
 /// Create a copy of VariantDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1574,16 +1572,16 @@ _$VariantDraftCopyWith<_VariantDraft> get copyWith => __$VariantDraftCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.stock, stock) || other.stock == stock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,priceMinor,stock);
+int get hashCode => Object.hash(runtimeType,name,priceMinor);
 
 @override
 String toString() {
-  return 'VariantDraft(name: $name, priceMinor: $priceMinor, stock: $stock)';
+  return 'VariantDraft(name: $name, priceMinor: $priceMinor)';
 }
 
 
@@ -1594,7 +1592,7 @@ abstract mixin class _$VariantDraftCopyWith<$Res> implements $VariantDraftCopyWi
   factory _$VariantDraftCopyWith(_VariantDraft value, $Res Function(_VariantDraft) _then) = __$VariantDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String name, int? priceMinor, int stock
+ String name, int? priceMinor
 });
 
 
@@ -1611,12 +1609,11 @@ class __$VariantDraftCopyWithImpl<$Res>
 
 /// Create a copy of VariantDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? priceMinor = freezed,Object? stock = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? priceMinor = freezed,}) {
   return _then(_VariantDraft(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int?,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
-as int,
+as int?,
   ));
 }
 

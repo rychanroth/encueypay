@@ -13,7 +13,7 @@ abstract interface class ICatalogRepository {
   Future<List<Business>> fetchBusinesses({int limit = 10});
 
   /// Search/filter/sort with offset pagination (server-authoritative —
-  /// the client never trusts previously fetched prices/stock at checkout).
+  /// the client never trusts previously fetched prices at checkout).
   Future<List<Product>> fetchProducts({
     String? query,
     String? categoryId,

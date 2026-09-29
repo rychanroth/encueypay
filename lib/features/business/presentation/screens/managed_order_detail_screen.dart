@@ -8,7 +8,7 @@ import '../controllers/business_orders_controller.dart';
 
 /// Business order processing (spec §11/§13): accept/reject/preparing/ready.
 /// Transitions are validated server-side; rejection requires a reason and
-/// releases reserved stock.
+/// requires a reason.
 class ManagedOrderDetailScreen extends ConsumerWidget {
   const ManagedOrderDetailScreen({super.key, required this.orderId});
 
