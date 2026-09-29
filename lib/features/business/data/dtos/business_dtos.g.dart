@@ -151,11 +151,40 @@ ManagedOrderParentDto _$ManagedOrderParentDtoFromJson(
   users: json['users'] == null
       ? null
       : ManagedOrderCustomerDto.fromJson(json['users'] as Map<String, dynamic>),
+  shippingRecipientName: json['shipping_recipient_name'] as String?,
+  shippingPhone: json['shipping_phone'] as String?,
+  shippingLine1: json['shipping_line1'] as String?,
+  shippingLine2: json['shipping_line2'] as String?,
+  shippingCity: json['shipping_city'] as String?,
+  payments: json['payments'] == null
+      ? null
+      : ManagedOrderPaymentDto.fromJson(
+          json['payments'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$ManagedOrderParentDtoToJson(
   ManagedOrderParentDto instance,
-) => <String, dynamic>{'users': instance.users};
+) => <String, dynamic>{
+  'users': instance.users,
+  'shipping_recipient_name': instance.shippingRecipientName,
+  'shipping_phone': instance.shippingPhone,
+  'shipping_line1': instance.shippingLine1,
+  'shipping_line2': instance.shippingLine2,
+  'shipping_city': instance.shippingCity,
+  'payments': instance.payments,
+};
+
+ManagedOrderPaymentDto _$ManagedOrderPaymentDtoFromJson(
+  Map<String, dynamic> json,
+) => ManagedOrderPaymentDto(
+  method: json['method'] as String?,
+  status: json['status'] as String?,
+);
+
+Map<String, dynamic> _$ManagedOrderPaymentDtoToJson(
+  ManagedOrderPaymentDto instance,
+) => <String, dynamic>{'method': instance.method, 'status': instance.status};
 
 ManagedOrderCustomerDto _$ManagedOrderCustomerDtoFromJson(
   Map<String, dynamic> json,

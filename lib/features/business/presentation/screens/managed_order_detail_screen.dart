@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
-import '../../../../core/domain/money.dart';
 import '../../domain/entities/managed_business_order.dart';
 import '../controllers/business_orders_controller.dart';
+import '../widgets/managed_order_items_list.dart';
+import '../widgets/managed_order_status_chip.dart';
 
 /// Business order processing (spec §11/§13): accept/reject/preparing/ready.
 /// Transitions are validated server-side; rejection requires a reason and
@@ -95,10 +96,7 @@ class ManagedOrderDetailScreen extends ConsumerWidget {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  Chip(
-                    label: Text(order.status.name),
-                    visualDensity: VisualDensity.compact,
-                  ),
+                  ManagedOrderStatusChip(status: order.status),
                 ],
               ),
               Text(
@@ -112,39 +110,38 @@ class ManagedOrderDetailScreen extends ConsumerWidget {
                       ?.copyWith(color: theme.colorScheme.error),
                 ),
               const SizedBox(height: 16),
-              for (final item in order.items)
-                Card(
-                  child: ListTile(
-                    title: Text(item.productName),
-                    subtitle: item.variantName == null
-                        ? null
-                        : Text(item.variantName!),
-                    trailing: Text(
-                      '${item.quantity} × ${Money(item.lineTotalMinor ~/ item.quantity).format()}',
-                    ),
-                  ),
-                ),
+              ManagedOrderItemsList(order: order),
               const Divider(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Subtotal', style: theme.textTheme.titleMedium),
-                  Text(
-                    Money(order.subtotalMinor).format(),
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Delivery & payment',
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(order.shippingRecipientName),
+                      Text(order.shippingLine1),
+                      if (order.shippingLine2 != null)
+                        Text(order.shippingLine2!),
+                      Text(order.shippingCity),
+                      Text(order.shippingPhone,
+                          style: theme.textTheme.bodySmall),
+                      if (order.paymentMethod != null)
+                        Text(
+                          'Payment: ${order.paymentMethod!.replaceAll('_', ' ')}'
+                          '${order.paymentStatus == null ? '' : ' · ${order.paymentStatus!.replaceAll('_', ' ')}'}',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                    ],
                   ),
-                ],
-              ),
-              if (order.discountMinor > 0)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Discount'),
-                    Text('-${Money(order.discountMinor).format()}'),
-                  ],
                 ),
-              const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 8),
               if (order.canAccept)
                 FilledButton(
                   onPressed: () =>

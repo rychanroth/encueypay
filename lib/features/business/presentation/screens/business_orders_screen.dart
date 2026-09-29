@@ -6,6 +6,7 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/router/app_routes.dart';
 import '../controllers/business_orders_controller.dart';
+import '../widgets/managed_order_status_chip.dart';
 
 /// Business tab 3 — Orders (spec §2.2). Realtime incoming orders arrive in
 /// Phase 11; pull-to-refresh until then.
@@ -58,8 +59,9 @@ class BusinessOrdersScreen extends ConsumerWidget {
                 final order = orders[index];
                 return Card(
                   child: ListTile(
+                    leading: ManagedOrderStatusChip(status: order.status),
                     title: Text(
-                      '${order.customerName} · ${Money(order.subtotalMinor).format()}',
+                      order.customerName,
                       style: Theme.of(context)
                           .textTheme
                           .titleSmall
@@ -67,7 +69,8 @@ class BusinessOrdersScreen extends ConsumerWidget {
                     ),
                     subtitle: Text(
                       '${order.createdAt.toLocal().toString().substring(0, 16)}'
-                      ' · ${order.items.length} item(s) · ${order.status.name}',
+                      ' · ${order.items.length} item(s)'
+                      ' · ${Money(order.subtotalMinor).format()}',
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.pushNamed(

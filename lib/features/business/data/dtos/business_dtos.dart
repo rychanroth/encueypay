@@ -171,7 +171,15 @@ class ManagedOrderItemDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ManagedOrderParentDto {
-  const ManagedOrderParentDto({this.users});
+  const ManagedOrderParentDto({
+    this.users,
+    this.shippingRecipientName,
+    this.shippingPhone,
+    this.shippingLine1,
+    this.shippingLine2,
+    this.shippingCity,
+    this.payments,
+  });
 
   factory ManagedOrderParentDto.fromJson(Map<String, dynamic> json) =>
       _$ManagedOrderParentDtoFromJson(json);
@@ -179,7 +187,29 @@ class ManagedOrderParentDto {
   @JsonKey(name: 'users')
   final ManagedOrderCustomerDto? users;
 
+  final String? shippingRecipientName;
+  final String? shippingPhone;
+  final String? shippingLine1;
+  final String? shippingLine2;
+  final String? shippingCity;
+
+  @JsonKey(name: 'payments')
+  final ManagedOrderPaymentDto? payments;
+
   Map<String, dynamic> toJson() => _$ManagedOrderParentDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ManagedOrderPaymentDto {
+  const ManagedOrderPaymentDto({this.method, this.status});
+
+  factory ManagedOrderPaymentDto.fromJson(Map<String, dynamic> json) =>
+      _$ManagedOrderPaymentDtoFromJson(json);
+
+  final String? method;
+  final String? status;
+
+  Map<String, dynamic> toJson() => _$ManagedOrderPaymentDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

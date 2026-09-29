@@ -434,8 +434,9 @@ class BusinessRepositoryImpl implements IBusinessRepository {
           .select(
             'id, order_id, status, rejection_reason, subtotal_minor, '
             'discount_minor, created_at, '
-            'order_items(id, product_name, variant_name, quantity, line_total_minor), '
-            'orders(users(full_name))',
+      'order_items(id, product_name, variant_name, quantity, line_total_minor), '
+      'orders(users(full_name), shipping_recipient_name, shipping_phone, '
+      'shipping_line1, shipping_line2, shipping_city, payments(method, status))',
           )
           .order('created_at', ascending: false)
           .limit(50);

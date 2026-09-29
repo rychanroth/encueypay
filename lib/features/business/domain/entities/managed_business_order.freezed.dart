@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ManagedBusinessOrder {
 
- String get id; String get orderId; String get customerName; ManagedOrderStatus get status; int get subtotalMinor; int get discountMinor; DateTime get createdAt; List<ManagedOrderItem> get items; String? get rejectionReason;
+ String get id; String get orderId; String get customerName; ManagedOrderStatus get status; int get subtotalMinor; int get discountMinor; DateTime get createdAt; List<ManagedOrderItem> get items; String get shippingRecipientName; String get shippingPhone; String get shippingLine1; String? get shippingLine2; String get shippingCity; String? get paymentMethod; String? get paymentStatus; String? get rejectionReason;
 /// Create a copy of ManagedBusinessOrder
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $ManagedBusinessOrderCopyWith<ManagedBusinessOrder> get copyWith => _$ManagedBus
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedBusinessOrder&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedBusinessOrder&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.shippingRecipientName, shippingRecipientName) || other.shippingRecipientName == shippingRecipientName)&&(identical(other.shippingPhone, shippingPhone) || other.shippingPhone == shippingPhone)&&(identical(other.shippingLine1, shippingLine1) || other.shippingLine1 == shippingLine1)&&(identical(other.shippingLine2, shippingLine2) || other.shippingLine2 == shippingLine2)&&(identical(other.shippingCity, shippingCity) || other.shippingCity == shippingCity)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,customerName,status,subtotalMinor,discountMinor,createdAt,const DeepCollectionEquality().hash(items),rejectionReason);
+int get hashCode => Object.hash(runtimeType,id,orderId,customerName,status,subtotalMinor,discountMinor,createdAt,const DeepCollectionEquality().hash(items),shippingRecipientName,shippingPhone,shippingLine1,shippingLine2,shippingCity,paymentMethod,paymentStatus,rejectionReason);
 
 @override
 String toString() {
-  return 'ManagedBusinessOrder(id: $id, orderId: $orderId, customerName: $customerName, status: $status, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, createdAt: $createdAt, items: $items, rejectionReason: $rejectionReason)';
+  return 'ManagedBusinessOrder(id: $id, orderId: $orderId, customerName: $customerName, status: $status, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, createdAt: $createdAt, items: $items, shippingRecipientName: $shippingRecipientName, shippingPhone: $shippingPhone, shippingLine1: $shippingLine1, shippingLine2: $shippingLine2, shippingCity: $shippingCity, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, rejectionReason: $rejectionReason)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $ManagedBusinessOrderCopyWith<$Res>  {
   factory $ManagedBusinessOrderCopyWith(ManagedBusinessOrder value, $Res Function(ManagedBusinessOrder) _then) = _$ManagedBusinessOrderCopyWithImpl;
 @useResult
 $Res call({
- String id, String orderId, String customerName, ManagedOrderStatus status, int subtotalMinor, int discountMinor, DateTime createdAt, List<ManagedOrderItem> items, String? rejectionReason
+ String id, String orderId, String customerName, ManagedOrderStatus status, int subtotalMinor, int discountMinor, DateTime createdAt, List<ManagedOrderItem> items, String shippingRecipientName, String shippingPhone, String shippingLine1, String? shippingLine2, String shippingCity, String? paymentMethod, String? paymentStatus, String? rejectionReason
 });
 
 
@@ -63,7 +63,7 @@ class _$ManagedBusinessOrderCopyWithImpl<$Res>
 
 /// Create a copy of ManagedBusinessOrder
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? customerName = null,Object? status = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? createdAt = null,Object? items = null,Object? rejectionReason = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? customerName = null,Object? status = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? createdAt = null,Object? items = null,Object? shippingRecipientName = null,Object? shippingPhone = null,Object? shippingLine1 = null,Object? shippingLine2 = freezed,Object? shippingCity = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? rejectionReason = freezed,}) {
   return _then(ManagedBusinessOrder(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,14 @@ as ManagedOrderStatus,subtotalMinor: null == subtotalMinor ? _self.subtotalMinor
 as int,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as List<ManagedOrderItem>,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as List<ManagedOrderItem>,shippingRecipientName: null == shippingRecipientName ? _self.shippingRecipientName : shippingRecipientName // ignore: cast_nullable_to_non_nullable
+as String,shippingPhone: null == shippingPhone ? _self.shippingPhone : shippingPhone // ignore: cast_nullable_to_non_nullable
+as String,shippingLine1: null == shippingLine1 ? _self.shippingLine1 : shippingLine1 // ignore: cast_nullable_to_non_nullable
+as String,shippingLine2: freezed == shippingLine2 ? _self.shippingLine2 : shippingLine2 // ignore: cast_nullable_to_non_nullable
+as String?,shippingCity: null == shippingCity ? _self.shippingCity : shippingCity // ignore: cast_nullable_to_non_nullable
+as String,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -159,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String orderId,  String customerName,  ManagedOrderStatus status,  int subtotalMinor,  int discountMinor,  DateTime createdAt,  List<ManagedOrderItem> items,  String? rejectionReason)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String orderId,  String customerName,  ManagedOrderStatus status,  int subtotalMinor,  int discountMinor,  DateTime createdAt,  List<ManagedOrderItem> items,  String shippingRecipientName,  String shippingPhone,  String shippingLine1,  String? shippingLine2,  String shippingCity,  String? paymentMethod,  String? paymentStatus,  String? rejectionReason)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ManagedBusinessOrder() when $default != null:
-return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.subtotalMinor,_that.discountMinor,_that.createdAt,_that.items,_that.rejectionReason);case _:
+return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.subtotalMinor,_that.discountMinor,_that.createdAt,_that.items,_that.shippingRecipientName,_that.shippingPhone,_that.shippingLine1,_that.shippingLine2,_that.shippingCity,_that.paymentMethod,_that.paymentStatus,_that.rejectionReason);case _:
   return orElse();
 
 }
@@ -180,10 +187,10 @@ return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.sub
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String orderId,  String customerName,  ManagedOrderStatus status,  int subtotalMinor,  int discountMinor,  DateTime createdAt,  List<ManagedOrderItem> items,  String? rejectionReason)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String orderId,  String customerName,  ManagedOrderStatus status,  int subtotalMinor,  int discountMinor,  DateTime createdAt,  List<ManagedOrderItem> items,  String shippingRecipientName,  String shippingPhone,  String shippingLine1,  String? shippingLine2,  String shippingCity,  String? paymentMethod,  String? paymentStatus,  String? rejectionReason)  $default,) {final _that = this;
 switch (_that) {
 case _ManagedBusinessOrder():
-return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.subtotalMinor,_that.discountMinor,_that.createdAt,_that.items,_that.rejectionReason);case _:
+return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.subtotalMinor,_that.discountMinor,_that.createdAt,_that.items,_that.shippingRecipientName,_that.shippingPhone,_that.shippingLine1,_that.shippingLine2,_that.shippingCity,_that.paymentMethod,_that.paymentStatus,_that.rejectionReason);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +207,10 @@ return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.sub
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String orderId,  String customerName,  ManagedOrderStatus status,  int subtotalMinor,  int discountMinor,  DateTime createdAt,  List<ManagedOrderItem> items,  String? rejectionReason)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String orderId,  String customerName,  ManagedOrderStatus status,  int subtotalMinor,  int discountMinor,  DateTime createdAt,  List<ManagedOrderItem> items,  String shippingRecipientName,  String shippingPhone,  String shippingLine1,  String? shippingLine2,  String shippingCity,  String? paymentMethod,  String? paymentStatus,  String? rejectionReason)?  $default,) {final _that = this;
 switch (_that) {
 case _ManagedBusinessOrder() when $default != null:
-return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.subtotalMinor,_that.discountMinor,_that.createdAt,_that.items,_that.rejectionReason);case _:
+return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.subtotalMinor,_that.discountMinor,_that.createdAt,_that.items,_that.shippingRecipientName,_that.shippingPhone,_that.shippingLine1,_that.shippingLine2,_that.shippingCity,_that.paymentMethod,_that.paymentStatus,_that.rejectionReason);case _:
   return null;
 
 }
@@ -215,7 +222,7 @@ return $default(_that.id,_that.orderId,_that.customerName,_that.status,_that.sub
 
 
 class _ManagedBusinessOrder extends ManagedBusinessOrder {
-  const _ManagedBusinessOrder({required this.id, required this.orderId, required this.customerName, required this.status, required this.subtotalMinor, required this.discountMinor, required this.createdAt, required  List<ManagedOrderItem> items, this.rejectionReason}): _items = items,super._();
+  const _ManagedBusinessOrder({required this.id, required this.orderId, required this.customerName, required this.status, required this.subtotalMinor, required this.discountMinor, required this.createdAt, required  List<ManagedOrderItem> items, this.shippingRecipientName = '', this.shippingPhone = '', this.shippingLine1 = '', this.shippingLine2, this.shippingCity = '', this.paymentMethod, this.paymentStatus, this.rejectionReason}): _items = items,super._();
   
 
 @override final  String id;
@@ -232,6 +239,13 @@ class _ManagedBusinessOrder extends ManagedBusinessOrder {
   return EqualUnmodifiableListView(_items);
 }
 
+@override@JsonKey() final  String shippingRecipientName;
+@override@JsonKey() final  String shippingPhone;
+@override@JsonKey() final  String shippingLine1;
+@override final  String? shippingLine2;
+@override@JsonKey() final  String shippingCity;
+@override final  String? paymentMethod;
+@override final  String? paymentStatus;
 @override final  String? rejectionReason;
 
 /// Create a copy of ManagedBusinessOrder
@@ -244,16 +258,16 @@ _$ManagedBusinessOrderCopyWith<_ManagedBusinessOrder> get copyWith => __$Managed
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedBusinessOrder&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedBusinessOrder&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.shippingRecipientName, shippingRecipientName) || other.shippingRecipientName == shippingRecipientName)&&(identical(other.shippingPhone, shippingPhone) || other.shippingPhone == shippingPhone)&&(identical(other.shippingLine1, shippingLine1) || other.shippingLine1 == shippingLine1)&&(identical(other.shippingLine2, shippingLine2) || other.shippingLine2 == shippingLine2)&&(identical(other.shippingCity, shippingCity) || other.shippingCity == shippingCity)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,customerName,status,subtotalMinor,discountMinor,createdAt,const DeepCollectionEquality().hash(_items),rejectionReason);
+int get hashCode => Object.hash(runtimeType,id,orderId,customerName,status,subtotalMinor,discountMinor,createdAt,const DeepCollectionEquality().hash(_items),shippingRecipientName,shippingPhone,shippingLine1,shippingLine2,shippingCity,paymentMethod,paymentStatus,rejectionReason);
 
 @override
 String toString() {
-  return 'ManagedBusinessOrder(id: $id, orderId: $orderId, customerName: $customerName, status: $status, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, createdAt: $createdAt, items: $items, rejectionReason: $rejectionReason)';
+  return 'ManagedBusinessOrder(id: $id, orderId: $orderId, customerName: $customerName, status: $status, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, createdAt: $createdAt, items: $items, shippingRecipientName: $shippingRecipientName, shippingPhone: $shippingPhone, shippingLine1: $shippingLine1, shippingLine2: $shippingLine2, shippingCity: $shippingCity, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, rejectionReason: $rejectionReason)';
 }
 
 
@@ -264,7 +278,7 @@ abstract mixin class _$ManagedBusinessOrderCopyWith<$Res> implements $ManagedBus
   factory _$ManagedBusinessOrderCopyWith(_ManagedBusinessOrder value, $Res Function(_ManagedBusinessOrder) _then) = __$ManagedBusinessOrderCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String orderId, String customerName, ManagedOrderStatus status, int subtotalMinor, int discountMinor, DateTime createdAt, List<ManagedOrderItem> items, String? rejectionReason
+ String id, String orderId, String customerName, ManagedOrderStatus status, int subtotalMinor, int discountMinor, DateTime createdAt, List<ManagedOrderItem> items, String shippingRecipientName, String shippingPhone, String shippingLine1, String? shippingLine2, String shippingCity, String? paymentMethod, String? paymentStatus, String? rejectionReason
 });
 
 
@@ -281,7 +295,7 @@ class __$ManagedBusinessOrderCopyWithImpl<$Res>
 
 /// Create a copy of ManagedBusinessOrder
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? customerName = null,Object? status = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? createdAt = null,Object? items = null,Object? rejectionReason = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? customerName = null,Object? status = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? createdAt = null,Object? items = null,Object? shippingRecipientName = null,Object? shippingPhone = null,Object? shippingLine1 = null,Object? shippingLine2 = freezed,Object? shippingCity = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? rejectionReason = freezed,}) {
   return _then(_ManagedBusinessOrder(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -291,7 +305,14 @@ as ManagedOrderStatus,subtotalMinor: null == subtotalMinor ? _self.subtotalMinor
 as int,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
-as List<ManagedOrderItem>,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as List<ManagedOrderItem>,shippingRecipientName: null == shippingRecipientName ? _self.shippingRecipientName : shippingRecipientName // ignore: cast_nullable_to_non_nullable
+as String,shippingPhone: null == shippingPhone ? _self.shippingPhone : shippingPhone // ignore: cast_nullable_to_non_nullable
+as String,shippingLine1: null == shippingLine1 ? _self.shippingLine1 : shippingLine1 // ignore: cast_nullable_to_non_nullable
+as String,shippingLine2: freezed == shippingLine2 ? _self.shippingLine2 : shippingLine2 // ignore: cast_nullable_to_non_nullable
+as String?,shippingCity: null == shippingCity ? _self.shippingCity : shippingCity // ignore: cast_nullable_to_non_nullable
+as String,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
+as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

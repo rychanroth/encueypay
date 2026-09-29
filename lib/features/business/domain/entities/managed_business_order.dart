@@ -15,6 +15,13 @@ abstract class ManagedBusinessOrder with _$ManagedBusinessOrder {
     required int discountMinor,
     required DateTime createdAt,
     required List<ManagedOrderItem> items,
+    @Default('') String shippingRecipientName,
+    @Default('') String shippingPhone,
+    @Default('') String shippingLine1,
+    String? shippingLine2,
+    @Default('') String shippingCity,
+    String? paymentMethod,
+    String? paymentStatus,
     String? rejectionReason,
   }) = _ManagedBusinessOrder;
 
