@@ -79,10 +79,17 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
-                onTap: () => showProductImageGallery(
-                  context,
-                  imageUrls: widget.product.imageUrls,
-                ),
+                // A variant with its own image views that image full-screen;
+                // otherwise the base product's gallery.
+                onTap: () {
+                  final variantImage = selected?.imageUrl;
+                  showProductImageGallery(
+                    context,
+                    imageUrls: variantImage != null
+                        ? [variantImage]
+                        : widget.product.imageUrls,
+                  );
+                },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: SizedBox(
