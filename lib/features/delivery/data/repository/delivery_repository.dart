@@ -1,5 +1,6 @@
 import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/delivery.dart';
+import '../../domain/entities/transaction.dart';
 
 /// Driver delivery contract (spec §58 Delivery ops) (DATA-03).
 abstract interface class IDeliveryRepository {
@@ -15,6 +16,10 @@ abstract interface class IDeliveryRepository {
   Future<DriverDelivery?> fetchMyActiveDelivery();
 
   Future<List<DriverDelivery>> fetchMyHistory();
+
+  /// Realized earning lines (delivered deliveries) for [day] —
+  /// server-computed, booked at delivery completion (§58).
+  Future<List<DriverTransactionEntry>> fetchDriverTransactions(DateTime day);
 
   Future<void> acceptDelivery(String deliveryId);
 

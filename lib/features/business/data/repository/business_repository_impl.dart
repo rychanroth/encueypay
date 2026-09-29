@@ -9,6 +9,7 @@ import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/analytics.dart';
 import '../../domain/entities/business_profile.dart';
 import '../../domain/entities/managed_business_order.dart';
+import '../../domain/entities/transaction.dart';
 import '../dtos/business_dtos.dart';
 import '../mappers/business_mapper.dart';
 import 'business_repository.dart';
@@ -50,6 +51,29 @@ class BusinessRepositoryImpl implements IBusinessRepository {
                 ))
             .toList(),
       );
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<List<BusinessTransactionEntry>> fetchBusinessTransactions(
+      DateTime day) async {
+    try {
+      final rows = await _client.rpc('get_business_transactions', params: {
+        'p_day': day.toIso8601String().substring(0, 10),
+      });
+      return (rows as List)
+          .whereType<Map<String, dynamic>>()
+          .map((row) => BusinessTransactionEntry(
+                id: row['id'] as String,
+                occurredAt: DateTime.parse(row['occurred_at'] as String),
+                amountMinor: (row['amount'] as num).toInt(),
+                label: row['label'] as String? ?? '',
+              ))
+          .toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {

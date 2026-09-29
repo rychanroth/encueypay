@@ -10,9 +10,11 @@ import 'branches/admin_promotions_branch.dart';
 import 'branches/business_dashboard_branch.dart';
 import 'branches/business_orders_branch.dart';
 import 'branches/business_products_branch.dart';
+import 'branches/business_transactions_branch.dart';
 import 'branches/cart_branch.dart';
 import 'branches/driver_available_branch.dart';
 import 'branches/driver_deliveries_branch.dart';
+import 'branches/driver_transactions_branch.dart';
 import 'branches/home_branch.dart';
 import 'branches/orders_branch.dart';
 import 'branches/profile_branch.dart';
@@ -73,6 +75,11 @@ List<NavigationTab> tabsForRole(UserRole role) {
           label: 'Orders',
         ),
         NavigationTab(
+          branch: businessTransactionsBranch,
+          icon: Icons.payments_outlined,
+          label: 'Transactions',
+        ),
+        NavigationTab(
           branch: profileBranch,
           icon: Icons.person_outline,
           label: 'Profile',
@@ -88,6 +95,11 @@ List<NavigationTab> tabsForRole(UserRole role) {
           branch: driverDeliveriesBranch,
           icon: Icons.route_outlined,
           label: 'My deliveries',
+        ),
+        NavigationTab(
+          branch: driverTransactionsBranch,
+          icon: Icons.payments_outlined,
+          label: 'Transactions',
         ),
         NavigationTab(
           branch: profileBranch,

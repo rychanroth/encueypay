@@ -48,10 +48,12 @@ abstract final class AppRoutes {
   static const businessProductForm = 'businessProductForm';
   static const businessOrders = 'businessOrders';
   static const businessOrderDetail = 'businessOrderDetail';
+  static const businessTransactions = 'businessTransactions';
 
   // Driver tabs.
   static const driverAvailable = 'driverAvailable';
   static const driverDeliveries = 'driverDeliveries';
+  static const driverTransactions = 'driverTransactions';
 
   // Admin tabs.
   static const adminDashboard = 'adminDashboard';

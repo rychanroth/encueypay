@@ -5,6 +5,7 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/delivery.dart';
+import '../../domain/entities/transaction.dart';
 import '../dtos/delivery_dtos.dart';
 import '../mappers/delivery_mapper.dart';
 import 'delivery_repository.dart';
@@ -25,6 +26,29 @@ class DeliveryRepositoryImpl implements IDeliveryRepository {
       'orders(shipping_line1, shipping_city, users(full_name)), '
       'pickup_stops(id, sequence, status, '
       'business_orders(businesses(name)))';
+
+  @override
+  Future<List<DriverTransactionEntry>> fetchDriverTransactions(
+      DateTime day) async {
+    try {
+      final rows = await _client.rpc('get_driver_transactions', params: {
+        'p_day': day.toIso8601String().substring(0, 10),
+      });
+      return (rows as List)
+          .whereType<Map<String, dynamic>>()
+          .map((row) => DriverTransactionEntry(
+                id: row['id'] as String,
+                occurredAt: DateTime.parse(row['occurred_at'] as String),
+                amountMinor: (row['amount'] as num).toInt(),
+                label: row['label'] as String? ?? '',
+              ))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
 
   Future<void> _rpc(String function, Map<String, dynamic> params) async {
     try {

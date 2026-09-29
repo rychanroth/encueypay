@@ -2,12 +2,17 @@ import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/analytics.dart';
 import '../../domain/entities/business_profile.dart';
 import '../../domain/entities/managed_business_order.dart';
+import '../../domain/entities/transaction.dart';
 
 /// Business portal contract (spec §58 Business ops) (DATA-03). All
 /// authorization is server-side via RLS + RPC ownership checks (§35.2).
 abstract interface class IBusinessRepository {
   /// Server-computed analytics for the signed-in business (§58).
   Future<BusinessAnalytics> fetchMyAnalytics();
+
+  /// Realized profit lines (completed orders' net revenue) for [day] —
+  /// server-computed, booked at pickup completion (§58).
+  Future<List<BusinessTransactionEntry>> fetchBusinessTransactions(DateTime day);
 
   /// Realtime sync signal (§31/§54): emits whenever this business's orders
   /// change; consumers refetch ground truth.
