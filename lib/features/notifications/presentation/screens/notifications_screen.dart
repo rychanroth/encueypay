@@ -34,6 +34,25 @@ class NotificationsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('$error')),
         data: (state) {
+          // Stream errors arrive as StreamError *data* events (DATA-06) —
+          // the controller keeps items empty for them. Never show the empty
+          // state for a failure; surface it with a retry instead.
+          if (state.error != null) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(state.error!, textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  FilledButton.tonal(
+                    onPressed: () => ref
+                        .invalidate(notificationsControllerProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
           if (state.items.isEmpty) {
             return const Center(child: Text('No notifications yet.'));
           }
