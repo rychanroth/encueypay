@@ -15,7 +15,9 @@ extension CheckoutAddressDtoX on CheckoutAddressDto {
 }
 
 extension CheckoutItemDtoX on CheckoutItemDto {
-  /// Unit price falls back variant → product base price (DATA-02 defaults).
+  /// Unit price falls back variant → product base price (DATA-02 defaults) —
+  /// the same coalesce the order RPC prices with, so the summary matches the
+  /// cart and the placed order.
   CheckoutItem toDomain() {
     final variant = productVariants;
     final product = variant?.products;
@@ -24,7 +26,7 @@ extension CheckoutItemDtoX on CheckoutItemDto {
       productName: product?.name ?? 'Unknown product',
       variantName: variant?.name,
       businessName: product?.businesses?.name ?? 'Unknown business',
-      unitPriceMinor: product?.basePriceMinor ?? 0,
+      unitPriceMinor: variant?.priceMinor ?? product?.basePriceMinor ?? 0,
       quantity: quantity,
     );
   }

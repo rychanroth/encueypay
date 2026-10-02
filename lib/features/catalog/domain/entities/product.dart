@@ -13,6 +13,10 @@ abstract class Product with _$Product {
     required String name,
     @Default('') String description,
     required int basePriceMinor,
+
+    /// Cheapest selectable price — min over variant effective prices, base
+    /// price when the product has none. What grids/cards display.
+    required int fromPriceMinor,
     @Default(ProductStatus.active) ProductStatus status,
     @Default([]) List<String> imageUrls,
   }) = _Product;

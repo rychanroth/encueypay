@@ -50,6 +50,7 @@ CheckoutVariantJoinDto _$CheckoutVariantJoinDtoFromJson(
   Map<String, dynamic> json,
 ) => CheckoutVariantJoinDto(
   name: json['name'] as String?,
+  priceMinor: (json['price_minor'] as num?)?.toInt(),
   products: json['products'] == null
       ? null
       : CheckoutProductJoinDto.fromJson(
@@ -59,7 +60,11 @@ CheckoutVariantJoinDto _$CheckoutVariantJoinDtoFromJson(
 
 Map<String, dynamic> _$CheckoutVariantJoinDtoToJson(
   CheckoutVariantJoinDto instance,
-) => <String, dynamic>{'name': instance.name, 'products': instance.products};
+) => <String, dynamic>{
+  'name': instance.name,
+  'price_minor': instance.priceMinor,
+  'products': instance.products,
+};
 
 CheckoutProductJoinDto _$CheckoutProductJoinDtoFromJson(
   Map<String, dynamic> json,

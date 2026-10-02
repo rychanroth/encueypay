@@ -57,7 +57,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    Money(product.basePriceMinor).format(),
+                    Money(product.fromPriceMinor).format(),
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),

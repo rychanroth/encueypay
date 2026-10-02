@@ -64,7 +64,7 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
       final rows = await _client
           .from('cart_items')
           .select(
-            'id, quantity, product_variants(name, '
+            'id, quantity, product_variants(name, price_minor, '
             'products(name, base_price_minor, businesses(name)))',
           )
           .eq('cart_id', cart['id'] as String)

@@ -54,12 +54,14 @@ class CheckoutItemDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CheckoutVariantJoinDto {
-  const CheckoutVariantJoinDto({this.name, this.products});
+  const CheckoutVariantJoinDto({this.name, this.priceMinor, this.products});
 
   factory CheckoutVariantJoinDto.fromJson(Map<String, dynamic> json) =>
       _$CheckoutVariantJoinDtoFromJson(json);
 
   final String? name;
+
+  final int? priceMinor;
 
   @JsonKey(name: 'products')
   final CheckoutProductJoinDto? products;

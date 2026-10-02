@@ -33,7 +33,10 @@ class CatalogRepositoryImpl implements ICatalogRepository {
 
   // `*` is required: an embed-only select makes PostgREST omit the product's
   // own columns, which then fail ProductDto.fromJson's required fields.
-  static const _imageSelect = '*, product_images(storage_path, sort_order)';
+  // price-only variants feed the card "from" price.
+  static const _productSelect =
+      '*, product_images(storage_path, sort_order), '
+      'product_variants(price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
   /// resolved here in the data layer — never in the UI.
@@ -102,7 +105,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     try {
       var request = _client
           .from('products')
-          .select(_imageSelect)
+          .select(_productSelect)
           .eq('status', 'active');
       if (categoryId != null) {
         request = request.eq('category_id', categoryId);
@@ -190,7 +193,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     try {
       final rows = await _client
           .from('products')
-          .select(_imageSelect)
+          .select(_productSelect)
           .eq('status', 'active')
           .eq('category_id', categoryId)
           .neq('id', excludeProductId)
@@ -235,7 +238,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         _client.from('businesses').select().eq('id', businessId).maybeSingle(),
         _client
             .from('products')
-            .select(_imageSelect)
+            .select(_productSelect)
             .eq('status', 'active')
             .eq('business_id', businessId)
             .order('created_at', ascending: false)

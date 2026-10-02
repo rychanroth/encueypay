@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'product_image_ref_dto.dart';
+import 'product_variant_dto.dart';
 
 part 'product_dto.g.dart';
 
@@ -17,6 +18,7 @@ class ProductDto {
     required this.basePriceMinor,
     this.status,
     this.productImages = const [],
+    this.productVariants = const [],
   });
 
   factory ProductDto.fromJson(Map<String, dynamic> json) =>
@@ -33,6 +35,11 @@ class ProductDto {
   /// PostgREST embed key `product_images` (fieldRename.snake matches).
   @JsonKey(defaultValue: [])
   final List<ProductImageRefDto> productImages;
+
+  /// Price-only variant embed for card "from" prices (may be absent from
+  /// partial selects; full-variant embeds also parse — extra keys ignored).
+  @JsonKey(name: 'product_variants', defaultValue: [])
+  final List<ProductVariantPriceDto> productVariants;
 
   Map<String, dynamic> toJson() => _$ProductDtoToJson(this);
 }

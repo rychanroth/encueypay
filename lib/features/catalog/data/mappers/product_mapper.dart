@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../../domain/entities/product.dart';
 import '../dtos/product_dto.dart';
 
@@ -12,8 +14,19 @@ extension ProductDtoX on ProductDto {
       name: name,
       description: description,
       basePriceMinor: basePriceMinor,
+      fromPriceMinor: _fromPriceMinor(),
       status: ProductStatus.fromName(status),
       imageUrls: imageUrls,
     );
+  }
+
+  /// Cheapest selectable price — min over variant effective prices (a
+  /// variant without an explicit price falls back to the base price), the
+  /// base price itself when there are no variants.
+  int _fromPriceMinor() {
+    if (productVariants.isEmpty) return basePriceMinor;
+    return productVariants
+        .map((variant) => variant.priceMinor ?? basePriceMinor)
+        .reduce(min);
   }
 }

@@ -44,7 +44,7 @@ final class BusinessOrdersControllerProvider
 }
 
 String _$businessOrdersControllerHash() =>
-    r'6e074d5763c2c2eb18001223fb4af8beba9ac15a';
+    r'99d27f3152fb92a0dd6328fdf4f4075106a09a1c';
 
 /// Incoming/active business orders. Realtime is a sync signal (§31/§54):
 /// stream events trigger a refetch of ground truth.

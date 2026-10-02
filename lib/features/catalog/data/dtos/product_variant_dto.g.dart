@@ -27,3 +27,11 @@ Map<String, dynamic> _$ProductVariantDtoToJson(ProductVariantDto instance) =>
       'image_path': instance.imagePath,
       'status': instance.status,
     };
+
+ProductVariantPriceDto _$ProductVariantPriceDtoFromJson(
+  Map<String, dynamic> json,
+) => ProductVariantPriceDto(priceMinor: (json['price_minor'] as num?)?.toInt());
+
+Map<String, dynamic> _$ProductVariantPriceDtoToJson(
+  ProductVariantPriceDto instance,
+) => <String, dynamic>{'price_minor': instance.priceMinor};

@@ -45,7 +45,7 @@ final class AvailableDeliveriesControllerProvider
 }
 
 String _$availableDeliveriesControllerHash() =>
-    r'0903e79dd0b1761befd3f519a747352d113c25a3';
+    r'a880249f010b665a066b5ead80c68b4b075587ef';
 
 /// Available deliveries for drivers. Realtime is a sync signal (§31/§54):
 /// stream events trigger a refetch of ground truth.

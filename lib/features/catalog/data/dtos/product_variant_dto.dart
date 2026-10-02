@@ -28,3 +28,18 @@ class ProductVariantDto {
 
   Map<String, dynamic> toJson() => _$ProductVariantDtoToJson(this);
 }
+
+/// Slim wire shape for price-only variant embeds
+/// (`select('product_variants(price_minor)')`) — grid cards derive the
+/// displayed "from" price from it.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ProductVariantPriceDto {
+  const ProductVariantPriceDto({this.priceMinor});
+
+  factory ProductVariantPriceDto.fromJson(Map<String, dynamic> json) =>
+      _$ProductVariantPriceDtoFromJson(json);
+
+  final int? priceMinor;
+
+  Map<String, dynamic> toJson() => _$ProductVariantPriceDtoToJson(this);
+}
