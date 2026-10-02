@@ -53,6 +53,8 @@ class BusinessProductsController extends _$BusinessProductsController {
     required int basePriceMinor,
     required List<BusinessProductImage> removedImages,
     required List<ImagePickDraft> newImages,
+    Map<String, VariantDraft> variantEdits = const {},
+    List<VariantDraft> newVariants = const [],
   }) async {
     final current = state.value ?? const <BusinessProduct>[];
     state = await AsyncValue.guard(() async {
@@ -64,6 +66,23 @@ class BusinessProductsController extends _$BusinessProductsController {
             description: description,
             basePriceMinor: basePriceMinor,
           );
+      // If a variant/image step fails after the product update, the error
+      // surfaces via the guard; the product (and earlier steps) persist and
+      // can be fixed through the edit form.
+      for (final entry in variantEdits.entries) {
+        await repository.updateProductVariant(
+          variantId: entry.key,
+          name: entry.value.name,
+          priceMinor: entry.value.priceMinor,
+        );
+      }
+      for (final draft in newVariants) {
+        await repository.addProductVariant(
+          productId: productId,
+          name: draft.name,
+          priceMinor: draft.priceMinor,
+        );
+      }
       for (final image in removedImages) {
         await repository.removeProductImage(
           imageId: image.id,
@@ -134,18 +153,20 @@ class BusinessProductsController extends _$BusinessProductsController {
     });
   }
 
-  /// Replaces a variant's image (or clears it) and refreshes the list. A
-  /// failure surfaces through the guard; the previous image stays if the
-  /// swap itself failed.
-  Future<void> updateVariantImage({
+  /// Replaces a variant's image and refreshes the list. Returns the stored
+  /// path + public URL so the caller can update local state in place; null
+  /// on failure (surfaces through the guard/SnackBar). The previous image
+  /// object is removed best-effort.
+  Future<(String, String)?> updateVariantImage({
     required String variantId,
     required String filePath,
     required String fileName,
     String? previousPath,
   }) async {
     final current = state.value ?? const <BusinessProduct>[];
+    (String, String)? updated;
     state = await AsyncValue.guard(() async {
-      await ref.read(businessRepositoryProvider).updateVariantImage(
+      updated = await ref.read(businessRepositoryProvider).updateVariantImage(
             variantId: variantId,
             filePath: filePath,
             fileName: fileName,
@@ -154,6 +175,7 @@ class BusinessProductsController extends _$BusinessProductsController {
       ref.invalidateSelf();
       return current;
     });
+    return updated;
   }
 
   Future<void> clearVariantImage({

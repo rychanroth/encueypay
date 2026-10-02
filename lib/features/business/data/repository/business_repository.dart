@@ -75,8 +75,10 @@ abstract interface class IBusinessRepository {
   });
 
   /// Uploads the file and sets it as the variant's image (§48); the replaced
-  /// object is removed best-effort. Null image → clears the reference.
-  Future<void> updateVariantImage({
+  /// object is removed best-effort. Returns the stored path + its public URL
+  /// so the caller can update local state in place. Null image → clears the
+  /// reference.
+  Future<(String, String)> updateVariantImage({
     required String variantId,
     required String filePath,
     required String fileName,

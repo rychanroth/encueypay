@@ -383,7 +383,7 @@ class BusinessRepositoryImpl implements IBusinessRepository {
   }
 
   @override
-  Future<void> updateVariantImage({
+  Future<(String, String)> updateVariantImage({
     required String variantId,
     required String filePath,
     required String fileName,
@@ -422,6 +422,7 @@ class BusinessRepositoryImpl implements IBusinessRepository {
       throw const NetworkFailure();
     }
     _removeObjectBestEffort(previousPath);
+    return (path, _productImageUrl(path));
   }
 
   @override

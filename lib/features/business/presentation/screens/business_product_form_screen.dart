@@ -10,9 +10,9 @@ import '../controllers/business_categories_provider.dart';
 import '../controllers/business_products_controller.dart';
 import '../widgets/product_image_strip.dart';
 
-/// Create (product == null) or edit a product. Variants can be added at
-/// creation or later from the edit form; each variant's image is managed
-/// individually.
+/// Create (product == null) or edit a product. Variant add/edit (name and
+/// price) are staged locally and applied on Save; variant images apply
+/// immediately and update their row in place.
 class BusinessProductFormScreen extends ConsumerStatefulWidget {
   const BusinessProductFormScreen({super.key, this.product});
 
@@ -32,6 +32,8 @@ class _BusinessProductFormScreenState
   final _priceController = TextEditingController();
   String? _categoryId;
   final _variantDrafts = <VariantDraft>[];
+  final _variantEdits = <String, VariantDraft>{};
+  final _variants = <ManagementVariant>[];
   final _initialImages = <BusinessProductImage>[];
   final _images = <BusinessProductImage>[];
   final _imageDrafts = <ImagePickDraft>[];
@@ -45,6 +47,7 @@ class _BusinessProductFormScreenState
       _descriptionController.text = product.description;
       _priceController.text = Money(product.basePriceMinor).format();
       _categoryId = product.categoryId;
+      _variants.addAll(product.variants);
       _initialImages.addAll(product.images);
       _images.addAll(product.images);
     }
@@ -115,19 +118,21 @@ class _BusinessProductFormScreenState
         basePriceMinor: price,
         removedImages: removedImages,
         newImages: List.of(_imageDrafts),
+        variantEdits: Map.of(_variantEdits),
+        newVariants: List.of(_variantDrafts),
       );
     }
     final hasError = ref.read(businessProductsControllerProvider).hasError;
     if (!hasError && mounted) context.pop();
   }
 
-  /// Variant images upload immediately — each is a single self-contained op.
-  /// On success the form pops back to the refetched list.
+  /// Variant images apply immediately (single self-contained op) and update
+  /// the row in place — the form stays open.
   Future<void> _pickVariantImage(ManagementVariant variant) async {
     final file = await FilePicker.pickFile(type: FileType.image);
     if (!mounted) return;
     if (file == null || file.path == null) return;
-    await ref
+    final updated = await ref
         .read(businessProductsControllerProvider.notifier)
         .updateVariantImage(
           variantId: variant.id,
@@ -136,7 +141,15 @@ class _BusinessProductFormScreenState
           previousPath: variant.imagePath,
         );
     final hasError = ref.read(businessProductsControllerProvider).hasError;
-    if (!hasError && mounted) context.pop();
+    if (!hasError && updated != null && mounted) {
+      setState(() {
+        final index = _variants.indexWhere((v) => v.id == variant.id);
+        if (index != -1) {
+          _variants[index] = _variants[index]
+              .copyWith(imagePath: updated.$1, imageUrl: updated.$2);
+        }
+      });
+    }
   }
 
   Future<void> _clearVariantImage(ManagementVariant variant) async {
@@ -147,7 +160,15 @@ class _BusinessProductFormScreenState
           previousPath: variant.imagePath!,
         );
     final hasError = ref.read(businessProductsControllerProvider).hasError;
-    if (!hasError && mounted) context.pop();
+    if (!hasError && mounted) {
+      setState(() {
+        final index = _variants.indexWhere((v) => v.id == variant.id);
+        if (index != -1) {
+          _variants[index] =
+              _variants[index].copyWith(imagePath: null, imageUrl: null);
+        }
+      });
+    }
   }
 
   /// Name + optional price prompt shared by the create, add and edit flows.
@@ -213,38 +234,24 @@ class _BusinessProductFormScreenState
     });
   }
 
-  /// Edit flow: the variant is created server-side immediately; on success
-  /// the form pops back to the refetched list (same as variant image ops).
-  /// Edit flow: the variant is renamed/repriced server-side immediately; on
-  /// success the form pops back to the refetched list.
+  /// Stages a name/price change against an existing variant — applied on
+  /// Save, no server call yet. Re-staging the original values unstages.
   Future<void> _editVariant(ManagementVariant variant) async {
+    final staged = _variantEdits[variant.id];
     final draft = await _promptVariant(
       title: 'Edit variant',
-      initialName: variant.name,
-      initialPriceMinor: variant.priceMinor,
+      initialName: staged?.name ?? variant.name,
+      initialPriceMinor: staged?.priceMinor ?? variant.priceMinor,
     );
     if (draft == null || !mounted) return;
-    await ref.read(businessProductsControllerProvider.notifier).updateVariant(
-          variantId: variant.id,
-          name: draft.$1,
-          priceMinor: draft.$2,
-        );
-    final hasError = ref.read(businessProductsControllerProvider).hasError;
-    if (!hasError && mounted) context.pop();
-  }
-
-  Future<void> _addVariantToProduct() async {
-    final product = widget.product;
-    if (product == null) return;
-    final draft = await _promptVariant();
-    if (draft == null || !mounted) return;
-    await ref.read(businessProductsControllerProvider.notifier).addVariant(
-          productId: product.id,
-          name: draft.$1,
-          priceMinor: draft.$2,
-        );
-    final hasError = ref.read(businessProductsControllerProvider).hasError;
-    if (!hasError && mounted) context.pop();
+    setState(() {
+      if (draft.$1 == variant.name && draft.$2 == variant.priceMinor) {
+        _variantEdits.remove(variant.id);
+      } else {
+        _variantEdits[variant.id] =
+            VariantDraft(name: draft.$1, priceMinor: draft.$2);
+      }
+    });
   }
 
   @override
@@ -351,7 +358,8 @@ class _BusinessProductFormScreenState
             Text('Variants',
                 style: theme.textTheme.titleSmall
                     ?.copyWith(fontWeight: FontWeight.bold)),
-            for (final variant in widget.product!.variants)
+            const SizedBox(height: 4),
+            for (final variant in _variants)
               ListTile(
                 dense: true,
                 onTap: () => _editVariant(variant),
@@ -368,10 +376,11 @@ class _BusinessProductFormScreenState
                         ),
                       )
                     : const Icon(Icons.image_outlined),
-                title: Text(variant.name),
-                subtitle: Text(variant.priceMinor == null
-                    ? 'base price'
-                    : Money(variant.priceMinor!).format()),
+                title: Text(_variantEdits[variant.id]?.name ?? variant.name),
+                subtitle: Text(
+                  '${_variantEdits[variant.id]?.priceMinor == null ? 'base price' : Money(_variantEdits[variant.id]!.priceMinor!).format()}'
+                  '${_variantEdits.containsKey(variant.id) ? ' · edited (applies on Save)' : ''}',
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -389,8 +398,22 @@ class _BusinessProductFormScreenState
                   ],
                 ),
               ),
+            for (final draft in _variantDrafts)
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.layers_outlined),
+                title: Text(draft.name),
+                subtitle: Text(draft.priceMinor == null
+                    ? 'base price'
+                    : Money(draft.priceMinor!).format()),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () =>
+                      setState(() => _variantDrafts.remove(draft)),
+                ),
+              ),
             OutlinedButton.icon(
-              onPressed: _addVariantToProduct,
+              onPressed: _addVariantDraft,
               icon: const Icon(Icons.add),
               label: const Text('Add variant'),
             ),
