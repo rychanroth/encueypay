@@ -221,7 +221,10 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         return CatalogBanner(
           id: row['id'] as String,
           name: row['name'] as String? ?? '',
-          imageUrl: _client.storage.from('promo_assets').getPublicUrl(path),
+          // submit_banner stores a FULL public URL; only re-wrap bare paths.
+          imageUrl: path.startsWith('http')
+              ? path
+              : _client.storage.from('promo_assets').getPublicUrl(path),
         );
       }).toList();
     } on PostgrestException catch (e) {

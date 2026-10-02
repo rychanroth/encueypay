@@ -31,9 +31,14 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
       final dto = PromotionDto.fromJson(row);
       final bannerPath = dto.bannerImagePath;
       return dto.toDomain(
+        // submit_banner stores a FULL public URL; only re-wrap bare paths.
         bannerUrl: bannerPath == null
             ? null
-            : _client.storage.from('promo_assets').getPublicUrl(bannerPath),
+            : bannerPath.startsWith('http')
+                ? bannerPath
+                : _client.storage
+                    .from('promo_assets')
+                    .getPublicUrl(bannerPath),
       );
     }).toList();
   }
