@@ -9,6 +9,10 @@ import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
 
+/// Customer order detail (spec §12/§13/§20/§21): order parts, payment proof
+/// upload, delivery progress view, cancel, return and review entry points.
+/// Customer-only by design — the business counterpart is
+/// ManagedOrderDetailScreen, driver flows live in the delivery feature.
 class OrderDetailScreen extends ConsumerWidget {
   const OrderDetailScreen({super.key, required this.orderId});
 

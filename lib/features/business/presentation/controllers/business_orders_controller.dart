@@ -13,7 +13,10 @@ class BusinessOrdersController extends _$BusinessOrdersController {
   @override
   Future<List<ManagedBusinessOrder>> build() async {
     final repository = ref.watch(businessRepositoryProvider);
-    final subscription = repository.watchOrderChanges().listen((result) {
+    final subscription = repository
+        .watchOrderChanges()
+        .skipInitialSnapshot()
+        .listen((result) {
       if (result is StreamData) ref.invalidateSelf();
     });
     ref.onDispose(subscription.cancel);

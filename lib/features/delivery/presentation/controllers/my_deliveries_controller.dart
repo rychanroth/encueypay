@@ -22,8 +22,10 @@ class MyDeliveriesController extends _$MyDeliveriesController {
   @override
   Future<MyDeliveriesState> build() async {
     final repository = ref.watch(deliveryRepositoryProvider);
-    final subscription =
-        repository.watchMyDeliveryChanges().listen((result) {
+    final subscription = repository
+        .watchMyDeliveryChanges()
+        .skipInitialSnapshot()
+        .listen((result) {
       if (result is StreamData) ref.invalidateSelf();
     });
     ref.onDispose(subscription.cancel);

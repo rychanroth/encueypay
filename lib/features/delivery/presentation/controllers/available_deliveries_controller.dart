@@ -13,8 +13,10 @@ class AvailableDeliveriesController extends _$AvailableDeliveriesController {
   @override
   Future<List<AvailableDelivery>> build() async {
     final repository = ref.watch(deliveryRepositoryProvider);
-    final subscription =
-        repository.watchAvailableChanges().listen((result) {
+    final subscription = repository
+        .watchAvailableChanges()
+        .skipInitialSnapshot()
+        .listen((result) {
       if (result is StreamData) ref.invalidateSelf();
     });
     ref.onDispose(subscription.cancel);

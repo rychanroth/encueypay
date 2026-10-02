@@ -1,1 +1,1 @@
-s
+select * from orders;

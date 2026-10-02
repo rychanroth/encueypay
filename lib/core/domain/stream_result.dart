@@ -47,3 +47,20 @@ extension StreamResultGuardX<T> on Stream<T> {
     );
   }
 }
+
+extension StreamResultInitialSkipX<T> on Stream<StreamResult<T>> {
+  /// Drops the first [StreamData] event. Supabase `.stream()` emits the
+  /// current rows as a snapshot on EVERY (re)subscription — controllers that
+  /// refetch on stream events must not treat that snapshot as a change, or
+  /// they invalidate → resubscribe → snapshot → invalidate, forever.
+  Stream<StreamResult<T>> skipInitialSnapshot() async* {
+    var snapshotSkipped = false;
+    await for (final result in this) {
+      if (result is StreamData<T> && !snapshotSkipped) {
+        snapshotSkipped = true;
+        continue;
+      }
+      yield result;
+    }
+  }
+}
