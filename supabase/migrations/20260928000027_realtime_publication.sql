@@ -9,6 +9,11 @@ do $$
 declare
   t text;
 begin
+  -- The publication exists in a real Supabase stack; the scratch harness
+  -- (vanilla Postgres + stub) needs it created.
+  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    create publication supabase_realtime;
+  end if;
   foreach t in array array['notifications', 'orders', 'deliveries', 'business_orders'] loop
     if not exists (
       select 1 from pg_publication_tables
