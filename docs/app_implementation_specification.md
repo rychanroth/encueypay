@@ -67,7 +67,7 @@ A Business can:
 * Manage its business profile
 * Manage its products and variants
 * Archive products
-* Maintain stock
+* Manage product and variant images
 * View its BusinessOrders
 * Accept or reject BusinessOrders
 * Mark orders as preparing
@@ -222,8 +222,7 @@ A Product may contain:
 
 * Name
 * Description
-* Base price
-* Stock information
+* Base price (the fallback anchor for variant pricing)
 * Images
 * Status
 * Timestamps
@@ -247,9 +246,13 @@ T-Shirt
 A variant may have its own:
 
 * Attributes
-* Price
-* Stock
+* Price (optional — an empty price falls back to the product's base price)
+* Image (one optional Storage reference)
 * Status
+
+The variant's price is the sellable price. A product's displayed catalog
+price is the minimum effective variant price; the base price alone is shown
+only for products without variants.
 
 The selected sellable unit in the cart is the ProductVariant where applicable.
 
@@ -273,57 +276,24 @@ This prevents later product edits from corrupting historical orders.
 
 ---
 
-# 7. Inventory Model
+# 7. Catalog Availability Model
 
-Each Business maintains its own product/variant stock.
+Inventory/stock tracking is out of scope for the current implementation
+phase. The `products.stock` and `product_variants.stock` columns were
+removed; no reservation, consumption, or manual-correction logic exists.
 
-The system conceptually distinguishes:
-
-```text
-Current Stock
-Reserved Stock
-Available Stock
-```
-
-Where:
+Availability is purely status-based:
 
 ```text
-Available Stock = Current Stock - Reserved Stock
+Variant active + Product active + Business active  →  purchasable
 ```
 
-## Reservation
+Cart lines merge quantities freely and checkout never validates quantities
+against stock.
 
-Stock is reserved when an order is successfully created.
-
-```text
-Checkout
-  ↓
-Validate Stock
-  ↓
-Reserve Stock
-  ↓
-Create Order
-```
-
-## BusinessOrder cancellation/rejection
-
-If a BusinessOrder is rejected or cancelled:
-
-```text
-Reserved Stock
-      ↓
-Released
-```
-
-## Successful fulfillment
-
-Reserved stock becomes consumed as part of successful fulfillment.
-
-## Manual correction
-
-Business users may manually update stock because platform inventory is not synchronized with external warehouses or real-world inventory systems.
-
-There is no external warehouse/inventory integration in the MVP.
+The domain model keeps its shape (order → BusinessOrders → delivery →
+pickup stops) so an inventory layer can be reintroduced later without
+restructuring the fulfillment pipeline.
 
 ---
 
@@ -342,7 +312,6 @@ The client may display cached/current information, but the server is authoritati
 * Current product state
 * Current variant state
 * Current price
-* Stock
 * Business ownership
 * Validity of cart contents
 
@@ -438,7 +407,8 @@ The overall customer order remains one Order, but each BusinessOrder retains its
 
 A Customer may cancel/reject their order when the established business-state conditions permit cancellation.
 
-Cancellation affects the relevant order/business-order and any related reservations or payment consequences.
+Cancellation affects the relevant order/business-order status and any
+related payment consequences.
 
 If a BusinessOrder is already rejected/cancelled after payment has occurred, the payment/order records may enter:
 
@@ -459,7 +429,6 @@ The BusinessOrder stores the rejection/cancellation reason.
 Consequences may include:
 
 * BusinessOrder becomes cancelled/rejected
-* Reserved inventory is released
 * The overall Order remains represented through its other independent states
 * Payment may require refund handling where applicable
 
@@ -722,7 +691,6 @@ The server validates the complete purchase before committing it.
 * Product status
 * Variant status
 * Current prices
-* Current stock
 * Business ownership
 * Coupon validity
 * Discount applicability
@@ -738,13 +706,9 @@ Load cart
    ↓
 Validate products/variants
    ↓
-Validate stock
-   ↓
 Validate coupons
    ↓
 Calculate prices
-   ↓
-Reserve stock
    ↓
 Create Order
    ↓
@@ -848,6 +812,10 @@ Admins may:
 business promotional banners.
 
 Admins may also create platform-wide promotions.
+
+Banners carry no discount: the `discount_value` positivity check exempts
+banner rows, and `banner_image_path` stores the full public Storage URL of
+the submitted asset (read paths accept both URLs and bare paths).
 
 ---
 
@@ -974,6 +942,11 @@ Realtime is used as a synchronization mechanism, not as the authoritative source
 
 The authoritative state remains the backend/database.
 
+The streamed tables (`notifications`, `orders`, `deliveries`,
+`business_orders`) are members of the `supabase_realtime` publication.
+Every stream subscription also emits an initial snapshot of current rows;
+clients must not mistake that snapshot for a change event.
+
 ---
 
 # 32. Search, Filtering, and Catalog Access
@@ -1021,7 +994,6 @@ Use server-side operations such as:
 Examples include:
 
 * Checkout
-* Atomic stock reservation
 * Atomic delivery assignment
 * Complex coupon calculation
 * State-transition operations
@@ -1098,7 +1070,7 @@ Business operations must be scoped to the authenticated user's Business.
 A Business cannot manipulate another Business's:
 
 * Products
-* Stock
+* Product/variant images
 * BusinessOrders
 * Promotions
 * Returns
@@ -1195,8 +1167,7 @@ Contains:
 * Business ID
 * Category ID
 * Product information
-* Base price
-* Stock information
+* Base price (variant pricing fallback)
 * Status
 * Timestamps
 
@@ -1207,13 +1178,15 @@ Contains:
 * Variant ID
 * Product ID
 * Attributes
-* Price
-* Stock
+* Price (optional, falls back to product base price)
+* Image reference
 * Status
 
 ## `product_images`
 
-Stores image references separately from the core Product record.
+Stores image references separately from the core Product record. Variant
+images (one per variant) live in the same bucket and follow the
+`{business_id}/…` path convention enforced by Storage policies.
 
 ---
 
@@ -1317,6 +1290,7 @@ Contains:
 * Delivery state
 * Delivery fee
 * Driver earning
+* Delivered timestamp
 * Timestamps
 
 ## `pickup_stops`
@@ -1505,6 +1479,11 @@ Domain record → owns reference
 
 Payment proof access must be protected by Storage policies.
 
+Product and variant images live in the public `product_images` bucket;
+every object path's first segment must be the owning Business ID, which
+Storage policies enforce. Banner assets live in the public `promo_assets`
+bucket.
+
 ---
 
 # 49. External Integrations
@@ -1579,11 +1558,10 @@ The following invariants are fundamental implementation rules.
 
 * Return quantity cannot exceed purchased quantity.
 
-### Inventory
+### Catalog availability
 
-* Stock must be available before reservation.
-* Successful order placement creates the reservation atomically.
-* Rejected/cancelled BusinessOrders release their reservations.
+* Availability is status-based: variant, product, and business must all be active.
+* No inventory/reservation logic exists in the current phase.
 
 ### Security
 
@@ -1601,10 +1579,6 @@ Checkout is one of the most critical transactional boundaries.
 The implementation must ensure that these operations either all succeed together or are rolled back together:
 
 ```text
-Stock validation
-+
-Stock reservation
-+
 Order creation
 +
 BusinessOrder creation
@@ -1617,14 +1591,6 @@ Delivery creation
 ```
 
 The system must avoid states such as:
-
-```text
-Stock reserved
-BUT
-Order missing
-```
-
-or:
 
 ```text
 Order created
@@ -1676,7 +1642,6 @@ The server/database layer is authoritative for:
 * Authorization
 * Product validity
 * Prices
-* Stock
 * Coupon calculations
 * Order creation
 * Payment state
@@ -1830,6 +1795,17 @@ Driver PickupStop
 Driver completes delivery
 ```
 
+## Profit
+
+```text
+BusinessOrder completed (driver pickup)
+      ↓
+Business profit booked (subtotal − discount)
+Driver earning booked at delivery
+      ↓
+TransactionHistory filtered by selected day
+```
+
 ## Return
 
 ```text
@@ -1875,7 +1851,11 @@ The implementation must expose or support the following conceptual operations.
 * CreateProduct
 * UpdateProduct
 * ArchiveProduct
-* UpdateProductStock
+* AddProductVariant
+* UpdateProductVariant
+* SetVariantImage
+* AddProductImage
+* RemoveProductImage
 * GetMyBusinessOrders
 * AcceptBusinessOrder
 * RejectBusinessOrder
@@ -1885,6 +1865,7 @@ The implementation must expose or support the following conceptual operations.
 * GetBusinessReturns
 * ApproveReturn
 * RejectReturn
+* GetBusinessTransactions
 
 ## Catalog
 
@@ -1942,6 +1923,7 @@ The implementation must expose or support the following conceptual operations.
 * GetDeliveryHistory
 * GetDeliveryPickupStops
 * GetPickupStop
+* GetDriverTransactions
 
 ## Reviews
 
@@ -2010,6 +1992,69 @@ Supabase Realtime
 FCM
 ```
 
-The backend remains authoritative for business rules, authorization, stock, pricing, discounts, state transitions, and transactional consistency.
+The backend remains authoritative for business rules, authorization, availability, pricing, discounts, state transitions, and transactional consistency.
 
 The MVP deliberately uses mocked/externalized behavior for real banking, refunds, logistics, and GPS so that implementation complexity remains bounded while preserving a domain model capable of supporting those capabilities later.
+
+---
+
+# 60. Implementation Deltas (as built)
+
+Recorded decisions from implementation that extend or supersede the
+sections above. Migrations reference `supabase/migrations/`.
+
+## Realtime (§31)
+
+* `notifications`, `orders`, `deliveries`, and `business_orders` are
+  members of the `supabase_realtime` publication (0027); without membership
+  every `postgres_changes` subscription errors after its initial fetch.
+* Every stream subscription also emits an initial snapshot of current
+  rows — clients skip it and refetch only on real change events.
+
+## Catalog and business portal (§5–§7, §58)
+
+* Inventory tracking removed (0021): no stock columns, no reservation, no
+  manual correction. Availability is status-based (§7).
+* Variant lifecycle RPCs: `add_product_variant` (0022, duplicate-name
+  guarded) and `update_product_variant` (0025). The business form stages
+  variant add/edit and applies them with product Save.
+* Product image management for the owning business (0020):
+  `add_product_image` (server-computed `sort_order` append) plus a Storage
+  DELETE policy; `owns_product_image_object` fixed the upload policy's
+  column-shadowing bug that rejected every upload.
+* Variant images (0021): `product_variants.image_path` +
+  `set_variant_image`, stored in the `product_images` bucket under the
+  business-owned path convention.
+
+## Policies and authorization (§35)
+
+* Security-definer policy helpers terminate policy recursion: returns
+  (0019), `is_admin()`/`is_driver()` (0019), business-order driver checks
+  and owner updates (0023), driver delivery visibility (0028).
+* Driver visibility (0028): assigned drivers read the order address,
+  customer name, and pickup stops; browsing drivers preview available
+  deliveries (stop count, pickup businesses, drop-off city).
+* `cancel_order` and `mark_delivered` run as security definer (each
+  self-authorizes) so customer cancellation and the COD payment flip are
+  not silently dropped by missing row policies.
+* Table grants for `anon`/`authenticated` are maintained explicitly
+  (0015); `users` gained admin read (0017) and backfill (0018).
+
+## Pricing (§22, §50)
+
+* The server prices every line as `coalesce(variant price, product base
+  price)`; the cart, checkout summary, and placed order all use it.
+  Product grids display the minimum effective variant price.
+
+## Promotions (§27)
+
+* Banner rows are exempt from the `discount_value > 0` check (0024) —
+  banners carry no discount. `banner_image_path` stores the full public
+  Storage URL; read paths accept URLs and bare paths.
+
+## Profit history (§58)
+
+* `business_orders.completed_at` (pickup completion) and
+  `deliveries.delivered_at` (delivery) book when profit is realized (0026);
+  `get_business_transactions(p_day)` / `get_driver_transactions(p_day)`
+  serve the per-day TransactionHistory tabs.
