@@ -46,5 +46,6 @@ abstract class ProductReviewInfo with _$ProductReviewInfo {
     required int rating,
     @Default('') String text,
     required DateTime createdAt,
+    String? avatarUrl,
   }) = _ProductReviewInfo;
 }

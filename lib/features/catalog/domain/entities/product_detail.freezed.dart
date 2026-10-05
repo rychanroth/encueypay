@@ -314,7 +314,7 @@ $ProductCopyWith<$Res> get product {
 /// @nodoc
 mixin _$ProductReviewInfo {
 
- String get authorName; int get rating; String get text; DateTime get createdAt;
+ String get authorName; int get rating; String get text; DateTime get createdAt; String? get avatarUrl;
 /// Create a copy of ProductReviewInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -325,16 +325,16 @@ $ProductReviewInfoCopyWith<ProductReviewInfo> get copyWith => _$ProductReviewInf
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductReviewInfo&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductReviewInfo&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,authorName,rating,text,createdAt);
+int get hashCode => Object.hash(runtimeType,authorName,rating,text,createdAt,avatarUrl);
 
 @override
 String toString() {
-  return 'ProductReviewInfo(authorName: $authorName, rating: $rating, text: $text, createdAt: $createdAt)';
+  return 'ProductReviewInfo(authorName: $authorName, rating: $rating, text: $text, createdAt: $createdAt, avatarUrl: $avatarUrl)';
 }
 
 
@@ -345,7 +345,7 @@ abstract mixin class $ProductReviewInfoCopyWith<$Res>  {
   factory $ProductReviewInfoCopyWith(ProductReviewInfo value, $Res Function(ProductReviewInfo) _then) = _$ProductReviewInfoCopyWithImpl;
 @useResult
 $Res call({
- String authorName, int rating, String text, DateTime createdAt
+ String authorName, int rating, String text, DateTime createdAt, String? avatarUrl
 });
 
 
@@ -362,13 +362,14 @@ class _$ProductReviewInfoCopyWithImpl<$Res>
 
 /// Create a copy of ProductReviewInfo
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? authorName = null,Object? rating = null,Object? text = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? authorName = null,Object? rating = null,Object? text = null,Object? createdAt = null,Object? avatarUrl = freezed,}) {
   return _then(ProductReviewInfo(
 authorName: null == authorName ? _self.authorName : authorName // ignore: cast_nullable_to_non_nullable
 as String,rating: null == rating ? _self.rating : rating // ignore: cast_nullable_to_non_nullable
 as int,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -453,10 +454,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String authorName,  int rating,  String text,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String authorName,  int rating,  String text,  DateTime createdAt,  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductReviewInfo() when $default != null:
-return $default(_that.authorName,_that.rating,_that.text,_that.createdAt);case _:
+return $default(_that.authorName,_that.rating,_that.text,_that.createdAt,_that.avatarUrl);case _:
   return orElse();
 
 }
@@ -474,10 +475,10 @@ return $default(_that.authorName,_that.rating,_that.text,_that.createdAt);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String authorName,  int rating,  String text,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String authorName,  int rating,  String text,  DateTime createdAt,  String? avatarUrl)  $default,) {final _that = this;
 switch (_that) {
 case _ProductReviewInfo():
-return $default(_that.authorName,_that.rating,_that.text,_that.createdAt);case _:
+return $default(_that.authorName,_that.rating,_that.text,_that.createdAt,_that.avatarUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -494,10 +495,10 @@ return $default(_that.authorName,_that.rating,_that.text,_that.createdAt);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String authorName,  int rating,  String text,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String authorName,  int rating,  String text,  DateTime createdAt,  String? avatarUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductReviewInfo() when $default != null:
-return $default(_that.authorName,_that.rating,_that.text,_that.createdAt);case _:
+return $default(_that.authorName,_that.rating,_that.text,_that.createdAt,_that.avatarUrl);case _:
   return null;
 
 }
@@ -509,13 +510,14 @@ return $default(_that.authorName,_that.rating,_that.text,_that.createdAt);case _
 
 
 class _ProductReviewInfo implements ProductReviewInfo {
-  const _ProductReviewInfo({required this.authorName, required this.rating, this.text = '', required this.createdAt});
+  const _ProductReviewInfo({required this.authorName, required this.rating, this.text = '', required this.createdAt, this.avatarUrl});
   
 
 @override final  String authorName;
 @override final  int rating;
 @override@JsonKey() final  String text;
 @override final  DateTime createdAt;
+@override final  String? avatarUrl;
 
 /// Create a copy of ProductReviewInfo
 /// with the given fields replaced by the non-null parameter values.
@@ -527,16 +529,16 @@ _$ProductReviewInfoCopyWith<_ProductReviewInfo> get copyWith => __$ProductReview
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductReviewInfo&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductReviewInfo&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,authorName,rating,text,createdAt);
+int get hashCode => Object.hash(runtimeType,authorName,rating,text,createdAt,avatarUrl);
 
 @override
 String toString() {
-  return 'ProductReviewInfo(authorName: $authorName, rating: $rating, text: $text, createdAt: $createdAt)';
+  return 'ProductReviewInfo(authorName: $authorName, rating: $rating, text: $text, createdAt: $createdAt, avatarUrl: $avatarUrl)';
 }
 
 
@@ -547,7 +549,7 @@ abstract mixin class _$ProductReviewInfoCopyWith<$Res> implements $ProductReview
   factory _$ProductReviewInfoCopyWith(_ProductReviewInfo value, $Res Function(_ProductReviewInfo) _then) = __$ProductReviewInfoCopyWithImpl;
 @override @useResult
 $Res call({
- String authorName, int rating, String text, DateTime createdAt
+ String authorName, int rating, String text, DateTime createdAt, String? avatarUrl
 });
 
 
@@ -564,13 +566,14 @@ class __$ProductReviewInfoCopyWithImpl<$Res>
 
 /// Create a copy of ProductReviewInfo
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? authorName = null,Object? rating = null,Object? text = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? authorName = null,Object? rating = null,Object? text = null,Object? createdAt = null,Object? avatarUrl = freezed,}) {
   return _then(_ProductReviewInfo(
 authorName: null == authorName ? _self.authorName : authorName // ignore: cast_nullable_to_non_nullable
 as String,rating: null == rating ? _self.rating : rating // ignore: cast_nullable_to_non_nullable
 as int,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

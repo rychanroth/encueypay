@@ -29,8 +29,14 @@ Map<String, dynamic> _$ProductReviewJoinDtoToJson(
 };
 
 ReviewAuthorJoinDto _$ReviewAuthorJoinDtoFromJson(Map<String, dynamic> json) =>
-    ReviewAuthorJoinDto(fullName: json['full_name'] as String?);
+    ReviewAuthorJoinDto(
+      fullName: json['full_name'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
+    );
 
 Map<String, dynamic> _$ReviewAuthorJoinDtoToJson(
   ReviewAuthorJoinDto instance,
-) => <String, dynamic>{'full_name': instance.fullName};
+) => <String, dynamic>{
+  'full_name': instance.fullName,
+  'avatar_url': instance.avatarUrl,
+};

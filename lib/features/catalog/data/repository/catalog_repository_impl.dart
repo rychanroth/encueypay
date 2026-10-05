@@ -163,7 +163,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .select(
             '*, businesses(name), brands(name), product_variants(*), '
             'product_images(*), '
-            'reviews(id, rating, text, created_at, users(full_name))',
+            'reviews(id, rating, text, created_at, users(full_name, avatar_url))',
           )
           .eq('id', productId)
           .maybeSingle();
@@ -192,6 +192,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
                 rating: d.rating,
                 text: d.text ?? '',
                 createdAt: d.createdAt,
+                avatarUrl: d.users?.avatarUrl,
               ))
           .toList();
 

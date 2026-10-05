@@ -7,6 +7,8 @@ import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/product.dart';
 import '../controllers/product_detail_controller.dart';
 import '../widgets/product_card.dart';
+import '../widgets/rating_stars.dart';
+import '../widgets/review_card.dart';
 import '../widgets/product_image_gallery.dart';
 import '../widgets/variant_picker_sheet.dart';
 
@@ -147,20 +149,7 @@ class ProductDetailScreen extends ConsumerWidget {
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       for (final review in detail.reviews)
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.star,
-                              color: Colors.amber, size: 20),
-                          title: Text(review.authorName),
-                          subtitle: Text(
-                            review.text.isEmpty ? '—' : review.text,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Text('${review.rating}/5',
-                              style: theme.textTheme.bodySmall),
-                        ),
+                        ReviewCard(review: review),
                     ],
                         ],
                       ),
@@ -227,36 +216,6 @@ class ProductDetailScreen extends ConsumerWidget {
           );
         },
       ),
-    );
-  }
-}
-
-/// Visual star display of the aggregate rating (assignment §3/§7). Half
-/// steps render via the half-star glyph; fewer than 0.25 rounds down.
-class RatingStars extends StatelessWidget {
-  const RatingStars({super.key, required this.rating, this.starSize = 18});
-
-  final double rating;
-  final double starSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 1; i <= 5; i++)
-          Icon(
-            rating >= i
-                ? Icons.star
-                : rating >= i - 0.5
-                    ? Icons.star_half
-                    : Icons.star_border,
-            size: starSize,
-            color: Colors.amber,
-          ),
-        const SizedBox(width: 4),
-        Text(rating.toStringAsFixed(1)),
-      ],
     );
   }
 }

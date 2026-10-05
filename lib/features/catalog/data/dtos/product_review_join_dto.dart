@@ -29,12 +29,13 @@ class ProductReviewJoinDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ReviewAuthorJoinDto {
-  const ReviewAuthorJoinDto({this.fullName});
+  const ReviewAuthorJoinDto({this.fullName, this.avatarUrl});
 
   factory ReviewAuthorJoinDto.fromJson(Map<String, dynamic> json) =>
       _$ReviewAuthorJoinDtoFromJson(json);
 
   final String? fullName;
+  final String? avatarUrl;
 
   Map<String, dynamic> toJson() => _$ReviewAuthorJoinDtoToJson(this);
 }
