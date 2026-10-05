@@ -8,9 +8,14 @@ import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/cart_item.dart';
 import '../controllers/cart_controller.dart';
 
-/// Customer tab 2 — Cart. Items are grouped per business (multi-vendor
-/// model, spec §9). Totals are display previews; the server recalculates
-/// authoritatively at checkout (spec §25/§53).
+/// Customer tab 2 — Cart. Totals are display previews; the server
+/// recalculates authoritatively at checkout (spec §25/§53).
+///
+/// 2-Role Academic Prototype: the per-business grouping (multi-vendor model,
+/// old spec §9) is flattened to a single list (living spec Part C L-06) —
+/// vendor identity is bypassed in the customer UI; items still carry their
+/// business through the data model and the server keeps pricing per business
+/// at checkout.
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
@@ -87,7 +92,6 @@ class CartScreen extends ConsumerWidget {
               child: Text('Your cart is empty.'),
             );
           }
-          final groups = _group(items);
           final totalMinor = items.fold<int>(0, (sum, i) => sum + i.lineTotalMinor);
 
           return Column(
@@ -96,22 +100,9 @@ class CartScreen extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    for (final entry in groups.entries) ...[
-                      Text(
-                        entry.key,
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      for (final item in entry.value)
-                        _CartItemTile(item: item),
-                      Text(
-                        'Subtotal ${Money(entry.value.fold<int>(0, (sum, i) => sum + i.lineTotalMinor)).format()}',
-                        textAlign: TextAlign.right,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                    // Flat list (L-06): the previous layout grouped lines per
+                    // business with per-group subtotals.
+                    for (final item in items) _CartItemTile(item: item),
                   ],
                 ),
               ),
@@ -153,17 +144,7 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-  Map<String, List<CartItem>> _group(List<CartItem> items) {
-    final groups = <String, List<CartItem>>{};
-    for (final item in items) {
-      groups
-          .putIfAbsent(item.businessName ?? 'Other', () => [])
-          .add(item);
-    }
-    return groups;
-  }
 }
-
 class _CartItemTile extends ConsumerWidget {
   const _CartItemTile({required this.item});
 

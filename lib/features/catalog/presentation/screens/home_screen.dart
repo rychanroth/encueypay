@@ -4,15 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/router/app_routes.dart';
-import '../../domain/entities/business.dart';
 import '../../domain/entities/category.dart';
 import '../controllers/categories_provider.dart';
 import '../controllers/home_feed_providers.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/product_card.dart';
 
-/// Customer tab 1 — Home. Discovery entry point: search, categories,
-/// businesses, newest products (spec §32).
+/// Customer tab 1 — Home. Discovery entry point: search, categories, banners,
+/// newest products (spec §32). The businesses strip was removed for the
+/// 2-Role Academic Prototype (living spec Part C L-04/L-05) — vendor
+/// discovery is bypassed; the underlying data model is untouched.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -74,13 +75,9 @@ class HomeScreen extends ConsumerWidget {
               queryParameters: {'category': category.id},
             );
           }),
-          _SectionTitle('Businesses'),
-          _BusinessesStrip(onBusinessTap: (business) {
-            context.pushNamed(
-              AppRoutes.businessDetail,
-              pathParameters: {'id': business.id},
-            );
-          }),
+          // 2-Role Academic Prototype: the Businesses strip (L-04) is hidden.
+          // Restore with _SectionTitle('Businesses') + _BusinessesStrip and
+          // the /home/business/:id route in home_branch.dart.
           _SectionTitle('New arrivals'),
           _HomeProductsGrid(columns: columns),
         ],
@@ -191,90 +188,6 @@ class _CategoriesStrip extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _BusinessesStrip extends ConsumerWidget {
-  const _BusinessesStrip({required this.onBusinessTap});
-
-  final void Function(Business business) onBusinessTap;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final businessesAsync = ref.watch(homeBusinessesProvider);
-    return businessesAsync.when(
-      loading: () => const _StripLoading(),
-      error: (error, _) => _StripError(
-        message: '$error',
-        onRetry: () => ref.invalidate(homeBusinessesProvider),
-      ),
-      data: (businesses) {
-        if (businesses.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('No businesses yet.'),
-          );
-        }
-        return SizedBox(
-          height: 120,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: businesses.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final business = businesses[index];
-              return Card(
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => onBusinessTap(business),
-                  child: SizedBox(
-                    width: 140,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: business.imageUrl != null
-                              ? Image.network(
-                                  business.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) =>
-                                      const _BusinessPlaceholder(),
-                                )
-                              : const _BusinessPlaceholder(),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Text(
-                            business.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _BusinessPlaceholder extends StatelessWidget {
-  const _BusinessPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Icon(Icons.storefront,
-          size: 32, color: Theme.of(context).colorScheme.outline),
     );
   }
 }

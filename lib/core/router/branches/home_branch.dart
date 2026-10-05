@@ -2,12 +2,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../features/cart/presentation/controllers/cart_controller.dart';
-import '../../../features/catalog/presentation/screens/business_detail_screen.dart';
 import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
 import '../../../features/catalog/presentation/screens/products_screen.dart';
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../app_routes.dart';
+
+// 2-Role Academic Prototype: the business storefront route
+// (`/home/business/:id`, living spec Part C L-04) is removed — vendor
+// discovery is bypassed. features/catalog's BusinessDetailScreen stays in the
+// repository; restore the GoRoute below (plus the home businesses strip) to
+// bring storefronts back.
 
 /// Customer tab 1 — Home + catalog nested routes (ROUTE-04: nested routes
 /// of a tab are declared in the same file). Branch ORDER is owned by
@@ -28,6 +33,7 @@ final homeBranch = StatefulShellBranch(
           builder: (context, state) => ProductsScreen(
             categoryId: state.uri.queryParameters['category'],
             query: state.uri.queryParameters['q'],
+            brandId: state.uri.queryParameters['brand'],
           ),
         ),
         GoRoute(
@@ -49,13 +55,6 @@ final homeBranch = StatefulShellBranch(
           name: AppRoutes.notifications,
           path: 'notifications',
           builder: (context, state) => const NotificationsScreen(),
-        ),
-        GoRoute(
-          name: AppRoutes.businessDetail,
-          path: 'business/:id',
-          builder: (context, state) => BusinessDetailScreen(
-            businessId: state.pathParameters['id']!,
-          ),
         ),
       ],
     ),

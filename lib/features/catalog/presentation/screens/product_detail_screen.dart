@@ -9,10 +9,14 @@ import '../widgets/product_card.dart';
 import '../widgets/product_image_gallery.dart';
 import '../widgets/variant_picker_sheet.dart';
 
-/// Product detail (spec §32): images, business link, related products. The
-/// add-to-cart flow opens the variant picker sheet; the cart action itself is
-/// injected by the composition root (home branch, ROUTE-08) so catalog never
-/// imports cart (ARCH-04).
+/// Product detail (spec §32): images, description, reviews, related
+/// products. The add-to-cart flow opens the variant picker sheet; the cart
+/// action itself is injected by the composition root (home branch, ROUTE-08)
+/// so catalog never imports cart (ARCH-04).
+///
+/// 2-Role Academic Prototype: the owning-business card was removed (living
+/// spec Part C L-04) — vendor identity is bypassed in the customer UI; the
+/// `businessId`/`businessName` fields remain on the entities/data model.
 class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({
     super.key,
@@ -78,21 +82,18 @@ class ProductDetailScreen extends ConsumerWidget {
                               color: theme.colorScheme.primary,
                             ),
                           ),
-                          if (detail.businessName.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Card(
-                              child: ListTile(
-                                leading: const Icon(Icons.storefront),
-                                title: Text(detail.businessName),
-                                trailing: const Icon(Icons.chevron_right),
-                                dense: true,
-                                onTap: () => context.pushNamed(
-                                  AppRoutes.businessDetail,
-                                  pathParameters: {'id': product.businessId},
+                          // Brand line (assignment §3) — Section 2b. Hidden
+                          // entirely when the product carries no brand.
+                          if (detail.brandName.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                detail.brandName,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.outline,
                                 ),
                               ),
                             ),
-                          ],
                           const SizedBox(height: 16),
                     Text(
                       'Description',
