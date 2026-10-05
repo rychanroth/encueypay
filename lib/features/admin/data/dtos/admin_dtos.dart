@@ -35,6 +35,7 @@ class PlatformSettingsAdminDto {
     required this.platformCommissionPercent,
     required this.driverCommissionPercent,
     required this.paymentAccount,
+    this.qrAccountId = '',
   });
 
   factory PlatformSettingsAdminDto.fromJson(Map<String, dynamic> json) =>
@@ -44,6 +45,9 @@ class PlatformSettingsAdminDto {
   final int platformCommissionPercent;
   final int driverCommissionPercent;
   final String paymentAccount;
+
+  @JsonKey(defaultValue: '')
+  final String qrAccountId;
 
   Map<String, dynamic> toJson() => _$PlatformSettingsAdminDtoToJson(this);
 }
@@ -258,6 +262,7 @@ class AdminOrderRowDto {
     required this.createdAt,
     this.users,
     this.payments = const [],
+    this.deliveries = const [],
     this.businessOrders = const [],
     this.returnRequests = const [],
   });
@@ -278,6 +283,9 @@ class AdminOrderRowDto {
   @JsonKey(name: 'payments', defaultValue: [])
   final List<AdminPaymentJoinDto> payments;
 
+  @JsonKey(name: 'deliveries', defaultValue: [])
+  final List<AdminDeliveryJoinDto> deliveries;
+
   @JsonKey(name: 'business_orders', defaultValue: [])
   final List<AdminBusinessOrderJoinDto> businessOrders;
 
@@ -285,6 +293,18 @@ class AdminOrderRowDto {
   final List<AdminReturnJoinDto> returnRequests;
 
   Map<String, dynamic> toJson() => _$AdminOrderRowDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminDeliveryJoinDto {
+  const AdminDeliveryJoinDto({this.status});
+
+  factory AdminDeliveryJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminDeliveryJoinDtoFromJson(json);
+
+  final String? status;
+
+  Map<String, dynamic> toJson() => _$AdminDeliveryJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

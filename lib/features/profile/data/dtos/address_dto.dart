@@ -15,6 +15,7 @@ class AddressDto {
     required this.line1,
     this.line2,
     required this.city,
+    this.isDefault = false,
   });
 
   factory AddressDto.fromJson(Map<String, dynamic> json) =>
@@ -28,6 +29,10 @@ class AddressDto {
   final String line1;
   final String? line2;
   final String city;
+
+  /// Section 6b: at most one default per user (partial unique index).
+  @JsonKey(defaultValue: false)
+  final bool isDefault;
 
   Map<String, dynamic> toJson() => _$AddressDtoToJson(this);
 }

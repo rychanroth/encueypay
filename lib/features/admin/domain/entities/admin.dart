@@ -124,6 +124,7 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
     required DateTime createdAt,
     String? paymentMethod,
     String? paymentStatus,
+    @Default('') String deliveryStatus,
     @Default([]) List<AdminBusinessOrderPart> parts,
     @Default([]) List<AdminReturnRequest> returns,
   }) = _AdminOrderSummary;
@@ -135,6 +136,8 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
   /// state (pending before accepted before preparing before ready).
   String get lifecycle {
     if (parts.isEmpty) return 'empty';
+    if (deliveryStatus == 'delivered') return 'completed';
+    if (deliveryStatus == 'delivery_in_progress') return 'out for delivery';
     if (parts.every((part) =>
         part.status == 'completed' ||
         part.status == 'rejected' ||
@@ -155,15 +158,21 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
     return hasLive ? order[earliest] : 'completed';
   }
 
-  /// True when admin_complete_order may run: every part decided and at
-  /// least one still in the accepted/preparing/ready pipeline.
-  bool get completable =>
-      parts.isNotEmpty &&
-      parts.every((part) => part.status != 'pending') &&
+  bool get _allPartsDecided =>
+      parts.isNotEmpty && parts.every((part) => part.status != 'pending');
+
+  /// Section 6b: hand over to transport — every part decided, at least one
+  /// in the accepted/preparing/ready pipeline, delivery still unclaimed.
+  bool get shippable =>
+      _allPartsDecided &&
       parts.any((part) =>
           part.status == 'accepted' ||
           part.status == 'preparing' ||
-          part.status == 'ready');
+          part.status == 'ready') &&
+      deliveryStatus == 'available';
+
+  /// Section 6b: finish the delivery (only after shipping).
+  bool get completable => deliveryStatus == 'delivery_in_progress';
 }
 
 /// One per-business portion of an order.
@@ -256,5 +265,8 @@ abstract class PlatformSettings with _$PlatformSettings {
     required int platformCommissionPercent,
     required int driverCommissionPercent,
     required String paymentAccount,
+
+    /// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
+    @Default('') String qrAccountId,
   }) = _PlatformSettings;
 }

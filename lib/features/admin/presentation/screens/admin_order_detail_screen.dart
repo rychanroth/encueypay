@@ -51,15 +51,36 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               for (final part in order.parts)
                 _PartTile(orderId: order.id, part: part),
               const SizedBox(height: 16),
-              FilledButton(
-                // Completes all stops + parts, delivers, verifies COD (§3).
-                onPressed: order.completable
-                    ? () => ref
-                        .read(adminOrdersControllerProvider.notifier)
-                        .complete(orderId: order.id)
-                    : null,
-                child: const Text('Complete delivery'),
-              ),
+              // Section 6b: two-step administrative delivery — ship, then
+              // complete (the customer timeline shows Shipped → Out for
+              // delivery → Delivered instead of a single jump).
+              if (order.shippable)
+                FilledButton(
+                  onPressed: () => ref
+                      .read(adminOrdersControllerProvider.notifier)
+                      .ship(orderId: order.id),
+                  child: const Text('Ship order'),
+                ),
+              if (order.completable) ...[
+                FilledButton(
+                  onPressed: () => ref
+                      .read(adminOrdersControllerProvider.notifier)
+                      .complete(orderId: order.id),
+                  child: const Text('Complete delivery'),
+                ),
+                // Dev-only simulation of the gateway webhook (QR flow).
+                if (order.paymentMethod == 'qr' &&
+                    order.paymentStatus == 'pending')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: FilledButton.tonal(
+                      onPressed: () => ref
+                          .read(adminOrdersControllerProvider.notifier)
+                          .simulateQrPayment(orderId: order.id),
+                      child: const Text('Simulate QR payment'),
+                    ),
+                  ),
+              ],
               const SizedBox(height: 16),
               Text('Return requests',
                   style: theme.textTheme.titleSmall

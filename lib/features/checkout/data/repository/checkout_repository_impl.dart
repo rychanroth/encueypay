@@ -111,18 +111,85 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
     required String addressId,
     required PaymentMethod method,
     required List<String> couponCodes,
+    String note = '',
   }) async {
     try {
       final orderId = await _client.rpc('create_order_from_cart', params: {
         'p_address_id': addressId,
         'p_payment_method': method.wireName,
         'p_coupon_codes': couponCodes,
+        'p_note': note,
       });
       return orderId as String;
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();
+    }
+  }
+  // -------------------------------------------------- QR payment (§6b)
+  @override
+  Future<String> fetchQrAccountId() async {
+    try {
+      final row = await _client
+          .from('platform_settings')
+          .select('qr_account_id')
+          .eq('id', 1)
+          .maybeSingle();
+      return (row?['qr_account_id'] as String?) ?? '';
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> registerQrPayment({
+    required String orderId,
+    required String payload,
+  }) async {
+    try {
+      await _client.rpc('register_qr_payment', params: {
+        'p_order_id': orderId,
+        'p_payload': payload,
+      });
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Stream<Map<String, dynamic>?> streamOrderPayment(String orderId) {
+    // Realtime on `payments` (publication member since 0038); the stream
+    // starts from the current row (initial snapshot, Part D).
+    return _client
+        .from('payments')
+        .stream(primaryKey: ['id'])
+        .eq('order_id', orderId)
+        .map((rows) => rows.isEmpty ? null : rows.first);
+  }
+
+  @override
+  Future<bool?> checkBakongPayment(String orderId) async {
+    try {
+      final functions = _client.functions;
+      final response = await functions.invoke(
+        'bakong-check',
+        body: {'orderId': orderId},
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data['configured'] == true && data['paid'] == true;
+      }
+      return null;
+    } on FunctionException {
+      // Function not deployed/running — the simulation path covers demos.
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 }

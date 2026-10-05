@@ -138,7 +138,8 @@ enum BusinessOrderStatus {
 
 enum PaymentMethodKind {
   cod,
-  bankTransfer;
+  bankTransfer,
+  qr;
 
   static PaymentMethodKind fromName(String? name) =>
       PaymentMethodKind.values.asNameMap()[name] ?? PaymentMethodKind.cod;

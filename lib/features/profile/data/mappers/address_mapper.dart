@@ -12,6 +12,7 @@ extension AddressDtoX on AddressDto {
       line1: line1,
       line2: line2,
       city: city,
+      isDefault: isDefault,
     );
   }
 }

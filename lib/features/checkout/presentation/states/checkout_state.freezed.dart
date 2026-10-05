@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CheckoutState {
 
- List<AddressOption> get addresses; String? get selectedAddressId; CheckoutSummary? get summary; PaymentMethod get method; List<CouponPreview> get coupons;
+ List<AddressOption> get addresses; String? get selectedAddressId; CheckoutSummary? get summary; PaymentMethod get method; List<CouponPreview> get coupons; String get note; int get currentStep;
 /// Create a copy of CheckoutState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $CheckoutStateCopyWith<CheckoutState> get copyWith => _$CheckoutStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CheckoutState&&const DeepCollectionEquality().equals(other.addresses, addresses)&&(identical(other.selectedAddressId, selectedAddressId) || other.selectedAddressId == selectedAddressId)&&(identical(other.summary, summary) || other.summary == summary)&&(identical(other.method, method) || other.method == method)&&const DeepCollectionEquality().equals(other.coupons, coupons));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CheckoutState&&const DeepCollectionEquality().equals(other.addresses, addresses)&&(identical(other.selectedAddressId, selectedAddressId) || other.selectedAddressId == selectedAddressId)&&(identical(other.summary, summary) || other.summary == summary)&&(identical(other.method, method) || other.method == method)&&const DeepCollectionEquality().equals(other.coupons, coupons)&&(identical(other.note, note) || other.note == note)&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(addresses),selectedAddressId,summary,method,const DeepCollectionEquality().hash(coupons));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(addresses),selectedAddressId,summary,method,const DeepCollectionEquality().hash(coupons),note,currentStep);
 
 @override
 String toString() {
-  return 'CheckoutState(addresses: $addresses, selectedAddressId: $selectedAddressId, summary: $summary, method: $method, coupons: $coupons)';
+  return 'CheckoutState(addresses: $addresses, selectedAddressId: $selectedAddressId, summary: $summary, method: $method, coupons: $coupons, note: $note, currentStep: $currentStep)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $CheckoutStateCopyWith<$Res>  {
   factory $CheckoutStateCopyWith(CheckoutState value, $Res Function(CheckoutState) _then) = _$CheckoutStateCopyWithImpl;
 @useResult
 $Res call({
- List<AddressOption> addresses, String? selectedAddressId, CheckoutSummary? summary, PaymentMethod method, List<CouponPreview> coupons
+ List<AddressOption> addresses, String? selectedAddressId, CheckoutSummary? summary, PaymentMethod method, List<CouponPreview> coupons, String note, int currentStep
 });
 
 
@@ -63,14 +63,16 @@ class _$CheckoutStateCopyWithImpl<$Res>
 
 /// Create a copy of CheckoutState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? addresses = null,Object? selectedAddressId = freezed,Object? summary = freezed,Object? method = null,Object? coupons = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? addresses = null,Object? selectedAddressId = freezed,Object? summary = freezed,Object? method = null,Object? coupons = null,Object? note = null,Object? currentStep = null,}) {
   return _then(CheckoutState(
 addresses: null == addresses ? _self.addresses : addresses // ignore: cast_nullable_to_non_nullable
 as List<AddressOption>,selectedAddressId: freezed == selectedAddressId ? _self.selectedAddressId : selectedAddressId // ignore: cast_nullable_to_non_nullable
 as String?,summary: freezed == summary ? _self.summary : summary // ignore: cast_nullable_to_non_nullable
 as CheckoutSummary?,method: null == method ? _self.method : method // ignore: cast_nullable_to_non_nullable
 as PaymentMethod,coupons: null == coupons ? _self.coupons : coupons // ignore: cast_nullable_to_non_nullable
-as List<CouponPreview>,
+as List<CouponPreview>,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 /// Create a copy of CheckoutState
@@ -167,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AddressOption> addresses,  String? selectedAddressId,  CheckoutSummary? summary,  PaymentMethod method,  List<CouponPreview> coupons)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AddressOption> addresses,  String? selectedAddressId,  CheckoutSummary? summary,  PaymentMethod method,  List<CouponPreview> coupons,  String note,  int currentStep)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CheckoutState() when $default != null:
-return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.method,_that.coupons);case _:
+return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.method,_that.coupons,_that.note,_that.currentStep);case _:
   return orElse();
 
 }
@@ -188,10 +190,10 @@ return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.meth
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AddressOption> addresses,  String? selectedAddressId,  CheckoutSummary? summary,  PaymentMethod method,  List<CouponPreview> coupons)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AddressOption> addresses,  String? selectedAddressId,  CheckoutSummary? summary,  PaymentMethod method,  List<CouponPreview> coupons,  String note,  int currentStep)  $default,) {final _that = this;
 switch (_that) {
 case _CheckoutState():
-return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.method,_that.coupons);case _:
+return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.method,_that.coupons,_that.note,_that.currentStep);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +210,10 @@ return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.meth
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AddressOption> addresses,  String? selectedAddressId,  CheckoutSummary? summary,  PaymentMethod method,  List<CouponPreview> coupons)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AddressOption> addresses,  String? selectedAddressId,  CheckoutSummary? summary,  PaymentMethod method,  List<CouponPreview> coupons,  String note,  int currentStep)?  $default,) {final _that = this;
 switch (_that) {
 case _CheckoutState() when $default != null:
-return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.method,_that.coupons);case _:
+return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.method,_that.coupons,_that.note,_that.currentStep);case _:
   return null;
 
 }
@@ -223,7 +225,7 @@ return $default(_that.addresses,_that.selectedAddressId,_that.summary,_that.meth
 
 
 class _CheckoutState extends CheckoutState {
-  const _CheckoutState({ List<AddressOption> addresses = const [], this.selectedAddressId, this.summary, this.method = PaymentMethod.cod,  List<CouponPreview> coupons = const []}): _addresses = addresses,_coupons = coupons,super._();
+  const _CheckoutState({ List<AddressOption> addresses = const [], this.selectedAddressId, this.summary, this.method = PaymentMethod.cod,  List<CouponPreview> coupons = const [], this.note = '', this.currentStep = 0}): _addresses = addresses,_coupons = coupons,super._();
   
 
  final  List<AddressOption> _addresses;
@@ -243,6 +245,8 @@ class _CheckoutState extends CheckoutState {
   return EqualUnmodifiableListView(_coupons);
 }
 
+@override@JsonKey() final  String note;
+@override@JsonKey() final  int currentStep;
 
 /// Create a copy of CheckoutState
 /// with the given fields replaced by the non-null parameter values.
@@ -254,16 +258,16 @@ _$CheckoutStateCopyWith<_CheckoutState> get copyWith => __$CheckoutStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CheckoutState&&const DeepCollectionEquality().equals(other._addresses, _addresses)&&(identical(other.selectedAddressId, selectedAddressId) || other.selectedAddressId == selectedAddressId)&&(identical(other.summary, summary) || other.summary == summary)&&(identical(other.method, method) || other.method == method)&&const DeepCollectionEquality().equals(other._coupons, _coupons));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CheckoutState&&const DeepCollectionEquality().equals(other._addresses, _addresses)&&(identical(other.selectedAddressId, selectedAddressId) || other.selectedAddressId == selectedAddressId)&&(identical(other.summary, summary) || other.summary == summary)&&(identical(other.method, method) || other.method == method)&&const DeepCollectionEquality().equals(other._coupons, _coupons)&&(identical(other.note, note) || other.note == note)&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_addresses),selectedAddressId,summary,method,const DeepCollectionEquality().hash(_coupons));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_addresses),selectedAddressId,summary,method,const DeepCollectionEquality().hash(_coupons),note,currentStep);
 
 @override
 String toString() {
-  return 'CheckoutState(addresses: $addresses, selectedAddressId: $selectedAddressId, summary: $summary, method: $method, coupons: $coupons)';
+  return 'CheckoutState(addresses: $addresses, selectedAddressId: $selectedAddressId, summary: $summary, method: $method, coupons: $coupons, note: $note, currentStep: $currentStep)';
 }
 
 
@@ -274,7 +278,7 @@ abstract mixin class _$CheckoutStateCopyWith<$Res> implements $CheckoutStateCopy
   factory _$CheckoutStateCopyWith(_CheckoutState value, $Res Function(_CheckoutState) _then) = __$CheckoutStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<AddressOption> addresses, String? selectedAddressId, CheckoutSummary? summary, PaymentMethod method, List<CouponPreview> coupons
+ List<AddressOption> addresses, String? selectedAddressId, CheckoutSummary? summary, PaymentMethod method, List<CouponPreview> coupons, String note, int currentStep
 });
 
 
@@ -291,14 +295,16 @@ class __$CheckoutStateCopyWithImpl<$Res>
 
 /// Create a copy of CheckoutState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? addresses = null,Object? selectedAddressId = freezed,Object? summary = freezed,Object? method = null,Object? coupons = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? addresses = null,Object? selectedAddressId = freezed,Object? summary = freezed,Object? method = null,Object? coupons = null,Object? note = null,Object? currentStep = null,}) {
   return _then(_CheckoutState(
 addresses: null == addresses ? _self._addresses : addresses // ignore: cast_nullable_to_non_nullable
 as List<AddressOption>,selectedAddressId: freezed == selectedAddressId ? _self.selectedAddressId : selectedAddressId // ignore: cast_nullable_to_non_nullable
 as String?,summary: freezed == summary ? _self.summary : summary // ignore: cast_nullable_to_non_nullable
 as CheckoutSummary?,method: null == method ? _self.method : method // ignore: cast_nullable_to_non_nullable
 as PaymentMethod,coupons: null == coupons ? _self._coupons : coupons // ignore: cast_nullable_to_non_nullable
-as List<CouponPreview>,
+as List<CouponPreview>,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

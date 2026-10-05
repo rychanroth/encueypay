@@ -16,11 +16,13 @@ class PlaceOrderUseCase {
     required String addressId,
     required PaymentMethod method,
     required List<String> couponCodes,
+    String note = '',
   }) {
     return _repository.placeOrder(
       addressId: addressId,
       method: method,
       couponCodes: couponCodes,
+      note: note,
     );
   }
 }

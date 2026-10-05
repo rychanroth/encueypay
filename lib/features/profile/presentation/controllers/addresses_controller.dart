@@ -37,4 +37,14 @@ class AddressesController extends _$AddressesController {
       return current;
     });
   }
+
+  /// Section 6b: make this address the user's single default.
+  Future<void> setDefault(String addressId) async {
+    final current = state.value ?? const <Address>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(addressRepositoryProvider).setDefaultAddress(addressId);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
 }

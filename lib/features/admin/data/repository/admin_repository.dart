@@ -94,14 +94,23 @@ abstract interface class IAdminRepository {
   });
 
   /// Mirrors complete_pickup_stop + mark_delivered: completes all pickup
-  /// stops and business parts, delivers, verifies COD.
+  /// stops and business parts, delivers, verifies COD. Requires the order
+  /// to be shipped first (Section 6b).
   Future<void> completeOrder({required String orderId});
+
+  /// Section 6b: hands the order to transport (delivery →
+  /// delivery_in_progress); pickup stops complete at handover.
+  Future<void> shipOrder({required String orderId});
 
   /// Mirrors process_return with admin authority.
   Future<void> processReturn({
     required String returnId,
     required bool approve,
   });
+
+  /// Section 6b: dev-only simulation of a confirmed gateway webhook
+  /// (admin authority) for the QR payment flow.
+  Future<void> simulateQrPayment({required String orderId});
 
   // -------------------------------------------------------- audit/report
   Future<List<AuditEntry>> fetchAuditLogs();

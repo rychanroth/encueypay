@@ -79,17 +79,40 @@ class AddressesScreen extends ConsumerWidget {
               final address = addresses[index];
               return Card(
                 child: ListTile(
-                  leading: const Icon(Icons.location_on_outlined),
-                  title: Text('${address.label} · ${address.recipientName}'),
+                  leading: Icon(
+                    address.isDefault
+                        ? Icons.star
+                        : Icons.location_on_outlined,
+                    color: address.isDefault
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
+                  title: Text(
+                    '${address.label} · ${address.recipientName}'
+                    '${address.isDefault ? '  (default)' : ''}',
+                  ),
                   subtitle: Text(
                     [address.line1, address.line2, address.city]
                         .whereType<String>()
                         .where((part) => part.isNotEmpty)
                         .join(', '),
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => _confirmDelete(context, ref, address),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!address.isDefault)
+                        IconButton(
+                          tooltip: 'Set as default',
+                          icon: const Icon(Icons.star_outline),
+                          onPressed: () => ref
+                              .read(addressesControllerProvider.notifier)
+                              .setDefault(address.id),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _confirmDelete(context, ref, address),
+                      ),
+                    ],
                   ),
                   onTap: () => context.pushNamed(
                     AppRoutes.addressEdit,

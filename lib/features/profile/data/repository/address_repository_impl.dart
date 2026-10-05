@@ -31,8 +31,24 @@ class AddressRepositoryImpl implements IAddressRepository {
           .from('addresses')
           .select()
           .eq('user_id', _uid)
+          // Default first (Section 6b), then chronological — the checkout
+          // preselects the first row.
+          .order('is_default', ascending: false)
           .order('created_at');
       return rows.map(AddressDto.fromJson).map((dto) => dto.toDomain()).toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> setDefaultAddress(String addressId) async {
+    try {
+      await _client.rpc('set_default_address', params: {
+        'p_address_id': addressId,
+      });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {

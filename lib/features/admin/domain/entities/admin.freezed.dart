@@ -1919,7 +1919,7 @@ as int,
 /// @nodoc
 mixin _$AdminOrderSummary {
 
- String get id; String get customerName; int get subtotalMinor; int get discountMinor; int get deliveryFeeMinor; int get totalMinor; DateTime get createdAt; String? get paymentMethod; String? get paymentStatus; List<AdminBusinessOrderPart> get parts; List<AdminReturnRequest> get returns;
+ String get id; String get customerName; int get subtotalMinor; int get discountMinor; int get deliveryFeeMinor; int get totalMinor; DateTime get createdAt; String? get paymentMethod; String? get paymentStatus; String get deliveryStatus; List<AdminBusinessOrderPart> get parts; List<AdminReturnRequest> get returns;
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1930,16 +1930,16 @@ $AdminOrderSummaryCopyWith<AdminOrderSummary> get copyWith => _$AdminOrderSummar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&const DeepCollectionEquality().equals(other.parts, parts)&&const DeepCollectionEquality().equals(other.returns, returns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.deliveryStatus, deliveryStatus) || other.deliveryStatus == deliveryStatus)&&const DeepCollectionEquality().equals(other.parts, parts)&&const DeepCollectionEquality().equals(other.returns, returns));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,paymentMethod,paymentStatus,const DeepCollectionEquality().hash(parts),const DeepCollectionEquality().hash(returns));
+int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,paymentMethod,paymentStatus,deliveryStatus,const DeepCollectionEquality().hash(parts),const DeepCollectionEquality().hash(returns));
 
 @override
 String toString() {
-  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, parts: $parts, returns: $returns)';
+  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, deliveryStatus: $deliveryStatus, parts: $parts, returns: $returns)';
 }
 
 
@@ -1950,7 +1950,7 @@ abstract mixin class $AdminOrderSummaryCopyWith<$Res>  {
   factory $AdminOrderSummaryCopyWith(AdminOrderSummary value, $Res Function(AdminOrderSummary) _then) = _$AdminOrderSummaryCopyWithImpl;
 @useResult
 $Res call({
- String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, String? paymentMethod, String? paymentStatus, List<AdminBusinessOrderPart> parts, List<AdminReturnRequest> returns
+ String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, String? paymentMethod, String? paymentStatus, String deliveryStatus, List<AdminBusinessOrderPart> parts, List<AdminReturnRequest> returns
 });
 
 
@@ -1967,7 +1967,7 @@ class _$AdminOrderSummaryCopyWithImpl<$Res>
 
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? parts = null,Object? returns = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? deliveryStatus = null,Object? parts = null,Object? returns = null,}) {
   return _then(AdminOrderSummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,customerName: null == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
@@ -1978,7 +1978,8 @@ as int,totalMinor: null == totalMinor ? _self.totalMinor : totalMinor // ignore:
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
-as String?,parts: null == parts ? _self.parts : parts // ignore: cast_nullable_to_non_nullable
+as String?,deliveryStatus: null == deliveryStatus ? _self.deliveryStatus : deliveryStatus // ignore: cast_nullable_to_non_nullable
+as String,parts: null == parts ? _self.parts : parts // ignore: cast_nullable_to_non_nullable
 as List<AdminBusinessOrderPart>,returns: null == returns ? _self.returns : returns // ignore: cast_nullable_to_non_nullable
 as List<AdminReturnRequest>,
   ));
@@ -2065,10 +2066,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  String? paymentMethod,  String? paymentStatus,  List<AdminBusinessOrderPart> parts,  List<AdminReturnRequest> returns)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  String? paymentMethod,  String? paymentStatus,  String deliveryStatus,  List<AdminBusinessOrderPart> parts,  List<AdminReturnRequest> returns)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminOrderSummary() when $default != null:
-return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.paymentMethod,_that.paymentStatus,_that.parts,_that.returns);case _:
+return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.paymentMethod,_that.paymentStatus,_that.deliveryStatus,_that.parts,_that.returns);case _:
   return orElse();
 
 }
@@ -2086,10 +2087,10 @@ return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  String? paymentMethod,  String? paymentStatus,  List<AdminBusinessOrderPart> parts,  List<AdminReturnRequest> returns)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  String? paymentMethod,  String? paymentStatus,  String deliveryStatus,  List<AdminBusinessOrderPart> parts,  List<AdminReturnRequest> returns)  $default,) {final _that = this;
 switch (_that) {
 case _AdminOrderSummary():
-return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.paymentMethod,_that.paymentStatus,_that.parts,_that.returns);case _:
+return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.paymentMethod,_that.paymentStatus,_that.deliveryStatus,_that.parts,_that.returns);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2106,10 +2107,10 @@ return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  String? paymentMethod,  String? paymentStatus,  List<AdminBusinessOrderPart> parts,  List<AdminReturnRequest> returns)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  String? paymentMethod,  String? paymentStatus,  String deliveryStatus,  List<AdminBusinessOrderPart> parts,  List<AdminReturnRequest> returns)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminOrderSummary() when $default != null:
-return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.paymentMethod,_that.paymentStatus,_that.parts,_that.returns);case _:
+return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.paymentMethod,_that.paymentStatus,_that.deliveryStatus,_that.parts,_that.returns);case _:
   return null;
 
 }
@@ -2121,7 +2122,7 @@ return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMi
 
 
 class _AdminOrderSummary extends AdminOrderSummary {
-  const _AdminOrderSummary({required this.id, required this.customerName, required this.subtotalMinor, required this.discountMinor, required this.deliveryFeeMinor, required this.totalMinor, required this.createdAt, this.paymentMethod, this.paymentStatus,  List<AdminBusinessOrderPart> parts = const [],  List<AdminReturnRequest> returns = const []}): _parts = parts,_returns = returns,super._();
+  const _AdminOrderSummary({required this.id, required this.customerName, required this.subtotalMinor, required this.discountMinor, required this.deliveryFeeMinor, required this.totalMinor, required this.createdAt, this.paymentMethod, this.paymentStatus, this.deliveryStatus = '',  List<AdminBusinessOrderPart> parts = const [],  List<AdminReturnRequest> returns = const []}): _parts = parts,_returns = returns,super._();
   
 
 @override final  String id;
@@ -2133,6 +2134,7 @@ class _AdminOrderSummary extends AdminOrderSummary {
 @override final  DateTime createdAt;
 @override final  String? paymentMethod;
 @override final  String? paymentStatus;
+@override@JsonKey() final  String deliveryStatus;
  final  List<AdminBusinessOrderPart> _parts;
 @override@JsonKey() List<AdminBusinessOrderPart> get parts {
   if (_parts is EqualUnmodifiableListView) return _parts;
@@ -2158,16 +2160,16 @@ _$AdminOrderSummaryCopyWith<_AdminOrderSummary> get copyWith => __$AdminOrderSum
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&const DeepCollectionEquality().equals(other._parts, _parts)&&const DeepCollectionEquality().equals(other._returns, _returns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.deliveryStatus, deliveryStatus) || other.deliveryStatus == deliveryStatus)&&const DeepCollectionEquality().equals(other._parts, _parts)&&const DeepCollectionEquality().equals(other._returns, _returns));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,paymentMethod,paymentStatus,const DeepCollectionEquality().hash(_parts),const DeepCollectionEquality().hash(_returns));
+int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,paymentMethod,paymentStatus,deliveryStatus,const DeepCollectionEquality().hash(_parts),const DeepCollectionEquality().hash(_returns));
 
 @override
 String toString() {
-  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, parts: $parts, returns: $returns)';
+  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, deliveryStatus: $deliveryStatus, parts: $parts, returns: $returns)';
 }
 
 
@@ -2178,7 +2180,7 @@ abstract mixin class _$AdminOrderSummaryCopyWith<$Res> implements $AdminOrderSum
   factory _$AdminOrderSummaryCopyWith(_AdminOrderSummary value, $Res Function(_AdminOrderSummary) _then) = __$AdminOrderSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, String? paymentMethod, String? paymentStatus, List<AdminBusinessOrderPart> parts, List<AdminReturnRequest> returns
+ String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, String? paymentMethod, String? paymentStatus, String deliveryStatus, List<AdminBusinessOrderPart> parts, List<AdminReturnRequest> returns
 });
 
 
@@ -2195,7 +2197,7 @@ class __$AdminOrderSummaryCopyWithImpl<$Res>
 
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? parts = null,Object? returns = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? deliveryStatus = null,Object? parts = null,Object? returns = null,}) {
   return _then(_AdminOrderSummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,customerName: null == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
@@ -2206,7 +2208,8 @@ as int,totalMinor: null == totalMinor ? _self.totalMinor : totalMinor // ignore:
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
-as String?,parts: null == parts ? _self._parts : parts // ignore: cast_nullable_to_non_nullable
+as String?,deliveryStatus: null == deliveryStatus ? _self.deliveryStatus : deliveryStatus // ignore: cast_nullable_to_non_nullable
+as String,parts: null == parts ? _self._parts : parts // ignore: cast_nullable_to_non_nullable
 as List<AdminBusinessOrderPart>,returns: null == returns ? _self._returns : returns // ignore: cast_nullable_to_non_nullable
 as List<AdminReturnRequest>,
   ));
@@ -4113,7 +4116,8 @@ as int,
 /// @nodoc
 mixin _$PlatformSettings {
 
- int get deliveryFeeMinor; int get platformCommissionPercent; int get driverCommissionPercent; String get paymentAccount;
+ int get deliveryFeeMinor; int get platformCommissionPercent; int get driverCommissionPercent; String get paymentAccount;/// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
+ String get qrAccountId;
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -4124,16 +4128,16 @@ $PlatformSettingsCopyWith<PlatformSettings> get copyWith => _$PlatformSettingsCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.driverCommissionPercent, driverCommissionPercent) || other.driverCommissionPercent == driverCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.driverCommissionPercent, driverCommissionPercent) || other.driverCommissionPercent == driverCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount)&&(identical(other.qrAccountId, qrAccountId) || other.qrAccountId == qrAccountId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,driverCommissionPercent,paymentAccount);
+int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,driverCommissionPercent,paymentAccount,qrAccountId);
 
 @override
 String toString() {
-  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, driverCommissionPercent: $driverCommissionPercent, paymentAccount: $paymentAccount)';
+  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, driverCommissionPercent: $driverCommissionPercent, paymentAccount: $paymentAccount, qrAccountId: $qrAccountId)';
 }
 
 
@@ -4144,7 +4148,7 @@ abstract mixin class $PlatformSettingsCopyWith<$Res>  {
   factory $PlatformSettingsCopyWith(PlatformSettings value, $Res Function(PlatformSettings) _then) = _$PlatformSettingsCopyWithImpl;
 @useResult
 $Res call({
- int deliveryFeeMinor, int platformCommissionPercent, int driverCommissionPercent, String paymentAccount
+ int deliveryFeeMinor, int platformCommissionPercent, int driverCommissionPercent, String paymentAccount, String qrAccountId
 });
 
 
@@ -4161,12 +4165,13 @@ class _$PlatformSettingsCopyWithImpl<$Res>
 
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? driverCommissionPercent = null,Object? paymentAccount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? driverCommissionPercent = null,Object? paymentAccount = null,Object? qrAccountId = null,}) {
   return _then(PlatformSettings(
 deliveryFeeMinor: null == deliveryFeeMinor ? _self.deliveryFeeMinor : deliveryFeeMinor // ignore: cast_nullable_to_non_nullable
 as int,platformCommissionPercent: null == platformCommissionPercent ? _self.platformCommissionPercent : platformCommissionPercent // ignore: cast_nullable_to_non_nullable
 as int,driverCommissionPercent: null == driverCommissionPercent ? _self.driverCommissionPercent : driverCommissionPercent // ignore: cast_nullable_to_non_nullable
 as int,paymentAccount: null == paymentAccount ? _self.paymentAccount : paymentAccount // ignore: cast_nullable_to_non_nullable
+as String,qrAccountId: null == qrAccountId ? _self.qrAccountId : qrAccountId // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -4252,10 +4257,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount,  String qrAccountId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlatformSettings() when $default != null:
-return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount);case _:
+return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
   return orElse();
 
 }
@@ -4273,10 +4278,10 @@ return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.dri
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount,  String qrAccountId)  $default,) {final _that = this;
 switch (_that) {
 case _PlatformSettings():
-return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount);case _:
+return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -4293,10 +4298,10 @@ return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.dri
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount,  String qrAccountId)?  $default,) {final _that = this;
 switch (_that) {
 case _PlatformSettings() when $default != null:
-return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount);case _:
+return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
   return null;
 
 }
@@ -4308,13 +4313,15 @@ return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.dri
 
 
 class _PlatformSettings implements PlatformSettings {
-  const _PlatformSettings({required this.deliveryFeeMinor, required this.platformCommissionPercent, required this.driverCommissionPercent, required this.paymentAccount});
+  const _PlatformSettings({required this.deliveryFeeMinor, required this.platformCommissionPercent, required this.driverCommissionPercent, required this.paymentAccount, this.qrAccountId = ''});
   
 
 @override final  int deliveryFeeMinor;
 @override final  int platformCommissionPercent;
 @override final  int driverCommissionPercent;
 @override final  String paymentAccount;
+/// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
+@override@JsonKey() final  String qrAccountId;
 
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
@@ -4326,16 +4333,16 @@ _$PlatformSettingsCopyWith<_PlatformSettings> get copyWith => __$PlatformSetting
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.driverCommissionPercent, driverCommissionPercent) || other.driverCommissionPercent == driverCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.driverCommissionPercent, driverCommissionPercent) || other.driverCommissionPercent == driverCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount)&&(identical(other.qrAccountId, qrAccountId) || other.qrAccountId == qrAccountId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,driverCommissionPercent,paymentAccount);
+int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,driverCommissionPercent,paymentAccount,qrAccountId);
 
 @override
 String toString() {
-  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, driverCommissionPercent: $driverCommissionPercent, paymentAccount: $paymentAccount)';
+  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, driverCommissionPercent: $driverCommissionPercent, paymentAccount: $paymentAccount, qrAccountId: $qrAccountId)';
 }
 
 
@@ -4346,7 +4353,7 @@ abstract mixin class _$PlatformSettingsCopyWith<$Res> implements $PlatformSettin
   factory _$PlatformSettingsCopyWith(_PlatformSettings value, $Res Function(_PlatformSettings) _then) = __$PlatformSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- int deliveryFeeMinor, int platformCommissionPercent, int driverCommissionPercent, String paymentAccount
+ int deliveryFeeMinor, int platformCommissionPercent, int driverCommissionPercent, String paymentAccount, String qrAccountId
 });
 
 
@@ -4363,12 +4370,13 @@ class __$PlatformSettingsCopyWithImpl<$Res>
 
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? driverCommissionPercent = null,Object? paymentAccount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? driverCommissionPercent = null,Object? paymentAccount = null,Object? qrAccountId = null,}) {
   return _then(_PlatformSettings(
 deliveryFeeMinor: null == deliveryFeeMinor ? _self.deliveryFeeMinor : deliveryFeeMinor // ignore: cast_nullable_to_non_nullable
 as int,platformCommissionPercent: null == platformCommissionPercent ? _self.platformCommissionPercent : platformCommissionPercent // ignore: cast_nullable_to_non_nullable
 as int,driverCommissionPercent: null == driverCommissionPercent ? _self.driverCommissionPercent : driverCommissionPercent // ignore: cast_nullable_to_non_nullable
 as int,paymentAccount: null == paymentAccount ? _self.paymentAccount : paymentAccount // ignore: cast_nullable_to_non_nullable
+as String,qrAccountId: null == qrAccountId ? _self.qrAccountId : qrAccountId // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

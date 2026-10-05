@@ -33,6 +33,7 @@ PlatformSettingsAdminDto _$PlatformSettingsAdminDtoFromJson(
       .toInt(),
   driverCommissionPercent: (json['driver_commission_percent'] as num).toInt(),
   paymentAccount: json['payment_account'] as String,
+  qrAccountId: json['qr_account_id'] as String? ?? '',
 );
 
 Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
@@ -42,6 +43,7 @@ Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
   'platform_commission_percent': instance.platformCommissionPercent,
   'driver_commission_percent': instance.driverCommissionPercent,
   'payment_account': instance.paymentAccount,
+  'qr_account_id': instance.qrAccountId,
 };
 
 AdminApplicationDto _$AdminApplicationDtoFromJson(Map<String, dynamic> json) =>
@@ -220,6 +222,11 @@ AdminOrderRowDto _$AdminOrderRowDtoFromJson(
           ?.map((e) => AdminPaymentJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
+  deliveries:
+      (json['deliveries'] as List<dynamic>?)
+          ?.map((e) => AdminDeliveryJoinDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
   businessOrders:
       (json['business_orders'] as List<dynamic>?)
           ?.map(
@@ -245,9 +252,18 @@ Map<String, dynamic> _$AdminOrderRowDtoToJson(AdminOrderRowDto instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'users': instance.users,
       'payments': instance.payments,
+      'deliveries': instance.deliveries,
       'business_orders': instance.businessOrders,
       'return_requests': instance.returnRequests,
     };
+
+AdminDeliveryJoinDto _$AdminDeliveryJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminDeliveryJoinDto(status: json['status'] as String?);
+
+Map<String, dynamic> _$AdminDeliveryJoinDtoToJson(
+  AdminDeliveryJoinDto instance,
+) => <String, dynamic>{'status': instance.status};
 
 AdminPaymentJoinDto _$AdminPaymentJoinDtoFromJson(Map<String, dynamic> json) =>
     AdminPaymentJoinDto(

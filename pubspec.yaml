@@ -44,6 +44,10 @@ dependencies:
   riverpod_annotation: ^4.0.7
   file_picker: ^13.1.0
   freezed_annotation: ^3.1.0
+
+  # KHQR image rendering on the order-success screen (Section 6b;
+  # user-approved 2026-10-05 per GLOBAL-04). Pure-Dart QR painter.
+  qr_flutter: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

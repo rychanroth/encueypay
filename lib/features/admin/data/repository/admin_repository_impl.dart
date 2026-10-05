@@ -400,6 +400,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             'id, subtotal_minor, discount_minor, delivery_fee_minor, '
             'total_minor, created_at, users(full_name), '
             'payments(method, status), '
+            'deliveries(status), '
             'business_orders(id, status, subtotal_minor, discount_minor, '
             'rejection_reason, businesses(name)), '
             'return_requests(id, status, reason)',
@@ -418,6 +419,7 @@ class AdminRepositoryImpl implements IAdminRepository {
           createdAt: dto.createdAt,
           paymentMethod: payment?.method,
           paymentStatus: payment?.status,
+          deliveryStatus: dto.deliveries.firstOrNull?.status ?? '',
           parts: dto.businessOrders
               .map((part) => AdminBusinessOrderPart(
                     id: part.id,
@@ -463,6 +465,11 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
+  Future<void> shipOrder({required String orderId}) {
+    return _rpc('admin_ship_order', {'p_order_id': orderId});
+  }
+
+  @override
   Future<void> processReturn({
     required String returnId,
     required bool approve,
@@ -471,6 +478,11 @@ class AdminRepositoryImpl implements IAdminRepository {
       'p_return_id': returnId,
       'p_approve': approve,
     });
+  }
+
+  @override
+  Future<void> simulateQrPayment({required String orderId}) {
+    return _rpc('simulate_qr_payment', {'p_order_id': orderId});
   }
 
   @override
@@ -569,6 +581,7 @@ class AdminRepositoryImpl implements IAdminRepository {
           platformCommissionPercent: 0,
           driverCommissionPercent: 0,
           paymentAccount: '',
+          qrAccountId: '',
         );
       }
       final dto = PlatformSettingsAdminDto.fromJson(row);
@@ -577,6 +590,7 @@ class AdminRepositoryImpl implements IAdminRepository {
         platformCommissionPercent: dto.platformCommissionPercent,
         driverCommissionPercent: dto.driverCommissionPercent,
         paymentAccount: dto.paymentAccount,
+        qrAccountId: dto.qrAccountId,
       );
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
@@ -593,6 +607,7 @@ class AdminRepositoryImpl implements IAdminRepository {
         'platform_commission_percent': settings.platformCommissionPercent,
         'driver_commission_percent': settings.driverCommissionPercent,
         'payment_account': settings.paymentAccount,
+        'qr_account_id': settings.qrAccountId,
       }).eq('id', 1);
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);

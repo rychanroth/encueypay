@@ -45,6 +45,29 @@ class AdminOrdersController extends _$AdminOrdersController {
     });
   }
 
+  /// Section 6b: hand over to transport before completing the delivery.
+  Future<void> ship({required String orderId}) async {
+    final current = state.value ?? const <AdminOrderSummary>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(adminRepositoryProvider).shipOrder(orderId: orderId);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
+  /// Section 6b: simulate a confirmed gateway webhook (admin authority) so
+  /// the QR payment flow demos without external credentials.
+  Future<void> simulateQrPayment({required String orderId}) async {
+    final current = state.value ?? const <AdminOrderSummary>[];
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(adminRepositoryProvider)
+          .simulateQrPayment(orderId: orderId);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
   Future<void> decideReturn({
     required String returnId,
     required bool approve,

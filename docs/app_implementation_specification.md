@@ -59,6 +59,21 @@ Bypassed code is **kept in the repository, compiling, and analyzed** — it is o
 unreachable from the UI/navigation layer. Nothing was deleted; every Part C ledger entry
 records how to restore an element.
 
+## A.5 QR payment external prerequisites (Section 6b)
+
+The confirmation paths are fully implemented and inert without credentials — the
+simulation path demos the flow locally:
+
+| Prerequisite | Purpose | How obtained |
+|---|---|---|
+| `QR_ACCOUNT_ID` platform setting | The Bakong account encoded into the generated KHQR | Admin → Platform settings (a personal Bakong ID demos end-to-end) |
+| `BAKONG_TOKEN` secret | Bakong `check_transaction_by_md5` confirmation polling | Register at the NBC Bakong developer portal; `supabase secrets set BAKONG_TOKEN=…` |
+| `PAYWAY_API_KEY` secret | ABA PayWay webhook HMAC validation (real push confirmation) | ABA merchant account with PayWay enabled; `supabase secrets set PAYWAY_API_KEY=…`; configure the callback URL to `https://<project>.supabase.co/functions/v1/payway-webhook` |
+| Deployed Edge Functions | `payway-webhook`, `bakong-check` | `supabase functions deploy` (or `supabase functions serve` locally) |
+
+The KHQR tag layout mirrors the khqr-sdk convention — verify a generated code with a
+real banking app before pointing it at a production account.
+
 ---
 
 # Part B — Assignment Clause Mapping
@@ -113,9 +128,9 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Address management: add, edit, delete, set default, select; fields incl. province/district/commune/street/house/postal/geo | 🟡 | `features/profile`: `addresses_screen.dart`, `address_edit_screen.dart`, `address_repository_impl.dart`; `addresses` table (`20260923000002`: label, recipient, phone, line1, line2, city) | Add/edit/delete/select ✅; **set-default ❌** (no `is_default` column); field set 🟡 (coarser than assignment's; no postal/geo) |
-| Multi-step checkout: cart review → address → shipping method → payment → coupon → note → summary; validates items/stock/fields | 🟡 | `features/checkout/presentation/screens/checkout_screen.dart` — single-page covering address, method, coupon, summary; atomic `create_order_from_cart` validates everything server-side | Sequence collapsed to one page (documented 🟡); separate shipping-method step ❌ (delivery fee from `platform_settings`); order note ❌; stock validation ⛔ N/A |
-| Mock payments: COD, card prototype, QR prototype; statuses pending/paid/failed/refunded/cancelled | 🟡 | COD ✅ (`mark_delivered`-equivalent flips payment → verified); manual bank transfer ✅ (proof upload → auto-verified, §20.2 of old spec); payment lifecycle `pending / awaiting_payment_verification / transaction_verified / refund_required / refunded` | ❌ card prototype, ❌ QR prototype (documented); status vocabulary mapped in Part D |
+| Address management: add, edit, delete, set default, select; fields incl. province/district/commune/street/house/postal/geo | ✅ (fields 🟡) | `features/profile`: `addresses_screen.dart` (star action + default badge), `address_edit_screen.dart`, `address_repository_impl.dart`; `addresses.is_default` + one-default-per-user partial unique index (`20261005000038`, `set_default_address` RPC); checkout preselects the default (repository ordering) | Field set 🟡 (coarser than assignment's; no postal/geo); map/geolocation ⛔ not needed per user decision |
+| Multi-step checkout: cart review → address → shipping method → payment → coupon → note → summary; validates items/stock/fields | ✅ | **Section 6b wizard**: `checkout_screen.dart` rebuilt as a 7-step Stepper (Cart review, Address, Shipping method — fixed fee from `platform_settings`, Payment, Coupon, Order note → `orders.note`, Summary); per-step continue gated; placement stays the atomic `create_order_from_cart` (now with `p_note`) | Stock validation ✅ (2d); shipping method is a single informational method (fixed fee) — no carrier choice |
+| Mock payments: COD, card prototype, QR prototype; statuses pending/paid/failed/refunded/cancelled | 🟡 | **QR (KHQR) replaces bank transfer in the UI (Section 6b)**: order-success screen renders a generated dynamic KHQR (dependency-free EMV builder + `qr_flutter` renderer, user-approved) and follows the payment via realtime; confirmation converges on `confirm_qr_payment` (service-role/admin): **PayWay webhook** (`payway-webhook` Edge Function, HMAC fail-closed) / **Bakong poller** (`bakong-check` + Postgres-computed MD5) / **admin simulate** (`simulate_qr_payment`). COD ✅ (verified on delivery). Legacy bank-transfer rows keep validating | ❌ card prototype (documented); real gateway confirmation needs external credentials (Part A.5); status vocabulary mapped in Part D |
 
 ## B.7 Assignment §7 — Order Lifecycle, Tracking & Returns
 
@@ -210,7 +225,13 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
   `pending→Pending, accepted→Confirmed, preparing→Processing, ready→Packed/Shipped,
   outForDelivery→Out for Delivery, delivered→Delivered`.
 - **Payment vocabulary mapping:** `pending→Pending, transaction_verified→Paid,
-  refund_required/refunded→Refunded/Refund Required`; card/QR prototypes ❌ (B.6).
+  refund_required/refunded→Refunded/Refund Required`; QR confirmation is
+  webhook/poller-driven (Section 6b), COD verifies on delivery.
+- **Status ownership (Section 6b):** the four state families stay on their four
+  entities — admin manages business-order (accept/reject → preparing → ready),
+  delivery (`admin_ship_order` → delivery_in_progress, then `admin_complete_order`
+  → delivered) and pickup-stop states; payment states are system/webhook-driven.
+  Ship-before-complete keeps the customer timeline's full progression.
 - **Realtime scope:** only `notifications`, `orders`, `deliveries`, `business_orders` are in
   the `supabase_realtime` publication; every subscription's initial snapshot is skipped
   (§31, §54).
@@ -371,6 +392,25 @@ appended as sections land.)
   (moderation). Business screen lists its submitted banners from the new
   table; `submit_banner`/`moderate_banner` re-pointed (portal bypassed but
   runtime-correct). Home strip reads approved in-window banners.
+
+## Section 6b — Checkout, shipping & payments (`20261005000037` + `0038`)
+
+* Multi-step checkout wizard (assignment §6 sequence incl. shipping-method
+  and order-note steps); `orders.note` plumbed through placement.
+* `addresses.is_default` + one-default-per-user index + `set_default_address`
+  RPC; checkout preselects the default.
+* Status clarification: `admin_ship_order` splits completion so the customer
+  timeline demos Shipped → Out for delivery → Delivered; ownership documented
+  (Part D).
+* QR payment: `payment_method += 'qr'`, `payments.qr_payload/qr_md5/
+  transaction_reference`, `platform_settings.qr_account_id`; KHQR generated
+  client-side (EMV builder, `qr_flutter` rendering — user-approved dep),
+  registered via `register_qr_payment` (MD5 computed server-side);
+  `confirm_qr_payment` (service-role/admin) converges webhook + poller +
+  `simulate_qr_payment` (admin); `payments` added to the realtime
+  publication. Edge Functions: `payway-webhook` (HMAC fail-closed),
+  `bakong-check` (Bakong check_transaction_by_md5). Bank transfer removed
+  from the checkout UI; legacy rows still validate.
 
 ## Realtime
 

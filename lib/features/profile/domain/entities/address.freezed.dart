@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Address {
 
- String get id; String get label; String get recipientName; String get phone; String get line1; String? get line2; String get city;
+ String get id; String get label; String get recipientName; String get phone; String get line1; String? get line2; String get city; bool get isDefault;
 /// Create a copy of Address
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $AddressCopyWith<Address> get copyWith => _$AddressCopyWithImpl<Address>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Address&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.recipientName, recipientName) || other.recipientName == recipientName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.line2, line2) || other.line2 == line2)&&(identical(other.city, city) || other.city == city));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Address&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.recipientName, recipientName) || other.recipientName == recipientName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.line2, line2) || other.line2 == line2)&&(identical(other.city, city) || other.city == city)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,label,recipientName,phone,line1,line2,city);
+int get hashCode => Object.hash(runtimeType,id,label,recipientName,phone,line1,line2,city,isDefault);
 
 @override
 String toString() {
-  return 'Address(id: $id, label: $label, recipientName: $recipientName, phone: $phone, line1: $line1, line2: $line2, city: $city)';
+  return 'Address(id: $id, label: $label, recipientName: $recipientName, phone: $phone, line1: $line1, line2: $line2, city: $city, isDefault: $isDefault)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $AddressCopyWith<$Res>  {
   factory $AddressCopyWith(Address value, $Res Function(Address) _then) = _$AddressCopyWithImpl;
 @useResult
 $Res call({
- String id, String label, String recipientName, String phone, String line1, String? line2, String city
+ String id, String label, String recipientName, String phone, String line1, String? line2, String city, bool isDefault
 });
 
 
@@ -63,7 +63,7 @@ class _$AddressCopyWithImpl<$Res>
 
 /// Create a copy of Address
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? label = null,Object? recipientName = null,Object? phone = null,Object? line1 = null,Object? line2 = freezed,Object? city = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? label = null,Object? recipientName = null,Object? phone = null,Object? line1 = null,Object? line2 = freezed,Object? city = null,Object? isDefault = null,}) {
   return _then(Address(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -72,7 +72,8 @@ as String,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to
 as String,line1: null == line1 ? _self.line1 : line1 // ignore: cast_nullable_to_non_nullable
 as String,line2: freezed == line2 ? _self.line2 : line2 // ignore: cast_nullable_to_non_nullable
 as String?,city: null == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String label,  String recipientName,  String phone,  String line1,  String? line2,  String city)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String label,  String recipientName,  String phone,  String line1,  String? line2,  String city,  bool isDefault)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Address() when $default != null:
-return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1,_that.line2,_that.city);case _:
+return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1,_that.line2,_that.city,_that.isDefault);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String label,  String recipientName,  String phone,  String line1,  String? line2,  String city)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String label,  String recipientName,  String phone,  String line1,  String? line2,  String city,  bool isDefault)  $default,) {final _that = this;
 switch (_that) {
 case _Address():
-return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1,_that.line2,_that.city);case _:
+return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1,_that.line2,_that.city,_that.isDefault);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String label,  String recipientName,  String phone,  String line1,  String? line2,  String city)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String label,  String recipientName,  String phone,  String line1,  String? line2,  String city,  bool isDefault)?  $default,) {final _that = this;
 switch (_that) {
 case _Address() when $default != null:
-return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1,_that.line2,_that.city);case _:
+return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1,_that.line2,_that.city,_that.isDefault);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.id,_that.label,_that.recipientName,_that.phone,_that.line1
 
 
 class _Address implements Address {
-  const _Address({required this.id, this.label = 'Home', required this.recipientName, this.phone = '', required this.line1, this.line2, required this.city});
+  const _Address({required this.id, this.label = 'Home', required this.recipientName, this.phone = '', required this.line1, this.line2, required this.city, this.isDefault = false});
   
 
 @override final  String id;
@@ -223,6 +224,7 @@ class _Address implements Address {
 @override final  String line1;
 @override final  String? line2;
 @override final  String city;
+@override@JsonKey() final  bool isDefault;
 
 /// Create a copy of Address
 /// with the given fields replaced by the non-null parameter values.
@@ -234,16 +236,16 @@ _$AddressCopyWith<_Address> get copyWith => __$AddressCopyWithImpl<_Address>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Address&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.recipientName, recipientName) || other.recipientName == recipientName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.line2, line2) || other.line2 == line2)&&(identical(other.city, city) || other.city == city));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Address&&(identical(other.id, id) || other.id == id)&&(identical(other.label, label) || other.label == label)&&(identical(other.recipientName, recipientName) || other.recipientName == recipientName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.line2, line2) || other.line2 == line2)&&(identical(other.city, city) || other.city == city)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,label,recipientName,phone,line1,line2,city);
+int get hashCode => Object.hash(runtimeType,id,label,recipientName,phone,line1,line2,city,isDefault);
 
 @override
 String toString() {
-  return 'Address(id: $id, label: $label, recipientName: $recipientName, phone: $phone, line1: $line1, line2: $line2, city: $city)';
+  return 'Address(id: $id, label: $label, recipientName: $recipientName, phone: $phone, line1: $line1, line2: $line2, city: $city, isDefault: $isDefault)';
 }
 
 
@@ -254,7 +256,7 @@ abstract mixin class _$AddressCopyWith<$Res> implements $AddressCopyWith<$Res> {
   factory _$AddressCopyWith(_Address value, $Res Function(_Address) _then) = __$AddressCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String label, String recipientName, String phone, String line1, String? line2, String city
+ String id, String label, String recipientName, String phone, String line1, String? line2, String city, bool isDefault
 });
 
 
@@ -271,7 +273,7 @@ class __$AddressCopyWithImpl<$Res>
 
 /// Create a copy of Address
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? label = null,Object? recipientName = null,Object? phone = null,Object? line1 = null,Object? line2 = freezed,Object? city = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? label = null,Object? recipientName = null,Object? phone = null,Object? line1 = null,Object? line2 = freezed,Object? city = null,Object? isDefault = null,}) {
   return _then(_Address(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -280,7 +282,8 @@ as String,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to
 as String,line1: null == line1 ? _self.line1 : line1 // ignore: cast_nullable_to_non_nullable
 as String,line2: freezed == line2 ? _self.line2 : line2 // ignore: cast_nullable_to_non_nullable
 as String?,city: null == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

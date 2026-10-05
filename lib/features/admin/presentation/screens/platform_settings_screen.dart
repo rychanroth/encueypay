@@ -22,6 +22,7 @@ class _PlatformSettingsScreenState
   final _platformCommissionController = TextEditingController();
   final _driverCommissionController = TextEditingController();
   final _paymentAccountController = TextEditingController();
+  final _qrAccountController = TextEditingController();
   bool _filled = false;
 
   @override
@@ -30,6 +31,7 @@ class _PlatformSettingsScreenState
     _platformCommissionController.dispose();
     _driverCommissionController.dispose();
     _paymentAccountController.dispose();
+    _qrAccountController.dispose();
     super.dispose();
   }
 
@@ -58,6 +60,7 @@ class _PlatformSettingsScreenState
             platformCommissionPercent: platformCommission,
             driverCommissionPercent: driverCommission,
             paymentAccount: _paymentAccountController.text.trim(),
+            qrAccountId: _qrAccountController.text.trim(),
           ),
         );
     final hasError = ref.read(adminSettingsControllerProvider).hasError;
@@ -98,6 +101,7 @@ class _PlatformSettingsScreenState
             _driverCommissionController.text =
                 '${settings.driverCommissionPercent}';
             _paymentAccountController.text = settings.paymentAccount;
+            _qrAccountController.text = settings.qrAccountId;
             _filled = true;
           }
           return ListView(
@@ -132,6 +136,15 @@ class _PlatformSettingsScreenState
                 controller: _paymentAccountController,
                 decoration: const InputDecoration(
                   labelText: 'Platform payment account (for transfers)',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _qrAccountController,
+                decoration: const InputDecoration(
+                  labelText: 'QR payment account (Bakong ID)',
+                  helperText: 'KHQR payments are received here; empty = '
+                      'QR disabled at checkout',
                 ),
               ),
               const SizedBox(height: 24),

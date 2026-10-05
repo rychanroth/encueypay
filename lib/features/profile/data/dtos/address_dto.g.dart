@@ -15,6 +15,7 @@ AddressDto _$AddressDtoFromJson(Map<String, dynamic> json) => AddressDto(
   line1: json['line1'] as String,
   line2: json['line2'] as String?,
   city: json['city'] as String,
+  isDefault: json['is_default'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$AddressDtoToJson(AddressDto instance) =>
@@ -27,4 +28,5 @@ Map<String, dynamic> _$AddressDtoToJson(AddressDto instance) =>
       'line1': instance.line1,
       'line2': instance.line2,
       'city': instance.city,
+      'is_default': instance.isDefault,
     };

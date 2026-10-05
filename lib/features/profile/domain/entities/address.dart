@@ -14,6 +14,7 @@ abstract class Address with _$Address {
     required String line1,
     String? line2,
     required String city,
+    @Default(false) bool isDefault,
   }) = _Address;
 }
 

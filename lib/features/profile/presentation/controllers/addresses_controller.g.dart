@@ -43,7 +43,7 @@ final class AddressesControllerProvider
 }
 
 String _$addressesControllerHash() =>
-    r'027a52e758459e6f3d4cf61289fc10f7ad5a13f7';
+    r'e94e79dc585df148f8691e5731c17097df7fd038';
 
 /// Address book list + mutations. No optimistic UI: mutations persist via
 /// the repository, then `ref.invalidateSelf()` refetches ground truth
