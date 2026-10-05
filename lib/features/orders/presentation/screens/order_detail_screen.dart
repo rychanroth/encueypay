@@ -110,7 +110,7 @@ class OrderDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    order.derivedStatus.name,
+                    order.status.wireName,
                     style: theme.textTheme.titleSmall
                         ?.copyWith(color: theme.colorScheme.primary),
                   ),
@@ -132,62 +132,44 @@ class OrderDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
 
-              // Visual status timeline (assignment §7, Section 7).
-              OrderStatusTimeline(status: order.derivedStatus),
-              const SizedBox(height: 16),
-
-              // Per-business portions with their own lifecycles (§11).
-              for (final part in order.businessParts) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                part.businessName,
-                                style: theme.textTheme.titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Text(part.status.name,
-                                style: theme.textTheme.bodySmall),
-                          ],
-                        ),
-                        if (part.rejectionReason != null)
-                          Text(
-                            part.rejectionReason!,
-                            style: theme.textTheme.bodySmall
-                                ?.copyWith(color: theme.colorScheme.error),
-                          ),
-                        const SizedBox(height: 8),
-                        for (final item in part.items)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    item.variantName == null
-                                        ? '${item.productName} × ${item.quantity}'
-                                        : '${item.productName} '
-                                            '(${item.variantName}) × ${item.quantity}',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Text(Money(item.lineTotalMinor).format()),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
+              // Visual status timeline (assignment §7): the order's single
+              // lifecycle, read verbatim (Section 7A).
+              OrderStatusTimeline(status: order.status),
+              if (order.cancellationReason.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Reason: ${order.cancellationReason}',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.error),
                   ),
                 ),
-              ],
+              const SizedBox(height: 16),
+
+              // Items (§19 historical snapshots).
+              Text('Items',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              for (final item in order.items)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.variantName == null
+                              ? '${item.productName} × ${item.quantity}'
+                              : '${item.productName} '
+                                  '(${item.variantName}) × ${item.quantity}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(Money(item.lineTotalMinor).format()),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 8),
 
               if (payment != null) ...[
@@ -212,15 +194,6 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
               ],
 
-              Text('Delivery',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.local_shipping_outlined),
-                title: Text(order.delivery?.status.name ?? 'Not created'),
-              ),
-
               Text('Shipping address',
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold)),
@@ -238,7 +211,7 @@ class OrderDetailScreen extends ConsumerWidget {
               _SummaryRow('Total', Money(order.totalMinor).format(), bold: true),
 
               const SizedBox(height: 24),
-              if (order.derivedStatus == CustomerOrderStatus.delivered) ...[
+              if (order.delivered) ...[
                 FilledButton.tonalIcon(
                   onPressed: () => context.pushNamed(
                     AppRoutes.returnRequest,
@@ -253,27 +226,26 @@ class OrderDetailScreen extends ConsumerWidget {
                   style: theme.textTheme.bodySmall,
                 ),
               ],
-              for (final part in order.businessParts)
-                if (order.derivedStatus == CustomerOrderStatus.delivered)
-                  for (final item in part.items)
-                    ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        item.variantName == null
-                            ? item.productName
-                            : '${item.productName} (${item.variantName})',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: TextButton(
-                        onPressed: () => context.pushNamed(
-                          AppRoutes.reviewCompose,
-                          extra: (item.id, item.productName),
-                        ),
-                        child: const Text('Review'),
-                      ),
+              if (order.delivered)
+                for (final item in order.items)
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      item.variantName == null
+                          ? item.productName
+                          : '${item.productName} (${item.variantName})',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    trailing: TextButton(
+                      onPressed: () => context.pushNamed(
+                        AppRoutes.reviewCompose,
+                        extra: (item.id, item.productName),
+                      ),
+                      child: const Text('Review'),
+                    ),
+                  ),
               if (order.cancellable) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(

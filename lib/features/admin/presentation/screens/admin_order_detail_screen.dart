@@ -5,7 +5,6 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_orders_controller.dart';
-import '../widgets/admin_lifecycle_chip.dart';
 
 /// Fulfillment view for one order (Section 3): per-business lifecycle
 /// transitions (accept/reject → preparing → ready), one-shot administrative
@@ -45,42 +44,60 @@ class AdminOrderDetailScreen extends ConsumerWidget {
             children: [
               _SummaryCard(order: order),
               const SizedBox(height: 16),
-              Text('Business orders',
+              // Section 7A: one-step lifecycle transition. Pending/confirmed
+              // orders can instead be cancelled with a reason (rejection
+              // equivalent).
+              if (order.nextTransition != null)
+                FilledButton(
+                  onPressed: () => ref
+                      .read(adminOrdersControllerProvider.notifier)
+                      .transition(
+                        orderId: order.id,
+                        status: order.nextTransition!.wireName,
+                      ),
+                  child: Text(
+                      'Move to ${order.nextTransition!.wireName.replaceAll('_', ' ')}'),
+                ),
+              if (order.cancellable)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: OutlinedButton(
+                    onPressed: () => _cancel(context, ref, order.id),
+                    child: const Text('Cancel order'),
+                  ),
+                ),
+              // Dev-only simulation of the gateway webhook (QR flow).
+              if (order.paymentMethod == 'qr' &&
+                  order.paymentStatus == 'pending')
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: FilledButton.tonal(
+                    onPressed: () => ref
+                        .read(adminOrdersControllerProvider.notifier)
+                        .simulateQrPayment(orderId: order.id),
+                    child: const Text('Simulate QR payment'),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              Text('Items',
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold)),
-              for (final part in order.parts)
-                _PartTile(orderId: order.id, part: part),
-              const SizedBox(height: 16),
-              // Section 6b: two-step administrative delivery — ship, then
-              // complete (the customer timeline shows Shipped → Out for
-              // delivery → Delivered instead of a single jump).
-              if (order.shippable)
-                FilledButton(
-                  onPressed: () => ref
-                      .read(adminOrdersControllerProvider.notifier)
-                      .ship(orderId: order.id),
-                  child: const Text('Ship order'),
-                ),
-              if (order.completable) ...[
-                FilledButton(
-                  onPressed: () => ref
-                      .read(adminOrdersControllerProvider.notifier)
-                      .complete(orderId: order.id),
-                  child: const Text('Complete delivery'),
-                ),
-                // Dev-only simulation of the gateway webhook (QR flow).
-                if (order.paymentMethod == 'qr' &&
-                    order.paymentStatus == 'pending')
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: FilledButton.tonal(
-                      onPressed: () => ref
-                          .read(adminOrdersControllerProvider.notifier)
-                          .simulateQrPayment(orderId: order.id),
-                      child: const Text('Simulate QR payment'),
-                    ),
+              for (final item in order.items)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    item.variantName == null
+                        ? '${item.productName} × ${item.quantity}'
+                        : '${item.productName} (${item.variantName}) × ${item.quantity}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-              ],
+                  subtitle: item.businessName.isEmpty
+                      ? null
+                      : Text(item.businessName),
+                  trailing: Text(Money(item.lineTotalMinor).format()),
+                ),
               const SizedBox(height: 16),
               Text('Return requests',
                   style: theme.textTheme.titleSmall
@@ -167,117 +184,38 @@ class _Row extends StatelessWidget {
   }
 }
 
-class _PartTile extends ConsumerWidget {
-  const _PartTile({required this.orderId, required this.part});
-
-  final String orderId;
-  final AdminBusinessOrderPart part;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final controller = ref.read(adminOrdersControllerProvider.notifier);
-
-    return Card(
-      margin: const EdgeInsets.only(top: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(part.businessName,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.bold)),
-                ),
-                AdminLifecycleChip(label: part.status),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${Money(part.subtotalMinor).format()}'
-              '${part.discountMinor > 0 ? ' · discount ${Money(part.discountMinor).format()}' : ''}',
-              style: theme.textTheme.bodySmall,
-            ),
-            if (part.rejectionReason != null &&
-                part.rejectionReason!.isNotEmpty)
-              Text(
-                'Reason: ${part.rejectionReason}',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.error),
-              ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                if (part.status == 'pending') ...[
-                  FilledButton.tonal(
-                    onPressed: () => controller.transition(
-                      businessOrderId: part.id,
-                      target: 'accepted',
-                    ),
-                    child: const Text('Accept'),
-                  ),
-                  FilledButton.tonal(
-                    onPressed: () => _reject(context, ref),
-                    child: const Text('Reject'),
-                  ),
-                ],
-                if (part.status == 'accepted')
-                  FilledButton.tonal(
-                    onPressed: () => controller.transition(
-                      businessOrderId: part.id,
-                      target: 'preparing',
-                    ),
-                    child: const Text('Mark preparing'),
-                  ),
-                if (part.status == 'preparing')
-                  FilledButton.tonal(
-                    onPressed: () => controller.transition(
-                      businessOrderId: part.id,
-                      target: 'ready',
-                    ),
-                    child: const Text('Mark ready'),
-                  ),
-              ],
-            ),
-          ],
-        ),
+Future<void> _cancel(
+  BuildContext context,
+  WidgetRef ref,
+  String orderId,
+) async {
+  final reasonController = TextEditingController();
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Cancel order?'),
+      content: TextField(
+        controller: reasonController,
+        decoration: const InputDecoration(labelText: 'Reason (required)'),
       ),
-    );
-  }
-
-  Future<void> _reject(BuildContext context, WidgetRef ref) async {
-    final reasonController = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Reject business order?'),
-        content: TextField(
-          controller: reasonController,
-          decoration: const InputDecoration(labelText: 'Reason (required)'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Keep order'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Reject'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    await ref.read(adminOrdersControllerProvider.notifier).transition(
-          businessOrderId: part.id,
-          target: 'rejected',
-          reason: reasonController.text.trim(),
-        );
-  }
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Cancel order'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  await ref.read(adminOrdersControllerProvider.notifier).transition(
+        orderId: orderId,
+        status: 'cancelled',
+        reason: reasonController.text.trim(),
+      );
 }
 
 class _ReturnTile extends ConsumerWidget {

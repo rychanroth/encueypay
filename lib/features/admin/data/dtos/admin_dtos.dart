@@ -234,10 +234,11 @@ class AdminOrderRowDto {
     required this.deliveryFeeMinor,
     required this.totalMinor,
     required this.createdAt,
+    required this.status,
+    this.cancellationReason = '',
     this.users,
     this.payments = const [],
-    this.deliveries = const [],
-    this.businessOrders = const [],
+    this.items = const [],
     this.returnRequests = const [],
   });
 
@@ -250,6 +251,10 @@ class AdminOrderRowDto {
   final int deliveryFeeMinor;
   final int totalMinor;
   final DateTime createdAt;
+  final String status;
+
+  @JsonKey(defaultValue: '')
+  final String cancellationReason;
 
   @JsonKey(name: 'users')
   final AdminApplicantJoinDto? users;
@@ -257,28 +262,13 @@ class AdminOrderRowDto {
   @JsonKey(name: 'payments', defaultValue: [])
   final List<AdminPaymentJoinDto> payments;
 
-  @JsonKey(name: 'deliveries', defaultValue: [])
-  final List<AdminDeliveryJoinDto> deliveries;
-
-  @JsonKey(name: 'business_orders', defaultValue: [])
-  final List<AdminBusinessOrderJoinDto> businessOrders;
+  @JsonKey(name: 'order_items', defaultValue: [])
+  final List<AdminItemJoinDto> items;
 
   @JsonKey(name: 'return_requests', defaultValue: [])
   final List<AdminReturnJoinDto> returnRequests;
 
   Map<String, dynamic> toJson() => _$AdminOrderRowDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AdminDeliveryJoinDto {
-  const AdminDeliveryJoinDto({this.status});
-
-  factory AdminDeliveryJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminDeliveryJoinDtoFromJson(json);
-
-  final String? status;
-
-  Map<String, dynamic> toJson() => _$AdminDeliveryJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -295,29 +285,25 @@ class AdminPaymentJoinDto {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AdminBusinessOrderJoinDto {
-  const AdminBusinessOrderJoinDto({
-    required this.id,
-    required this.subtotalMinor,
-    required this.discountMinor,
-    this.status,
-    this.rejectionReason,
-    this.businesses,
+class AdminItemJoinDto {
+  const AdminItemJoinDto({
+    required this.productName,
+    required this.quantity,
+    required this.lineTotalMinor,
+    this.variantName,
+    this.businessName,
   });
 
-  factory AdminBusinessOrderJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminBusinessOrderJoinDtoFromJson(json);
+  factory AdminItemJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminItemJoinDtoFromJson(json);
 
-  final String id;
-  final int subtotalMinor;
-  final int discountMinor;
-  final String? status;
-  final String? rejectionReason;
+  final String productName;
+  final int quantity;
+  final int lineTotalMinor;
+  final String? variantName;
+  final String? businessName;
 
-  @JsonKey(name: 'businesses')
-  final AdminNamedJoinDto? businesses;
-
-  Map<String, dynamic> toJson() => _$AdminBusinessOrderJoinDtoToJson(this);
+  Map<String, dynamic> toJson() => _$AdminItemJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

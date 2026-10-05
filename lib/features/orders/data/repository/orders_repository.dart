@@ -7,8 +7,6 @@ abstract interface class IOrdersRepository {
   /// delivery changes.
   Stream<StreamResult<bool>> watchOrderChanges(String orderId);
 
-  Stream<StreamResult<bool>> watchDeliveryChanges(String orderId);
-
   Future<List<CustomerOrder>> fetchMyOrders({int limit = 10, int offset = 0});
 
   Future<CustomerOrder> fetchOrder(String orderId);

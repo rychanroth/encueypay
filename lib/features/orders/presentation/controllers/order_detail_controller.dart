@@ -14,19 +14,13 @@ class OrderDetailController extends _$OrderDetailController {
   @override
   Future<CustomerOrder> build(String orderId) async {
     final repository = ref.watch(ordersRepositoryProvider);
-    // Realtime sync signals (§31/§54): order + delivery changes refetch.
-    // skipInitialSnapshot drops each subscription's initial row snapshot —
+    // Realtime sync signal (§31/§54): order changes (incl. status) refetch.
+    // skipInitialSnapshot drops the subscription's initial row snapshot —
     // treating it as a change would invalidate → resubscribe → snapshot, a
     // permanent rebuild loop.
     final subscriptions = <StreamSubscription<StreamResult<bool>>>[
       repository
           .watchOrderChanges(orderId)
-          .skipInitialSnapshot()
-          .listen((result) {
-        if (result is StreamData) ref.invalidateSelf();
-      }),
-      repository
-          .watchDeliveryChanges(orderId)
           .skipInitialSnapshot()
           .listen((result) {
         if (result is StreamData) ref.invalidateSelf();

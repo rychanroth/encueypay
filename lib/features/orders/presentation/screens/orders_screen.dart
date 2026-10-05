@@ -13,14 +13,14 @@ import '../controllers/orders_controller.dart';
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
 
-  Color _statusColor(BuildContext context, CustomerOrderStatus status) {
+  Color _statusColor(BuildContext context, OrderStatus status) {
     switch (status) {
-      case CustomerOrderStatus.pending:
+      case OrderStatus.pending:
         return Theme.of(context).colorScheme.secondary;
-      case CustomerOrderStatus.cancelled:
-      case CustomerOrderStatus.refundRequired:
+      case OrderStatus.cancelled:
+      case OrderStatus.returned:
         return Theme.of(context).colorScheme.error;
-      case CustomerOrderStatus.delivered:
+      case OrderStatus.delivered:
         return Colors.green;
       default:
         return Theme.of(context).colorScheme.primary;
@@ -65,7 +65,7 @@ class OrdersScreen extends ConsumerWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final order = orders[index];
-                final status = order.derivedStatus;
+                final status = order.status;
                 return Card(
                   child: ListTile(
                     title: Text(
@@ -81,7 +81,7 @@ class OrdersScreen extends ConsumerWidget {
                     ),
                     trailing: Chip(
                       label: Text(
-                        status.name,
+                        status.wireName,
                         style: TextStyle(
                           color: _statusColor(context, status),
                           fontSize: 12,

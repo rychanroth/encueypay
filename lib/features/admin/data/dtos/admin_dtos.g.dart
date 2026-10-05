@@ -191,6 +191,8 @@ AdminOrderRowDto _$AdminOrderRowDtoFromJson(
   deliveryFeeMinor: (json['delivery_fee_minor'] as num).toInt(),
   totalMinor: (json['total_minor'] as num).toInt(),
   createdAt: DateTime.parse(json['created_at'] as String),
+  status: json['status'] as String,
+  cancellationReason: json['cancellation_reason'] as String? ?? '',
   users: json['users'] == null
       ? null
       : AdminApplicantJoinDto.fromJson(json['users'] as Map<String, dynamic>),
@@ -199,17 +201,9 @@ AdminOrderRowDto _$AdminOrderRowDtoFromJson(
           ?.map((e) => AdminPaymentJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
-  deliveries:
-      (json['deliveries'] as List<dynamic>?)
-          ?.map((e) => AdminDeliveryJoinDto.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      [],
-  businessOrders:
-      (json['business_orders'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                AdminBusinessOrderJoinDto.fromJson(e as Map<String, dynamic>),
-          )
+  items:
+      (json['order_items'] as List<dynamic>?)
+          ?.map((e) => AdminItemJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
   returnRequests:
@@ -227,20 +221,13 @@ Map<String, dynamic> _$AdminOrderRowDtoToJson(AdminOrderRowDto instance) =>
       'delivery_fee_minor': instance.deliveryFeeMinor,
       'total_minor': instance.totalMinor,
       'created_at': instance.createdAt.toIso8601String(),
+      'status': instance.status,
+      'cancellation_reason': instance.cancellationReason,
       'users': instance.users,
       'payments': instance.payments,
-      'deliveries': instance.deliveries,
-      'business_orders': instance.businessOrders,
+      'order_items': instance.items,
       'return_requests': instance.returnRequests,
     };
-
-AdminDeliveryJoinDto _$AdminDeliveryJoinDtoFromJson(
-  Map<String, dynamic> json,
-) => AdminDeliveryJoinDto(status: json['status'] as String?);
-
-Map<String, dynamic> _$AdminDeliveryJoinDtoToJson(
-  AdminDeliveryJoinDto instance,
-) => <String, dynamic>{'status': instance.status};
 
 AdminPaymentJoinDto _$AdminPaymentJoinDtoFromJson(Map<String, dynamic> json) =>
     AdminPaymentJoinDto(
@@ -252,29 +239,23 @@ Map<String, dynamic> _$AdminPaymentJoinDtoToJson(
   AdminPaymentJoinDto instance,
 ) => <String, dynamic>{'method': instance.method, 'status': instance.status};
 
-AdminBusinessOrderJoinDto _$AdminBusinessOrderJoinDtoFromJson(
-  Map<String, dynamic> json,
-) => AdminBusinessOrderJoinDto(
-  id: json['id'] as String,
-  subtotalMinor: (json['subtotal_minor'] as num).toInt(),
-  discountMinor: (json['discount_minor'] as num).toInt(),
-  status: json['status'] as String?,
-  rejectionReason: json['rejection_reason'] as String?,
-  businesses: json['businesses'] == null
-      ? null
-      : AdminNamedJoinDto.fromJson(json['businesses'] as Map<String, dynamic>),
-);
+AdminItemJoinDto _$AdminItemJoinDtoFromJson(Map<String, dynamic> json) =>
+    AdminItemJoinDto(
+      productName: json['product_name'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      lineTotalMinor: (json['line_total_minor'] as num).toInt(),
+      variantName: json['variant_name'] as String?,
+      businessName: json['business_name'] as String?,
+    );
 
-Map<String, dynamic> _$AdminBusinessOrderJoinDtoToJson(
-  AdminBusinessOrderJoinDto instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'subtotal_minor': instance.subtotalMinor,
-  'discount_minor': instance.discountMinor,
-  'status': instance.status,
-  'rejection_reason': instance.rejectionReason,
-  'businesses': instance.businesses,
-};
+Map<String, dynamic> _$AdminItemJoinDtoToJson(AdminItemJoinDto instance) =>
+    <String, dynamic>{
+      'product_name': instance.productName,
+      'quantity': instance.quantity,
+      'line_total_minor': instance.lineTotalMinor,
+      'variant_name': instance.variantName,
+      'business_name': instance.businessName,
+    };
 
 AdminReturnJoinDto _$AdminReturnJoinDtoFromJson(Map<String, dynamic> json) =>
     AdminReturnJoinDto(

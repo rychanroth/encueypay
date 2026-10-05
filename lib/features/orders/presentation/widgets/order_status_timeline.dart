@@ -10,7 +10,7 @@ import '../../domain/entities/order.dart';
 class OrderStatusTimeline extends StatelessWidget {
   const OrderStatusTimeline({super.key, required this.status});
 
-  final CustomerOrderStatus status;
+  final OrderStatus status;
 
   static const _steps = [
     'Pending',
@@ -22,25 +22,21 @@ class OrderStatusTimeline extends StatelessWidget {
     'Delivered',
   ];
 
-  /// Derived status → index into [_steps]. `ready` maps to Packed; with the
-  /// administrative fulfillment (Section 3) completion jumps Packed →
-  /// Delivered, so Shipped is implicitly passed. There is no separate
-  /// Shipped event in the as-built pipeline.
+  /// The order's own lifecycle (Section 7A) maps 1:1 onto the steps.
   int get _currentIndex => switch (status) {
-        CustomerOrderStatus.pending => 0,
-        CustomerOrderStatus.accepted => 1,
-        CustomerOrderStatus.preparing => 2,
-        CustomerOrderStatus.ready => 3,
-        CustomerOrderStatus.outForDelivery => 5,
-        CustomerOrderStatus.delivered => 6,
+        OrderStatus.pending => 0,
+        OrderStatus.confirmed => 1,
+        OrderStatus.processing => 2,
+        OrderStatus.packed => 3,
+        OrderStatus.shipped => 4,
+        OrderStatus.outForDelivery => 5,
+        OrderStatus.delivered => 6,
         // Non-trackable states render as a notice (see [hasNotice]).
         _ => -1,
       };
 
   bool get hasNotice => switch (status) {
-        CustomerOrderStatus.cancelled ||
-        CustomerOrderStatus.refundRequired =>
-          true,
+        OrderStatus.cancelled || OrderStatus.returned => true,
         _ => false,
       };
 
@@ -48,7 +44,7 @@ class OrderStatusTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (hasNotice) {
-      final isCancelled = status == CustomerOrderStatus.cancelled;
+      final isCancelled = status == OrderStatus.cancelled;
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -71,7 +67,7 @@ class OrderStatusTimeline extends StatelessWidget {
               child: Text(
                 isCancelled
                     ? 'This order was cancelled.'
-                    : 'A refund is required for this order.',
+                    : 'This order was returned.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: isCancelled
                       ? theme.colorScheme.onErrorContainer

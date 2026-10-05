@@ -6,6 +6,7 @@ extension OrderDtoX on OrderDto {
     return CustomerOrder(
       id: id,
       createdAt: createdAt,
+      status: OrderStatus.fromName(status),
       subtotalMinor: subtotalMinor,
       discountMinor: discountMinor,
       deliveryFeeMinor: deliveryFeeMinor,
@@ -15,7 +16,9 @@ extension OrderDtoX on OrderDto {
       shippingLine1: shippingLine1,
       shippingLine2: shippingLine2,
       shippingCity: shippingCity,
-      businessParts: businessOrders.map((bo) => bo.toDomain()).toList(),
+      note: note ?? '',
+      cancellationReason: cancellationReason ?? '',
+      items: items.map((item) => item.toDomain()).toList(),
       payment: payments == null
           ? null
           : OrderPayment(
@@ -23,25 +26,6 @@ extension OrderDtoX on OrderDto {
               status: PaymentStatusState.fromName(payments!.status),
               amountMinor: payments!.amountMinor ?? 0,
             ),
-      delivery: deliveries == null
-          ? null
-          : OrderDelivery(
-              status: DeliveryState.fromName(deliveries!.status),
-            ),
-    );
-  }
-}
-
-extension BusinessOrderJoinDtoX on BusinessOrderJoinDto {
-  OrderBusinessPart toDomain() {
-    return OrderBusinessPart(
-      id: id,
-      businessId: businessId,
-      businessName: businesses?.name ?? 'Business',
-      status: BusinessOrderStatus.fromName(status),
-      rejectionReason: rejectionReason,
-      items: orderItems.map((item) => item.toDomain()).toList(),
-      pickupStop: pickupStops?.toDomain(),
     );
   }
 }
@@ -56,16 +40,7 @@ extension OrderItemJoinDtoX on OrderItemJoinDto {
       discountMinor: discountMinor ?? 0,
       quantity: quantity,
       lineTotalMinor: lineTotalMinor,
-    );
-  }
-}
-
-extension PickupStopJoinDtoX on PickupStopJoinDto {
-  PickupStopInfo toDomain() {
-    return PickupStopInfo(
-      id: id,
-      sequence: sequence,
-      status: PickupStopState.fromName(status),
+      businessName: businessName ?? '',
     );
   }
 }

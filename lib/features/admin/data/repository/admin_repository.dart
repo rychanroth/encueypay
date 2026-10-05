@@ -85,14 +85,13 @@ abstract interface class IAdminRepository {
     String? reason,
   });
 
-  /// Mirrors complete_pickup_stop + mark_delivered: completes all pickup
-  /// stops and business parts, delivers, verifies COD. Requires the order
-  /// to be shipped first (Section 6b).
-  Future<void> completeOrder({required String orderId});
-
-  /// Section 6b: hands the order to transport (delivery →
-  /// delivery_in_progress); pickup stops complete at handover.
-  Future<void> shipOrder({required String orderId});
+  /// Section 7A: advances the order's single lifecycle one step (or
+  /// cancels a not-yet-shipped order with a reason).
+  Future<void> transitionOrder({
+    required String orderId,
+    required String status,
+    String? reason,
+  });
 
   /// Mirrors process_return with admin authority.
   Future<void> processReturn({

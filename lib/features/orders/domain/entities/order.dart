@@ -2,14 +2,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'order.freezed.dart';
 
-/// Customer order read model (spec §9–§19). The overall status is DERIVED
-/// from the independent business/payment/delivery states (§10/§52) — there
-/// is no authoritative overall state machine.
+/// Customer order read model (Section 7A): ONE lifecycle on the order —
+/// `status` IS the customer-facing state (assignment vocabulary), read
+/// verbatim by the tracking timeline. Payment stays its own flow.
 @freezed
 abstract class CustomerOrder with _$CustomerOrder {
   const factory CustomerOrder({
     required String id,
     required DateTime createdAt,
+    required OrderStatus status,
     required int subtotalMinor,
     required int discountMinor,
     required int deliveryFeeMinor,
@@ -20,71 +21,25 @@ abstract class CustomerOrder with _$CustomerOrder {
     required String shippingLine1,
     String? shippingLine2,
     required String shippingCity,
-    required List<OrderBusinessPart> businessParts,
+    @Default('') String note,
+    @Default('') String cancellationReason,
+    @Default([]) List<OrderItemSnapshot> items,
     OrderPayment? payment,
-    OrderDelivery? delivery,
   }) = _CustomerOrder;
 
   const CustomerOrder._();
 
-  /// Customer may cancel while every business order is still pending —
-  /// mirrored from the server rule in cancel_order.
+  /// Customer may cancel while the order is still pending/confirmed —
+  /// mirrored from the server rule in cancel_order (§7D refines paid-QR).
   bool get cancellable =>
-      businessParts.isNotEmpty &&
-      businessParts
-          .every((part) => part.status == BusinessOrderStatus.pending);
+      status == OrderStatus.pending || status == OrderStatus.confirmed;
 
-  /// Derived customer-facing status (§10).
-  CustomerOrderStatus get derivedStatus {
-    if (businessParts.every(
-        (p) => p.status == BusinessOrderStatus.cancelled ||
-            p.status == BusinessOrderStatus.rejected)) {
-      return CustomerOrderStatus.cancelled;
-    }
-    final payment = this.payment;
-    if (payment != null &&
-        payment.status == PaymentStatusState.refundRequired) {
-      return CustomerOrderStatus.refundRequired;
-    }
-    final delivery = this.delivery;
-    if (delivery != null) {
-      if (delivery.status == DeliveryState.delivered) {
-        return CustomerOrderStatus.delivered;
-      }
-      if (delivery.status == DeliveryState.deliveryInProgress ||
-          delivery.status == DeliveryState.pickupInProgress) {
-        return CustomerOrderStatus.outForDelivery;
-      }
-    }
-    final statuses = businessParts.map((p) => p.status).toSet();
-    if (statuses.contains(BusinessOrderStatus.ready)) {
-      return CustomerOrderStatus.ready;
-    }
-    if (statuses.contains(BusinessOrderStatus.preparing)) {
-      return CustomerOrderStatus.preparing;
-    }
-    if (statuses.contains(BusinessOrderStatus.accepted)) {
-      return CustomerOrderStatus.accepted;
-    }
-    return CustomerOrderStatus.pending;
-  }
-}
-
-/// One business's portion of the order, with its own lifecycle (§11).
-@freezed
-abstract class OrderBusinessPart with _$OrderBusinessPart {
-  const factory OrderBusinessPart({
-    required String id,
-    required String businessId,
-    required String businessName,
-    required BusinessOrderStatus status,
-    required List<OrderItemSnapshot> items,
-    required PickupStopInfo? pickupStop,
-    String? rejectionReason,
-  }) = _OrderBusinessPart;
+  /// Delivered orders unlock reviews and returns.
+  bool get delivered => status == OrderStatus.delivered;
 }
 
 /// Historical purchase line (§19) — current catalog edits never rewrite it.
+/// [businessName] is a display snapshot from the owning business.
 @freezed
 abstract class OrderItemSnapshot with _$OrderItemSnapshot {
   const factory OrderItemSnapshot({
@@ -94,6 +49,7 @@ abstract class OrderItemSnapshot with _$OrderItemSnapshot {
     required int quantity,
     required int lineTotalMinor,
     String? variantName,
+    @Default('') String businessName,
     @Default(0) int discountMinor,
   }) = _OrderItemSnapshot;
 }
@@ -107,33 +63,26 @@ abstract class OrderPayment with _$OrderPayment {
   }) = _OrderPayment;
 }
 
-@freezed
-abstract class OrderDelivery with _$OrderDelivery {
-  const factory OrderDelivery({required DeliveryState status})
-      = _OrderDelivery;
-}
-
-@freezed
-abstract class PickupStopInfo with _$PickupStopInfo {
-  const factory PickupStopInfo({
-    required String id,
-    required int sequence,
-    required PickupStopState status,
-  }) = _PickupStopInfo;
-}
-
-enum BusinessOrderStatus {
+/// The assignment's lifecycle vocabulary (§7A) — one status on the order.
+enum OrderStatus {
   pending,
-  accepted,
-  rejected,
-  preparing,
-  ready,
-  completed,
-  cancelled;
+  confirmed,
+  processing,
+  packed,
+  shipped,
+  outForDelivery,
+  delivered,
+  cancelled,
+  returned;
 
-  static BusinessOrderStatus fromName(String? name) =>
-      BusinessOrderStatus.values.asNameMap()[name] ??
-      BusinessOrderStatus.pending;
+  static OrderStatus fromName(String? name) =>
+      OrderStatus.values.asNameMap()[name] ?? OrderStatus.pending;
+
+  /// Wire value (snake_case on the wire).
+  String get wireName => switch (this) {
+        OrderStatus.outForDelivery => 'out_for_delivery',
+        _ => name,
+      };
 }
 
 enum PaymentMethodKind {
@@ -155,35 +104,4 @@ enum PaymentStatusState {
   static PaymentStatusState fromName(String? name) =>
       PaymentStatusState.values.asNameMap()[name] ??
       PaymentStatusState.pending;
-}
-
-enum DeliveryState {
-  available,
-  assigned,
-  pickupInProgress,
-  deliveryInProgress,
-  delivered,
-  cancelled;
-
-  static DeliveryState fromName(String? name) =>
-      DeliveryState.values.asNameMap()[name] ?? DeliveryState.available;
-}
-
-enum PickupStopState {
-  pending,
-  completed;
-
-  static PickupStopState fromName(String? name) =>
-      PickupStopState.values.asNameMap()[name] ?? PickupStopState.pending;
-}
-
-enum CustomerOrderStatus {
-  pending,
-  accepted,
-  preparing,
-  ready,
-  outForDelivery,
-  delivered,
-  cancelled,
-  refundRequired;
 }

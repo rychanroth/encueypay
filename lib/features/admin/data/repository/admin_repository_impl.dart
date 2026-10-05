@@ -358,12 +358,11 @@ class AdminRepositoryImpl implements IAdminRepository {
       final rows = await _client
           .from('orders')
           .select(
-            'id, subtotal_minor, discount_minor, delivery_fee_minor, '
-            'total_minor, created_at, users(full_name), '
-            'payments(method, status), '
-            'deliveries(status), '
-            'business_orders(id, status, subtotal_minor, discount_minor, '
-            'rejection_reason, businesses(name)), '
+            'id, status, cancellation_reason, subtotal_minor, '
+            'discount_minor, delivery_fee_minor, total_minor, created_at, '
+            'users(full_name), payments(method, status), '
+            'order_items(product_name, variant_name, business_name, '
+            'quantity, line_total_minor), '
             'return_requests(id, status, reason)',
           )
           .order('created_at', ascending: false)
@@ -378,17 +377,17 @@ class AdminRepositoryImpl implements IAdminRepository {
           deliveryFeeMinor: dto.deliveryFeeMinor,
           totalMinor: dto.totalMinor,
           createdAt: dto.createdAt,
+          status: AdminOrderStatus.fromName(dto.status),
+          cancellationReason: dto.cancellationReason,
           paymentMethod: payment?.method,
           paymentStatus: payment?.status,
-          deliveryStatus: dto.deliveries.firstOrNull?.status ?? '',
-          parts: dto.businessOrders
-              .map((part) => AdminBusinessOrderPart(
-                    id: part.id,
-                    businessName: part.businesses?.name ?? 'Business',
-                    status: part.status ?? 'pending',
-                    subtotalMinor: part.subtotalMinor,
-                    discountMinor: part.discountMinor,
-                    rejectionReason: part.rejectionReason,
+          items: dto.items
+              .map((item) => AdminOrderItem(
+                    productName: item.productName,
+                    variantName: item.variantName,
+                    businessName: item.businessName ?? '',
+                    quantity: item.quantity,
+                    lineTotalMinor: item.lineTotalMinor,
                   ))
               .toList(),
           returns: dto.returnRequests
@@ -421,13 +420,16 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<void> completeOrder({required String orderId}) {
-    return _rpc('admin_complete_order', {'p_order_id': orderId});
-  }
-
-  @override
-  Future<void> shipOrder({required String orderId}) {
-    return _rpc('admin_ship_order', {'p_order_id': orderId});
+  Future<void> transitionOrder({
+    required String orderId,
+    required String status,
+    String? reason,
+  }) {
+    return _rpc('admin_transition_order', {
+      'p_order_id': orderId,
+      'p_status': status,
+      'p_reason': reason,
+    });
   }
 
   @override

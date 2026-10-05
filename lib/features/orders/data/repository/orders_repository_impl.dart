@@ -22,16 +22,13 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   final SupabaseClient _client;
 
   static const _orderSelect =
-      'id, created_at, subtotal_minor, discount_minor, delivery_fee_minor, '
-      'total_minor, shipping_recipient_name, shipping_phone, shipping_line1, '
+      'id, created_at, status, subtotal_minor, discount_minor, '
+      'delivery_fee_minor, total_minor, note, cancellation_reason, '
+      'shipping_recipient_name, shipping_phone, shipping_line1, '
       'shipping_line2, shipping_city, '
-      'business_orders(id, business_id, status, rejection_reason, '
-      'businesses(name), '
-      'order_items(id, product_name, variant_name, unit_price_minor, '
-      'discount_minor, quantity, line_total_minor), '
-      'pickup_stops(id, sequence, status)), '
-      'payments(method, status, amount_minor), '
-      'deliveries(id, status)';
+      'order_items(id, product_name, variant_name, business_name, '
+      'unit_price_minor, discount_minor, quantity, line_total_minor), '
+      'payments(method, status, amount_minor)';
 
   String get _uid {
     final user = _client.auth.currentUser;
@@ -45,16 +42,6 @@ class OrdersRepositoryImpl implements IOrdersRepository {
         .from('orders')
         .stream(primaryKey: ['id'])
         .eq('id', orderId)
-        .map((_) => true)
-        .asStreamResult(_mapError);
-  }
-
-  @override
-  Stream<StreamResult<bool>> watchDeliveryChanges(String orderId) {
-    return _client
-        .from('deliveries')
-        .stream(primaryKey: ['id'])
-        .eq('order_id', orderId)
         .map((_) => true)
         .asStreamResult(_mapError);
   }

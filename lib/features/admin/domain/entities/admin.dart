@@ -95,10 +95,9 @@ abstract class AdminProductDraft with _$AdminProductDraft {
   }) = _AdminProductDraft;
 }
 
-/// Order oversight read model (Section 3, spec §8 "manages Orders"): the
-/// order with its per-business parts, payment, and return requests. Status
-/// strings are raw wire values — the admin UI is a management view, not the
-/// customer's derived lifecycle.
+/// Order oversight read model (Section 7A): the order's SINGLE lifecycle
+/// (`orders.status`, assignment vocabulary) with its items and return
+/// requests. The admin transitions the machine directly.
 @freezed
 abstract class AdminOrderSummary with _$AdminOrderSummary {
   const factory AdminOrderSummary({
@@ -109,70 +108,66 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
     required int deliveryFeeMinor,
     required int totalMinor,
     required DateTime createdAt,
+    required AdminOrderStatus status,
+    @Default('') String cancellationReason,
     String? paymentMethod,
     String? paymentStatus,
-    @Default('') String deliveryStatus,
-    @Default([]) List<AdminBusinessOrderPart> parts,
+    @Default([]) List<AdminOrderItem> items,
     @Default([]) List<AdminReturnRequest> returns,
   }) = _AdminOrderSummary;
 
   const AdminOrderSummary._();
 
-  /// Coarse lifecycle state for the list chip: every part completed →
-  /// Completed; any dead part → Rejected; otherwise the "earliest" live
-  /// state (pending before accepted before preparing before ready).
-  String get lifecycle {
-    if (parts.isEmpty) return 'empty';
-    if (deliveryStatus == 'delivered') return 'completed';
-    if (deliveryStatus == 'delivery_in_progress') return 'out for delivery';
-    if (parts.every((part) =>
-        part.status == 'completed' ||
-        part.status == 'rejected' ||
-        part.status == 'cancelled')) {
-      return 'completed';
-    }
-    if (parts.any((part) => part.status == 'rejected')) return 'rejected';
-    const order = ['pending', 'accepted', 'preparing', 'ready'];
-    var earliest = order.length - 1;
-    var hasLive = false;
-    for (final part in parts) {
-      final index = order.indexOf(part.status);
-      if (index != -1) {
-        hasLive = true;
-        if (index < earliest) earliest = index;
-      }
-    }
-    return hasLive ? order[earliest] : 'completed';
-  }
+  /// The next step of the lifecycle, or null when terminal/not yet
+  /// cancellable. Pending/confirmed orders can instead be cancelled with a
+  /// reason (the rejection equivalent).
+  AdminOrderStatus? get nextTransition => switch (status) {
+        AdminOrderStatus.pending => AdminOrderStatus.confirmed,
+        AdminOrderStatus.confirmed => AdminOrderStatus.processing,
+        AdminOrderStatus.processing => AdminOrderStatus.packed,
+        AdminOrderStatus.packed => AdminOrderStatus.shipped,
+        AdminOrderStatus.shipped => AdminOrderStatus.outForDelivery,
+        AdminOrderStatus.outForDelivery => AdminOrderStatus.delivered,
+        _ => null,
+      };
 
-  bool get _allPartsDecided =>
-      parts.isNotEmpty && parts.every((part) => part.status != 'pending');
-
-  /// Section 6b: hand over to transport — every part decided, at least one
-  /// in the accepted/preparing/ready pipeline, delivery still unclaimed.
-  bool get shippable =>
-      _allPartsDecided &&
-      parts.any((part) =>
-          part.status == 'accepted' ||
-          part.status == 'preparing' ||
-          part.status == 'ready') &&
-      deliveryStatus == 'available';
-
-  /// Section 6b: finish the delivery (only after shipping).
-  bool get completable => deliveryStatus == 'delivery_in_progress';
+  bool get cancellable =>
+      status == AdminOrderStatus.pending ||
+      status == AdminOrderStatus.confirmed;
 }
 
-/// One per-business portion of an order.
+/// Historical order line for the admin view (§19 snapshots).
 @freezed
-abstract class AdminBusinessOrderPart with _$AdminBusinessOrderPart {
-  const factory AdminBusinessOrderPart({
-    required String id,
-    required String businessName,
-    required String status,
-    required int subtotalMinor,
-    required int discountMinor,
-    String? rejectionReason,
-  }) = _AdminBusinessOrderPart;
+abstract class AdminOrderItem with _$AdminOrderItem {
+  const factory AdminOrderItem({
+    required String productName,
+    required int quantity,
+    required int lineTotalMinor,
+    @Default('') String businessName,
+    String? variantName,
+  }) = _AdminOrderItem;
+}
+
+/// The order lifecycle (mirrors the `order_status` wire enum, Section 7A).
+enum AdminOrderStatus {
+  pending,
+  confirmed,
+  processing,
+  packed,
+  shipped,
+  outForDelivery,
+  delivered,
+  cancelled,
+  returned;
+
+  static AdminOrderStatus fromName(String? name) =>
+      AdminOrderStatus.values.asNameMap()[name] ?? AdminOrderStatus.pending;
+
+  /// Wire value (snake_case on the wire).
+  String get wireName => switch (this) {
+        AdminOrderStatus.outForDelivery => 'out_for_delivery',
+        _ => name,
+      };
 }
 
 /// A customer return request on the order (pending → admin decision).

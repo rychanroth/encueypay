@@ -62,12 +62,12 @@ class AdminOrdersScreen extends ConsumerWidget {
                   ),
                   subtitle: Text(
                     '${order.createdAt.toLocal().toString().split('.').first}'
-                    ' · ${order.parts.length} part(s)'
+                    ' · ${order.items.length} item(s)'
                     '${order.paymentStatus == null ? '' : ' · ${order.paymentStatus}'}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: AdminLifecycleChip(label: order.lifecycle),
+                  trailing: AdminLifecycleChip(label: order.status.wireName),
                   onTap: () => context.pushNamed(
                     AppRoutes.adminOrderDetail,
                     pathParameters: {'id': order.id},

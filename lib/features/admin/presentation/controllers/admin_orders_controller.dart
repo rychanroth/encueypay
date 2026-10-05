@@ -17,39 +17,19 @@ class AdminOrdersController extends _$AdminOrdersController {
     return ref.watch(adminRepositoryProvider).fetchOrders();
   }
 
+  /// Section 7A: one-step lifecycle transition (or cancel with reason).
   Future<void> transition({
-    required String businessOrderId,
-    required String target,
+    required String orderId,
+    required String status,
     String? reason,
   }) async {
     final current = state.value ?? const <AdminOrderSummary>[];
     state = await AsyncValue.guard(() async {
-      await ref.read(adminRepositoryProvider).transitionBusinessOrder(
-            businessOrderId: businessOrderId,
-            target: target,
+      await ref.read(adminRepositoryProvider).transitionOrder(
+            orderId: orderId,
+            status: status,
             reason: reason,
           );
-      ref.invalidateSelf();
-      return current;
-    });
-  }
-
-  Future<void> complete({required String orderId}) async {
-    final current = state.value ?? const <AdminOrderSummary>[];
-    state = await AsyncValue.guard(() async {
-      await ref
-          .read(adminRepositoryProvider)
-          .completeOrder(orderId: orderId);
-      ref.invalidateSelf();
-      return current;
-    });
-  }
-
-  /// Section 6b: hand over to transport before completing the delivery.
-  Future<void> ship({required String orderId}) async {
-    final current = state.value ?? const <AdminOrderSummary>[];
-    state = await AsyncValue.guard(() async {
-      await ref.read(adminRepositoryProvider).shipOrder(orderId: orderId);
       ref.invalidateSelf();
       return current;
     });

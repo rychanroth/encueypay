@@ -144,12 +144,12 @@ are covered by the removal record (Part C).
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Order creation: unique ID, user info, items, quantities, unit prices, subtotal, discount, shipping fee, total, address, payment method, date, status | ✅ | `create_order_from_cart` (atomic: order + business_orders + order_items + payment + delivery + pickup stops); historical snapshots (Part D) | — |
-| Statuses pending→confirmed→processing→packed→shipped→out for delivery→delivered/cancelled/returned + visual timeline | ✅ | `business_order_status` / `delivery_status` enums; derived `CustomerOrderStatus` (`features/orders/domain/entities/order.dart:38`) | Derived statuses map to assignment vocabulary (mapping table in Part D); step-progress timeline ✅ (Section 7); **fulfillment driven by admin (Section 3)**: `admin_transition_business_order` (accept/reject → preparing → ready) + `admin_complete_order` (stops + parts complete, delivery delivered, COD verified — mirroring the owner/driver RPC effects so notifications and the customer's derived status keep working) |
+| Order creation: unique ID, user info, items, quantities, unit prices, subtotal, discount, shipping fee, total, address, payment method, date, status | ✅ | `create_order_from_cart` (atomic: order + order_items + payment; **Section 7A: one lifecycle — no fulfillment split**); historical snapshots (Part D) | — |
+| Statuses pending→confirmed→processing→packed→shipped→out for delivery→delivered/cancelled/returned + visual timeline | ✅ | **Section 7A: ONE lifecycle** — `orders.status` (`order_status` enum, assignment vocabulary verbatim); `admin_transition_order` advances it (validated forward steps + administrative cancellation); the timeline reads it verbatim; notifications fire on status change; state_history records every transition | Pickup stops **permanently omitted** (user decision); business_orders/deliveries tables dropped |
 | Confirmation screen: order ID, date, total, address, payment method, mock ETA | ✅ | `order_placed_screen.dart` | — |
 | Order history: filtered Active/Completed/Cancelled/Returned + detail access | 🟡 | `orders_screen.dart` (paginated; derived status chips), `order_detail_screen.dart` | Status chips ✅; dedicated filtered tabs ❌ (documented) |
 | Tracking: real-time progress, ETA, courier details, mock tracking number, step indicators | ✅ | Realtime on `orders`/`deliveries` streams (initial-snapshot-skipping, Part D); **`order_status_timeline.dart` (Section 7)**: step-progress indicator mapping derivedStatus → assignment vocabulary (Part D), embedded on the order detail screen with a mock tracking number (`#<id-prefix>`) and mock ETA (created + 3 days, presentation-only) | Courier details ⛔ (no drivers — admin-fulfilled) |
-| Cancellation with reasons, dates, status updates | ✅ | `cancel_order` RPC (only while every business part is `pending`; records `rejection_reason = 'Cancelled by customer'` + state history) | — |
+| Cancellation with reasons, dates, status updates | ✅ | `cancel_order` (customer; pending/confirmed only) and `admin_transition_order` → cancelled: records `cancelled_at` + `cancellation_reason` on the order, restores product-wide stock, routes verified transfers to refund-required; state history via trigger | **7D** refines the paid-QR cancellation/refund flow (slice pending) |
 | Returns: select delivered items, reasons, statuses requested→under review→approved/rejected→completed | ✅ | `return_request_screen.dart`, `request_return` RPC, `return_requests`/`return_items` | Outcome decision made by **admin** (`admin_process_return`, Section 3 — mirrors `process_return` including the refund-required consequence) |
 | Ratings & reviews post-delivery + aggregate rating | ✅ | `review_compose_screen.dart`, `create_review` RPC (1 per order item, server-verified), aggregate rating on product detail | Unlocked by delivered status — reachable once admin fulfillment (§3) completes orders |
 
@@ -196,6 +196,14 @@ obsolete actor infrastructure. What remains load-bearing is listed last.
 | `process_return` (business authority) | `admin_process_return` (Section 3) |
 | `submit_banner` (business submission), `create_coupon_promotion` (business coupons) | `admin_create_banner` (Section 9), admin coupon creation (§5b) |
 | `is_driver()` + `driver_can_view_*` helpers and all driver/owner RLS policies | admin read/write policies (same migration) |
+
+## Removed server-side (Section 7A, migration `20261005000040`)
+
+| Removed | Superseded by |
+|---|---|
+| `business_orders`, `deliveries`, `pickup_stops` tables (+ `business_order_status` / `delivery_status` / `pickup_stop_status` enums) | **`orders.status`** — the single lifecycle (assignment vocabulary) |
+| `admin_transition_business_order`, `admin_ship_order`, `admin_complete_order` | `admin_transition_order` (one validated machine) |
+| `notify_on_*` per-family notification triggers | `notify_customer_on_order_status` on `orders` |
 | Business-owner "new order" notification insert | customer notifications only |
 | `pending_applications` in the platform report | applications flow removed |
 
@@ -224,11 +232,10 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
 - **One Flutter app, Supabase-only backend** (Auth, PostgREST, RPCs, Storage, Realtime).
   Server authority for authorization, prices, discounts, coupon validity, state transitions,
   order creation. Client state is never trusted (§35/§50–53 of the old spec).
-- **Multi-vendor data model retained underneath:** `products.business_id` → `businesses`;
-  cart lines embed variants→products→businesses; one Order → one BusinessOrder per
-  participating business → OrderItems; one Payment per order; one Delivery per order with
-  one PickupStop per BusinessOrder. Vendor *discovery* was removed from the customer UI (Section 9) and
-  fulfillment is administratively driven (Sections 3/6b).
+- **Catalog ownership retained:** `products.business_id` → `businesses` (pricing,
+  availability, admin product management); cart lines embed variants→products→businesses.
+  Orders no longer split per business (Section 7A): one Order → OrderItems → one Payment.
+  Vendor discovery is absent from the customer UI (Section 9).
 - **Availability & stock (Section 2d):** purchase requires variant active + product
   active + business active + product stock ≥ quantity. Stock is **product-wide**
   (purchasing any variant deducts the product's counter; variants carry no stock).
@@ -249,12 +256,14 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
   (§17–19, §26, §55).
 - **Checkout atomicity:** `create_order_from_cart` commits order + business orders + items +
   payment + delivery + pickup stops together or not at all (§51).
-- **Derived order status (customer view):** `pending | accepted | preparing | ready |
-  outForDelivery | delivered | cancelled | refundRequired`, derived from business-order,
-  payment, and delivery states — no overall order state machine (§10, §52).
-  Assignment-vocabulary mapping used by the tracking timeline (§7):
-  `pending→Pending, accepted→Confirmed, preparing→Processing, ready→Packed/Shipped,
-  outForDelivery→Out for Delivery, delivered→Delivered`.
+- **ONE order lifecycle (Section 7A):** `orders.status` uses the assignment's own
+  vocabulary (`pending → confirmed → processing → packed → shipped → out_for_delivery
+  → delivered`, plus `cancelled`/`returned`). No derivation — the admin transitions it,
+  the timeline reads it, notifications fire on it, `state_history` records every step.
+  The multi-business split (`business_orders`/`deliveries`/`pickup_stops`) was removed
+  with the marketplace design; `order_items` reference the order directly (with a
+  business-name snapshot for display). Payment remains its own flow (pending → paid →
+  refunded), which is standard e-commerce separation of progress vs money.
 - **Payment vocabulary mapping:** `pending→Pending, transaction_verified→Paid,
   refund_required/refunded→Refunded/Refund Required`; QR confirmation is
   webhook/poller-driven (Section 6b), COD verifies on delivery.
@@ -442,6 +451,22 @@ appended as sections land.)
   publication. Edge Functions: `payway-webhook` (HMAC fail-closed),
   `bakong-check` (Bakong check_transaction_by_md5). Bank transfer removed
   from the checkout UI; legacy rows still validate.
+
+## Section 7A — single order lifecycle (`20261005000040`)
+
+* `order_status` enum on `orders.status` (assignment vocabulary);
+  `cancelled_at`/`cancellation_reason` recorded on cancellation; state
+  history + customer notification via triggers on the order.
+* `order_items.order_id` (business-name snapshot kept); checkout RPC no
+  longer writes fulfillment tables; `cancel_order` (pending/confirmed)
+  restores stock + records reason; `admin_transition_order` (validated
+  forward steps; administrative cancellation with reason); `request_return`
+  and `create_review` re-pointed to the direct order reference;
+  `get_customer_dashboard` buckets from `orders.status`.
+* Dropped: `business_orders` / `deliveries` / `pickup_stops` + their enums,
+  per-family notification triggers, `driver_commission_percent` setting.
+* Realtime note: `orders` remains a publication member; the dropped tables
+  leave it automatically.
 
 ## Realtime
 

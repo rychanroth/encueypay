@@ -2,9 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'order_dtos.g.dart';
 
-/// Wire shape of the `orders` row with nested PostgREST joins
-/// (business_orders → businesses/order_items/pickup_stops, payments,
-/// deliveries) (DATA-01). Never leaves the data layer.
+/// Wire shape of the `orders` row with the direct `order_items` and
+/// `payments` embeds (Section 7A) (DATA-01). Never leaves the data layer.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class OrderDto {
   const OrderDto({
@@ -18,10 +17,12 @@ class OrderDto {
     required this.shippingPhone,
     required this.shippingLine1,
     required this.shippingCity,
+    this.status,
     this.shippingLine2,
-    this.businessOrders = const [],
+    this.note,
+    this.cancellationReason,
+    this.items = const [],
     this.payments,
-    this.deliveries,
   });
 
   factory OrderDto.fromJson(Map<String, dynamic> json) =>
@@ -40,62 +41,17 @@ class OrderDto {
   final String? shippingLine2;
   final String shippingCity;
 
-  @JsonKey(name: 'business_orders', defaultValue: [])
-  final List<BusinessOrderJoinDto> businessOrders;
+  final String? status;
+  final String? note;
+  final String? cancellationReason;
+
+  @JsonKey(name: 'order_items', defaultValue: [])
+  final List<OrderItemJoinDto> items;
 
   @JsonKey(name: 'payments')
   final PaymentJoinDto? payments;
 
-  @JsonKey(name: 'deliveries')
-  final DeliveryJoinDto? deliveries;
-
   Map<String, dynamic> toJson() => _$OrderDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class BusinessOrderJoinDto {
-  const BusinessOrderJoinDto({
-    required this.id,
-    required this.businessId,
-    this.status,
-    this.rejectionReason,
-    this.businesses,
-    this.orderItems = const [],
-    this.pickupStops,
-  });
-
-  factory BusinessOrderJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$BusinessOrderJoinDtoFromJson(json);
-
-  final String id;
-  final String businessId;
-  final String? status;
-  final String? rejectionReason;
-
-  @JsonKey(name: 'businesses')
-  final BusinessNameJoinDto? businesses;
-
-  @JsonKey(name: 'order_items', defaultValue: [])
-  final List<OrderItemJoinDto> orderItems;
-
-  /// One-to-one embed (unique FK on pickup_stops.business_order_id) —
-  /// PostgREST returns a single object or null, never a list.
-  @JsonKey(name: 'pickup_stops')
-  final PickupStopJoinDto? pickupStops;
-
-  Map<String, dynamic> toJson() => _$BusinessOrderJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class BusinessNameJoinDto {
-  const BusinessNameJoinDto({this.name});
-
-  factory BusinessNameJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$BusinessNameJoinDtoFromJson(json);
-
-  final String? name;
-
-  Map<String, dynamic> toJson() => _$BusinessNameJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -107,6 +63,7 @@ class OrderItemJoinDto {
     required this.quantity,
     required this.lineTotalMinor,
     this.variantName,
+    this.businessName,
     this.discountMinor,
   });
 
@@ -120,26 +77,9 @@ class OrderItemJoinDto {
   final int? discountMinor;
   final int quantity;
   final int lineTotalMinor;
+  final String? businessName;
 
   Map<String, dynamic> toJson() => _$OrderItemJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class PickupStopJoinDto {
-  const PickupStopJoinDto({
-    required this.id,
-    required this.sequence,
-    this.status,
-  });
-
-  factory PickupStopJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$PickupStopJoinDtoFromJson(json);
-
-  final String id;
-  final int sequence;
-  final String? status;
-
-  Map<String, dynamic> toJson() => _$PickupStopJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -158,17 +98,4 @@ class PaymentJoinDto {
   final int? amountMinor;
 
   Map<String, dynamic> toJson() => _$PaymentJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class DeliveryJoinDto {
-  const DeliveryJoinDto({this.id, this.status});
-
-  factory DeliveryJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$DeliveryJoinDtoFromJson(json);
-
-  final String? id;
-  final String? status;
-
-  Map<String, dynamic> toJson() => _$DeliveryJoinDtoToJson(this);
 }
