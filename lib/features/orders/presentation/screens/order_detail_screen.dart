@@ -8,6 +8,7 @@ import '../../../../core/domain/money.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
+import '../widgets/order_status_timeline.dart';
 
 /// Customer order detail (spec §12/§13/§20/§21): order parts, payment proof
 /// upload, delivery progress view, cancel, return and review entry points.
@@ -119,6 +120,20 @@ class OrderDetailScreen extends ConsumerWidget {
                 order.createdAt.toLocal().toString().substring(0, 16),
                 style: theme.textTheme.bodySmall,
               ),
+              // Tracking header (assignment §7): mock tracking number + mock
+              // ETA — presentation-only, computed from the order id/date.
+              const SizedBox(height: 4),
+              Text(
+                'Tracking #${order.id.substring(0, 8).toUpperCase()} · '
+                'ETA ${order.createdAt.toLocal().add(const Duration(days: 3)).toString().substring(0, 10)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Visual status timeline (assignment §7, Section 7).
+              OrderStatusTimeline(status: order.derivedStatus),
               const SizedBox(height: 16),
 
               // Per-business portions with their own lifecycles (§11).

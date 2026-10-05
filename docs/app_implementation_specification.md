@@ -125,7 +125,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 | Statuses pending→confirmed→processing→packed→shipped→out for delivery→delivered/cancelled/returned + visual timeline | 🟡 → ✅ §7 | `business_order_status` / `delivery_status` enums; derived `CustomerOrderStatus` (`features/orders/domain/entities/order.dart:38`) | Derived statuses map to assignment vocabulary (mapping table in Part D); step-progress timeline UI → §7; **fulfillment driven by admin (Section 3)**: `admin_transition_business_order` (accept/reject → preparing → ready) + `admin_complete_order` (stops + parts complete, delivery delivered, COD verified — mirroring the owner/driver RPC effects so notifications and the customer's derived status keep working) |
 | Confirmation screen: order ID, date, total, address, payment method, mock ETA | ✅ | `order_placed_screen.dart` | — |
 | Order history: filtered Active/Completed/Cancelled/Returned + detail access | 🟡 | `orders_screen.dart` (paginated; derived status chips), `order_detail_screen.dart` | Status chips ✅; dedicated filtered tabs ❌ (documented) |
-| Tracking: real-time progress, ETA, courier details, mock tracking number, step indicators | 🟡 → 🟡+ §7 | Realtime on `orders`/`deliveries` streams (initial-snapshot-skipping, Part D); delivery status line | Timeline + mock tracking number → §7; courier details ⛔ (no drivers — admin-fulfilled) |
+| Tracking: real-time progress, ETA, courier details, mock tracking number, step indicators | ✅ | Realtime on `orders`/`deliveries` streams (initial-snapshot-skipping, Part D); **`order_status_timeline.dart` (Section 7)**: step-progress indicator mapping derivedStatus → assignment vocabulary (Part D), embedded on the order detail screen with a mock tracking number (`#<id-prefix>`) and mock ETA (created + 3 days, presentation-only) | Courier details ⛔ (no drivers — admin-fulfilled) |
 | Cancellation with reasons, dates, status updates | ✅ | `cancel_order` RPC (only while every business part is `pending`; records `rejection_reason = 'Cancelled by customer'` + state history) | — |
 | Returns: select delivered items, reasons, statuses requested→under review→approved/rejected→completed | ✅ | `return_request_screen.dart`, `request_return` RPC, `return_requests`/`return_items` | Outcome decision made by **admin** (`admin_process_return`, Section 3 — mirrors `process_return` including the refund-required consequence) |
 | Ratings & reviews post-delivery + aggregate rating | ✅ | `review_compose_screen.dart`, `create_review` RPC (1 per order item, server-verified), aggregate rating on product detail | Unlocked by delivered status — reachable once admin fulfillment (§3) completes orders |
@@ -336,6 +336,15 @@ appended as sections land.)
 * Wishlist rows carry stock/status/default-variant so the composition root
   can rebuild full cards; `CartItemTile`'s click still opens detail (no
   variant preservation needed — the detail sheet owns variant choice).
+
+## Section 7 — Tracking timeline (`features/orders`)
+
+* `OrderStatusTimeline` (presentation-only): maps the derived customer
+  status onto the assignment's step vocabulary (Pending → Confirmed →
+  Processing → Packed → Shipped → Out for delivery → Delivered);
+  cancelled/refund orders render a notice instead of the stepper.
+* Mock tracking number (order-id prefix) + mock ETA (created + 3 days)
+  on the order detail header — no data-model changes.
 
 ## Realtime
 
