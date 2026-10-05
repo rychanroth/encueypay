@@ -67,7 +67,7 @@ final class OrderPaymentControllerProvider
 }
 
 String _$orderPaymentControllerHash() =>
-    r'8f84e638a9f78e9d10c40cf7eab9149dc26ce1da';
+    r'93ba84d396a2f43c4f90044d29e0f76fede53f96';
 
 /// The order's payment lifecycle on the order-success screen (Section 6b):
 /// realtime ground truth from the `payments` stream, KHQR registration on

@@ -103,10 +103,6 @@ class ProfileScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.pushNamed(AppRoutes.wishlist),
               ),
-              // 2-Role Academic Prototype: the "Become a business or driver"
-              // entry (living spec Part C L-03) is hidden — role applications
-              // are out of scope. Restore the ListTile navigating to
-              // AppRoutes.roleApplication together with its route.
             ],
             ListTile(
               leading: const Icon(Icons.settings_outlined),

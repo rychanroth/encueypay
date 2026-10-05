@@ -60,43 +60,4 @@ class ReturnsRepositoryImpl implements IReturnsRepository {
     }
   }
 
-  @override
-  Future<List<ReturnRequest>> fetchBusinessReturns() async {
-    try {
-      final rows = await _client
-          .from('return_requests')
-          .select(
-            'id, order_id, status, created_at, '
-            'return_items(id, order_item_id, quantity, reason, '
-            'order_items(product_name))',
-          )
-          .order('created_at', ascending: false)
-          .limit(50);
-      return rows
-          .map(ReturnRequestDto.fromJson)
-          .map((dto) => dto.toDomain())
-          .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
-  Future<void> processReturn({
-    required String returnId,
-    required bool approve,
-  }) async {
-    try {
-      await _client.rpc('process_return', params: {
-        'p_return_id': returnId,
-        'p_approve': approve,
-      });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
 }

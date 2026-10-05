@@ -10,11 +10,6 @@ import '../../../features/notifications/presentation/screens/notifications_scree
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
-// 2-Role Academic Prototype: the business storefront route
-// (`/home/business/:id`, living spec Part C L-04) is removed — vendor
-// discovery is bypassed. features/catalog's BusinessDetailScreen stays in the
-// repository; restore the GoRoute below (plus the home businesses strip) to
-// bring storefronts back.
 
 /// Customer tab 1 — Home + catalog nested routes (ROUTE-04: nested routes
 /// of a tab are declared in the same file). Branch ORDER is owned by

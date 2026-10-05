@@ -9,7 +9,4 @@ abstract interface class IReturnsRepository {
     required List<ReturnItemDraft> items,
   });
 
-  Future<List<ReturnRequest>> fetchBusinessReturns();
-
-  Future<void> processReturn({required String returnId, required bool approve});
 }

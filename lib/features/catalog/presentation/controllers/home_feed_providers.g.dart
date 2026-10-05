@@ -8,14 +8,14 @@ part of 'home_feed_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Home feed sections (banners, newest products, businesses). Plain
+/// Home feed sections (banners, newest products). Plain
 /// one-shot fetches — controllers MAY call the repository directly
 /// (DOMAIN-03).
 
 @ProviderFor(homeBanners)
 final homeBannersProvider = HomeBannersProvider._();
 
-/// Home feed sections (banners, newest products, businesses). Plain
+/// Home feed sections (banners, newest products). Plain
 /// one-shot fetches — controllers MAY call the repository directly
 /// (DOMAIN-03).
 
@@ -29,7 +29,7 @@ final class HomeBannersProvider
     with
         $FutureModifier<List<CatalogBanner>>,
         $FutureProvider<List<CatalogBanner>> {
-  /// Home feed sections (banners, newest products, businesses). Plain
+  /// Home feed sections (banners, newest products). Plain
   /// one-shot fetches — controllers MAY call the repository directly
   /// (DOMAIN-03).
   HomeBannersProvider._()
@@ -98,42 +98,3 @@ final class HomeProductsProvider
 }
 
 String _$homeProductsHash() => r'4e6dcdca3e26f6dc3c8cc89bb1cc8028b583e650';
-
-@ProviderFor(homeBusinesses)
-final homeBusinessesProvider = HomeBusinessesProvider._();
-
-final class HomeBusinessesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Business>>,
-          List<Business>,
-          FutureOr<List<Business>>
-        >
-    with $FutureModifier<List<Business>>, $FutureProvider<List<Business>> {
-  HomeBusinessesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'homeBusinessesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$homeBusinessesHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<Business>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Business>> create(Ref ref) {
-    return homeBusinesses(ref);
-  }
-}
-
-String _$homeBusinessesHash() => r'b38da7d84763ec382a01e1a822ac7f7a133fa053';

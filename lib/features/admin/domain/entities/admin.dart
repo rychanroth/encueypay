@@ -2,19 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'admin.freezed.dart';
 
-/// Admin management read models (spec §2.4/§35.4). Immutable entities
-/// (DOMAIN-01, freezed).
-@freezed
-abstract class AdminApplication with _$AdminApplication {
-  const factory AdminApplication({
-    required String id,
-    required String applicantName,
-    required String requestedRole,
-    required String status,
-    required DateTime createdAt,
-  }) = _AdminApplication;
-}
-
 @freezed
 abstract class AdminCategory with _$AdminCategory {
   const factory AdminCategory({

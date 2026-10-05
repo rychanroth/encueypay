@@ -52,32 +52,6 @@ class PlatformSettingsAdminDto {
   Map<String, dynamic> toJson() => _$PlatformSettingsAdminDtoToJson(this);
 }
 
-/// Wire shape of a `role_applications` row with the applicant join
-/// (admin review, DATA-01).
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AdminApplicationDto {
-  const AdminApplicationDto({
-    required this.id,
-    required this.requestedRole,
-    required this.createdAt,
-    this.status,
-    this.users,
-  });
-
-  factory AdminApplicationDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminApplicationDtoFromJson(json);
-
-  final String id;
-  final String requestedRole;
-  final DateTime createdAt;
-  final String? status;
-
-  @JsonKey(name: 'users')
-  final AdminApplicantJoinDto? users;
-
-  Map<String, dynamic> toJson() => _$AdminApplicationDtoToJson(this);
-}
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AdminApplicantJoinDto {
   const AdminApplicantJoinDto({this.fullName});

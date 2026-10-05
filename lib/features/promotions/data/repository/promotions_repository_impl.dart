@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -19,12 +17,6 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   PromotionsRepositoryImpl(this._client);
 
   final SupabaseClient _client;
-
-  String get _uid {
-    final user = _client.auth.currentUser;
-    if (user == null) throw const ServerFailure('Not authenticated');
-    return user.id;
-  }
 
   List<MyPromotion> _mapRows(List<Map<String, dynamic>> rows) {
     return rows.map(PromotionDto.fromJson).map((dto) => dto.toDomain()).toList();
@@ -58,22 +50,6 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   }
 
   @override
-  Future<List<MyPromotion>> fetchMyPromotions() async {
-    try {
-      final rows = await _client
-          .from('promotions')
-          .select(_promotionSelect)
-          .eq('created_by', _uid)
-          .order('created_at', ascending: false);
-      return _mapRows(rows);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
   Future<List<MyPromotion>> fetchAllPromotions() async {
     try {
       final rows = await _client
@@ -81,22 +57,6 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .select(_promotionSelect)
           .order('created_at', ascending: false);
       return _mapRows(rows);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
-  Future<List<ManagedBanner>> fetchMyBanners() async {
-    try {
-      final rows = await _client
-          .from('banners')
-          .select()
-          .eq('created_by', _uid)
-          .order('created_at', ascending: false);
-      return _mapBannerRows(rows);
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
@@ -117,25 +77,6 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     } catch (_) {
       throw const NetworkFailure();
     }
-  }
-
-  @override
-  Future<void> createCouponPromotion({
-    required String name,
-    required String description,
-    required PromoDiscountType discountType,
-    required int discountValue,
-    required String code,
-    DateTime? expiresAt,
-  }) {
-    return _rpc('create_coupon_promotion', {
-      'p_name': name,
-      'p_description': description,
-      'p_discount_type': discountType.wireName,
-      'p_discount_value': discountValue,
-      'p_code': code,
-      'p_expires_at': expiresAt?.toIso8601String(),
-    });
   }
 
   @override
@@ -176,35 +117,6 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .map((dto) => PromoBrandRef(id: dto.id, name: dto.name))
           .toList();
     } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
-  Future<void> submitBanner({
-    required String name,
-    required String description,
-    required String filePath,
-    required String fileName,
-    DateTime? endsAt,
-  }) async {
-    try {
-      final bytes = await File(filePath).readAsBytes();
-      final path = '$_uid/'
-          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      await _client.storage.from('promo_assets').uploadBinary(path, bytes);
-      final url = _client.storage.from('promo_assets').getPublicUrl(path);
-      await _client.rpc('submit_banner', params: {
-        'p_name': name,
-        'p_description': description,
-        'p_image_url': url,
-        'p_ends_at': endsAt?.toIso8601String(),
-      });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } on StorageException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();

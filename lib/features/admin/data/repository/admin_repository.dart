@@ -8,14 +8,6 @@ import '../../domain/entities/admin.dart';
 /// (`brands_admin_*` policies); product mutations go through the
 /// admin-guarded RPCs of migration `20261005000029`.
 abstract interface class IAdminRepository {
-  Future<List<AdminApplication>> fetchPendingApplications();
-
-  Future<void> reviewApplication({
-    required String applicationId,
-    required bool approve,
-    String? reason,
-  });
-
   Future<List<AdminCategory>> fetchCategories();
 
   Future<void> createCategory({

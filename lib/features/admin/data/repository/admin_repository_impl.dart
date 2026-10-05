@@ -30,45 +30,6 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<List<AdminApplication>> fetchPendingApplications() async {
-    try {
-      final rows = await _client
-          .from('role_applications')
-          .select('id, requested_role, status, created_at, '
-              'users!role_applications_user_id_fkey(full_name)')
-          .eq('status', 'pending')
-          .order('created_at');
-      return rows
-          .map(AdminApplicationDto.fromJson)
-          .map((dto) => AdminApplication(
-                id: dto.id,
-                applicantName: dto.users?.fullName ?? 'Applicant',
-                requestedRole: dto.requestedRole,
-                status: dto.status ?? 'pending',
-                createdAt: dto.createdAt,
-              ))
-          .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
-  Future<void> reviewApplication({
-    required String applicationId,
-    required bool approve,
-    String? reason,
-  }) {
-    return _rpc('review_role_application', {
-      'p_application_id': applicationId,
-      'p_approve': approve,
-      'p_reason': reason,
-    });
-  }
-
-  @override
   Future<List<AdminCategory>> fetchCategories() async {
     try {
       final rows = await _client

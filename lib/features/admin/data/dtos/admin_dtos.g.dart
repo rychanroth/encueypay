@@ -46,29 +46,6 @@ Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
   'qr_account_id': instance.qrAccountId,
 };
 
-AdminApplicationDto _$AdminApplicationDtoFromJson(Map<String, dynamic> json) =>
-    AdminApplicationDto(
-      id: json['id'] as String,
-      requestedRole: json['requested_role'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      status: json['status'] as String?,
-      users: json['users'] == null
-          ? null
-          : AdminApplicantJoinDto.fromJson(
-              json['users'] as Map<String, dynamic>,
-            ),
-    );
-
-Map<String, dynamic> _$AdminApplicationDtoToJson(
-  AdminApplicationDto instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'requested_role': instance.requestedRole,
-  'created_at': instance.createdAt.toIso8601String(),
-  'status': instance.status,
-  'users': instance.users,
-};
-
 AdminApplicantJoinDto _$AdminApplicantJoinDtoFromJson(
   Map<String, dynamic> json,
 ) => AdminApplicantJoinDto(fullName: json['full_name'] as String?);

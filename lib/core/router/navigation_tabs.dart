@@ -13,11 +13,11 @@ import 'branches/home_branch.dart';
 import 'branches/orders_branch.dart';
 import 'branches/profile_branch.dart';
 
-// 2-Role Academic Prototype (docs/app_implementation_specification.md, Part C):
-// the Business Owner portal (L-01), Driver portal (L-02) and the admin
-// Applications review (L-03) are bypassed — their branch files remain in the
-// repository and compile, but no tab set mounts them. Restore by re-adding the
-// branch imports and tab entries here.
+// 2-Role product direction (Section 9 cleanup): the Business Owner and
+// Driver portals and the role-application flow were REMOVED with their
+// features (living spec removal record) — only customer and admin tab sets
+// exist. Roles other than customer/admin in the DB fall back to the
+// customer surface.
 
 final List<NavigationTab> _customerTabs = [
   NavigationTab(

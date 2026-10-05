@@ -1,6 +1,10 @@
 /// Single source of route names (ROUTE-01). Navigation always goes through
 /// `context.goNamed(AppRoutes.x)` with parameters — never raw path strings
 /// (ROUTE-02). Raw paths appear only inside route *definitions*.
+///
+/// Section 9 (codebase cleanup): the business-portal, driver-portal and
+/// role-application routes were removed with their features — the living
+/// spec's removal record lists where they lived.
 abstract final class AppRoutes {
   // Auth — full-screen overlay, outside the shell (ROUTE-03).
   static const login = 'login';
@@ -19,10 +23,6 @@ abstract final class AppRoutes {
   static const returnRequest = 'returnRequest';
   static const reviewCompose = 'reviewCompose';
 
-  // Business (nested under Business dashboard).
-  static const businessReturns = 'businessReturns';
-  static const businessPromotions = 'businessPromotions';
-
   // Admin (nested under Admin dashboard).
   static const adminAudit = 'adminAudit';
   static const adminSettings = 'adminSettings';
@@ -30,7 +30,6 @@ abstract final class AppRoutes {
   // Catalog (nested under Home).
   static const products = 'products';
   static const productDetail = 'productDetail';
-  static const businessDetail = 'businessDetail';
   static const notifications = 'notifications';
   static const discovery = 'discovery';
 
@@ -41,25 +40,10 @@ abstract final class AppRoutes {
   static const addressEdit = 'addressEdit';
   static const wishlist = 'wishlist';
   static const settings = 'settings';
-  static const roleApplication = 'roleApplication';
   static const dashboard = 'dashboard';
-
-  // Business tabs.
-  static const businessDashboard = 'businessDashboard';
-  static const businessProducts = 'businessProducts';
-  static const businessProductForm = 'businessProductForm';
-  static const businessOrders = 'businessOrders';
-  static const businessOrderDetail = 'businessOrderDetail';
-  static const businessTransactions = 'businessTransactions';
-
-  // Driver tabs.
-  static const driverAvailable = 'driverAvailable';
-  static const driverDeliveries = 'driverDeliveries';
-  static const driverTransactions = 'driverTransactions';
 
   // Admin tabs.
   static const adminDashboard = 'adminDashboard';
-  static const adminApplications = 'adminApplications';
   static const adminCategories = 'adminCategories';
   static const adminPromotions = 'adminPromotions';
 

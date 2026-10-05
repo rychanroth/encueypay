@@ -16,10 +16,6 @@ import '../../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
-// 2-Role Academic Prototype: the role-application route (`/profile/apply`,
-// living spec Part C L-03) is removed — customers can no longer apply to
-// become business owners or drivers. features/role_applications stays in the
-// repository; restore the GoRoute below to bring the flow back.
 
 /// Shared tab — Profile (all roles). Nested routes of this tab are declared
 /// here (ROUTE-04).

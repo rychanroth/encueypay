@@ -5,20 +5,16 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/banner.dart';
 import '../../domain/entities/brand.dart';
-import '../../domain/entities/business.dart';
-import '../../domain/entities/business_detail.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_sort.dart';
 import '../dtos/brand_dto.dart';
-import '../dtos/business_dto.dart';
 import '../dtos/category_dto.dart';
 import '../dtos/product_dto.dart';
 import '../dtos/product_review_join_dto.dart';
 import '../dtos/product_variant_dto.dart';
 import '../mappers/brand_mapper.dart';
-import '../mappers/business_mapper.dart';
 import '../mappers/category_mapper.dart';
 import '../mappers/product_mapper.dart';
 import '../mappers/product_variant_mapper.dart';
@@ -91,23 +87,6 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .eq('status', 'active')
           .order('name');
       return rows.map(BrandDto.fromJson).map((d) => d.toDomain()).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
-  Future<List<Business>> fetchBusinesses({int limit = 10}) async {
-    try {
-      final rows = await _client
-          .from('businesses')
-          .select()
-          .eq('status', 'active')
-          .order('created_at', ascending: false)
-          .limit(limit);
-      return rows.map(BusinessDto.fromJson).map((d) => d.toDomain()).toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
@@ -295,35 +274,4 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     }
   }
 
-  @override
-  Future<BusinessDetail> fetchBusinessDetail(String businessId) async {
-    try {
-      final results = await Future.wait([
-        _client.from('businesses').select().eq('id', businessId).maybeSingle(),
-        _client
-            .from('products')
-            .select(_productSelect)
-            .eq('status', 'active')
-            .eq('business_id', businessId)
-            .order('created_at', ascending: false)
-            .limit(20),
-      ]);
-      final businessRow = results[0] as Map<String, dynamic>?;
-      final productRows = results[1] as List<Map<String, dynamic>>;
-      if (businessRow == null) {
-        throw const ServerFailure('Business not found');
-      }
-
-      return BusinessDetail(
-        business: BusinessDto.fromJson(businessRow).toDomain(),
-        products: _mapProductRows(productRows),
-      );
-    } on ServerFailure {
-      rethrow;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
 }
