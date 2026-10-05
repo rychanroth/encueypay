@@ -3,11 +3,19 @@ import '../../domain/entities/order.dart';
 
 /// Orders contract (spec §58 Orders ops) (DATA-03).
 abstract interface class IOrdersRepository {
-  /// Realtime sync signals (§31/§54): order record changes and its
-  /// delivery changes.
+  /// Realtime sync signal (§31/§54): order record changes (incl. status).
   Stream<StreamResult<bool>> watchOrderChanges(String orderId);
 
-  Future<List<CustomerOrder>> fetchMyOrders({int limit = 10, int offset = 0});
+  /// Section 7B: server-side history filters — [statuses] are wire values
+  /// (null = no status filter); [fromDate]/[toDate] bound created_at (the
+  /// to-date is inclusive of its whole day).
+  Future<List<CustomerOrder>> fetchMyOrders({
+    int limit = 10,
+    int offset = 0,
+    List<String>? statuses,
+    DateTime? fromDate,
+    DateTime? toDate,
+  });
 
   Future<CustomerOrder> fetchOrder(String orderId);
 

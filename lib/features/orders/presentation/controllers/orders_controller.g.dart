@@ -8,18 +8,21 @@ part of 'orders_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Paginated "my orders" list. Plain one-shot fetches consumed directly
-/// (DOMAIN-03).
+/// Paginated "my orders" list with server-side history filters
+/// (Section 7B: status group + date range). Changing a filter refetches
+/// page 0; loadMore carries the active filter set.
 
 @ProviderFor(OrdersController)
 final ordersControllerProvider = OrdersControllerProvider._();
 
-/// Paginated "my orders" list. Plain one-shot fetches consumed directly
-/// (DOMAIN-03).
+/// Paginated "my orders" list with server-side history filters
+/// (Section 7B: status group + date range). Changing a filter refetches
+/// page 0; loadMore carries the active filter set.
 final class OrdersControllerProvider
-    extends $AsyncNotifierProvider<OrdersController, List<CustomerOrder>> {
-  /// Paginated "my orders" list. Plain one-shot fetches consumed directly
-  /// (DOMAIN-03).
+    extends $AsyncNotifierProvider<OrdersController, OrderHistoryState> {
+  /// Paginated "my orders" list with server-side history filters
+  /// (Section 7B: status group + date range). Changing a filter refetches
+  /// page 0; loadMore carries the active filter set.
   OrdersControllerProvider._()
     : super(
         from: null,
@@ -39,23 +42,24 @@ final class OrdersControllerProvider
   OrdersController create() => OrdersController();
 }
 
-String _$ordersControllerHash() => r'd881d9fcc361e1e04550ab7044efc18d1a9f62ea';
+String _$ordersControllerHash() => r'91160c5f251d713003ea661e4d45d5e8bfeab532';
 
-/// Paginated "my orders" list. Plain one-shot fetches consumed directly
-/// (DOMAIN-03).
+/// Paginated "my orders" list with server-side history filters
+/// (Section 7B: status group + date range). Changing a filter refetches
+/// page 0; loadMore carries the active filter set.
 
-abstract class _$OrdersController extends $AsyncNotifier<List<CustomerOrder>> {
-  FutureOr<List<CustomerOrder>> build();
+abstract class _$OrdersController extends $AsyncNotifier<OrderHistoryState> {
+  FutureOr<OrderHistoryState> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<AsyncValue<List<CustomerOrder>>, List<CustomerOrder>>;
+        this.ref as $Ref<AsyncValue<OrderHistoryState>, OrderHistoryState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<CustomerOrder>>, List<CustomerOrder>>,
-              AsyncValue<List<CustomerOrder>>,
+              AnyNotifier<AsyncValue<OrderHistoryState>, OrderHistoryState>,
+              AsyncValue<OrderHistoryState>,
               Object?,
               Object?
             >;

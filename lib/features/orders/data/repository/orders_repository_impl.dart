@@ -59,12 +59,34 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   Future<List<CustomerOrder>> fetchMyOrders({
     int limit = 10,
     int offset = 0,
+    List<String>? statuses,
+    DateTime? fromDate,
+    DateTime? toDate,
   }) async {
     try {
-      final rows = await _client
+      var request = _client
           .from('orders')
           .select(_orderSelect)
-          .eq('customer_id', _uid)
+          .eq('customer_id', _uid);
+      if (statuses != null && statuses.isNotEmpty) {
+        request = request.inFilter('status', statuses);
+      }
+      if (fromDate != null) {
+        request = request.gte(
+          'created_at',
+          DateTime(fromDate.year, fromDate.month, fromDate.day)
+              .toIso8601String(),
+        );
+      }
+      if (toDate != null) {
+        // Inclusive of the whole end day.
+        request = request.lte(
+          'created_at',
+          DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59)
+              .toIso8601String(),
+        );
+      }
+      final rows = await request
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       return rows.map(_mapRow).toList();
