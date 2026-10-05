@@ -73,7 +73,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 | End-to-end flow: registration → login → search → category → details → wishlist → cart → quantity → checkout → address → payment → confirmation → history → tracking | 🟡 | `features/auth` (login/sign-up/Google OAuth, `auth_repository_impl.dart`); discovery `features/catalog`; cart `features/cart`; checkout `features/checkout`; orders `features/orders` | Wishlist **add** not wired (→ §6); tracking is status-line only (→ §7); card/QR payments ❌ (B.6) |
 | User information: ID, Full Name, Gender, DOB, Phone, Email, Photo, Address, Status | 🟡 | `users` table (`20260923000001`); `features/profile/data/repository/profile_repository_impl.dart`; edit = `profile_edit_screen.dart` | Managed: id, name, phone, email (from auth identity), address, account status. Gender / DOB / profile photo ❌ gap (documented) |
 | Capabilities: edit profile, change password, manage addresses, order history | 🟡 | Edit profile ✅ (name+phone); addresses ✅ (B.6); history ✅ (`orders_screen.dart`) | Password change ❌ gap — sign-out/re-login only |
-| Customer Dashboard: recent orders, active orders, wishlist count, cart items, total spending | ❌ → §5 | — | No aggregation screen exists today; built in Section 5 as `features/dashboard` |
+| Customer Dashboard: recent orders, active orders, wishlist count, cart items, total spending | ✅ | `features/dashboard` (ARCH-02 three-layer feature; `get_customer_dashboard` RPC, 0035, auth.uid()-scoped server-side aggregation): `dashboard_screen.dart` with stat cards + recent-orders list (tap → order detail); mounted at `/profile/dashboard` with a Profile entry (customer-gated) | Coarse order state (active/completed/cancelled) derived server-side; the fine-grained lifecycle stays in features/orders |
 
 ## B.2 Assignment §2 — Product Discovery & Navigation
 
@@ -302,6 +302,18 @@ appended as sections land.)
 * Dashboard renders KPI cards, best-seller list, and a plain-Flutter bar
   chart (DEPS-03: no charting package). The pending-applications mention
   was dropped from the dashboard (applications flow hidden, L-03).
+
+## Section 5 — Customer dashboard (`20261005000035` + `features/dashboard`)
+
+* `get_customer_dashboard` — one jsonb aggregation per sign-in user
+  (active orders, wishlist count, cart-item quantity, total spending, 5
+  most-recent orders with a coarse server-side state bucket); security
+  definer, auth.uid()-scoped, so no per-table read policies are relied on.
+* New `features/dashboard` (GLOBAL-05 approved): entity `DashboardSummary`
+  / `DashboardOrder`, repository (interface + impl, DATA-05/07), `@riverpod`
+  controller, screen with stat cards + recent orders; route
+  `/profile/dashboard` (profile branch) + customer-gated Profile entry.
+  Cross-tab navigation via `AppRoutes.orderDetail` (ROUTE-02).
 
 ## Realtime
 

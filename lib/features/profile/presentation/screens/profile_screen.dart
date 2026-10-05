@@ -85,6 +85,13 @@ class ProfileScreen extends ConsumerWidget {
             ),
             if (isCustomer) ...[
               ListTile(
+                leading: const Icon(Icons.dashboard_outlined),
+                title: const Text('My dashboard'),
+                subtitle: const Text('Orders, spending, wishlist, cart'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.dashboard),
+              ),
+              ListTile(
                 leading: const Icon(Icons.location_on_outlined),
                 title: const Text('Addresses'),
                 trailing: const Icon(Icons.chevron_right),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../features/profile/domain/entities/address.dart';
 import '../../../features/profile/presentation/screens/address_edit_screen.dart';
 import '../../../features/profile/presentation/screens/addresses_screen.dart';
@@ -59,6 +60,12 @@ final profileBranch = StatefulShellBranch(
           name: AppRoutes.wishlist,
           path: 'wishlist',
           builder: (context, state) => const WishlistScreen(),
+        ),
+        // Customer dashboard (Section 5, assignment §1).
+        GoRoute(
+          name: AppRoutes.dashboard,
+          path: 'dashboard',
+          builder: (context, state) => const DashboardScreen(),
         ),
         GoRoute(
           name: AppRoutes.settings,

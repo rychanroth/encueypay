@@ -42,6 +42,7 @@ abstract final class AppRoutes {
   static const wishlist = 'wishlist';
   static const settings = 'settings';
   static const roleApplication = 'roleApplication';
+  static const dashboard = 'dashboard';
 
   // Business tabs.
   static const businessDashboard = 'businessDashboard';
