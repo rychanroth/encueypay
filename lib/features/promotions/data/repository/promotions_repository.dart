@@ -26,6 +26,17 @@ abstract interface class IPromotionsRepository {
     String? brandId,
   });
 
+  /// Section 9: with the business portal removed the admin creates home
+  /// banners directly (approved on creation). Uploads the image, then
+  /// registers it via the admin RPC.
+  Future<void> createBanner({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+    DateTime? endsAt,
+  });
+
   Future<void> moderateBanner({
     required String promotionId,
     required String action,

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -148,6 +149,39 @@ class AdminPromotionsScreen extends ConsumerWidget {
         );
   }
 
+  Future<void> _createBanner(BuildContext context, WidgetRef ref) async {
+    final file = await FilePicker.pickFile(type: FileType.image);
+    if (file == null || file.path == null || !context.mounted) return;
+    final name = TextEditingController();
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('New banner'),
+        content: TextField(
+          controller: name,
+          decoration: const InputDecoration(labelText: 'Banner name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+    if (submitted != true) return;
+    await ref.read(adminPromotionsControllerProvider.notifier).createBanner(
+          name: name.text.trim(),
+          description: '',
+          filePath: file.path!,
+          fileName: file.name,
+        );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final promotionsAsync = ref.watch(adminPromotionsControllerProvider);
@@ -179,6 +213,11 @@ class AdminPromotionsScreen extends ConsumerWidget {
             tooltip: 'New coupon',
             icon: const Icon(Icons.add),
             onPressed: () => _createCoupon(context, ref),
+          ),
+          IconButton(
+            tooltip: 'New banner',
+            icon: const Icon(Icons.campaign_outlined),
+            onPressed: () => _createBanner(context, ref),
           ),
         ],
       ),

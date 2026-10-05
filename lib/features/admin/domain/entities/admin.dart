@@ -206,7 +206,6 @@ abstract class PlatformAnalyticsReport with _$PlatformAnalyticsReport {
     required int deliveryFeesMinor,
     required int activeBusinesses,
     required int activeProducts,
-    required int pendingApplications,
   }) = _PlatformAnalyticsReport;
 }
 

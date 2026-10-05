@@ -41,6 +41,26 @@ class AdminPromotionsController extends _$AdminPromotionsController {
     });
   }
 
+  /// Section 9: admin-created home banners (approved on creation).
+  Future<void> createBanner({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+  }) async {
+    final current = state.value ?? const <MyPromotion>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(promotionsRepositoryProvider).createBanner(
+            name: name,
+            description: description,
+            filePath: filePath,
+            fileName: fileName,
+          );
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
   /// Coupon kill switch (Section 5b): the manual status toggle; date-window
   /// expiry is derived server-side at validation time.
   Future<void> toggleCoupon({

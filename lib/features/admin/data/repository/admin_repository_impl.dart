@@ -483,7 +483,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         deliveryFeesMinor: (map['delivery_fees_minor'] as int?) ?? 0,
         activeBusinesses: (map['active_businesses'] as int?) ?? 0,
         activeProducts: (map['active_products'] as int?) ?? 0,
-        pendingApplications: (map['pending_applications'] as int?) ?? 0,
       );
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);

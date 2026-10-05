@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +19,12 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   PromotionsRepositoryImpl(this._client);
 
   final SupabaseClient _client;
+
+  String get _uid {
+    final user = _client.auth.currentUser;
+    if (user == null) throw const ServerFailure('Not authenticated');
+    return user.id;
+  }
 
   List<MyPromotion> _mapRows(List<Map<String, dynamic>> rows) {
     return rows.map(PromotionDto.fromJson).map((dto) => dto.toDomain()).toList();
@@ -117,6 +125,35 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .map((dto) => PromoBrandRef(id: dto.id, name: dto.name))
           .toList();
     } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> createBanner({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+    DateTime? endsAt,
+  }) async {
+    try {
+      final bytes = await File(filePath).readAsBytes();
+      final path = '$_uid/'
+          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      await _client.storage.from('promo_assets').uploadBinary(path, bytes);
+      final url = _client.storage.from('promo_assets').getPublicUrl(path);
+      await _client.rpc('admin_create_banner', params: {
+        'p_name': name,
+        'p_description': description,
+        'p_image_url': url,
+        'p_ends_at': endsAt?.toIso8601String(),
+      });
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } on StorageException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();
