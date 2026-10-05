@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/presentation/theme/app_theme.dart';
 import 'core/presentation/theme/theme_controller.dart';
 import 'core/router/app_router.dart';
+import 'features/notifications/data/push_notification_registrar.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,10 @@ Future<void> main() async {
   // side effects inside build().
   final container = ProviderContainer();
   await container.read(themeControllerProvider.notifier).hydrate();
+
+  // FCM push registration (Section 8E) — best-effort: no-ops when the
+  // Firebase platform config is absent (Part A.6).
+  await registerPushNotifications(container);
 
   runApp(
     UncontrolledProviderScope(container: container, child: const EncueYPayApp()),

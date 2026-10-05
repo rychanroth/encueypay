@@ -81,6 +81,25 @@ simulation path demos the flow locally:
 The KHQR tag layout mirrors the khqr-sdk convention — verify a generated code with a
 real banking app before pointing it at a production account.
 
+## A.6 FCM push prerequisites (Section 8E)
+
+The full wiring is implemented and **gracefully inert without configuration** — the
+in-app realtime inbox is unaffected, and `registerPushNotifications` no-ops when
+Firebase is unconfigured:
+
+| Prerequisite | Purpose |
+|---|---|
+| Firebase project + `android/app/google-services.json` (+ Gradle `google-services` plugin) and/or `ios/Runner/GoogleService-Info.plist` | `Firebase.initializeApp()` on the platforms (the Gradle plugin step is deliberately NOT pre-wired — the Android build fails without the JSON, so add it together) |
+| `supabase secrets set FCM_SERVICE_ACCOUNT='{...service-account json...}'` | The `push-dispatch` Edge Function signs FCM HTTP v1 requests (RS256 JWT → OAuth exchange, implemented in Deno) |
+| Database Webhook on `public.notifications` (INSERT) → `https://<project>.supabase.co/functions/v1/push-dispatch` | Delivers every notification row to the dispatcher |
+| `supabase functions deploy push-dispatch` | Serves the function |
+
+Flow: domain event → trigger inserts a `notifications` row → webhook → `push-dispatch`
+→ recipient's `device_tokens` → FCM HTTP v1. Tokens are registered at startup
+(`register_device_token` RPC, user-scoped upsert; refreshed on rotation). Events covered
+by existing triggers: order updates, payment statuses (7D), delivery stages, returns;
+promotions/coupons events would need new triggers (documented, not built).
+
 ---
 
 # Part B — Assignment Clause Mapping
@@ -161,7 +180,7 @@ are covered by the removal record (Part C).
 | Customer prototype: personalized wishlist, cart, address book, order history | ✅ | `features/wishlist`, `features/cart`, `features/profile` (addresses), `features/orders` | — |
 | Admin prototype: manages Products, Categories, Orders, System Reports | ✅ | Categories ✅ (`categories_admin_screen.dart` + RPCs); **Products ✅ (Section 2b: `admin_products_screen.dart` + `admin_product_form_screen.dart`, admin-guarded RPCs `admin_create_product` / `admin_update_product` / `admin_set_product_archived` / `admin_add_product_image`)**; brand management ✅ (`brands_admin_screen.dart`, RLS `brands_admin_*`); **Orders ✅ (Section 3: `admin_orders_screen.dart` + `admin_order_detail_screen.dart`, RPCs `admin_transition_business_order` / `admin_complete_order` / `admin_process_return` + `orders_admin_read`/`payments_admin_read` policies)**; promotions/banner moderation ✅ (`admin_promotions_screen.dart`); audit logs ✅; platform settings ✅; platform report ✅ | Dashboard KPIs ✅ (Section 4, next row); role-application review removed (Section 9) |
 | Admin dashboard: total products, orders, customers, sales, low-stock, best-selling, sales trends | ✅ (curated, §8B) | **Hero insight first**: total sales + order/customer counts + a 7-day-vs-prior momentum chip (computed from the trend); an actionable **stock-alerts card** (low-stock/out-of-stock → jump to Products); the 14-day trend bars; top-3 sellers; quick links. Raw counts moved to the Reporting area (8C) | — |
-| Notifications (local/in-app): order updates, payment statuses, delivery stages, promotions, coupons | 🟡 | `features/notifications` (realtime inbox); DB triggers notify customers on business-order created/status, delivery status, return status | ❌ FCM push (device_tokens unused); ❌ promotion/coupon notifications (documented) |
+| Notifications (local/in-app + push): order updates, payment statuses, delivery stages, promotions, coupons | ✅ (🟡 promos) | In-app realtime inbox (existing); **Section 8E FCM**: `register_device_token` RPC + `registerPushNotifications` startup hook (guarded — no-ops without Firebase config) + `push-dispatch` Edge Function (FCM HTTP v1, Database Webhook on notifications); payment-status notifications added (7D). Promotion/coupon notification triggers ❌ (documented); external prerequisites in Part A.6 |
 | Audit trails: cart additions, wishlist updates, order creation, payment changes, status updates, cancellations | 🟡 | `audit_logs` + `state_history` tables; admin viewer `audit_logs_screen.dart` | Domain events (order/payment/delivery/return states) logged server-side; cart/wishlist additions not audited (🟡 documented) |
 | Reporting: KPI summary (orders, completed, cancelled, sales, AOV, best-sellers, low-stock, top categories, purchase frequency) | ✅ (Section 8C) | **Reports & Analytics screen** (`/admin/dashboard/reports`, `get_sales_report` RPC 0045): admin selects an inclusive date range (`showDateRangePicker`); KPI summary + best sellers + top categories + purchase frequency for the range, low-stock as a current snapshot; spending excludes cancelled/returned (consistent with 8A) | Daily/weekly/monthly buckets ❌ (range-based instead, documented) |
 | Error handling & UI states: loading, success, error banners, empty states, retry | ✅ | `core/domain/failures.dart` + `StreamResult`; `AsyncValue` patterns, empty/retry states across screens | — |
