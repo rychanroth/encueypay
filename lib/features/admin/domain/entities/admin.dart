@@ -221,6 +221,41 @@ abstract class AdminKpis with _$AdminKpis {
   }) = _AdminKpis;
 }
 
+/// Date-range sales report (Section 8C, assignment §8 reporting).
+@freezed
+abstract class AdminSalesReport with _$AdminSalesReport {
+  const factory AdminSalesReport({
+    required DateTime from,
+    required DateTime to,
+    required int totalOrders,
+    required int completedOrders,
+    required int cancelledOrders,
+    required int totalSalesMinor,
+    required int averageOrderValueMinor,
+    required int lowStockProducts,
+    required int outOfStockProducts,
+    @Default([]) List<AdminBestSeller> bestSellers,
+    @Default([]) List<AdminCategoryUnits> topCategories,
+    @Default([]) List<AdminCustomerFrequency> purchaseFrequency,
+  }) = _AdminSalesReport;
+}
+
+@freezed
+abstract class AdminCategoryUnits with _$AdminCategoryUnits {
+  const factory AdminCategoryUnits({
+    required String name,
+    required int units,
+  }) = _AdminCategoryUnits;
+}
+
+@freezed
+abstract class AdminCustomerFrequency with _$AdminCustomerFrequency {
+  const factory AdminCustomerFrequency({
+    required String name,
+    required int orders,
+  }) = _AdminCustomerFrequency;
+}
+
 @freezed
 abstract class AdminBestSeller with _$AdminBestSeller {
   const factory AdminBestSeller({

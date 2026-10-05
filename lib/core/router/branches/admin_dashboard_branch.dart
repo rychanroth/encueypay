@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../../features/admin/presentation/screens/admin_reports_screen.dart';
 import '../../../features/admin/presentation/screens/audit_logs_screen.dart';
 import '../../../features/admin/presentation/screens/platform_settings_screen.dart';
 import '../app_routes.dart';
@@ -13,6 +14,11 @@ final adminDashboardBranch = StatefulShellBranch(
       path: '/admin/dashboard',
       builder: (context, state) => const AdminDashboardScreen(),
       routes: [
+        GoRoute(
+          name: AppRoutes.adminReports,
+          path: 'reports',
+          builder: (context, state) => const AdminReportsScreen(),
+        ),
         GoRoute(
           name: AppRoutes.adminAudit,
           path: 'audit',

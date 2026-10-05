@@ -93,6 +93,15 @@ class AdminDashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Card(
             child: ListTile(
+              leading: const Icon(Icons.insights_outlined),
+              title: const Text('Reports & analytics'),
+              subtitle: const Text('Date-range sales report'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.adminReports),
+            ),
+          ),
+          Card(
+            child: ListTile(
               leading: const Icon(Icons.history),
               title: const Text('Audit logs'),
               subtitle: Text('$auditCount entries'),

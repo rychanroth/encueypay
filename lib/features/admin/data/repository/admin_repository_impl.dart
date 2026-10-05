@@ -218,6 +218,58 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
+  Future<AdminSalesReport> fetchSalesReport({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    try {
+      final result = await _client.rpc('get_sales_report', params: {
+        'p_from': from.toIso8601String().substring(0, 10),
+        'p_to': to.toIso8601String().substring(0, 10),
+      });
+      final map = Map<String, dynamic>.from(result as Map);
+      return AdminSalesReport(
+        from: DateTime.parse(map['from'] as String),
+        to: DateTime.parse(map['to'] as String),
+        totalOrders: (map['total_orders'] as int?) ?? 0,
+        completedOrders: (map['completed_orders'] as int?) ?? 0,
+        cancelledOrders: (map['cancelled_orders'] as int?) ?? 0,
+        totalSalesMinor: (map['total_sales_minor'] as int?) ?? 0,
+        averageOrderValueMinor:
+            (map['average_order_value_minor'] as int?) ?? 0,
+        lowStockProducts: (map['low_stock_products'] as int?) ?? 0,
+        outOfStockProducts: (map['out_of_stock_products'] as int?) ?? 0,
+        bestSellers: ((map['best_sellers'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>())
+            .map((row) => AdminBestSeller(
+                  name: row['name'] as String? ?? '',
+                  units: (row['units'] as int?) ?? 0,
+                ))
+            .toList(),
+        topCategories: ((map['top_categories'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>())
+            .map((row) => AdminCategoryUnits(
+                  name: row['name'] as String? ?? '',
+                  units: (row['units'] as int?) ?? 0,
+                ))
+            .toList(),
+        purchaseFrequency:
+            ((map['purchase_frequency'] as List? ?? const [])
+                    .whereType<Map<String, dynamic>>())
+                .map((row) => AdminCustomerFrequency(
+                      name: row['name'] as String? ?? '',
+                      orders: (row['orders'] as int?) ?? 0,
+                    ))
+                .toList(),
+      );
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<List<AdminBusinessRef>> fetchActiveBusinesses() async {
     try {
       final rows = await _client

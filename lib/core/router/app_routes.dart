@@ -26,6 +26,7 @@ abstract final class AppRoutes {
   // Admin (nested under Admin dashboard).
   static const adminAudit = 'adminAudit';
   static const adminSettings = 'adminSettings';
+  static const adminReports = 'adminReports';
 
   // Catalog (nested under Home).
   static const products = 'products';

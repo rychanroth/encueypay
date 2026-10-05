@@ -122,6 +122,13 @@ abstract interface class IAdminRepository {
   /// Assignment §8 dashboard KPIs (Section 4, `get_admin_kpis`).
   Future<AdminKpis> fetchAdminKpis();
 
+  /// Assignment §8 reporting (Section 8C): date-range sales report;
+  /// [from]/[to] are inclusive.
+  Future<AdminSalesReport> fetchSalesReport({
+    required DateTime from,
+    required DateTime to,
+  });
+
   Future<PlatformSettings> fetchPlatformSettings();
 
   Future<void> updatePlatformSettings(PlatformSettings settings);
