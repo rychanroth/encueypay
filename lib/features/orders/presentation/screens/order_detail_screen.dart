@@ -120,12 +120,28 @@ class OrderDetailScreen extends ConsumerWidget {
                 order.createdAt.toLocal().toString().substring(0, 16),
                 style: theme.textTheme.bodySmall,
               ),
-              // Tracking header (assignment §7): mock tracking number + mock
-              // ETA — presentation-only, computed from the order id/date.
+              // Tracking header (assignment §7, Section 7C — prototype
+              // scope): mock tracking number, an ETA only while in transit,
+              // and the store standing in as its own courier.
               const SizedBox(height: 4),
               Text(
-                'Tracking #${order.id.substring(0, 8).toUpperCase()} · '
-                'ETA ${order.createdAt.toLocal().add(const Duration(days: 3)).toString().substring(0, 10)}',
+                'Tracking #${order.id.substring(0, 8).toUpperCase()}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+              if (order.status != OrderStatus.delivered &&
+                  order.status != OrderStatus.cancelled &&
+                  order.status != OrderStatus.returned)
+                Text(
+                  'Estimated delivery: '
+                  '${order.createdAt.toLocal().add(const Duration(days: 3)).toString().substring(0, 10)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+              Text(
+                'Delivery managed by EncueYPay',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.outline,
                 ),
