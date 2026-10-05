@@ -455,6 +455,11 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
+  Future<void> completeReturn({required String returnId}) {
+    return _rpc('admin_complete_return', {'p_return_id': returnId});
+  }
+
+  @override
   Future<void> simulateQrPayment({required String orderId}) {
     return _rpc('simulate_qr_payment', {'p_order_id': orderId});
   }

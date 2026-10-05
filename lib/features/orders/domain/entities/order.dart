@@ -24,6 +24,7 @@ abstract class CustomerOrder with _$CustomerOrder {
     @Default('') String note,
     @Default('') String cancellationReason,
     @Default([]) List<OrderItemSnapshot> items,
+    @Default([]) List<ReturnRequestInfo> returns,
     OrderPayment? payment,
   }) = _CustomerOrder;
 
@@ -52,6 +53,37 @@ abstract class OrderItemSnapshot with _$OrderItemSnapshot {
     @Default('') String businessName,
     @Default(0) int discountMinor,
   }) = _OrderItemSnapshot;
+}
+
+/// The customer's return request on this order (Section 7E): its status is
+/// the customer's progress tracker. 'Requested' is the submission act; a
+/// pending request is under review.
+@freezed
+abstract class ReturnRequestInfo with _$ReturnRequestInfo {
+  const factory ReturnRequestInfo({
+    required String id,
+    required ReturnStatus status,
+    @Default('') String reason,
+  }) = _ReturnRequestInfo;
+}
+
+/// The return lifecycle (assignment §7 vocabulary; wire: pending = under
+/// review).
+enum ReturnStatus {
+  pending,
+  approved,
+  rejected,
+  completed;
+
+  static ReturnStatus fromName(String? name) =>
+      ReturnStatus.values.asNameMap()[name] ?? ReturnStatus.pending;
+
+  String get label => switch (this) {
+        ReturnStatus.pending => 'Under review',
+        ReturnStatus.approved => 'Approved — refund pending',
+        ReturnStatus.rejected => 'Rejected',
+        ReturnStatus.completed => 'Completed',
+      };
 }
 
 @freezed

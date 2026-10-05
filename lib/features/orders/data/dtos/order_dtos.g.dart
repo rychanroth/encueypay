@@ -26,6 +26,11 @@ OrderDto _$OrderDtoFromJson(Map<String, dynamic> json) => OrderDto(
           ?.map((e) => OrderItemJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
+  returnRequests:
+      (json['return_requests'] as List<dynamic>?)
+          ?.map((e) => ReturnRequestJoinDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
   payments: json['payments'] == null
       ? null
       : PaymentJoinDto.fromJson(json['payments'] as Map<String, dynamic>),
@@ -47,6 +52,7 @@ Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
   'note': instance.note,
   'cancellation_reason': instance.cancellationReason,
   'order_items': instance.items,
+  'return_requests': instance.returnRequests,
   'payments': instance.payments,
 };
 
@@ -73,6 +79,22 @@ Map<String, dynamic> _$OrderItemJoinDtoToJson(OrderItemJoinDto instance) =>
       'line_total_minor': instance.lineTotalMinor,
       'business_name': instance.businessName,
     };
+
+ReturnRequestJoinDto _$ReturnRequestJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => ReturnRequestJoinDto(
+  id: json['id'] as String,
+  status: json['status'] as String?,
+  reason: json['reason'] as String?,
+);
+
+Map<String, dynamic> _$ReturnRequestJoinDtoToJson(
+  ReturnRequestJoinDto instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'status': instance.status,
+  'reason': instance.reason,
+};
 
 PaymentJoinDto _$PaymentJoinDtoFromJson(Map<String, dynamic> json) =>
     PaymentJoinDto(

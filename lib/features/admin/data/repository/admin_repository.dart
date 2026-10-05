@@ -106,6 +106,10 @@ abstract interface class IAdminRepository {
     required bool approve,
   });
 
+  /// Section 7E: completes an APPROVED return (the refund-recorded end
+  /// state) — an explicit admin action, not automatic.
+  Future<void> completeReturn({required String returnId});
+
   /// Section 6b: dev-only simulation of a confirmed gateway webhook
   /// (admin authority) for the QR payment flow.
   Future<void> simulateQrPayment({required String orderId});

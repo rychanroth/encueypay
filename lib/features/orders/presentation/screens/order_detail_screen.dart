@@ -227,6 +227,33 @@ class OrderDetailScreen extends ConsumerWidget {
               _SummaryRow('Total', Money(order.totalMinor).format(), bold: true),
 
               const SizedBox(height: 24),
+              // Section 7E: the customer's return tracker.
+              if (order.returns.isNotEmpty) ...[
+                Text('Return request',
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+                for (final request in order.returns)
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(
+                      switch (request.status) {
+                        ReturnStatus.completed => Icons.check_circle_outline,
+                        ReturnStatus.rejected => Icons.cancel_outlined,
+                        _ => Icons.schedule,
+                      },
+                      color: switch (request.status) {
+                        ReturnStatus.completed => theme.colorScheme.primary,
+                        ReturnStatus.rejected => theme.colorScheme.error,
+                        _ => theme.colorScheme.secondary,
+                      },
+                    ),
+                    title: Text(request.status.label),
+                    subtitle: request.reason.isEmpty
+                        ? null
+                        : Text(request.reason, maxLines: 2),
+                  ),
+              ],
               if (order.delivered) ...[
                 FilledButton.tonalIcon(
                   onPressed: () => context.pushNamed(

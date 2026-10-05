@@ -28,6 +28,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       'shipping_line2, shipping_city, '
       'order_items(id, product_name, variant_name, business_name, '
       'unit_price_minor, discount_minor, quantity, line_total_minor), '
+      'return_requests(id, status, reason), '
       'payments(method, status, amount_minor)';
 
   String get _uid {

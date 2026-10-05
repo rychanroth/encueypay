@@ -22,6 +22,7 @@ class OrderDto {
     this.note,
     this.cancellationReason,
     this.items = const [],
+    this.returnRequests = const [],
     this.payments,
   });
 
@@ -47,6 +48,9 @@ class OrderDto {
 
   @JsonKey(name: 'order_items', defaultValue: [])
   final List<OrderItemJoinDto> items;
+
+  @JsonKey(name: 'return_requests', defaultValue: [])
+  final List<ReturnRequestJoinDto> returnRequests;
 
   @JsonKey(name: 'payments')
   final PaymentJoinDto? payments;
@@ -80,6 +84,24 @@ class OrderItemJoinDto {
   final String? businessName;
 
   Map<String, dynamic> toJson() => _$OrderItemJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ReturnRequestJoinDto {
+  const ReturnRequestJoinDto({
+    required this.id,
+    this.status,
+    this.reason,
+  });
+
+  factory ReturnRequestJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$ReturnRequestJoinDtoFromJson(json);
+
+  final String id;
+  final String? status;
+  final String? reason;
+
+  Map<String, dynamic> toJson() => _$ReturnRequestJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

@@ -231,6 +231,16 @@ Future<void> _cancel(
       );
 }
 
+/// Section 7E labels: the wire status → assignment vocabulary. 'Requested'
+/// is the submission act itself; a pending request is under review.
+String returnStatusLabel(String wire) => switch (wire) {
+      'pending' => 'Under review',
+      'approved' => 'Approved',
+      'rejected' => 'Rejected',
+      'completed' => 'Completed',
+      _ => wire,
+    };
+
 class _ReturnTile extends ConsumerWidget {
   const _ReturnTile({required this.returnRequest});
 
@@ -239,10 +249,11 @@ class _ReturnTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPending = returnRequest.status == 'pending';
+    final isApproved = returnRequest.status == 'approved';
     return Card(
       margin: const EdgeInsets.only(top: 8),
       child: ListTile(
-        title: Text('Return · ${returnRequest.status}'),
+        title: Text('Return · ${returnStatusLabel(returnRequest.status)}'),
         subtitle: returnRequest.reason.isEmpty
             ? null
             : Text(returnRequest.reason, maxLines: 2),
@@ -266,7 +277,14 @@ class _ReturnTile extends ConsumerWidget {
                   ),
                 ],
               )
-            : null,
+            : isApproved
+                ? FilledButton.tonal(
+                    onPressed: () => ref
+                        .read(adminOrdersControllerProvider.notifier)
+                        .completeReturn(returnId: returnRequest.id),
+                    child: const Text('Complete return'),
+                  )
+                : null,
       ),
     );
   }

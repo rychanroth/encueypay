@@ -19,6 +19,13 @@ extension OrderDtoX on OrderDto {
       note: note ?? '',
       cancellationReason: cancellationReason ?? '',
       items: items.map((item) => item.toDomain()).toList(),
+      returns: returnRequests
+          .map((request) => ReturnRequestInfo(
+                id: request.id,
+                status: ReturnStatus.fromName(request.status),
+                reason: request.reason ?? '',
+              ))
+          .toList(),
       payment: payments == null
           ? null
           : OrderPayment(
