@@ -14,3 +14,12 @@ class AdminReportController extends _$AdminReportController {
     return ref.watch(adminRepositoryProvider).fetchPlatformReport();
   }
 }
+
+/// Assignment §8 dashboard KPIs (Section 4).
+@riverpod
+class AdminKpisController extends _$AdminKpisController {
+  @override
+  Future<AdminKpis> build() {
+    return ref.watch(adminRepositoryProvider).fetchAdminKpis();
+  }
+}

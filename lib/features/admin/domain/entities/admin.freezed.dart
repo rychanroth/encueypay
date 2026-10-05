@@ -3295,6 +3295,822 @@ as int,
 }
 
 /// @nodoc
+mixin _$AdminKpis {
+
+ int get totalProducts; int get activeProducts; int get totalOrders; int get totalCustomers; int get totalSalesMinor; int get lowStockProducts; int get outOfStockProducts; List<AdminBestSeller> get bestSellers; List<AdminTrendPoint> get salesTrend;
+/// Create a copy of AdminKpis
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminKpisCopyWith<AdminKpis> get copyWith => _$AdminKpisCopyWithImpl<AdminKpis>(this as AdminKpis, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminKpis&&(identical(other.totalProducts, totalProducts) || other.totalProducts == totalProducts)&&(identical(other.activeProducts, activeProducts) || other.activeProducts == activeProducts)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&(identical(other.totalCustomers, totalCustomers) || other.totalCustomers == totalCustomers)&&(identical(other.totalSalesMinor, totalSalesMinor) || other.totalSalesMinor == totalSalesMinor)&&(identical(other.lowStockProducts, lowStockProducts) || other.lowStockProducts == lowStockProducts)&&(identical(other.outOfStockProducts, outOfStockProducts) || other.outOfStockProducts == outOfStockProducts)&&const DeepCollectionEquality().equals(other.bestSellers, bestSellers)&&const DeepCollectionEquality().equals(other.salesTrend, salesTrend));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,totalProducts,activeProducts,totalOrders,totalCustomers,totalSalesMinor,lowStockProducts,outOfStockProducts,const DeepCollectionEquality().hash(bestSellers),const DeepCollectionEquality().hash(salesTrend));
+
+@override
+String toString() {
+  return 'AdminKpis(totalProducts: $totalProducts, activeProducts: $activeProducts, totalOrders: $totalOrders, totalCustomers: $totalCustomers, totalSalesMinor: $totalSalesMinor, lowStockProducts: $lowStockProducts, outOfStockProducts: $outOfStockProducts, bestSellers: $bestSellers, salesTrend: $salesTrend)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminKpisCopyWith<$Res>  {
+  factory $AdminKpisCopyWith(AdminKpis value, $Res Function(AdminKpis) _then) = _$AdminKpisCopyWithImpl;
+@useResult
+$Res call({
+ int totalProducts, int activeProducts, int totalOrders, int totalCustomers, int totalSalesMinor, int lowStockProducts, int outOfStockProducts, List<AdminBestSeller> bestSellers, List<AdminTrendPoint> salesTrend
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminKpisCopyWithImpl<$Res>
+    implements $AdminKpisCopyWith<$Res> {
+  _$AdminKpisCopyWithImpl(this._self, this._then);
+
+  final AdminKpis _self;
+  final $Res Function(AdminKpis) _then;
+
+/// Create a copy of AdminKpis
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? totalProducts = null,Object? activeProducts = null,Object? totalOrders = null,Object? totalCustomers = null,Object? totalSalesMinor = null,Object? lowStockProducts = null,Object? outOfStockProducts = null,Object? bestSellers = null,Object? salesTrend = null,}) {
+  return _then(AdminKpis(
+totalProducts: null == totalProducts ? _self.totalProducts : totalProducts // ignore: cast_nullable_to_non_nullable
+as int,activeProducts: null == activeProducts ? _self.activeProducts : activeProducts // ignore: cast_nullable_to_non_nullable
+as int,totalOrders: null == totalOrders ? _self.totalOrders : totalOrders // ignore: cast_nullable_to_non_nullable
+as int,totalCustomers: null == totalCustomers ? _self.totalCustomers : totalCustomers // ignore: cast_nullable_to_non_nullable
+as int,totalSalesMinor: null == totalSalesMinor ? _self.totalSalesMinor : totalSalesMinor // ignore: cast_nullable_to_non_nullable
+as int,lowStockProducts: null == lowStockProducts ? _self.lowStockProducts : lowStockProducts // ignore: cast_nullable_to_non_nullable
+as int,outOfStockProducts: null == outOfStockProducts ? _self.outOfStockProducts : outOfStockProducts // ignore: cast_nullable_to_non_nullable
+as int,bestSellers: null == bestSellers ? _self.bestSellers : bestSellers // ignore: cast_nullable_to_non_nullable
+as List<AdminBestSeller>,salesTrend: null == salesTrend ? _self.salesTrend : salesTrend // ignore: cast_nullable_to_non_nullable
+as List<AdminTrendPoint>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminKpis].
+extension AdminKpisPatterns on AdminKpis {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminKpis value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminKpis() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminKpis value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminKpis():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminKpis value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminKpis() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int totalProducts,  int activeProducts,  int totalOrders,  int totalCustomers,  int totalSalesMinor,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminTrendPoint> salesTrend)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminKpis() when $default != null:
+return $default(_that.totalProducts,_that.activeProducts,_that.totalOrders,_that.totalCustomers,_that.totalSalesMinor,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.salesTrend);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int totalProducts,  int activeProducts,  int totalOrders,  int totalCustomers,  int totalSalesMinor,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminTrendPoint> salesTrend)  $default,) {final _that = this;
+switch (_that) {
+case _AdminKpis():
+return $default(_that.totalProducts,_that.activeProducts,_that.totalOrders,_that.totalCustomers,_that.totalSalesMinor,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.salesTrend);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int totalProducts,  int activeProducts,  int totalOrders,  int totalCustomers,  int totalSalesMinor,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminTrendPoint> salesTrend)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminKpis() when $default != null:
+return $default(_that.totalProducts,_that.activeProducts,_that.totalOrders,_that.totalCustomers,_that.totalSalesMinor,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.salesTrend);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminKpis implements AdminKpis {
+  const _AdminKpis({required this.totalProducts, required this.activeProducts, required this.totalOrders, required this.totalCustomers, required this.totalSalesMinor, required this.lowStockProducts, required this.outOfStockProducts,  List<AdminBestSeller> bestSellers = const [],  List<AdminTrendPoint> salesTrend = const []}): _bestSellers = bestSellers,_salesTrend = salesTrend;
+  
+
+@override final  int totalProducts;
+@override final  int activeProducts;
+@override final  int totalOrders;
+@override final  int totalCustomers;
+@override final  int totalSalesMinor;
+@override final  int lowStockProducts;
+@override final  int outOfStockProducts;
+ final  List<AdminBestSeller> _bestSellers;
+@override@JsonKey() List<AdminBestSeller> get bestSellers {
+  if (_bestSellers is EqualUnmodifiableListView) return _bestSellers;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_bestSellers);
+}
+
+ final  List<AdminTrendPoint> _salesTrend;
+@override@JsonKey() List<AdminTrendPoint> get salesTrend {
+  if (_salesTrend is EqualUnmodifiableListView) return _salesTrend;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_salesTrend);
+}
+
+
+/// Create a copy of AdminKpis
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminKpisCopyWith<_AdminKpis> get copyWith => __$AdminKpisCopyWithImpl<_AdminKpis>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminKpis&&(identical(other.totalProducts, totalProducts) || other.totalProducts == totalProducts)&&(identical(other.activeProducts, activeProducts) || other.activeProducts == activeProducts)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&(identical(other.totalCustomers, totalCustomers) || other.totalCustomers == totalCustomers)&&(identical(other.totalSalesMinor, totalSalesMinor) || other.totalSalesMinor == totalSalesMinor)&&(identical(other.lowStockProducts, lowStockProducts) || other.lowStockProducts == lowStockProducts)&&(identical(other.outOfStockProducts, outOfStockProducts) || other.outOfStockProducts == outOfStockProducts)&&const DeepCollectionEquality().equals(other._bestSellers, _bestSellers)&&const DeepCollectionEquality().equals(other._salesTrend, _salesTrend));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,totalProducts,activeProducts,totalOrders,totalCustomers,totalSalesMinor,lowStockProducts,outOfStockProducts,const DeepCollectionEquality().hash(_bestSellers),const DeepCollectionEquality().hash(_salesTrend));
+
+@override
+String toString() {
+  return 'AdminKpis(totalProducts: $totalProducts, activeProducts: $activeProducts, totalOrders: $totalOrders, totalCustomers: $totalCustomers, totalSalesMinor: $totalSalesMinor, lowStockProducts: $lowStockProducts, outOfStockProducts: $outOfStockProducts, bestSellers: $bestSellers, salesTrend: $salesTrend)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminKpisCopyWith<$Res> implements $AdminKpisCopyWith<$Res> {
+  factory _$AdminKpisCopyWith(_AdminKpis value, $Res Function(_AdminKpis) _then) = __$AdminKpisCopyWithImpl;
+@override @useResult
+$Res call({
+ int totalProducts, int activeProducts, int totalOrders, int totalCustomers, int totalSalesMinor, int lowStockProducts, int outOfStockProducts, List<AdminBestSeller> bestSellers, List<AdminTrendPoint> salesTrend
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminKpisCopyWithImpl<$Res>
+    implements _$AdminKpisCopyWith<$Res> {
+  __$AdminKpisCopyWithImpl(this._self, this._then);
+
+  final _AdminKpis _self;
+  final $Res Function(_AdminKpis) _then;
+
+/// Create a copy of AdminKpis
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? totalProducts = null,Object? activeProducts = null,Object? totalOrders = null,Object? totalCustomers = null,Object? totalSalesMinor = null,Object? lowStockProducts = null,Object? outOfStockProducts = null,Object? bestSellers = null,Object? salesTrend = null,}) {
+  return _then(_AdminKpis(
+totalProducts: null == totalProducts ? _self.totalProducts : totalProducts // ignore: cast_nullable_to_non_nullable
+as int,activeProducts: null == activeProducts ? _self.activeProducts : activeProducts // ignore: cast_nullable_to_non_nullable
+as int,totalOrders: null == totalOrders ? _self.totalOrders : totalOrders // ignore: cast_nullable_to_non_nullable
+as int,totalCustomers: null == totalCustomers ? _self.totalCustomers : totalCustomers // ignore: cast_nullable_to_non_nullable
+as int,totalSalesMinor: null == totalSalesMinor ? _self.totalSalesMinor : totalSalesMinor // ignore: cast_nullable_to_non_nullable
+as int,lowStockProducts: null == lowStockProducts ? _self.lowStockProducts : lowStockProducts // ignore: cast_nullable_to_non_nullable
+as int,outOfStockProducts: null == outOfStockProducts ? _self.outOfStockProducts : outOfStockProducts // ignore: cast_nullable_to_non_nullable
+as int,bestSellers: null == bestSellers ? _self._bestSellers : bestSellers // ignore: cast_nullable_to_non_nullable
+as List<AdminBestSeller>,salesTrend: null == salesTrend ? _self._salesTrend : salesTrend // ignore: cast_nullable_to_non_nullable
+as List<AdminTrendPoint>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$AdminBestSeller {
+
+ String get name; int get units;
+/// Create a copy of AdminBestSeller
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminBestSellerCopyWith<AdminBestSeller> get copyWith => _$AdminBestSellerCopyWithImpl<AdminBestSeller>(this as AdminBestSeller, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminBestSeller&&(identical(other.name, name) || other.name == name)&&(identical(other.units, units) || other.units == units));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,name,units);
+
+@override
+String toString() {
+  return 'AdminBestSeller(name: $name, units: $units)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminBestSellerCopyWith<$Res>  {
+  factory $AdminBestSellerCopyWith(AdminBestSeller value, $Res Function(AdminBestSeller) _then) = _$AdminBestSellerCopyWithImpl;
+@useResult
+$Res call({
+ String name, int units
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminBestSellerCopyWithImpl<$Res>
+    implements $AdminBestSellerCopyWith<$Res> {
+  _$AdminBestSellerCopyWithImpl(this._self, this._then);
+
+  final AdminBestSeller _self;
+  final $Res Function(AdminBestSeller) _then;
+
+/// Create a copy of AdminBestSeller
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? units = null,}) {
+  return _then(AdminBestSeller(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,units: null == units ? _self.units : units // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminBestSeller].
+extension AdminBestSellerPatterns on AdminBestSeller {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminBestSeller value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminBestSeller() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminBestSeller value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminBestSeller():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminBestSeller value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminBestSeller() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int units)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminBestSeller() when $default != null:
+return $default(_that.name,_that.units);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int units)  $default,) {final _that = this;
+switch (_that) {
+case _AdminBestSeller():
+return $default(_that.name,_that.units);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int units)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminBestSeller() when $default != null:
+return $default(_that.name,_that.units);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminBestSeller implements AdminBestSeller {
+  const _AdminBestSeller({required this.name, required this.units});
+  
+
+@override final  String name;
+@override final  int units;
+
+/// Create a copy of AdminBestSeller
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminBestSellerCopyWith<_AdminBestSeller> get copyWith => __$AdminBestSellerCopyWithImpl<_AdminBestSeller>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminBestSeller&&(identical(other.name, name) || other.name == name)&&(identical(other.units, units) || other.units == units));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,name,units);
+
+@override
+String toString() {
+  return 'AdminBestSeller(name: $name, units: $units)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminBestSellerCopyWith<$Res> implements $AdminBestSellerCopyWith<$Res> {
+  factory _$AdminBestSellerCopyWith(_AdminBestSeller value, $Res Function(_AdminBestSeller) _then) = __$AdminBestSellerCopyWithImpl;
+@override @useResult
+$Res call({
+ String name, int units
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminBestSellerCopyWithImpl<$Res>
+    implements _$AdminBestSellerCopyWith<$Res> {
+  __$AdminBestSellerCopyWithImpl(this._self, this._then);
+
+  final _AdminBestSeller _self;
+  final $Res Function(_AdminBestSeller) _then;
+
+/// Create a copy of AdminBestSeller
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? units = null,}) {
+  return _then(_AdminBestSeller(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,units: null == units ? _self.units : units // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$AdminTrendPoint {
+
+ DateTime get day; int get orders; int get salesMinor;
+/// Create a copy of AdminTrendPoint
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminTrendPointCopyWith<AdminTrendPoint> get copyWith => _$AdminTrendPointCopyWithImpl<AdminTrendPoint>(this as AdminTrendPoint, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminTrendPoint&&(identical(other.day, day) || other.day == day)&&(identical(other.orders, orders) || other.orders == orders)&&(identical(other.salesMinor, salesMinor) || other.salesMinor == salesMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,day,orders,salesMinor);
+
+@override
+String toString() {
+  return 'AdminTrendPoint(day: $day, orders: $orders, salesMinor: $salesMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminTrendPointCopyWith<$Res>  {
+  factory $AdminTrendPointCopyWith(AdminTrendPoint value, $Res Function(AdminTrendPoint) _then) = _$AdminTrendPointCopyWithImpl;
+@useResult
+$Res call({
+ DateTime day, int orders, int salesMinor
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminTrendPointCopyWithImpl<$Res>
+    implements $AdminTrendPointCopyWith<$Res> {
+  _$AdminTrendPointCopyWithImpl(this._self, this._then);
+
+  final AdminTrendPoint _self;
+  final $Res Function(AdminTrendPoint) _then;
+
+/// Create a copy of AdminTrendPoint
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? day = null,Object? orders = null,Object? salesMinor = null,}) {
+  return _then(AdminTrendPoint(
+day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+as DateTime,orders: null == orders ? _self.orders : orders // ignore: cast_nullable_to_non_nullable
+as int,salesMinor: null == salesMinor ? _self.salesMinor : salesMinor // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminTrendPoint].
+extension AdminTrendPointPatterns on AdminTrendPoint {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminTrendPoint value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminTrendPoint() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminTrendPoint value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminTrendPoint():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminTrendPoint value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminTrendPoint() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime day,  int orders,  int salesMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminTrendPoint() when $default != null:
+return $default(_that.day,_that.orders,_that.salesMinor);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime day,  int orders,  int salesMinor)  $default,) {final _that = this;
+switch (_that) {
+case _AdminTrendPoint():
+return $default(_that.day,_that.orders,_that.salesMinor);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime day,  int orders,  int salesMinor)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminTrendPoint() when $default != null:
+return $default(_that.day,_that.orders,_that.salesMinor);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminTrendPoint implements AdminTrendPoint {
+  const _AdminTrendPoint({required this.day, required this.orders, required this.salesMinor});
+  
+
+@override final  DateTime day;
+@override final  int orders;
+@override final  int salesMinor;
+
+/// Create a copy of AdminTrendPoint
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminTrendPointCopyWith<_AdminTrendPoint> get copyWith => __$AdminTrendPointCopyWithImpl<_AdminTrendPoint>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminTrendPoint&&(identical(other.day, day) || other.day == day)&&(identical(other.orders, orders) || other.orders == orders)&&(identical(other.salesMinor, salesMinor) || other.salesMinor == salesMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,day,orders,salesMinor);
+
+@override
+String toString() {
+  return 'AdminTrendPoint(day: $day, orders: $orders, salesMinor: $salesMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminTrendPointCopyWith<$Res> implements $AdminTrendPointCopyWith<$Res> {
+  factory _$AdminTrendPointCopyWith(_AdminTrendPoint value, $Res Function(_AdminTrendPoint) _then) = __$AdminTrendPointCopyWithImpl;
+@override @useResult
+$Res call({
+ DateTime day, int orders, int salesMinor
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminTrendPointCopyWithImpl<$Res>
+    implements _$AdminTrendPointCopyWith<$Res> {
+  __$AdminTrendPointCopyWithImpl(this._self, this._then);
+
+  final _AdminTrendPoint _self;
+  final $Res Function(_AdminTrendPoint) _then;
+
+/// Create a copy of AdminTrendPoint
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? day = null,Object? orders = null,Object? salesMinor = null,}) {
+  return _then(_AdminTrendPoint(
+day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+as DateTime,orders: null == orders ? _self.orders : orders // ignore: cast_nullable_to_non_nullable
+as int,salesMinor: null == salesMinor ? _self.salesMinor : salesMinor // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$PlatformSettings {
 
  int get deliveryFeeMinor; int get platformCommissionPercent; int get driverCommissionPercent; String get paymentAccount;

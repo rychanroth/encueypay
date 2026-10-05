@@ -137,7 +137,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 | Auth, authorization, session management, validation, secure storage; customers restricted to own data | ✅ | Supabase Auth (email + Google OAuth); RLS everywhere; server-authoritative state (Part D); `Failure` taxonomy at repo boundary (DATA-05/06) | — |
 | Customer prototype: personalized wishlist, cart, address book, order history | ✅ | `features/wishlist`, `features/cart`, `features/profile` (addresses), `features/orders` | — |
 | Admin prototype: manages Products, Categories, Orders, System Reports | 🟡 → ✅ §4 | Categories ✅ (`categories_admin_screen.dart` + RPCs); **Products ✅ (Section 2b: `admin_products_screen.dart` + `admin_product_form_screen.dart`, admin-guarded RPCs `admin_create_product` / `admin_update_product` / `admin_set_product_archived` / `admin_add_product_image`)**; brand management ✅ (`brands_admin_screen.dart`, RLS `brands_admin_*`); **Orders ✅ (Section 3: `admin_orders_screen.dart` + `admin_order_detail_screen.dart`, RPCs `admin_transition_business_order` / `admin_complete_order` / `admin_process_return` + `orders_admin_read`/`payments_admin_read` policies)**; promotions/banner moderation ✅ (`admin_promotions_screen.dart`); audit logs ✅; platform settings ✅; platform report ✅ | KPI reports → §4; ⛔ role-application review hidden (L-03) |
-| Admin dashboard: total products, orders, customers, sales, low-stock, best-selling, sales trends | 🟡 → §4 | `get_platform_report` (order count, GMV, delivery fees, active businesses/products, pending applications) on `admin_dashboard_screen.dart` | KPI extension → §4; low-stock ⛔ N/A (inventory removed) |
+| Admin dashboard: total products, orders, customers, sales, low-stock, best-selling, sales trends | 🟡 → ✅ §4 | `get_admin_kpis` (Section 4, `20261005000034`) on `admin_dashboard_screen.dart`: KPI cards (total products / orders / customers / total sales), **low-stock (≤5) + out-of-stock counts (unblocked by 2d stock)**, best-sellers list (top 5 by units), and a 14-day sales-trend bar chart (plain Flutter, no charting dependency) alongside the existing `get_platform_report` row | — |
 | Notifications (local/in-app): order updates, payment statuses, delivery stages, promotions, coupons | 🟡 | `features/notifications` (realtime inbox); DB triggers notify customers on business-order created/status, delivery status, return status | ❌ FCM push (device_tokens unused); ❌ promotion/coupon notifications (documented) |
 | Audit trails: cart additions, wishlist updates, order creation, payment changes, status updates, cancellations | 🟡 | `audit_logs` + `state_history` tables; admin viewer `audit_logs_screen.dart` | Domain events (order/payment/delivery/return states) logged server-side; cart/wishlist additions not audited (🟡 documented) |
 | Reporting: daily/weekly/monthly KPIs (orders, completed, cancelled, sales, AOV, best-sellers, low-stock, top categories, purchase frequency) | 🟡 → §4 | `get_platform_report`; §4 adds `get_admin_kpis` (best-selling, trend) | Low-stock ⛔; top categories / purchase frequency ❌ (documented) |
@@ -291,6 +291,17 @@ appended as sections land.)
   admin Orders tab (`/admin/orders`, list + fulfillment detail view).
 * Prototype ops: businesses need an auth-user owner — `supabase/seed.sql`
   documents the store + admin promotion snippets (Part A.2/A.3).
+
+## Section 4 — Admin dashboard KPIs (`20261005000034`)
+
+* `get_admin_kpis` (is_admin via SQL-function default invoker rights guarded
+  by the definer `is_admin()`; stable, security definer): total/active
+  products, total orders, total customers, total sales, low-stock (≤5) and
+  out-of-stock counts, top-5 best sellers by units, and a 14-day sales
+  trend (zero-filled via `generate_series`).
+* Dashboard renders KPI cards, best-seller list, and a plain-Flutter bar
+  chart (DEPS-03: no charting package). The pending-applications mention
+  was dropped from the dashboard (applications flow hidden, L-03).
 
 ## Realtime
 

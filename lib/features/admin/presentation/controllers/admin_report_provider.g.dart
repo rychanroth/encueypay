@@ -72,3 +72,54 @@ abstract class _$AdminReportController
     return element.handleCreate(ref, build);
   }
 }
+
+/// Assignment §8 dashboard KPIs (Section 4).
+
+@ProviderFor(AdminKpisController)
+final adminKpisControllerProvider = AdminKpisControllerProvider._();
+
+/// Assignment §8 dashboard KPIs (Section 4).
+final class AdminKpisControllerProvider
+    extends $AsyncNotifierProvider<AdminKpisController, AdminKpis> {
+  /// Assignment §8 dashboard KPIs (Section 4).
+  AdminKpisControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminKpisControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminKpisControllerHash();
+
+  @$internal
+  @override
+  AdminKpisController create() => AdminKpisController();
+}
+
+String _$adminKpisControllerHash() =>
+    r'315eb9c5b7b37add9ddcd849bf0c75ba6701e28b';
+
+/// Assignment §8 dashboard KPIs (Section 4).
+
+abstract class _$AdminKpisController extends $AsyncNotifier<AdminKpis> {
+  FutureOr<AdminKpis> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<AdminKpis>, AdminKpis>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<AdminKpis>, AdminKpis>,
+              AsyncValue<AdminKpis>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

@@ -214,6 +214,40 @@ abstract class PlatformAnalyticsReport with _$PlatformAnalyticsReport {
   }) = _PlatformAnalyticsReport;
 }
 
+/// Assignment §8 admin dashboard KPIs (Section 4) — server-computed by
+/// `get_admin_kpis` (0034). Low-stock is back since stock returned (2d).
+@freezed
+abstract class AdminKpis with _$AdminKpis {
+  const factory AdminKpis({
+    required int totalProducts,
+    required int activeProducts,
+    required int totalOrders,
+    required int totalCustomers,
+    required int totalSalesMinor,
+    required int lowStockProducts,
+    required int outOfStockProducts,
+    @Default([]) List<AdminBestSeller> bestSellers,
+    @Default([]) List<AdminTrendPoint> salesTrend,
+  }) = _AdminKpis;
+}
+
+@freezed
+abstract class AdminBestSeller with _$AdminBestSeller {
+  const factory AdminBestSeller({
+    required String name,
+    required int units,
+  }) = _AdminBestSeller;
+}
+
+@freezed
+abstract class AdminTrendPoint with _$AdminTrendPoint {
+  const factory AdminTrendPoint({
+    required DateTime day,
+    required int orders,
+    required int salesMinor,
+  }) = _AdminTrendPoint;
+}
+
 /// The singleton platform configuration (spec §47).
 @freezed
 abstract class PlatformSettings with _$PlatformSettings {

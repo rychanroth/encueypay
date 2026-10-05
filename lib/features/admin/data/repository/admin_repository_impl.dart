@@ -520,6 +520,42 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
+  Future<AdminKpis> fetchAdminKpis() async {
+    try {
+      final result = await _client.rpc('get_admin_kpis');
+      final map = Map<String, dynamic>.from(result as Map);
+      return AdminKpis(
+        totalProducts: (map['total_products'] as int?) ?? 0,
+        activeProducts: (map['active_products'] as int?) ?? 0,
+        totalOrders: (map['total_orders'] as int?) ?? 0,
+        totalCustomers: (map['total_customers'] as int?) ?? 0,
+        totalSalesMinor: (map['total_sales_minor'] as int?) ?? 0,
+        lowStockProducts: (map['low_stock_products'] as int?) ?? 0,
+        outOfStockProducts: (map['out_of_stock_products'] as int?) ?? 0,
+        bestSellers: ((map['best_sellers'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>())
+            .map((row) => AdminBestSeller(
+                  name: row['name'] as String? ?? '',
+                  units: (row['units'] as int?) ?? 0,
+                ))
+            .toList(),
+        salesTrend: ((map['sales_trend'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>())
+            .map((row) => AdminTrendPoint(
+                  day: DateTime.parse(row['day'] as String),
+                  orders: (row['orders'] as int?) ?? 0,
+                  salesMinor: (row['sales_minor'] as int?) ?? 0,
+                ))
+            .toList(),
+      );
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<PlatformSettings> fetchPlatformSettings() async {
     try {
       final row = await _client

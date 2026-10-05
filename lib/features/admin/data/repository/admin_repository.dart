@@ -108,6 +108,9 @@ abstract interface class IAdminRepository {
 
   Future<PlatformAnalyticsReport> fetchPlatformReport();
 
+  /// Assignment §8 dashboard KPIs (Section 4, `get_admin_kpis`).
+  Future<AdminKpis> fetchAdminKpis();
+
   Future<PlatformSettings> fetchPlatformSettings();
 
   Future<void> updatePlatformSettings(PlatformSettings settings);
