@@ -202,3 +202,97 @@ AdminBusinessRefDto _$AdminBusinessRefDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$AdminBusinessRefDtoToJson(
   AdminBusinessRefDto instance,
 ) => <String, dynamic>{'id': instance.id, 'name': instance.name};
+
+AdminOrderRowDto _$AdminOrderRowDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminOrderRowDto(
+  id: json['id'] as String,
+  subtotalMinor: (json['subtotal_minor'] as num).toInt(),
+  discountMinor: (json['discount_minor'] as num).toInt(),
+  deliveryFeeMinor: (json['delivery_fee_minor'] as num).toInt(),
+  totalMinor: (json['total_minor'] as num).toInt(),
+  createdAt: DateTime.parse(json['created_at'] as String),
+  users: json['users'] == null
+      ? null
+      : AdminApplicantJoinDto.fromJson(json['users'] as Map<String, dynamic>),
+  payments:
+      (json['payments'] as List<dynamic>?)
+          ?.map((e) => AdminPaymentJoinDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
+  businessOrders:
+      (json['business_orders'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                AdminBusinessOrderJoinDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
+  returnRequests:
+      (json['return_requests'] as List<dynamic>?)
+          ?.map((e) => AdminReturnJoinDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
+);
+
+Map<String, dynamic> _$AdminOrderRowDtoToJson(AdminOrderRowDto instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'subtotal_minor': instance.subtotalMinor,
+      'discount_minor': instance.discountMinor,
+      'delivery_fee_minor': instance.deliveryFeeMinor,
+      'total_minor': instance.totalMinor,
+      'created_at': instance.createdAt.toIso8601String(),
+      'users': instance.users,
+      'payments': instance.payments,
+      'business_orders': instance.businessOrders,
+      'return_requests': instance.returnRequests,
+    };
+
+AdminPaymentJoinDto _$AdminPaymentJoinDtoFromJson(Map<String, dynamic> json) =>
+    AdminPaymentJoinDto(
+      method: json['method'] as String?,
+      status: json['status'] as String?,
+    );
+
+Map<String, dynamic> _$AdminPaymentJoinDtoToJson(
+  AdminPaymentJoinDto instance,
+) => <String, dynamic>{'method': instance.method, 'status': instance.status};
+
+AdminBusinessOrderJoinDto _$AdminBusinessOrderJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminBusinessOrderJoinDto(
+  id: json['id'] as String,
+  subtotalMinor: (json['subtotal_minor'] as num).toInt(),
+  discountMinor: (json['discount_minor'] as num).toInt(),
+  status: json['status'] as String?,
+  rejectionReason: json['rejection_reason'] as String?,
+  businesses: json['businesses'] == null
+      ? null
+      : AdminNamedJoinDto.fromJson(json['businesses'] as Map<String, dynamic>),
+);
+
+Map<String, dynamic> _$AdminBusinessOrderJoinDtoToJson(
+  AdminBusinessOrderJoinDto instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'subtotal_minor': instance.subtotalMinor,
+  'discount_minor': instance.discountMinor,
+  'status': instance.status,
+  'rejection_reason': instance.rejectionReason,
+  'businesses': instance.businesses,
+};
+
+AdminReturnJoinDto _$AdminReturnJoinDtoFromJson(Map<String, dynamic> json) =>
+    AdminReturnJoinDto(
+      id: json['id'] as String,
+      status: json['status'] as String?,
+      reason: json['reason'] as String?,
+    );
+
+Map<String, dynamic> _$AdminReturnJoinDtoToJson(AdminReturnJoinDto instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'status': instance.status,
+      'reason': instance.reason,
+    };

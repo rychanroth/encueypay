@@ -30,3 +30,17 @@ from (values
 where not exists (
   select 1 from public.brands existing where existing.name = b.name
 );
+
+-- Prototype store + admin (Sections 2b/3). Businesses require an auth user
+-- as owner and auth users cannot be seeded via plain SQL — create two users
+-- in the dashboard (Authentication → Users) or sign them up, then run:
+--
+--   -- the store owner (any role; its portal is bypassed in the prototype)
+--   insert into public.businesses (owner_id, name, description, status)
+--     select id, 'Prototype Store', '2-role prototype catalog', 'active'
+--     from public.users u join auth.users a on a.id = u.id
+--     where a.email = '<store-owner-email>';
+--
+--   -- the administrator (living spec Part A.2)
+--   update public.users set active_role = 'admin'
+--     where id in (select id from auth.users where email = '<admin-email>');

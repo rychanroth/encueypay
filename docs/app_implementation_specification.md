@@ -122,12 +122,12 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
 | Order creation: unique ID, user info, items, quantities, unit prices, subtotal, discount, shipping fee, total, address, payment method, date, status | ✅ | `create_order_from_cart` (atomic: order + business_orders + order_items + payment + delivery + pickup stops); historical snapshots (Part D) | — |
-| Statuses pending→confirmed→processing→packed→shipped→out for delivery→delivered/cancelled/returned + visual timeline | 🟡 → ✅ §7 | `business_order_status` / `delivery_status` enums; derived `CustomerOrderStatus` (`features/orders/domain/entities/order.dart:38`) | Derived statuses map to assignment vocabulary (mapping table in Part D); step-progress timeline UI → §7; fulfillment driven by **admin** (→ §3) instead of business/driver |
+| Statuses pending→confirmed→processing→packed→shipped→out for delivery→delivered/cancelled/returned + visual timeline | 🟡 → ✅ §7 | `business_order_status` / `delivery_status` enums; derived `CustomerOrderStatus` (`features/orders/domain/entities/order.dart:38`) | Derived statuses map to assignment vocabulary (mapping table in Part D); step-progress timeline UI → §7; **fulfillment driven by admin (Section 3)**: `admin_transition_business_order` (accept/reject → preparing → ready) + `admin_complete_order` (stops + parts complete, delivery delivered, COD verified — mirroring the owner/driver RPC effects so notifications and the customer's derived status keep working) |
 | Confirmation screen: order ID, date, total, address, payment method, mock ETA | ✅ | `order_placed_screen.dart` | — |
 | Order history: filtered Active/Completed/Cancelled/Returned + detail access | 🟡 | `orders_screen.dart` (paginated; derived status chips), `order_detail_screen.dart` | Status chips ✅; dedicated filtered tabs ❌ (documented) |
 | Tracking: real-time progress, ETA, courier details, mock tracking number, step indicators | 🟡 → 🟡+ §7 | Realtime on `orders`/`deliveries` streams (initial-snapshot-skipping, Part D); delivery status line | Timeline + mock tracking number → §7; courier details ⛔ (no drivers — admin-fulfilled) |
 | Cancellation with reasons, dates, status updates | ✅ | `cancel_order` RPC (only while every business part is `pending`; records `rejection_reason = 'Cancelled by customer'` + state history) | — |
-| Returns: select delivered items, reasons, statuses requested→under review→approved/rejected→completed | ✅ (processing → §3) | `return_request_screen.dart`, `request_return` RPC, `return_requests`/`return_items` | Outcome decision moves from business owner ⛔ to **admin** (`admin_process_return`, → §3) |
+| Returns: select delivered items, reasons, statuses requested→under review→approved/rejected→completed | ✅ | `return_request_screen.dart`, `request_return` RPC, `return_requests`/`return_items` | Outcome decision made by **admin** (`admin_process_return`, Section 3 — mirrors `process_return` including the refund-required consequence) |
 | Ratings & reviews post-delivery + aggregate rating | ✅ | `review_compose_screen.dart`, `create_review` RPC (1 per order item, server-verified), aggregate rating on product detail | Unlocked by delivered status — reachable once admin fulfillment (§3) completes orders |
 
 ## B.8 Assignment §8 — Security, Roles & Administrative Features
@@ -136,7 +136,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 |---|---|---|---|
 | Auth, authorization, session management, validation, secure storage; customers restricted to own data | ✅ | Supabase Auth (email + Google OAuth); RLS everywhere; server-authoritative state (Part D); `Failure` taxonomy at repo boundary (DATA-05/06) | — |
 | Customer prototype: personalized wishlist, cart, address book, order history | ✅ | `features/wishlist`, `features/cart`, `features/profile` (addresses), `features/orders` | — |
-| Admin prototype: manages Products, Categories, Orders, System Reports | 🟡 → ✅ §3 | Categories ✅ (`categories_admin_screen.dart` + RPCs); **Products ✅ (Section 2b: `admin_products_screen.dart` + `admin_product_form_screen.dart`, admin-guarded RPCs `admin_create_product` / `admin_update_product` / `admin_set_product_archived` / `admin_add_product_image`)**; brand management ✅ (`brands_admin_screen.dart`, RLS `brands_admin_*`); promotions/banner moderation ✅ (`admin_promotions_screen.dart`); audit logs ✅; platform settings ✅; platform report ✅ | Orders management + return review → §3; KPI reports → §4; ⛔ role-application review hidden (L-03) |
+| Admin prototype: manages Products, Categories, Orders, System Reports | 🟡 → ✅ §4 | Categories ✅ (`categories_admin_screen.dart` + RPCs); **Products ✅ (Section 2b: `admin_products_screen.dart` + `admin_product_form_screen.dart`, admin-guarded RPCs `admin_create_product` / `admin_update_product` / `admin_set_product_archived` / `admin_add_product_image`)**; brand management ✅ (`brands_admin_screen.dart`, RLS `brands_admin_*`); **Orders ✅ (Section 3: `admin_orders_screen.dart` + `admin_order_detail_screen.dart`, RPCs `admin_transition_business_order` / `admin_complete_order` / `admin_process_return` + `orders_admin_read`/`payments_admin_read` policies)**; promotions/banner moderation ✅ (`admin_promotions_screen.dart`); audit logs ✅; platform settings ✅; platform report ✅ | KPI reports → §4; ⛔ role-application review hidden (L-03) |
 | Admin dashboard: total products, orders, customers, sales, low-stock, best-selling, sales trends | 🟡 → §4 | `get_platform_report` (order count, GMV, delivery fees, active businesses/products, pending applications) on `admin_dashboard_screen.dart` | KPI extension → §4; low-stock ⛔ N/A (inventory removed) |
 | Notifications (local/in-app): order updates, payment statuses, delivery stages, promotions, coupons | 🟡 | `features/notifications` (realtime inbox); DB triggers notify customers on business-order created/status, delivery status, return status | ❌ FCM push (device_tokens unused); ❌ promotion/coupon notifications (documented) |
 | Audit trails: cart additions, wishlist updates, order creation, payment changes, status updates, cancellations | 🟡 | `audit_logs` + `state_history` tables; admin viewer `audit_logs_screen.dart` | Domain events (order/payment/delivery/return states) logged server-side; cart/wishlist additions not audited (🟡 documented) |
@@ -158,7 +158,7 @@ Bypassed code is **not deleted** — it remains compiling and analyzed.
 | L-04 | **Business discovery chrome** (home businesses strip, business storefront screen + route, product-detail business card) | `features/catalog/.../home_screen.dart`, `business_detail_screen.dart`, `product_detail_screen.dart` | **Hidden in Section 2:** strip + `_BusinessesStrip`/`_BusinessPlaceholder` widgets removed from `home_screen.dart`; `business/:id` GoRoute removed from `home_branch.dart`; product-detail vendor card removed. `businesses` data model + joins retained | Re-add widgets + `business/:id` nested route in `home_branch.dart` |
 | L-05 | Home "businesses" feed provider | `features/catalog/.../home_feed_providers.dart` (`homeBusinesses`) | **Hidden in Section 2:** provider retained, no longer rendered by `home_screen.dart` | Render again on `home_screen.dart` |
 | L-06 | Cart per-business grouping | `features/cart/.../cart_screen.dart` | **Hidden in Section 2:** group headers/subtotals flattened to a single list (`_group()` deleted); server totals unchanged | Restore grouping layout |
-| L-07 | Driver fulfillment pipeline (atomic driver claims, pickup-stop gating, `start_delivery`, `mark_delivered`, driver earnings) | `features/delivery/**`; RPCs `accept_delivery`, `reject_delivery`, `complete_pickup_stop`, `start_delivery`, `mark_delivered`, `get_driver_transactions`; `deliveries`/`pickup_stops` rows still created at checkout | Orders are fulfilled **administratively** (§3): `admin_transition_business_order` + `admin_complete_delivery` mirror the old effects (statuses, COD verification, bookings, notifications) | Re-mount driver portal (L-02) and use the driver RPCs again |
+| L-07 | Driver fulfillment pipeline (atomic driver claims, pickup-stop gating, `start_delivery`, `mark_delivered`, driver earnings) | `features/delivery/**`; RPCs `accept_delivery`, `reject_delivery`, `complete_pickup_stop`, `start_delivery`, `mark_delivered`, `get_driver_transactions`; `deliveries`/`pickup_stops` rows still created at checkout | **Superseded in Section 3** by administrative fulfillment: `admin_transition_business_order` + `admin_complete_order` mirror the old effects (statuses, stop completion, COD verification, notifications, audit); `admin_process_return` replaces business return decisions | Re-mount driver portal (L-02) and use the driver RPCs again |
 | L-08 | ~~Admin product **creation**~~ → **Built in Section 2b** (user decision, 2026-10-05). Admin creates/edits products (name, description, base price, category, brand, images) under a designated store business via the admin-guarded RPCs of `20261005000029`; created products auto-receive a 'Default' variant (null price tracks base price) keeping carts strictly variant-based. Variant *editing* stays business-portal-only — seeded products demonstrate variants (documented partial) | `features/admin/presentation/screens/admin_products_screen.dart`, `admin_product_form_screen.dart`, `brands_admin_screen.dart` | — | n/a — built |
 | L-09 | Business-order ownership rules (business owner transitions own orders; business processes own returns) | `transition_business_order`, `process_return` RPCs | Superseded **for the prototype** by admin-guarded equivalents (§3); original RPCs remain in force | Re-mount business portal |
 
@@ -273,6 +273,24 @@ appended as sections land.)
 * Customer UI: product-wide stock line + Unavailable state on the detail screen,
   availability badges on cards, quantity capped to stock in the variant sheet,
   and a `RatingStars` visual aggregate (assignment §3).
+
+## Section 3 — Admin fulfillment (`20261005000033`)
+
+* `admin_transition_business_order` — the owner state machine with explicit
+  admin authority; rejection restores product-wide stock and applies the
+  refund-required payment consequence when every part is dead.
+* `admin_complete_order` — one-shot completion mirroring
+  `complete_pickup_stop` + `mark_delivered`: pending parts must be decided
+  first; all stops + business parts complete with timestamps, the delivery
+  delivers, COD verifies. Existing notification triggers keep the customer
+  informed at every step.
+* `admin_process_return` — `process_return` under admin authority (same
+  payment consequences).
+* `orders_admin_read` / `payments_admin_read` select policies for oversight;
+  the customer-scoped policies are untouched. Mutations run through the
+  admin Orders tab (`/admin/orders`, list + fulfillment detail view).
+* Prototype ops: businesses need an auth-user owner — `supabase/seed.sql`
+  documents the store + admin promotion snippets (Part A.2/A.3).
 
 ## Realtime
 

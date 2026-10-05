@@ -82,6 +82,27 @@ abstract interface class IAdminRepository {
     required String storagePath,
   });
 
+  // -------------------------------------------------------- orders (§3)
+  Future<List<AdminOrderSummary>> fetchOrders();
+
+  /// Mirrors transition_business_order with admin authority (L-07):
+  /// pending→accepted/rejected, accepted→preparing, preparing→ready.
+  Future<void> transitionBusinessOrder({
+    required String businessOrderId,
+    required String target,
+    String? reason,
+  });
+
+  /// Mirrors complete_pickup_stop + mark_delivered: completes all pickup
+  /// stops and business parts, delivers, verifies COD.
+  Future<void> completeOrder({required String orderId});
+
+  /// Mirrors process_return with admin authority.
+  Future<void> processReturn({
+    required String returnId,
+    required bool approve,
+  });
+
   // -------------------------------------------------------- audit/report
   Future<List<AuditEntry>> fetchAuditLogs();
 

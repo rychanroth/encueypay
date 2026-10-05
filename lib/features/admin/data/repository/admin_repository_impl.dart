@@ -390,6 +390,89 @@ class AdminRepositoryImpl implements IAdminRepository {
     } catch (_) {}
   }
 
+  // ---------------------------------------------------------- orders (§3)
+  @override
+  Future<List<AdminOrderSummary>> fetchOrders() async {
+    try {
+      final rows = await _client
+          .from('orders')
+          .select(
+            'id, subtotal_minor, discount_minor, delivery_fee_minor, '
+            'total_minor, created_at, users(full_name), '
+            'payments(method, status), '
+            'business_orders(id, status, subtotal_minor, discount_minor, '
+            'rejection_reason, businesses(name)), '
+            'return_requests(id, status, reason)',
+          )
+          .order('created_at', ascending: false)
+          .limit(50);
+      return rows.map(AdminOrderRowDto.fromJson).map((dto) {
+        final payment = dto.payments.firstOrNull;
+        return AdminOrderSummary(
+          id: dto.id,
+          customerName: dto.users?.fullName ?? 'Customer',
+          subtotalMinor: dto.subtotalMinor,
+          discountMinor: dto.discountMinor,
+          deliveryFeeMinor: dto.deliveryFeeMinor,
+          totalMinor: dto.totalMinor,
+          createdAt: dto.createdAt,
+          paymentMethod: payment?.method,
+          paymentStatus: payment?.status,
+          parts: dto.businessOrders
+              .map((part) => AdminBusinessOrderPart(
+                    id: part.id,
+                    businessName: part.businesses?.name ?? 'Business',
+                    status: part.status ?? 'pending',
+                    subtotalMinor: part.subtotalMinor,
+                    discountMinor: part.discountMinor,
+                    rejectionReason: part.rejectionReason,
+                  ))
+              .toList(),
+          returns: dto.returnRequests
+              .map((request) => AdminReturnRequest(
+                    id: request.id,
+                    status: request.status ?? 'pending',
+                    reason: request.reason ?? '',
+                  ))
+              .toList(),
+        );
+      }).toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> transitionBusinessOrder({
+    required String businessOrderId,
+    required String target,
+    String? reason,
+  }) {
+    return _rpc('admin_transition_business_order', {
+      'p_business_order_id': businessOrderId,
+      'p_target': target,
+      'p_reason': reason,
+    });
+  }
+
+  @override
+  Future<void> completeOrder({required String orderId}) {
+    return _rpc('admin_complete_order', {'p_order_id': orderId});
+  }
+
+  @override
+  Future<void> processReturn({
+    required String returnId,
+    required bool approve,
+  }) {
+    return _rpc('admin_process_return', {
+      'p_return_id': returnId,
+      'p_approve': approve,
+    });
+  }
+
   @override
   Future<List<AuditEntry>> fetchAuditLogs() async {
     try {

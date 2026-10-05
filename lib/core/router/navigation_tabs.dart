@@ -5,6 +5,7 @@ import '../../features/auth/domain/entities/user_role.dart';
 import 'app_routes.dart';
 import 'branches/admin_categories_branch.dart';
 import 'branches/admin_dashboard_branch.dart';
+import 'branches/admin_orders_branch.dart';
 import 'branches/admin_products_branch.dart';
 import 'branches/admin_promotions_branch.dart';
 import 'branches/cart_branch.dart';
@@ -46,6 +47,12 @@ final List<NavigationTab> _adminTabs = [
     branch: adminDashboardBranch,
     icon: Icons.admin_panel_settings_outlined,
     label: 'Dashboard',
+  ),
+  // Section 3 — spec §8 "manages Orders" (administrative fulfillment).
+  NavigationTab(
+    branch: adminOrdersBranch,
+    icon: Icons.receipt_long_outlined,
+    label: 'Orders',
   ),
   // Section 2b — spec §8 "manages Products" (branded catalog management).
   NavigationTab(

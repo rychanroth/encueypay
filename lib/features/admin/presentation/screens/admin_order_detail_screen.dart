@@ -1,0 +1,301 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/money.dart';
+import '../../domain/entities/admin.dart';
+import '../controllers/admin_orders_controller.dart';
+import '../widgets/admin_lifecycle_chip.dart';
+
+/// Fulfillment view for one order (Section 3): per-business lifecycle
+/// transitions (accept/reject → preparing → ready), one-shot administrative
+/// delivery completion, and return decisions. The order is looked up from
+/// the shared controller state so mutations refresh the view in place.
+class AdminOrderDetailScreen extends ConsumerWidget {
+  const AdminOrderDetailScreen({super.key, required this.orderId});
+
+  final String orderId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ordersAsync = ref.watch(adminOrdersControllerProvider);
+    final theme = Theme.of(context);
+
+    ref.listen(adminOrdersControllerProvider, (previous, next) {
+      final error = next.hasError ? next.error : null;
+      if (error is Failure) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    });
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Order')),
+      body: ordersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text('$error')),
+        data: (orders) {
+          final order = orders.where((order) => order.id == orderId).firstOrNull;
+          if (order == null) {
+            return const Center(child: Text('Order not found.'));
+          }
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _SummaryCard(order: order),
+              const SizedBox(height: 16),
+              Text('Business orders',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              for (final part in order.parts)
+                _PartTile(orderId: order.id, part: part),
+              const SizedBox(height: 16),
+              FilledButton(
+                // Completes all stops + parts, delivers, verifies COD (§3).
+                onPressed: order.completable
+                    ? () => ref
+                        .read(adminOrdersControllerProvider.notifier)
+                        .complete(orderId: order.id)
+                    : null,
+                child: const Text('Complete delivery'),
+              ),
+              const SizedBox(height: 16),
+              Text('Return requests',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              if (order.returns.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text('No return requests.'),
+                )
+              else
+                for (final request in order.returns)
+                  _ReturnTile(returnRequest: request),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({required this.order});
+
+  final AdminOrderSummary order;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(order.customerName,
+                      style: theme.textTheme.titleMedium),
+                ),
+                Text(
+                  order.createdAt.toLocal().toString().split('.').first,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _Row('Subtotal', Money(order.subtotalMinor).format()),
+            _Row('Discount', '-${Money(order.discountMinor).format()}'),
+            _Row('Delivery fee', Money(order.deliveryFeeMinor).format()),
+            const Divider(),
+            _Row('Total', Money(order.totalMinor).format(), bold: true),
+            if (order.paymentMethod != null)
+              _Row('Payment', '${order.paymentMethod} · ${order.paymentStatus}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  const _Row(this.label, this.value, {this.bold = false});
+
+  final String label;
+  final String value;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+          fontWeight: bold ? FontWeight.bold : null,
+        );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: style),
+          Text(value, style: style),
+        ],
+      ),
+    );
+  }
+}
+
+class _PartTile extends ConsumerWidget {
+  const _PartTile({required this.orderId, required this.part});
+
+  final String orderId;
+  final AdminBusinessOrderPart part;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final controller = ref.read(adminOrdersControllerProvider.notifier);
+
+    return Card(
+      margin: const EdgeInsets.only(top: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(part.businessName,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                ),
+                AdminLifecycleChip(label: part.status),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${Money(part.subtotalMinor).format()}'
+              '${part.discountMinor > 0 ? ' · discount ${Money(part.discountMinor).format()}' : ''}',
+              style: theme.textTheme.bodySmall,
+            ),
+            if (part.rejectionReason != null &&
+                part.rejectionReason!.isNotEmpty)
+              Text(
+                'Reason: ${part.rejectionReason}',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.error),
+              ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                if (part.status == 'pending') ...[
+                  FilledButton.tonal(
+                    onPressed: () => controller.transition(
+                      businessOrderId: part.id,
+                      target: 'accepted',
+                    ),
+                    child: const Text('Accept'),
+                  ),
+                  FilledButton.tonal(
+                    onPressed: () => _reject(context, ref),
+                    child: const Text('Reject'),
+                  ),
+                ],
+                if (part.status == 'accepted')
+                  FilledButton.tonal(
+                    onPressed: () => controller.transition(
+                      businessOrderId: part.id,
+                      target: 'preparing',
+                    ),
+                    child: const Text('Mark preparing'),
+                  ),
+                if (part.status == 'preparing')
+                  FilledButton.tonal(
+                    onPressed: () => controller.transition(
+                      businessOrderId: part.id,
+                      target: 'ready',
+                    ),
+                    child: const Text('Mark ready'),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _reject(BuildContext context, WidgetRef ref) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reject business order?'),
+        content: TextField(
+          controller: reasonController,
+          decoration: const InputDecoration(labelText: 'Reason (required)'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Reject'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref.read(adminOrdersControllerProvider.notifier).transition(
+          businessOrderId: part.id,
+          target: 'rejected',
+          reason: reasonController.text.trim(),
+        );
+  }
+}
+
+class _ReturnTile extends ConsumerWidget {
+  const _ReturnTile({required this.returnRequest});
+
+  final AdminReturnRequest returnRequest;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPending = returnRequest.status == 'pending';
+    return Card(
+      margin: const EdgeInsets.only(top: 8),
+      child: ListTile(
+        title: Text('Return · ${returnRequest.status}'),
+        subtitle: returnRequest.reason.isEmpty
+            ? null
+            : Text(returnRequest.reason, maxLines: 2),
+        trailing: isPending
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: () => ref
+                        .read(adminOrdersControllerProvider.notifier)
+                        .decideReturn(returnId: returnRequest.id, approve: true),
+                    child: const Text('Approve'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: () => ref
+                        .read(adminOrdersControllerProvider.notifier)
+                        .decideReturn(
+                            returnId: returnRequest.id, approve: false),
+                    child: const Text('Reject'),
+                  ),
+                ],
+              )
+            : null,
+      ),
+    );
+  }
+}

@@ -108,6 +108,87 @@ abstract class AdminProductDraft with _$AdminProductDraft {
   }) = _AdminProductDraft;
 }
 
+/// Order oversight read model (Section 3, spec §8 "manages Orders"): the
+/// order with its per-business parts, payment, and return requests. Status
+/// strings are raw wire values — the admin UI is a management view, not the
+/// customer's derived lifecycle.
+@freezed
+abstract class AdminOrderSummary with _$AdminOrderSummary {
+  const factory AdminOrderSummary({
+    required String id,
+    required String customerName,
+    required int subtotalMinor,
+    required int discountMinor,
+    required int deliveryFeeMinor,
+    required int totalMinor,
+    required DateTime createdAt,
+    String? paymentMethod,
+    String? paymentStatus,
+    @Default([]) List<AdminBusinessOrderPart> parts,
+    @Default([]) List<AdminReturnRequest> returns,
+  }) = _AdminOrderSummary;
+
+  const AdminOrderSummary._();
+
+  /// Coarse lifecycle state for the list chip: every part completed →
+  /// Completed; any dead part → Rejected; otherwise the "earliest" live
+  /// state (pending before accepted before preparing before ready).
+  String get lifecycle {
+    if (parts.isEmpty) return 'empty';
+    if (parts.every((part) =>
+        part.status == 'completed' ||
+        part.status == 'rejected' ||
+        part.status == 'cancelled')) {
+      return 'completed';
+    }
+    if (parts.any((part) => part.status == 'rejected')) return 'rejected';
+    const order = ['pending', 'accepted', 'preparing', 'ready'];
+    var earliest = order.length - 1;
+    var hasLive = false;
+    for (final part in parts) {
+      final index = order.indexOf(part.status);
+      if (index != -1) {
+        hasLive = true;
+        if (index < earliest) earliest = index;
+      }
+    }
+    return hasLive ? order[earliest] : 'completed';
+  }
+
+  /// True when admin_complete_order may run: every part decided and at
+  /// least one still in the accepted/preparing/ready pipeline.
+  bool get completable =>
+      parts.isNotEmpty &&
+      parts.every((part) => part.status != 'pending') &&
+      parts.any((part) =>
+          part.status == 'accepted' ||
+          part.status == 'preparing' ||
+          part.status == 'ready');
+}
+
+/// One per-business portion of an order.
+@freezed
+abstract class AdminBusinessOrderPart with _$AdminBusinessOrderPart {
+  const factory AdminBusinessOrderPart({
+    required String id,
+    required String businessName,
+    required String status,
+    required int subtotalMinor,
+    required int discountMinor,
+    String? rejectionReason,
+  }) = _AdminBusinessOrderPart;
+}
+
+/// A customer return request on the order (pending → admin decision).
+@freezed
+abstract class AdminReturnRequest with _$AdminReturnRequest {
+  const factory AdminReturnRequest({
+    required String id,
+    required String status,
+    @Default('') String reason,
+  }) = _AdminReturnRequest;
+}
+
 @freezed
 abstract class AuditEntry with _$AuditEntry {
   const factory AuditEntry({

@@ -244,3 +244,98 @@ class AdminBusinessRefDto {
 
   Map<String, dynamic> toJson() => _$AdminBusinessRefDtoToJson(this);
 }
+
+/// Wire shape of the `orders` row for admin oversight (Section 3, DATA-01):
+/// customer name, payment, per-business parts, and return requests embedded.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminOrderRowDto {
+  const AdminOrderRowDto({
+    required this.id,
+    required this.subtotalMinor,
+    required this.discountMinor,
+    required this.deliveryFeeMinor,
+    required this.totalMinor,
+    required this.createdAt,
+    this.users,
+    this.payments = const [],
+    this.businessOrders = const [],
+    this.returnRequests = const [],
+  });
+
+  factory AdminOrderRowDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminOrderRowDtoFromJson(json);
+
+  final String id;
+  final int subtotalMinor;
+  final int discountMinor;
+  final int deliveryFeeMinor;
+  final int totalMinor;
+  final DateTime createdAt;
+
+  @JsonKey(name: 'users')
+  final AdminApplicantJoinDto? users;
+
+  @JsonKey(name: 'payments', defaultValue: [])
+  final List<AdminPaymentJoinDto> payments;
+
+  @JsonKey(name: 'business_orders', defaultValue: [])
+  final List<AdminBusinessOrderJoinDto> businessOrders;
+
+  @JsonKey(name: 'return_requests', defaultValue: [])
+  final List<AdminReturnJoinDto> returnRequests;
+
+  Map<String, dynamic> toJson() => _$AdminOrderRowDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminPaymentJoinDto {
+  const AdminPaymentJoinDto({this.method, this.status});
+
+  factory AdminPaymentJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminPaymentJoinDtoFromJson(json);
+
+  final String? method;
+  final String? status;
+
+  Map<String, dynamic> toJson() => _$AdminPaymentJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminBusinessOrderJoinDto {
+  const AdminBusinessOrderJoinDto({
+    required this.id,
+    required this.subtotalMinor,
+    required this.discountMinor,
+    this.status,
+    this.rejectionReason,
+    this.businesses,
+  });
+
+  factory AdminBusinessOrderJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminBusinessOrderJoinDtoFromJson(json);
+
+  final String id;
+  final int subtotalMinor;
+  final int discountMinor;
+  final String? status;
+  final String? rejectionReason;
+
+  @JsonKey(name: 'businesses')
+  final AdminNamedJoinDto? businesses;
+
+  Map<String, dynamic> toJson() => _$AdminBusinessOrderJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminReturnJoinDto {
+  const AdminReturnJoinDto({required this.id, this.status, this.reason});
+
+  factory AdminReturnJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminReturnJoinDtoFromJson(json);
+
+  final String id;
+  final String? status;
+  final String? reason;
+
+  Map<String, dynamic> toJson() => _$AdminReturnJoinDtoToJson(this);
+}
