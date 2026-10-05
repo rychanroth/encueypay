@@ -16,6 +16,7 @@ abstract class ProductDetail with _$ProductDetail {
     required Product product,
     required List<ProductVariant> variants,
     @Default('') String businessName,
+    @Default('') String brandName,
     @Default([]) List<ProductReviewInfo> reviews,
   }) = _ProductDetail;
 

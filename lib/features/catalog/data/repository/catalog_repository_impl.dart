@@ -4,17 +4,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/banner.dart';
+import '../../domain/entities/brand.dart';
 import '../../domain/entities/business.dart';
 import '../../domain/entities/business_detail.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_sort.dart';
+import '../dtos/brand_dto.dart';
 import '../dtos/business_dto.dart';
 import '../dtos/category_dto.dart';
 import '../dtos/product_dto.dart';
 import '../dtos/product_review_join_dto.dart';
 import '../dtos/product_variant_dto.dart';
+import '../mappers/brand_mapper.dart';
 import '../mappers/business_mapper.dart';
 import '../mappers/category_mapper.dart';
 import '../mappers/product_mapper.dart';
@@ -33,9 +36,11 @@ class CatalogRepositoryImpl implements ICatalogRepository {
 
   // `*` is required: an embed-only select makes PostgREST omit the product's
   // own columns, which then fail ProductDto.fromJson's required fields.
-  // price-only variants feed the card "from" price.
+  // price-only variants feed the card "from" price. `brands(name)` backs the
+  // brand-name search filter (assignment §2); ProductDto ignores the extra
+  // embed key.
   static const _productSelect =
-      '*, product_images(storage_path, sort_order), '
+      '*, brands(name), product_images(storage_path, sort_order), '
       'product_variants(price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
@@ -78,6 +83,22 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   }
 
   @override
+  Future<List<Brand>> fetchBrands() async {
+    try {
+      final rows = await _client
+          .from('brands')
+          .select('id, name')
+          .eq('status', 'active')
+          .order('name');
+      return rows.map(BrandDto.fromJson).map((d) => d.toDomain()).toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<List<Business>> fetchBusinesses({int limit = 10}) async {
     try {
       final rows = await _client
@@ -98,6 +119,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   Future<List<Product>> fetchProducts({
     String? query,
     String? categoryId,
+    String? brandId,
     ProductSort sort = ProductSort.newest,
     int limit = 20,
     int offset = 0,
@@ -110,8 +132,17 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       if (categoryId != null) {
         request = request.eq('category_id', categoryId);
       }
+      if (brandId != null) {
+        request = request.eq('brand_id', brandId);
+      }
       if (query != null && query.trim().isNotEmpty) {
-        request = request.ilike('name', '%${query.trim()}%');
+        // Assignment §2: search matches product name OR brand name. The
+        // PostgREST or-filter syntax reserves commas/parens — sanitize them
+        // out of user input.
+        final q = query.trim().replaceAll(RegExp(r'[,()]'), ' ').trim();
+        if (q.isNotEmpty) {
+          request = request.or('name.ilike.%$q%,brands.name.ilike.%$q%');
+        }
       }
       // order()/range() are transforms — they run last, off the filtered
       // builder.
@@ -139,7 +170,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final data = await _client
           .from('products')
           .select(
-            '*, businesses(name), product_variants(*), product_images(*), '
+            '*, businesses(name), brands(name), product_variants(*), '
+            'product_images(*), '
             'reviews(id, rating, text, created_at, users(full_name))',
           )
           .eq('id', productId)
@@ -152,6 +184,9 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final businessName =
           ((data['businesses'] as Map<String, dynamic>?)?['name'] as String?)
               ??
+              '';
+      final brandName =
+          ((data['brands'] as Map<String, dynamic>?)?['name'] as String?) ??
               '';
       final variants = ((data['product_variants'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())
@@ -173,6 +208,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         product: productDto.toDomain(imageUrls: _resolveUrls(productDto)),
         variants: variants,
         businessName: businessName,
+        brandName: brandName,
         reviews: reviews,
       );
     } on ServerFailure {

@@ -11,6 +11,7 @@ extension ProductDtoX on ProductDto {
       id: id,
       businessId: businessId,
       categoryId: categoryId,
+      brandId: brandId,
       name: name,
       description: description,
       basePriceMinor: basePriceMinor,

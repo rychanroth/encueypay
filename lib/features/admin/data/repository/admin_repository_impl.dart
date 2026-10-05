@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -106,6 +108,267 @@ class AdminRepositoryImpl implements IAdminRepository {
   @override
   Future<void> deleteCategory({required String categoryId}) {
     return _rpc('delete_category', {'p_category_id': categoryId});
+  }
+
+  // --------------------------------------------------------- brands (2b)
+  @override
+  Future<List<AdminBrand>> fetchBrands() async {
+    try {
+      final rows = await _client.from('brands').select().order('name');
+      return rows.map(AdminBrandDto.fromJson).map((dto) => AdminBrand(
+            id: dto.id,
+            name: dto.name,
+            description: dto.description ?? '',
+            status: AdminCatalogStatus.fromName(dto.status),
+          )).toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> createBrand({required String name, String? description}) async {
+    try {
+      await _client.from('brands').insert({
+        'name': name,
+        'description': description ?? '',
+      });
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> updateBrand({
+    required String brandId,
+    required String name,
+    String? description,
+  }) async {
+    try {
+      await _client.from('brands').update({
+        'name': name,
+        'description': description ?? '',
+      }).eq('id', brandId);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> setBrandArchived({
+    required String brandId,
+    required bool archived,
+  }) async {
+    try {
+      await _client.from('brands').update({
+        'status': archived ? 'archived' : 'active',
+      }).eq('id', brandId);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> deleteBrand({required String brandId}) async {
+    try {
+      // products.brand_id is ON DELETE SET NULL — referenced products keep
+      // existing, just brand-less.
+      await _client.from('brands').delete().eq('id', brandId);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  // -------------------------------------------------------- products (2b)
+  String _productImageUrl(String storagePath) {
+    return _client.storage.from('product_images').getPublicUrl(storagePath);
+  }
+
+  @override
+  Future<List<AdminProductSummary>> fetchProducts({String? query}) async {
+    try {
+      var request = _client.from('products').select(
+            '*, brands(name), categories(name), businesses(name), '
+            'product_variants(id), product_images(id, storage_path, sort_order)',
+          );
+      final q = query?.trim() ?? '';
+      if (q.isNotEmpty) {
+        request = request.ilike('name', '%$q%');
+      }
+      final rows =
+          await request.order('created_at', ascending: false).limit(100);
+      return rows.map(AdminProductRowDto.fromJson).map((dto) {
+        final images = [...dto.productImages]
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        return AdminProductSummary(
+          id: dto.id,
+          name: dto.name,
+          categoryId: dto.categoryId,
+          businessId: dto.businessId,
+          categoryName: dto.categories?.name ?? '',
+          businessName: dto.businesses?.name ?? '',
+          basePriceMinor: dto.basePriceMinor,
+          variantCount: dto.productVariants.length,
+          description: dto.description ?? '',
+          status: AdminCatalogStatus.fromName(dto.status),
+          brandId: dto.brandId,
+          brandName: dto.brands?.name,
+          images: images
+              .map((image) => AdminProductImageRef(
+                    id: image.id,
+                    storagePath: image.storagePath,
+                    url: _productImageUrl(image.storagePath),
+                  ))
+              .toList(),
+        );
+      }).toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<List<AdminBusinessRef>> fetchActiveBusinesses() async {
+    try {
+      final rows = await _client
+          .from('businesses')
+          .select('id, name')
+          .eq('status', 'active')
+          .order('name');
+      return rows
+          .map(AdminBusinessRefDto.fromJson)
+          .map((dto) => AdminBusinessRef(id: dto.id, name: dto.name))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<String> createProduct(AdminProductDraft draft) async {
+    try {
+      // p_variants stays empty: admin_create_product auto-creates a 'Default'
+      // variant with a null price, which keeps tracking the base price.
+      final productId = await _client.rpc('admin_create_product', params: {
+        'p_business_id': draft.businessId,
+        'p_category_id': draft.categoryId,
+        'p_name': draft.name,
+        'p_description': draft.description,
+        'p_base_price_minor': draft.basePriceMinor,
+        'p_brand_id': draft.brandId,
+        'p_variants': <Map<String, dynamic>>[],
+      }) as String;
+      return productId;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> updateProduct(AdminProductDraft draft) async {
+    final id = draft.id;
+    if (id == null) {
+      throw const ServerFailure('Product id is required to update');
+    }
+    try {
+      await _client.rpc('admin_update_product', params: {
+        'p_product_id': id,
+        'p_category_id': draft.categoryId,
+        'p_name': draft.name,
+        'p_description': draft.description,
+        'p_base_price_minor': draft.basePriceMinor,
+        'p_brand_id': draft.brandId,
+      });
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> setProductArchived({
+    required String productId,
+    required bool archived,
+  }) {
+    return _rpc('admin_set_product_archived', {
+      'p_product_id': productId,
+      'p_archived': archived,
+    });
+  }
+
+  @override
+  Future<void> addProductImage({
+    required String productId,
+    required String filePath,
+  }) async {
+    try {
+      // The storage path's first segment must be the owning business id —
+      // the same {business_id}/... convention the storage policies enforce
+      // for owners (0020); admins may write any folder in the bucket.
+      final row = await _client
+          .from('products')
+          .select('business_id')
+          .eq('id', productId)
+          .maybeSingle();
+      final businessId = row?['business_id'] as String?;
+      if (businessId == null) {
+        throw const ServerFailure('Product not found');
+      }
+      final fileName = filePath.split(Platform.pathSeparator).last;
+      final bytes = await File(filePath).readAsBytes();
+      final path =
+          '$businessId/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      await _client.storage.from('product_images').uploadBinary(path, bytes);
+      await _client.rpc('admin_add_product_image', params: {
+        'p_product_id': productId,
+        'p_storage_path': path,
+      });
+    } on ServerFailure {
+      rethrow;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } on StorageException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<void> removeProductImage({
+    required String imageId,
+    required String storagePath,
+  }) async {
+    try {
+      await _client.from('product_images').delete().eq('id', imageId);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+    // The reference is gone — the binary is cleaned up best-effort. An
+    // orphaned public object is harmless, so storage failures don't fail
+    // the mutation (mirrors the business portal's removal path).
+    try {
+      await _client.storage.from('product_images').remove([storagePath]);
+    } catch (_) {}
   }
 
   @override

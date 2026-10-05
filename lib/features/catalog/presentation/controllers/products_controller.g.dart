@@ -25,7 +25,7 @@ final class ProductsControllerProvider
   /// parameters; in-screen filter changes go through the methods below.
   ProductsControllerProvider._({
     required ProductsControllerFamily super.from,
-    required (String?, String?) super.argument,
+    required (String?, String?, String?) super.argument,
   }) : super(
          retry: null,
          name: r'productsControllerProvider',
@@ -60,7 +60,7 @@ final class ProductsControllerProvider
 }
 
 String _$productsControllerHash() =>
-    r'eec0a23630f33c9557cd678560ed51ca338e666d';
+    r'630c3bb7ea0f598f45580cb73678f54caec334d4';
 
 /// Product discovery with server-side search/filter/sort and offset
 /// pagination. The controller instance is keyed by the INITIAL route
@@ -73,7 +73,7 @@ final class ProductsControllerFamily extends $Family
           AsyncValue<ProductListState>,
           ProductListState,
           FutureOr<ProductListState>,
-          (String?, String?)
+          (String?, String?, String?)
         > {
   ProductsControllerFamily._()
     : super(
@@ -88,8 +88,14 @@ final class ProductsControllerFamily extends $Family
   /// pagination. The controller instance is keyed by the INITIAL route
   /// parameters; in-screen filter changes go through the methods below.
 
-  ProductsControllerProvider call(String? categoryId, String? query) =>
-      ProductsControllerProvider._(argument: (categoryId, query), from: this);
+  ProductsControllerProvider call(
+    String? categoryId,
+    String? query,
+    String? brandId,
+  ) => ProductsControllerProvider._(
+    argument: (categoryId, query, brandId),
+    from: this,
+  );
 
   @override
   String toString() => r'productsControllerProvider';
@@ -100,11 +106,16 @@ final class ProductsControllerFamily extends $Family
 /// parameters; in-screen filter changes go through the methods below.
 
 abstract class _$ProductsController extends $AsyncNotifier<ProductListState> {
-  late final _$args = ref.$arg as (String?, String?);
+  late final _$args = ref.$arg as (String?, String?, String?);
   String? get categoryId => _$args.$1;
   String? get query => _$args.$2;
+  String? get brandId => _$args.$3;
 
-  FutureOr<ProductListState> build(String? categoryId, String? query);
+  FutureOr<ProductListState> build(
+    String? categoryId,
+    String? query,
+    String? brandId,
+  );
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -118,6 +129,9 @@ abstract class _$ProductsController extends $AsyncNotifier<ProductListState> {
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(_$args.$1, _$args.$2));
+    return element.handleCreate(
+      ref,
+      () => build(_$args.$1, _$args.$2, _$args.$3),
+    );
   }
 }

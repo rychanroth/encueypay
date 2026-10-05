@@ -1,4 +1,5 @@
 import '../../domain/entities/banner.dart';
+import '../../domain/entities/brand.dart';
 import '../../domain/entities/business.dart';
 import '../../domain/entities/business_detail.dart';
 import '../../domain/entities/category.dart';
@@ -10,13 +11,19 @@ import '../../domain/entities/product_sort.dart';
 abstract interface class ICatalogRepository {
   Future<List<Category>> fetchCategories();
 
+  /// Active brands for discovery filters (assignment §2).
+  Future<List<Brand>> fetchBrands();
+
   Future<List<Business>> fetchBusinesses({int limit = 10});
 
   /// Search/filter/sort with offset pagination (server-authoritative —
   /// the client never trusts previously fetched prices at checkout).
+  /// [query] matches product name OR brand name; [brandId] is an exact
+  /// brand filter (assignment §2).
   Future<List<Product>> fetchProducts({
     String? query,
     String? categoryId,
+    String? brandId,
     ProductSort sort = ProductSort.newest,
     int limit = 20,
     int offset = 0,

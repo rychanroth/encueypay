@@ -104,3 +104,134 @@ class AdminCategoryDto {
 
   Map<String, dynamic> toJson() => _$AdminCategoryDtoToJson(this);
 }
+
+/// Wire shape of the `brands` row for admin management (Section 2b, DATA-01).
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminBrandDto {
+  const AdminBrandDto({
+    required this.id,
+    required this.name,
+    this.description,
+    this.status,
+  });
+
+  factory AdminBrandDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminBrandDtoFromJson(json);
+
+  final String id;
+  final String name;
+  final String? description;
+  final String? status;
+
+  Map<String, dynamic> toJson() => _$AdminBrandDtoToJson(this);
+}
+
+/// Name-only embeds for the admin product list (PostgREST FK joins).
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminNamedJoinDto {
+  const AdminNamedJoinDto({this.name});
+
+  factory AdminNamedJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminNamedJoinDtoFromJson(json);
+
+  final String? name;
+
+  Map<String, dynamic> toJson() => _$AdminNamedJoinDtoToJson(this);
+}
+
+/// Wire shape of the `products` row for the admin catalog list (Section 2b,
+/// DATA-01): every status, with brand/category/business names embedded.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminProductRowDto {
+  const AdminProductRowDto({
+    required this.id,
+    required this.name,
+    required this.categoryId,
+    required this.businessId,
+    required this.basePriceMinor,
+    required this.createdAt,
+    this.description,
+    this.brandId,
+    this.status,
+    this.brands,
+    this.categories,
+    this.businesses,
+    this.productVariants = const [],
+    this.productImages = const [],
+  });
+
+  factory AdminProductRowDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminProductRowDtoFromJson(json);
+
+  final String id;
+  final String name;
+  final String categoryId;
+  final String businessId;
+  final int basePriceMinor;
+  final DateTime createdAt;
+  final String? description;
+  final String? brandId;
+  final String? status;
+
+  @JsonKey(name: 'brands')
+  final AdminNamedJoinDto? brands;
+
+  @JsonKey(name: 'categories')
+  final AdminNamedJoinDto? categories;
+
+  @JsonKey(name: 'businesses')
+  final AdminNamedJoinDto? businesses;
+
+  /// Price-only embed — used for the variant count.
+  @JsonKey(name: 'product_variants', defaultValue: [])
+  final List<AdminVariantIdJoinDto> productVariants;
+
+  @JsonKey(name: 'product_images', defaultValue: [])
+  final List<AdminProductImagePathDto> productImages;
+
+  Map<String, dynamic> toJson() => _$AdminProductRowDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminVariantIdJoinDto {
+  const AdminVariantIdJoinDto({this.id});
+
+  factory AdminVariantIdJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminVariantIdJoinDtoFromJson(json);
+
+  final String? id;
+
+  Map<String, dynamic> toJson() => _$AdminVariantIdJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminProductImagePathDto {
+  const AdminProductImagePathDto({
+    required this.id,
+    required this.storagePath,
+    this.sortOrder = 0,
+  });
+
+  factory AdminProductImagePathDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminProductImagePathDtoFromJson(json);
+
+  final String id;
+  final String storagePath;
+  final int sortOrder;
+
+  Map<String, dynamic> toJson() => _$AdminProductImagePathDtoToJson(this);
+}
+
+/// Wire shape of a slim `businesses` reference row (store picker, DATA-01).
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminBusinessRefDto {
+  const AdminBusinessRefDto({required this.id, required this.name});
+
+  factory AdminBusinessRefDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminBusinessRefDtoFromJson(json);
+
+  final String id;
+  final String name;
+
+  Map<String, dynamic> toJson() => _$AdminBusinessRefDtoToJson(this);
+}

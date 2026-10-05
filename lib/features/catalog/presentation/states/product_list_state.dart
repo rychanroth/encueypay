@@ -15,17 +15,20 @@ abstract class ProductListState with _$ProductListState {
     @Default(false) bool isLoadingMore,
     String? query,
     String? categoryId,
+    String? brandId,
     @Default(ProductSort.newest) ProductSort sort,
   }) = _ProductListState;
 
   static ProductListState initial({
     String? query,
     String? categoryId,
+    String? brandId,
     ProductSort sort = ProductSort.newest,
   }) {
     return ProductListState(
       query: query,
       categoryId: categoryId,
+      brandId: brandId,
       sort: sort,
     );
   }

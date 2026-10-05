@@ -14,9 +14,17 @@ class ProductsController extends _$ProductsController {
   static const _pageSize = 20;
 
   @override
-  Future<ProductListState> build(String? categoryId, String? query) async {
+  Future<ProductListState> build(
+    String? categoryId,
+    String? query,
+    String? brandId,
+  ) async {
     return _fetch(
-      ProductListState.initial(categoryId: categoryId, query: query),
+      ProductListState.initial(
+        categoryId: categoryId,
+        query: query,
+        brandId: brandId,
+      ),
     );
   }
 
@@ -24,6 +32,7 @@ class ProductsController extends _$ProductsController {
     final page = await ref.read(catalogRepositoryProvider).fetchProducts(
           query: listState.query,
           categoryId: listState.categoryId,
+          brandId: listState.brandId,
           sort: listState.sort,
           limit: _pageSize,
           offset: listState.items.length,
@@ -33,19 +42,36 @@ class ProductsController extends _$ProductsController {
       hasMore: page.length == _pageSize,
       query: listState.query,
       categoryId: listState.categoryId,
+      brandId: listState.brandId,
       sort: listState.sort,
     );
   }
 
-  Future<void> setQuery(String query) =>
-      _reset(query: query, categoryId: _base.categoryId, sort: _base.sort);
+  Future<void> setQuery(String query) => _reset(
+      query: query,
+      categoryId: _base.categoryId,
+      brandId: _base.brandId,
+      sort: _base.sort);
 
   /// Passing null clears the category filter — the "All" chip.
-  Future<void> setCategory(String? categoryId) =>
-      _reset(query: _base.query, categoryId: categoryId, sort: _base.sort);
+  Future<void> setCategory(String? categoryId) => _reset(
+      query: _base.query,
+      categoryId: categoryId,
+      brandId: _base.brandId,
+      sort: _base.sort);
 
-  Future<void> setSort(ProductSort sort) =>
-      _reset(query: _base.query, categoryId: _base.categoryId, sort: sort);
+  /// Passing null clears the brand filter — the "All" chip (assignment §2).
+  Future<void> setBrand(String? brandId) => _reset(
+      query: _base.query,
+      categoryId: _base.categoryId,
+      brandId: brandId,
+      sort: _base.sort);
+
+  Future<void> setSort(ProductSort sort) => _reset(
+      query: _base.query,
+      categoryId: _base.categoryId,
+      brandId: _base.brandId,
+      sort: sort);
 
   /// Filters as of the last completed fetch, or the route-seeded defaults.
   /// [state.value] is null while the initial fetch is in flight and after an
@@ -53,20 +79,26 @@ class ProductsController extends _$ProductsController {
   /// both cases instead of silently dropping taps.
   ProductListState get _base =>
       state.value ??
-      ProductListState.initial(categoryId: categoryId, query: query);
+      ProductListState.initial(
+        categoryId: categoryId,
+        query: query,
+        brandId: brandId,
+      );
 
   /// Re-fetch page 0 with a fully-resolved filter set. Parameters are the NEW
-  /// values for every filter — a null [categoryId] here means "no category",
-  /// never "keep the current one".
+  /// values for every filter — a null [categoryId]/[brandId] here means "no
+  /// filter", never "keep the current one".
   Future<void> _reset({
     required String? query,
     required String? categoryId,
+    required String? brandId,
     required ProductSort sort,
   }) async {
     state = await AsyncValue.guard(
       () => _fetch(ProductListState.initial(
         query: query,
         categoryId: categoryId,
+        brandId: brandId,
         sort: sort,
       )),
     );

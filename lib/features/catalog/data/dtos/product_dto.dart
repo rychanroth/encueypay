@@ -16,6 +16,7 @@ class ProductDto {
     required this.name,
     required this.description,
     required this.basePriceMinor,
+    this.brandId,
     this.status,
     this.productImages = const [],
     this.productVariants = const [],
@@ -30,6 +31,10 @@ class ProductDto {
   final String name;
   final String description;
   final int basePriceMinor;
+
+  /// Direct `products.brand_id` column (Section 2b) — the brand *name* is a
+  /// separate embed consumed only where displayed.
+  final String? brandId;
   final String? status;
 
   /// PostgREST embed key `product_images` (fieldRename.snake matches).

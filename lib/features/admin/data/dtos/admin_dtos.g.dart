@@ -88,3 +88,111 @@ Map<String, dynamic> _$AdminCategoryDtoToJson(AdminCategoryDto instance) =>
       'name': instance.name,
       'parent_id': instance.parentId,
     };
+
+AdminBrandDto _$AdminBrandDtoFromJson(Map<String, dynamic> json) =>
+    AdminBrandDto(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      status: json['status'] as String?,
+    );
+
+Map<String, dynamic> _$AdminBrandDtoToJson(AdminBrandDto instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'description': instance.description,
+      'status': instance.status,
+    };
+
+AdminNamedJoinDto _$AdminNamedJoinDtoFromJson(Map<String, dynamic> json) =>
+    AdminNamedJoinDto(name: json['name'] as String?);
+
+Map<String, dynamic> _$AdminNamedJoinDtoToJson(AdminNamedJoinDto instance) =>
+    <String, dynamic>{'name': instance.name};
+
+AdminProductRowDto _$AdminProductRowDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminProductRowDto(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  categoryId: json['category_id'] as String,
+  businessId: json['business_id'] as String,
+  basePriceMinor: (json['base_price_minor'] as num).toInt(),
+  createdAt: DateTime.parse(json['created_at'] as String),
+  description: json['description'] as String?,
+  brandId: json['brand_id'] as String?,
+  status: json['status'] as String?,
+  brands: json['brands'] == null
+      ? null
+      : AdminNamedJoinDto.fromJson(json['brands'] as Map<String, dynamic>),
+  categories: json['categories'] == null
+      ? null
+      : AdminNamedJoinDto.fromJson(json['categories'] as Map<String, dynamic>),
+  businesses: json['businesses'] == null
+      ? null
+      : AdminNamedJoinDto.fromJson(json['businesses'] as Map<String, dynamic>),
+  productVariants:
+      (json['product_variants'] as List<dynamic>?)
+          ?.map(
+            (e) => AdminVariantIdJoinDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
+  productImages:
+      (json['product_images'] as List<dynamic>?)
+          ?.map(
+            (e) => AdminProductImagePathDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
+);
+
+Map<String, dynamic> _$AdminProductRowDtoToJson(AdminProductRowDto instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'category_id': instance.categoryId,
+      'business_id': instance.businessId,
+      'base_price_minor': instance.basePriceMinor,
+      'created_at': instance.createdAt.toIso8601String(),
+      'description': instance.description,
+      'brand_id': instance.brandId,
+      'status': instance.status,
+      'brands': instance.brands,
+      'categories': instance.categories,
+      'businesses': instance.businesses,
+      'product_variants': instance.productVariants,
+      'product_images': instance.productImages,
+    };
+
+AdminVariantIdJoinDto _$AdminVariantIdJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminVariantIdJoinDto(id: json['id'] as String?);
+
+Map<String, dynamic> _$AdminVariantIdJoinDtoToJson(
+  AdminVariantIdJoinDto instance,
+) => <String, dynamic>{'id': instance.id};
+
+AdminProductImagePathDto _$AdminProductImagePathDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminProductImagePathDto(
+  id: json['id'] as String,
+  storagePath: json['storage_path'] as String,
+  sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$AdminProductImagePathDtoToJson(
+  AdminProductImagePathDto instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'storage_path': instance.storagePath,
+  'sort_order': instance.sortOrder,
+};
+
+AdminBusinessRefDto _$AdminBusinessRefDtoFromJson(Map<String, dynamic> json) =>
+    AdminBusinessRefDto(id: json['id'] as String, name: json['name'] as String);
+
+Map<String, dynamic> _$AdminBusinessRefDtoToJson(
+  AdminBusinessRefDto instance,
+) => <String, dynamic>{'id': instance.id, 'name': instance.name};

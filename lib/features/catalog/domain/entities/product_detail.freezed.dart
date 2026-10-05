@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductDetail {
 
- Product get product; List<ProductVariant> get variants; String get businessName; List<ProductReviewInfo> get reviews;
+ Product get product; List<ProductVariant> get variants; String get businessName; String get brandName; List<ProductReviewInfo> get reviews;
 /// Create a copy of ProductDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $ProductDetailCopyWith<ProductDetail> get copyWith => _$ProductDetailCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductDetail&&(identical(other.product, product) || other.product == product)&&const DeepCollectionEquality().equals(other.variants, variants)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&const DeepCollectionEquality().equals(other.reviews, reviews));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductDetail&&(identical(other.product, product) || other.product == product)&&const DeepCollectionEquality().equals(other.variants, variants)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other.reviews, reviews));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,product,const DeepCollectionEquality().hash(variants),businessName,const DeepCollectionEquality().hash(reviews));
+int get hashCode => Object.hash(runtimeType,product,const DeepCollectionEquality().hash(variants),businessName,brandName,const DeepCollectionEquality().hash(reviews));
 
 @override
 String toString() {
-  return 'ProductDetail(product: $product, variants: $variants, businessName: $businessName, reviews: $reviews)';
+  return 'ProductDetail(product: $product, variants: $variants, businessName: $businessName, brandName: $brandName, reviews: $reviews)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $ProductDetailCopyWith<$Res>  {
   factory $ProductDetailCopyWith(ProductDetail value, $Res Function(ProductDetail) _then) = _$ProductDetailCopyWithImpl;
 @useResult
 $Res call({
- Product product, List<ProductVariant> variants, String businessName, List<ProductReviewInfo> reviews
+ Product product, List<ProductVariant> variants, String businessName, String brandName, List<ProductReviewInfo> reviews
 });
 
 
@@ -63,11 +63,12 @@ class _$ProductDetailCopyWithImpl<$Res>
 
 /// Create a copy of ProductDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? product = null,Object? variants = null,Object? businessName = null,Object? reviews = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? product = null,Object? variants = null,Object? businessName = null,Object? brandName = null,Object? reviews = null,}) {
   return _then(ProductDetail(
 product: null == product ? _self.product : product // ignore: cast_nullable_to_non_nullable
 as Product,variants: null == variants ? _self.variants : variants // ignore: cast_nullable_to_non_nullable
 as List<ProductVariant>,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
+as String,brandName: null == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String,reviews: null == reviews ? _self.reviews : reviews // ignore: cast_nullable_to_non_nullable
 as List<ProductReviewInfo>,
   ));
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Product product,  List<ProductVariant> variants,  String businessName,  List<ProductReviewInfo> reviews)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Product product,  List<ProductVariant> variants,  String businessName,  String brandName,  List<ProductReviewInfo> reviews)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductDetail() when $default != null:
-return $default(_that.product,_that.variants,_that.businessName,_that.reviews);case _:
+return $default(_that.product,_that.variants,_that.businessName,_that.brandName,_that.reviews);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.product,_that.variants,_that.businessName,_that.reviews);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Product product,  List<ProductVariant> variants,  String businessName,  List<ProductReviewInfo> reviews)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Product product,  List<ProductVariant> variants,  String businessName,  String brandName,  List<ProductReviewInfo> reviews)  $default,) {final _that = this;
 switch (_that) {
 case _ProductDetail():
-return $default(_that.product,_that.variants,_that.businessName,_that.reviews);case _:
+return $default(_that.product,_that.variants,_that.businessName,_that.brandName,_that.reviews);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.product,_that.variants,_that.businessName,_that.reviews);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Product product,  List<ProductVariant> variants,  String businessName,  List<ProductReviewInfo> reviews)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Product product,  List<ProductVariant> variants,  String businessName,  String brandName,  List<ProductReviewInfo> reviews)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductDetail() when $default != null:
-return $default(_that.product,_that.variants,_that.businessName,_that.reviews);case _:
+return $default(_that.product,_that.variants,_that.businessName,_that.brandName,_that.reviews);case _:
   return null;
 
 }
@@ -219,7 +220,7 @@ return $default(_that.product,_that.variants,_that.businessName,_that.reviews);c
 
 
 class _ProductDetail extends ProductDetail {
-  const _ProductDetail({required this.product, required  List<ProductVariant> variants, this.businessName = '',  List<ProductReviewInfo> reviews = const []}): _variants = variants,_reviews = reviews,super._();
+  const _ProductDetail({required this.product, required  List<ProductVariant> variants, this.businessName = '', this.brandName = '',  List<ProductReviewInfo> reviews = const []}): _variants = variants,_reviews = reviews,super._();
   
 
 @override final  Product product;
@@ -231,6 +232,7 @@ class _ProductDetail extends ProductDetail {
 }
 
 @override@JsonKey() final  String businessName;
+@override@JsonKey() final  String brandName;
  final  List<ProductReviewInfo> _reviews;
 @override@JsonKey() List<ProductReviewInfo> get reviews {
   if (_reviews is EqualUnmodifiableListView) return _reviews;
@@ -249,16 +251,16 @@ _$ProductDetailCopyWith<_ProductDetail> get copyWith => __$ProductDetailCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductDetail&&(identical(other.product, product) || other.product == product)&&const DeepCollectionEquality().equals(other._variants, _variants)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&const DeepCollectionEquality().equals(other._reviews, _reviews));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductDetail&&(identical(other.product, product) || other.product == product)&&const DeepCollectionEquality().equals(other._variants, _variants)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other._reviews, _reviews));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,product,const DeepCollectionEquality().hash(_variants),businessName,const DeepCollectionEquality().hash(_reviews));
+int get hashCode => Object.hash(runtimeType,product,const DeepCollectionEquality().hash(_variants),businessName,brandName,const DeepCollectionEquality().hash(_reviews));
 
 @override
 String toString() {
-  return 'ProductDetail(product: $product, variants: $variants, businessName: $businessName, reviews: $reviews)';
+  return 'ProductDetail(product: $product, variants: $variants, businessName: $businessName, brandName: $brandName, reviews: $reviews)';
 }
 
 
@@ -269,7 +271,7 @@ abstract mixin class _$ProductDetailCopyWith<$Res> implements $ProductDetailCopy
   factory _$ProductDetailCopyWith(_ProductDetail value, $Res Function(_ProductDetail) _then) = __$ProductDetailCopyWithImpl;
 @override @useResult
 $Res call({
- Product product, List<ProductVariant> variants, String businessName, List<ProductReviewInfo> reviews
+ Product product, List<ProductVariant> variants, String businessName, String brandName, List<ProductReviewInfo> reviews
 });
 
 
@@ -286,11 +288,12 @@ class __$ProductDetailCopyWithImpl<$Res>
 
 /// Create a copy of ProductDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? product = null,Object? variants = null,Object? businessName = null,Object? reviews = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? product = null,Object? variants = null,Object? businessName = null,Object? brandName = null,Object? reviews = null,}) {
   return _then(_ProductDetail(
 product: null == product ? _self.product : product // ignore: cast_nullable_to_non_nullable
 as Product,variants: null == variants ? _self._variants : variants // ignore: cast_nullable_to_non_nullable
 as List<ProductVariant>,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
+as String,brandName: null == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String,reviews: null == reviews ? _self._reviews : reviews // ignore: cast_nullable_to_non_nullable
 as List<ProductReviewInfo>,
   ));

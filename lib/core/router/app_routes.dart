@@ -60,4 +60,9 @@ abstract final class AppRoutes {
   static const adminApplications = 'adminApplications';
   static const adminCategories = 'adminCategories';
   static const adminPromotions = 'adminPromotions';
+
+  // Admin products (Section 2b — nested under the Products tab).
+  static const adminProducts = 'adminProducts';
+  static const adminProductForm = 'adminProductForm';
+  static const adminBrands = 'adminBrands';
 }

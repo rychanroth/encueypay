@@ -16,3 +16,17 @@ from (values
 where not exists (
   select 1 from public.categories existing where existing.name = c.name
 );
+
+-- Brands (Section 2b): the admin populates these through the Products tab;
+-- this seed gives the demo catalog a starting set. Guarded by name.
+insert into public.brands (name, description)
+select b.name, b.description
+from (values
+  ('Acme', 'Reliable everyday essentials.'),
+  ('Nordwind', 'Outdoor and adventure gear.'),
+  ('Lumina', 'Modern lighting and electronics.'),
+  ('Verde', 'Natural beauty and wellness.')
+) as b(name, description)
+where not exists (
+  select 1 from public.brands existing where existing.name = b.name
+);

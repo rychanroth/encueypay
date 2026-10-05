@@ -10,6 +10,7 @@ abstract class Product with _$Product {
     required String id,
     required String businessId,
     required String categoryId,
+    String? brandId,
     required String name,
     @Default('') String description,
     required int basePriceMinor,
