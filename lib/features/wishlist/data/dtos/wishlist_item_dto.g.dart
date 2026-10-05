@@ -29,6 +29,15 @@ WishlistProductJoinDto _$WishlistProductJoinDtoFromJson(
 ) => WishlistProductJoinDto(
   name: json['name'] as String?,
   basePriceMinor: (json['base_price_minor'] as num?)?.toInt(),
+  stock: (json['stock'] as num?)?.toInt() ?? 0,
+  status: json['status'] as String?,
+  productVariants:
+      (json['product_variants'] as List<dynamic>?)
+          ?.map(
+            (e) => WishlistVariantJoinDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
   productImages:
       (json['product_images'] as List<dynamic>?)
           ?.map((e) => WishlistImageJoinDto.fromJson(e as Map<String, dynamic>))
@@ -41,8 +50,19 @@ Map<String, dynamic> _$WishlistProductJoinDtoToJson(
 ) => <String, dynamic>{
   'name': instance.name,
   'base_price_minor': instance.basePriceMinor,
+  'stock': instance.stock,
+  'status': instance.status,
+  'product_variants': instance.productVariants,
   'product_images': instance.productImages,
 };
+
+WishlistVariantJoinDto _$WishlistVariantJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => WishlistVariantJoinDto(id: json['id'] as String?);
+
+Map<String, dynamic> _$WishlistVariantJoinDtoToJson(
+  WishlistVariantJoinDto instance,
+) => <String, dynamic>{'id': instance.id};
 
 WishlistImageJoinDto _$WishlistImageJoinDtoFromJson(
   Map<String, dynamic> json,

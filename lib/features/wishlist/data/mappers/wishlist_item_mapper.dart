@@ -9,6 +9,9 @@ extension WishlistItemDtoX on WishlistItemDto {
       productId: productId,
       productName: product?.name ?? 'Unknown product',
       priceMinor: product?.basePriceMinor ?? 0,
+      stock: product?.stock ?? 0,
+      status: product?.status,
+      defaultVariantId: product?.productVariants.firstOrNull?.id,
       imageUrl: imageUrl,
     );
   }

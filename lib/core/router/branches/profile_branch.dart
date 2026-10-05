@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../../features/catalog/domain/entities/product.dart';
+import '../../../features/catalog/presentation/widgets/product_card.dart';
 import '../../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../features/profile/domain/entities/address.dart';
 import '../../../features/profile/presentation/screens/address_edit_screen.dart';
@@ -12,6 +14,7 @@ import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
 import '../../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../app_routes.dart';
+import '../product_card_actions.dart';
 
 // 2-Role Academic Prototype: the role-application route (`/profile/apply`,
 // living spec Part C L-03) is removed — customers can no longer apply to
@@ -59,7 +62,39 @@ final profileBranch = StatefulShellBranch(
         GoRoute(
           name: AppRoutes.wishlist,
           path: 'wishlist',
-          builder: (context, state) => const WishlistScreen(),
+          builder: (context, state) => Consumer(
+            builder: (context, ref, _) => WishlistScreen(
+              // Section 6: the shared catalog ProductCard with long-press
+              // quick actions. The item → Product mapping happens here in
+              // the composition root — features stay isolated (ARCH-04).
+              cardBuilder: (item) {
+                final product = Product(
+                  id: item.productId,
+                  businessId: '',
+                  categoryId: '',
+                  name: item.productName,
+                  basePriceMinor: item.priceMinor,
+                  stock: item.stock,
+                  fromPriceMinor: item.priceMinor,
+                  defaultVariantId: item.defaultVariantId,
+                  status: item.status == 'archived'
+                      ? ProductStatus.archived
+                      : ProductStatus.active,
+                  imageUrls: [
+                    if (item.imageUrl != null) item.imageUrl!,
+                  ],
+                );
+                return ProductCard(
+                  product: product,
+                  onTap: () => context.pushNamed(
+                    AppRoutes.productDetail,
+                    pathParameters: {'id': item.productId},
+                  ),
+                  actions: productCardActions(context, ref, product),
+                );
+              },
+            ),
+          ),
         ),
         // Customer dashboard (Section 5, assignment §1).
         GoRoute(

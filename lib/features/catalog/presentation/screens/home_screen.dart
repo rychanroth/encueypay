@@ -10,13 +10,18 @@ import '../controllers/brands_provider.dart';
 import '../controllers/categories_provider.dart';
 import '../controllers/home_feed_providers.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_grid.dart';
 
 /// Customer tab 1 — Home. Discovery entry point: search, categories, banners,
 /// newest products (spec §32). The businesses strip was removed for the
 /// 2-Role Academic Prototype (living spec Part C L-04/L-05) — vendor
 /// discovery is bypassed; the underlying data model is untouched.
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.actionsBuilder});
+
+  /// Long-press quick actions per product (Section 6) — injected by the
+  /// composition root; null keeps cards tap-only.
+  final ProductCardActionsBuilder? actionsBuilder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
           _SectionTitle('Top brands'),
           _BrandRail(),
           _SectionTitle('New arrivals'),
-          _HomeProductsGrid(columns: columns),
+          _HomeProductsGrid(columns: columns, actionsBuilder: actionsBuilder),
         ],
       ),
     );
@@ -370,9 +375,13 @@ class _BrandFallback extends StatelessWidget {
 }
 
 class _HomeProductsGrid extends ConsumerWidget {
-  const _HomeProductsGrid({required this.columns});
+  const _HomeProductsGrid({
+    required this.columns,
+    this.actionsBuilder,
+  });
 
   final int columns;
+  final ProductCardActionsBuilder? actionsBuilder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -414,6 +423,7 @@ class _HomeProductsGrid extends ConsumerWidget {
                 AppRoutes.productDetail,
                 pathParameters: {'id': product.id},
               ),
+              actions: actionsBuilder?.call(product),
             );
           },
         );

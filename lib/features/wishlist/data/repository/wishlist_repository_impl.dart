@@ -37,7 +37,8 @@ class WishlistRepositoryImpl implements IWishlistRepository {
       final rows = await _client
           .from('wishlist_items')
           .select(
-            'id, product_id, products(name, base_price_minor, '
+            'id, product_id, products(name, base_price_minor, stock, status, '
+            'product_variants(id, price_minor), '
             'product_images(storage_path, sort_order))',
           )
           .eq('wishlist_id', wishlist['id'] as String)

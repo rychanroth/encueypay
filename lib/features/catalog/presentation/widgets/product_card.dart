@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/product.dart';
+import 'product_card_actions.dart';
 
 /// Reusable product grid card (PRES-06). Price is exact minor-unit money
 /// formatted at the display edge (spec §22). Disabled/out-of-stock products
 /// render an availability badge (Section 2d) but stay tappable — the detail
 /// screen explains the state.
+///
+/// Tap always navigates to the product detail; long-press (Section 6) opens
+/// the quick-actions sheet when [actions] is injected by the composition
+/// root (wishlist/cart toggles reflecting current state).
 class ProductCard extends StatelessWidget {
-  const ProductCard({super.key, required this.product, this.onTap});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+    this.actions,
+  });
 
   final Product product;
   final VoidCallback? onTap;
+  final ProductCardActions? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +31,8 @@ class ProductCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
+        onLongPress:
+            actions == null ? null : () => actions!.showSheet(context, product),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

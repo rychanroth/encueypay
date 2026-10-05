@@ -30,8 +30,11 @@ Map<String, dynamic> _$ProductVariantDtoToJson(ProductVariantDto instance) =>
 
 ProductVariantPriceDto _$ProductVariantPriceDtoFromJson(
   Map<String, dynamic> json,
-) => ProductVariantPriceDto(priceMinor: (json['price_minor'] as num?)?.toInt());
+) => ProductVariantPriceDto(
+  id: json['id'] as String?,
+  priceMinor: (json['price_minor'] as num?)?.toInt(),
+);
 
 Map<String, dynamic> _$ProductVariantPriceDtoToJson(
   ProductVariantPriceDto instance,
-) => <String, dynamic>{'price_minor': instance.priceMinor};
+) => <String, dynamic>{'id': instance.id, 'price_minor': instance.priceMinor};

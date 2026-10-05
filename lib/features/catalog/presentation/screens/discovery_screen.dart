@@ -21,6 +21,7 @@ class DiscoveryScreen extends ConsumerWidget {
     required this.name,
     this.imageUrl,
     this.query,
+    this.actionsBuilder,
   });
 
   /// 'category' or 'brand'.
@@ -29,6 +30,10 @@ class DiscoveryScreen extends ConsumerWidget {
   final String name;
   final String? imageUrl;
   final String? query;
+
+  /// Long-press quick actions per product (Section 6) — injected by the
+  /// composition root; null keeps cards tap-only.
+  final ProductCardActionsBuilder? actionsBuilder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,6 +90,7 @@ class DiscoveryScreen extends ConsumerWidget {
                             categoryId, query, brandId)
                         .notifier)
                     .loadMore(),
+                actionsBuilder: actionsBuilder,
               ),
             ),
           ),

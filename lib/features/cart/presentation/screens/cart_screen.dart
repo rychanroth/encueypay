@@ -148,9 +148,13 @@ class CartScreen extends ConsumerWidget {
 class _CartItemTile extends ConsumerWidget {
   const _CartItemTile({required this.item});
 
-  static const _maxQuantity = 99;
-
   final CartItem item;
+
+  /// Product-wide stock cap (Section 6): every variant shares the product's
+  /// stock; the stepper cannot exceed it. The server re-validates at
+  /// checkout (§53). A zero cap means the product sold out after the line
+  /// was added — decrease or remove are still available.
+  int get _stockCap => item.stock < 0 ? 0 : item.stock;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -227,9 +231,10 @@ class _CartItemTile extends ConsumerWidget {
                     Text('${item.quantity}'),
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      // Stock is out of scope — the stepper is capped at a
-                      // fixed sanity maximum instead.
-                      onPressed: item.quantity >= _maxQuantity
+                      // Stock is product-wide (Section 6) — the stepper is
+                      // capped at the product's stock instead of a fixed
+                      // sanity maximum.
+                      onPressed: item.quantity >= _stockCap
                           ? null
                           : () => controller.updateQuantity(
                                 itemId: item.id,

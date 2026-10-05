@@ -17,6 +17,7 @@ extension ProductDtoX on ProductDto {
       basePriceMinor: basePriceMinor,
       stock: stock,
       fromPriceMinor: _fromPriceMinor(),
+      defaultVariantId: productVariants.firstOrNull?.id,
       status: ProductStatus.fromName(status),
       imageUrls: imageUrls,
     );

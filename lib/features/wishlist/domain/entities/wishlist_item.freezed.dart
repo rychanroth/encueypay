@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WishlistItem {
 
- String get id; String get productId; String get productName; int get priceMinor; String? get imageUrl;
+ String get id; String get productId; String get productName; int get priceMinor; int get stock; String? get status; String? get defaultVariantId; String? get imageUrl;
 /// Create a copy of WishlistItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $WishlistItemCopyWith<WishlistItem> get copyWith => _$WishlistItemCopyWithImpl<W
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WishlistItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WishlistItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.status, status) || other.status == status)&&(identical(other.defaultVariantId, defaultVariantId) || other.defaultVariantId == defaultVariantId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,productName,priceMinor,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,productId,productName,priceMinor,stock,status,defaultVariantId,imageUrl);
 
 @override
 String toString() {
-  return 'WishlistItem(id: $id, productId: $productId, productName: $productName, priceMinor: $priceMinor, imageUrl: $imageUrl)';
+  return 'WishlistItem(id: $id, productId: $productId, productName: $productName, priceMinor: $priceMinor, stock: $stock, status: $status, defaultVariantId: $defaultVariantId, imageUrl: $imageUrl)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $WishlistItemCopyWith<$Res>  {
   factory $WishlistItemCopyWith(WishlistItem value, $Res Function(WishlistItem) _then) = _$WishlistItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String productId, String productName, int priceMinor, String? imageUrl
+ String id, String productId, String productName, int priceMinor, int stock, String? status, String? defaultVariantId, String? imageUrl
 });
 
 
@@ -63,13 +63,16 @@ class _$WishlistItemCopyWithImpl<$Res>
 
 /// Create a copy of WishlistItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? priceMinor = null,Object? imageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? priceMinor = null,Object? stock = null,Object? status = freezed,Object? defaultVariantId = freezed,Object? imageUrl = freezed,}) {
   return _then(WishlistItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: null == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
+as int,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,defaultVariantId: freezed == defaultVariantId ? _self.defaultVariantId : defaultVariantId // ignore: cast_nullable_to_non_nullable
+as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -155,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int priceMinor,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int priceMinor,  int stock,  String? status,  String? defaultVariantId,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WishlistItem() when $default != null:
-return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_that.imageUrl);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_that.stock,_that.status,_that.defaultVariantId,_that.imageUrl);case _:
   return orElse();
 
 }
@@ -176,10 +179,10 @@ return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int priceMinor,  String? imageUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int priceMinor,  int stock,  String? status,  String? defaultVariantId,  String? imageUrl)  $default,) {final _that = this;
 switch (_that) {
 case _WishlistItem():
-return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_that.imageUrl);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_that.stock,_that.status,_that.defaultVariantId,_that.imageUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +199,10 @@ return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String productName,  int priceMinor,  String? imageUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String productName,  int priceMinor,  int stock,  String? status,  String? defaultVariantId,  String? imageUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _WishlistItem() when $default != null:
-return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_that.imageUrl);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_that.stock,_that.status,_that.defaultVariantId,_that.imageUrl);case _:
   return null;
 
 }
@@ -211,13 +214,16 @@ return $default(_that.id,_that.productId,_that.productName,_that.priceMinor,_tha
 
 
 class _WishlistItem implements WishlistItem {
-  const _WishlistItem({required this.id, required this.productId, required this.productName, required this.priceMinor, this.imageUrl});
+  const _WishlistItem({required this.id, required this.productId, required this.productName, required this.priceMinor, this.stock = 0, this.status, this.defaultVariantId, this.imageUrl});
   
 
 @override final  String id;
 @override final  String productId;
 @override final  String productName;
 @override final  int priceMinor;
+@override@JsonKey() final  int stock;
+@override final  String? status;
+@override final  String? defaultVariantId;
 @override final  String? imageUrl;
 
 /// Create a copy of WishlistItem
@@ -230,16 +236,16 @@ _$WishlistItemCopyWith<_WishlistItem> get copyWith => __$WishlistItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WishlistItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WishlistItem&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.status, status) || other.status == status)&&(identical(other.defaultVariantId, defaultVariantId) || other.defaultVariantId == defaultVariantId)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,productName,priceMinor,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,productId,productName,priceMinor,stock,status,defaultVariantId,imageUrl);
 
 @override
 String toString() {
-  return 'WishlistItem(id: $id, productId: $productId, productName: $productName, priceMinor: $priceMinor, imageUrl: $imageUrl)';
+  return 'WishlistItem(id: $id, productId: $productId, productName: $productName, priceMinor: $priceMinor, stock: $stock, status: $status, defaultVariantId: $defaultVariantId, imageUrl: $imageUrl)';
 }
 
 
@@ -250,7 +256,7 @@ abstract mixin class _$WishlistItemCopyWith<$Res> implements $WishlistItemCopyWi
   factory _$WishlistItemCopyWith(_WishlistItem value, $Res Function(_WishlistItem) _then) = __$WishlistItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String productId, String productName, int priceMinor, String? imageUrl
+ String id, String productId, String productName, int priceMinor, int stock, String? status, String? defaultVariantId, String? imageUrl
 });
 
 
@@ -267,13 +273,16 @@ class __$WishlistItemCopyWithImpl<$Res>
 
 /// Create a copy of WishlistItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? priceMinor = null,Object? imageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? priceMinor = null,Object? stock = null,Object? status = freezed,Object? defaultVariantId = freezed,Object? imageUrl = freezed,}) {
   return _then(_WishlistItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: null == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
+as int,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,defaultVariantId: freezed == defaultVariantId ? _self.defaultVariantId : defaultVariantId // ignore: cast_nullable_to_non_nullable
+as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

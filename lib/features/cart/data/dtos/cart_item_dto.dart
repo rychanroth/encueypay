@@ -54,6 +54,7 @@ class CartProductJoinDto {
     this.id,
     this.name,
     this.basePriceMinor,
+    this.stock = 0,
     this.productImages = const [],
     this.businesses,
   });
@@ -64,6 +65,10 @@ class CartProductJoinDto {
   final String? id;
   final String? name;
   final int? basePriceMinor;
+
+  /// Product-wide stock (Section 6/2d) — caps the tile's quantity stepper.
+  @JsonKey(defaultValue: 0)
+  final int stock;
 
   @JsonKey(name: 'product_images', defaultValue: [])
   final List<CartImageJoinDto> productImages;

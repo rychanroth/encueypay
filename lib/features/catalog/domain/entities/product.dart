@@ -22,6 +22,11 @@ abstract class Product with _$Product {
     /// Cheapest selectable price — min over variant effective prices, base
     /// price when the product has none. What grids/cards display.
     required int fromPriceMinor,
+
+    /// First variant id (Section 6): the quick-action "add to cart" uses
+    /// the product's default variant. Never null in practice —
+    /// `create_product` auto-creates 'Default' — but tolerated here.
+    String? defaultVariantId,
     @Default(ProductStatus.active) ProductStatus status,
     @Default([]) List<String> imageUrls,
   }) = _Product;

@@ -4,13 +4,24 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/router/app_routes.dart';
 import '../controllers/wishlist_controller.dart';
+import '../../domain/entities/wishlist_item.dart';
 
-/// Saved products (spec §38). Remove-only here; adding to the wishlist is
-/// wired through the composition root in a later phase.
+/// Builds the card widget for one wishlist item (Section 6): the
+/// composition root renders the shared catalog ProductCard with quick
+/// actions — features/wishlist never imports features/catalog (ARCH-04).
+typedef WishlistCardBuilder = Widget Function(WishlistItem item);
+
+/// Saved products (spec §38). With a [cardBuilder] the screen renders a
+/// product-card grid (tap → detail, long-press → quick actions); otherwise
+/// it falls back to the simple tile list. Adding/removing is wired through
+/// the injected card actions, not here.
 class WishlistScreen extends ConsumerWidget {
-  const WishlistScreen({super.key});
+  const WishlistScreen({super.key, this.cardBuilder});
+
+  final WishlistCardBuilder? cardBuilder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,6 +56,24 @@ class WishlistScreen extends ConsumerWidget {
         data: (items) {
           if (items.isEmpty) {
             return const Center(child: Text('Your wishlist is empty.'));
+          }
+          if (cardBuilder != null) {
+            final columns = switch (context.screenSize) {
+              ScreenSize.expanded => 4,
+              ScreenSize.medium => 3,
+              ScreenSize.compact => 2,
+            };
+            return GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 0.62,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) => cardBuilder!(items[index]),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),

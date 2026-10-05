@@ -8,6 +8,7 @@ import '../../../features/catalog/presentation/screens/product_detail_screen.dar
 import '../../../features/catalog/presentation/screens/products_screen.dart';
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../app_routes.dart';
+import '../product_card_actions.dart';
 
 // 2-Role Academic Prototype: the business storefront route
 // (`/home/business/:id`, living spec Part C L-04) is removed — vendor
@@ -26,7 +27,13 @@ final homeBranch = StatefulShellBranch(
     GoRoute(
       name: AppRoutes.home,
       path: '/home',
-      builder: (context, state) => const HomeScreen(),
+      builder: (context, state) => Consumer(
+        builder: (context, ref, _) => HomeScreen(
+          // Long-press quick actions (Section 6) — cart/wishlist wiring
+          // lives in the composition root (ARCH-04, ROUTE-08).
+          actionsBuilder: (product) => productCardActions(context, ref, product),
+        ),
+      ),
       routes: [
         GoRoute(
           name: AppRoutes.products,
@@ -60,12 +67,16 @@ final homeBranch = StatefulShellBranch(
         GoRoute(
           name: AppRoutes.discovery,
           path: 'discovery',
-          builder: (context, state) => DiscoveryScreen(
-            kind: state.uri.queryParameters['kind'] ?? 'category',
-            id: state.uri.queryParameters['id'] ?? '',
-            name: state.uri.queryParameters['name'] ?? '',
-            imageUrl: state.uri.queryParameters['image'],
-            query: state.uri.queryParameters['q'],
+          builder: (context, state) => Consumer(
+            builder: (context, ref, _) => DiscoveryScreen(
+              kind: state.uri.queryParameters['kind'] ?? 'category',
+              id: state.uri.queryParameters['id'] ?? '',
+              name: state.uri.queryParameters['name'] ?? '',
+              imageUrl: state.uri.queryParameters['image'],
+              query: state.uri.queryParameters['q'],
+              actionsBuilder: (product) =>
+                  productCardActions(context, ref, product),
+            ),
           ),
         ),
       ],

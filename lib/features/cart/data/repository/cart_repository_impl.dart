@@ -38,7 +38,7 @@ class CartRepositoryImpl implements ICartRepository {
           .from('cart_items')
           .select(
             'id, quantity, product_variants(id, name, price_minor, '
-            'products(id, name, base_price_minor, '
+            'products(id, name, base_price_minor, stock, '
             'product_images(storage_path, sort_order), businesses(id, name)))',
           )
           .eq('cart_id', cart['id'] as String)

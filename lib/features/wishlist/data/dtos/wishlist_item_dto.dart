@@ -29,6 +29,9 @@ class WishlistProductJoinDto {
   const WishlistProductJoinDto({
     this.name,
     this.basePriceMinor,
+    this.stock = 0,
+    this.status,
+    this.productVariants = const [],
     this.productImages = const [],
   });
 
@@ -38,10 +41,32 @@ class WishlistProductJoinDto {
   final String? name;
   final int? basePriceMinor;
 
+  /// Product-wide stock (Section 6/2d).
+  @JsonKey(defaultValue: 0)
+  final int stock;
+  final String? status;
+
+  /// Price-only variant embed — the first id is the default variant for the
+  /// card quick actions (Section 6).
+  @JsonKey(name: 'product_variants', defaultValue: [])
+  final List<WishlistVariantJoinDto> productVariants;
+
   @JsonKey(name: 'product_images', defaultValue: [])
   final List<WishlistImageJoinDto> productImages;
 
   Map<String, dynamic> toJson() => _$WishlistProductJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class WishlistVariantJoinDto {
+  const WishlistVariantJoinDto({this.id});
+
+  factory WishlistVariantJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$WishlistVariantJoinDtoFromJson(json);
+
+  final String? id;
+
+  Map<String, dynamic> toJson() => _$WishlistVariantJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

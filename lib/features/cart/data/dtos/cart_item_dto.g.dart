@@ -48,6 +48,7 @@ CartProductJoinDto _$CartProductJoinDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String?,
       name: json['name'] as String?,
       basePriceMinor: (json['base_price_minor'] as num?)?.toInt(),
+      stock: (json['stock'] as num?)?.toInt() ?? 0,
       productImages:
           (json['product_images'] as List<dynamic>?)
               ?.map((e) => CartImageJoinDto.fromJson(e as Map<String, dynamic>))
@@ -65,6 +66,7 @@ Map<String, dynamic> _$CartProductJoinDtoToJson(CartProductJoinDto instance) =>
       'id': instance.id,
       'name': instance.name,
       'base_price_minor': instance.basePriceMinor,
+      'stock': instance.stock,
       'product_images': instance.productImages,
       'businesses': instance.businesses,
     };

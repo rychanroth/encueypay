@@ -97,8 +97,8 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Wishlist: save, remove, transfer to cart | 🟡 → ✅ §6 | `features/wishlist` (screen/controller/`wishlist_repository_impl.dart`; `wishlists` + `wishlist_items` tables) | Remove ✅; **add never wired to any UI** (controller `add()` exists, unused) → §6 wires it on product detail; transfer-to-cart §6 (single-variant direct, multi-variant routes to detail — 🟡 documented partial) |
-| Cart: add, remove, update quantity, select variants | ✅ | `features/cart` (`cart_screen.dart`, `cart_controller.dart`, RPCs `add_cart_item`/`update_cart_item`/`remove_cart_item`/`clear_cart`) | Per-business group headers ⛔ **flattened (Section 2, L-06)** — server pricing still groups per business at checkout |
+| Wishlist: save, remove, transfer to cart | ✅ | `features/wishlist` (`wishlists` + `wishlist_items` tables); **rendered as the shared catalog `ProductCard` grid via a composition-root card builder (Section 6)**: tap → detail, long-press → quick actions (remove from wishlist / add-to-cart via default variant) | Multi-variant add-to-cart from the card uses the **default variant** per user decision; full variant choice lives on the detail screen's picker |
+| Cart: add, remove, update quantity, select variants | ✅ | `features/cart` (`cart_screen.dart`, `cart_controller.dart`, RPCs `add_cart_item`/`update_cart_item`/`remove_cart_item`/`clear_cart`) | Per-business group headers ⛔ **flattened (Section 2, L-06)**; `CartItemTile` keeps its own quantity controls, now capped at **product-wide stock** (Section 6) |
 | Calculations: unit price, quantity, subtotal, discount, shipping fee, grand total | ✅ | Server-authoritative (`coalesce(variant price, product base price)`, Part D); totals rendered display-only | — |
 | Validation: quantity + stock before checkout | ✅ | Server validates product/variant/business status **and product-wide stock** at checkout (`create_order_from_cart`, 0032): line quantity > product stock → order rejected; stock deducted atomically under row locks; cancellation restores stock | Quantity capped client-side in the variant sheet (stock cap) |
 
@@ -314,6 +314,28 @@ appended as sections land.)
   controller, screen with stat cards + recent orders; route
   `/profile/dashboard` (profile branch) + customer-gated Profile entry.
   Cross-tab navigation via `AppRoutes.orderDetail` (ROUTE-02).
+
+## Section 6 — Product Card quick actions (`features/catalog` + composition root)
+
+* The reusable **ProductCard** is shared by Home, Discovery, and Wishlist;
+  tap always navigates to product detail, long-press opens a quick-actions
+  sheet: add/remove wishlist + add/remove cart, reflecting current state.
+* The wishlist/cart logic is **injected**, never imported by features
+  (ARCH-04): `ProductCardActions` (catalog contract) is built by
+  `core/router/product_card_actions.dart` (composition root, ROUTE-08),
+  which watches the cart/wishlist controllers and surfaces `Failure`
+  snackbars; screens take an `actionsBuilder`, the wishlist screen a
+  `cardBuilder` (item → ProductCard mapping in the profile branch).
+* Add-to-cart uses the product's **default variant** (`products` embed now
+  carries variant ids; `Product.defaultVariantId`); remove-from-cart drops
+  every cart line of the product.
+* Cart keeps its independent `CartItemTile` (per user decision — no
+  refactor into ProductCard); its quantity stepper is now capped at the
+  product-wide stock carried on the cart line; the server re-validates at
+  checkout.
+* Wishlist rows carry stock/status/default-variant so the composition root
+  can rebuild full cards; `CartItemTile`'s click still opens detail (no
+  variant preservation needed — the detail sheet owns variant choice).
 
 ## Realtime
 

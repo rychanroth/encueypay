@@ -15,6 +15,11 @@ abstract class CartItem with _$CartItem {
     String? variantName,
     required int unitPriceMinor,
     required int quantity,
+
+    /// Product-wide stock snapshot (Section 6): all variants of the product
+    /// share it; caps the tile's quantity stepper. The server re-validates
+    /// authoritatively at checkout (§53).
+    @Default(0) int stock,
     String? businessId,
     String? businessName,
     String? imageUrl,

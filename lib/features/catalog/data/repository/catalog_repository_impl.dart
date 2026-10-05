@@ -41,7 +41,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   // embed key.
   static const _productSelect =
       '*, brands(name), product_images(storage_path, sort_order), '
-      'product_variants(price_minor)';
+      'product_variants(id, price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
   /// resolved here in the data layer — never in the UI.
