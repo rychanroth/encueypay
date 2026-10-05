@@ -9,6 +9,7 @@ class CategoryDto {
     required this.id,
     required this.name,
     this.parentId,
+    this.imageUrl,
   });
 
   factory CategoryDto.fromJson(Map<String, dynamic> json) =>
@@ -17,6 +18,7 @@ class CategoryDto {
   final String id;
   final String name;
   final String? parentId;
+  final String? imageUrl;
 
   Map<String, dynamic> toJson() => _$CategoryDtoToJson(this);
 }

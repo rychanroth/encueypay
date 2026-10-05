@@ -93,6 +93,7 @@ class AdminCategoryDto {
     required this.id,
     required this.name,
     this.parentId,
+    this.imageUrl,
   });
 
   factory AdminCategoryDto.fromJson(Map<String, dynamic> json) =>
@@ -101,6 +102,7 @@ class AdminCategoryDto {
   final String id;
   final String name;
   final String? parentId;
+  final String? imageUrl;
 
   Map<String, dynamic> toJson() => _$AdminCategoryDtoToJson(this);
 }
@@ -112,6 +114,7 @@ class AdminBrandDto {
     required this.id,
     required this.name,
     this.description,
+    this.imageUrl,
     this.status,
   });
 
@@ -121,6 +124,7 @@ class AdminBrandDto {
   final String id;
   final String name;
   final String? description;
+  final String? imageUrl;
   final String? status;
 
   Map<String, dynamic> toJson() => _$AdminBrandDtoToJson(this);

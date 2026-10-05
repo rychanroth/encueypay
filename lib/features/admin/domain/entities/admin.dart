@@ -17,18 +17,23 @@ abstract class AdminApplication with _$AdminApplication {
 
 @freezed
 abstract class AdminCategory with _$AdminCategory {
-  const factory AdminCategory({required String id, required String name})
-      = _AdminCategory;
+  const factory AdminCategory({
+    required String id,
+    required String name,
+    String? imageUrl,
+  }) = _AdminCategory;
 }
 
 /// Brand management read model (living spec Part B §2/§8, Section 2b):
-/// admin-managed catalog brands (assignment §2/§3).
+/// admin-managed catalog brands (assignment §2/§3). [imageUrl] is a full
+/// public URL (Section 2c, banner convention).
 @freezed
 abstract class AdminBrand with _$AdminBrand {
   const factory AdminBrand({
     required String id,
     required String name,
     @Default('') String description,
+    String? imageUrl,
     @Default(AdminCatalogStatus.active) AdminCatalogStatus status,
   }) = _AdminBrand;
 }

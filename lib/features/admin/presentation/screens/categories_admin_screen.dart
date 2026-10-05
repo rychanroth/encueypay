@@ -11,13 +11,26 @@ class CategoriesAdminScreen extends ConsumerWidget {
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
+    final imageController = TextEditingController();
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('New category'),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(labelText: 'Name'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: imageController,
+              decoration: const InputDecoration(
+                labelText: 'Image URL (optional)',
+                hintText: 'https://…',
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -32,9 +45,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
       ),
     );
     if (created != true) return;
-    await ref
-        .read(adminCategoriesControllerProvider.notifier)
-        .create(name: nameController.text.trim());
+    final imageUrl =
+        imageController.text.trim().isEmpty ? null : imageController.text.trim();
+    await ref.read(adminCategoriesControllerProvider.notifier).create(
+          name: nameController.text.trim(),
+          imageUrl: imageUrl,
+        );
   }
 
   Future<void> _rename(
@@ -42,15 +58,30 @@ class CategoriesAdminScreen extends ConsumerWidget {
     WidgetRef ref,
     String categoryId,
     String currentName,
+    String? currentImageUrl,
   ) async {
     final nameController = TextEditingController(text: currentName);
+    final imageController =
+        TextEditingController(text: currentImageUrl ?? '');
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Rename category'),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(labelText: 'Name'),
+        title: const Text('Edit category'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: imageController,
+              decoration: const InputDecoration(
+                labelText: 'Image URL (optional)',
+                hintText: 'https://…',
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -65,9 +96,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
       ),
     );
     if (saved != true) return;
+    final imageUrl =
+        imageController.text.trim().isEmpty ? null : imageController.text.trim();
     await ref.read(adminCategoriesControllerProvider.notifier).rename(
           categoryId: categoryId,
           name: nameController.text.trim(),
+          imageUrl: imageUrl,
         );
   }
 
@@ -143,6 +177,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
                         ref,
                         category.id,
                         category.name,
+                        category.imageUrl,
                       ),
                     ),
                     IconButton(

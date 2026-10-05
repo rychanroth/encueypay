@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../features/cart/presentation/controllers/cart_controller.dart';
+import '../../../features/catalog/presentation/screens/discovery_screen.dart';
 import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
 import '../../../features/catalog/presentation/screens/products_screen.dart';
@@ -55,6 +56,17 @@ final homeBranch = StatefulShellBranch(
           name: AppRoutes.notifications,
           path: 'notifications',
           builder: (context, state) => const NotificationsScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.discovery,
+          path: 'discovery',
+          builder: (context, state) => DiscoveryScreen(
+            kind: state.uri.queryParameters['kind'] ?? 'category',
+            id: state.uri.queryParameters['id'] ?? '',
+            name: state.uri.queryParameters['name'] ?? '',
+            imageUrl: state.uri.queryParameters['image'],
+            query: state.uri.queryParameters['q'],
+          ),
         ),
       ],
     ),

@@ -12,21 +12,35 @@ class AdminCategoriesController extends _$AdminCategoriesController {
     return ref.watch(adminRepositoryProvider).fetchCategories();
   }
 
-  Future<void> create({required String name}) async {
+  Future<void> create({
+    required String name,
+    String? parentId,
+    String? imageUrl,
+  }) async {
     final current = state.value ?? const <AdminCategory>[];
     state = await AsyncValue.guard(() async {
-      await ref.read(adminRepositoryProvider).createCategory(name: name);
+      await ref.read(adminRepositoryProvider).createCategory(
+            name: name,
+            parentId: parentId,
+            imageUrl: imageUrl,
+          );
       ref.invalidateSelf();
       return current;
     });
   }
 
-  Future<void> rename({required String categoryId, required String name}) async {
+  Future<void> rename({
+    required String categoryId,
+    required String name,
+    String? imageUrl,
+  }) async {
     final current = state.value ?? const <AdminCategory>[];
     state = await AsyncValue.guard(() async {
-      await ref
-          .read(adminRepositoryProvider)
-          .renameCategory(categoryId: categoryId, name: name);
+      await ref.read(adminRepositoryProvider).renameCategory(
+            categoryId: categoryId,
+            name: name,
+            imageUrl: imageUrl,
+          );
       ref.invalidateSelf();
       return current;
     });

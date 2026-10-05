@@ -79,8 +79,8 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Home: featured, new arrivals, best sellers, popular categories, flash sales, special offers, recommended, recently viewed + search bar | 🟡 | `features/catalog/presentation/screens/home_screen.dart`; feed providers `home_feed_providers.dart` | Present: search bar, category chips, approved promotion banners (= special offers), newest products (= new arrivals). ❌ featured / best sellers / flash sales / recommended / recently viewed (documented gaps); brand browsing → Section 2b. ⛔ businesses strip **hidden (Section 2, L-05)** |
-| Categories & subcategories (ID, name, description, image, icon, status) | 🟡 | `categories` table (`20260923000003`); `categories_provider.dart`; admin CRUD `features/admin/.../categories_admin_screen.dart` | Category browse = flat chips; hierarchy supported in schema, subcategory browsing UI ❌ gap |
+| Home: featured, new arrivals, best sellers, popular categories, flash sales, special offers, recommended, recently viewed + search bar | 🟡 | `features/catalog/presentation/screens/home_screen.dart`; feed providers `home_feed_providers.dart` | Present: search bar, **category card grid ("Shop by category") + brand logo rail ("Top brands") navigating to a per-item `DiscoveryScreen` (Section 2c)**, approved promotion banners (= special offers), newest products (= new arrivals). ❌ featured / best sellers / flash sales / recommended / recently viewed (documented gaps); popular/rating sorts ❌ (documented). ⛔ businesses strip hidden (Section 2, L-05) |
+| Categories & subcategories (ID, name, description, image, icon, status) | 🟡 | `categories` table (`20260923000003` + image_url `20261005000030`); `categories_provider.dart`; admin CRUD `categories_admin_screen.dart` (+image URL) | Name ✅, **image ✅ (Section 2c)**; hierarchy: a parent category's discovery page aggregates its own + all sub-category products server-side (`category_id IN (id + children)`); separate sub-category browsing UI deferred (documented). ❌ description/icon/status columns (documented) |
 | Search by name/category/brand/price/rating/availability/keyword | 🟡 | `products_screen.dart` + `products_controller.dart` — server-side search matching product name **or brand name** (PostgREST or-filter, Section 2b) + category filter | Name/category/brand ✅; ❌ price/rating/availability (documented) |
 | Filters: category, brand, price, rating, stock | 🟡 | Category ✅; brand filter chips ✅ (Section 2b — `brands` table, `products.brand_id`, `fetchBrands`) | Price/rating ❌; stock ⛔ N/A — inventory removed (`20260928000021`, Part D) |
 | Sorting: latest, popular, price ↑, price ↓, highest rating | 🟡 | Sort menu: newest / price asc / price desc / name | ❌ popular, ❌ rating (documented) |
@@ -227,6 +227,21 @@ appended as sections land.)
 * Catalog read path: `fetchBrands()`, brand filter (`brand_id` eq), brand-name search
   (PostgREST or-filter with `,()` sanitized from user input), and `brands(name)` embed
   for the detail screen's brand line.
+
+## Section 2c — Discovery images + card navigation (`20261005000030`)
+
+* `brands.image_url` / `categories.image_url` — full public URLs (banner
+  convention, 0024); no new Storage plumbing. `create_category` /
+  `rename_category` re-created with an optional `p_image_url`.
+* Home discovery navigation redesigned from chip strips to **category card
+  grid + brand logo rail** (assignment §2 "intuitive navigation"), both
+  tapping into a per-item `DiscoveryScreen` (`/home/discovery?kind=&id=`,
+  hero header + the shared `ProductGrid` extracted from the products
+  screen per PRES-06). Filter chips remain in the products screen's filter
+  bar.
+* Parent categories aggregate their sub-category products server-side
+  (`category_id IN (id + children)`); no separate sub-category browsing
+  level (deferred, documented in Part B §2).
 
 ## Realtime
 

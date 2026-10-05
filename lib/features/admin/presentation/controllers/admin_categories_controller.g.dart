@@ -35,7 +35,7 @@ final class AdminCategoriesControllerProvider
 }
 
 String _$adminCategoriesControllerHash() =>
-    r'f73f09ed13306aaadae12dee0eeea700605e62a8';
+    r'7e7cd31f3c3b58ca78e2c5a966497686b9dd7c8a';
 
 abstract class _$AdminCategoriesController
     extends $AsyncNotifier<List<AdminCategory>> {

@@ -87,7 +87,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     try {
       final rows = await _client
           .from('brands')
-          .select('id, name')
+          .select('id, name, image_url')
           .eq('status', 'active')
           .order('name');
       return rows.map(BrandDto.fromJson).map((d) => d.toDomain()).toList();
@@ -130,7 +130,17 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .select(_productSelect)
           .eq('status', 'active');
       if (categoryId != null) {
-        request = request.eq('category_id', categoryId);
+        // Discovery aggregates: a parent category includes its own products
+        // plus all sub-category products (2-level hierarchy, Section 2c).
+        final childRows = await _client
+            .from('categories')
+            .select('id')
+            .eq('parent_id', categoryId);
+        final categoryIds = [
+          categoryId,
+          for (final row in childRows) row['id'] as String,
+        ];
+        request = request.inFilter('category_id', categoryIds);
       }
       if (brandId != null) {
         request = request.eq('brand_id', brandId);

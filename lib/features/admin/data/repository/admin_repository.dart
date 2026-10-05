@@ -18,11 +18,16 @@ abstract interface class IAdminRepository {
 
   Future<List<AdminCategory>> fetchCategories();
 
-  Future<void> createCategory({required String name, String? parentId});
+  Future<void> createCategory({
+    required String name,
+    String? parentId,
+    String? imageUrl,
+  });
 
   Future<void> renameCategory({
     required String categoryId,
     required String name,
+    String? imageUrl,
   });
 
   Future<void> deleteCategory({required String categoryId});
@@ -30,12 +35,17 @@ abstract interface class IAdminRepository {
   // ------------------------------------------------------- brands (2b)
   Future<List<AdminBrand>> fetchBrands();
 
-  Future<void> createBrand({required String name, String? description});
+  Future<void> createBrand({
+    required String name,
+    String? description,
+    String? imageUrl,
+  });
 
   Future<void> updateBrand({
     required String brandId,
     required String name,
     String? description,
+    String? imageUrl,
   });
 
   Future<void> setBrandArchived({

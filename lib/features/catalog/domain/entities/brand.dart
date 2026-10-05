@@ -7,5 +7,9 @@ part 'brand.freezed.dart';
 /// are admin-managed; customers read active ones only. Immutable (DOMAIN-01).
 @freezed
 abstract class Brand with _$Brand {
-  const factory Brand({required String id, required String name}) = _Brand;
+  const factory Brand({
+    required String id,
+    required String name,
+    String? imageUrl,
+  }) = _Brand;
 }

@@ -13,6 +13,7 @@ class BrandsAdminScreen extends ConsumerWidget {
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
+    final imageController = TextEditingController();
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -29,6 +30,13 @@ class BrandsAdminScreen extends ConsumerWidget {
               decoration:
                   const InputDecoration(labelText: 'Description (optional)'),
             ),
+            TextField(
+              controller: imageController,
+              decoration: const InputDecoration(
+                labelText: 'Image URL (optional)',
+                hintText: 'https://…',
+              ),
+            ),
           ],
         ),
         actions: [
@@ -44,9 +52,12 @@ class BrandsAdminScreen extends ConsumerWidget {
       ),
     );
     if (created != true) return;
+    final imageUrl =
+        imageController.text.trim().isEmpty ? null : imageController.text.trim();
     await ref.read(adminBrandsControllerProvider.notifier).create(
           name: nameController.text.trim(),
           description: descriptionController.text.trim(),
+          imageUrl: imageUrl,
         );
   }
 
@@ -58,6 +69,8 @@ class BrandsAdminScreen extends ConsumerWidget {
     final nameController = TextEditingController(text: brand.name);
     final descriptionController =
         TextEditingController(text: brand.description);
+    final imageController =
+        TextEditingController(text: brand.imageUrl ?? '');
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -74,6 +87,13 @@ class BrandsAdminScreen extends ConsumerWidget {
               decoration:
                   const InputDecoration(labelText: 'Description (optional)'),
             ),
+            TextField(
+              controller: imageController,
+              decoration: const InputDecoration(
+                labelText: 'Image URL (optional)',
+                hintText: 'https://…',
+              ),
+            ),
           ],
         ),
         actions: [
@@ -89,10 +109,13 @@ class BrandsAdminScreen extends ConsumerWidget {
       ),
     );
     if (saved != true) return;
+    final imageUrl =
+        imageController.text.trim().isEmpty ? null : imageController.text.trim();
     await ref.read(adminBrandsControllerProvider.notifier).edit(
           brandId: brand.id,
           name: nameController.text.trim(),
           description: descriptionController.text.trim(),
+          imageUrl: imageUrl,
         );
   }
 
@@ -161,7 +184,21 @@ class BrandsAdminScreen extends ConsumerWidget {
               final brand = brands[index];
               final isArchived = brand.status == AdminCatalogStatus.archived;
               return ListTile(
-                leading: const Icon(Icons.sell_outlined),
+                leading: brand.imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: Image.network(
+                            brand.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                const Icon(Icons.sell_outlined),
+                          ),
+                        ),
+                      )
+                    : const Icon(Icons.sell_outlined),
                 title: Text(
                   brand.name,
                   style: isArchived

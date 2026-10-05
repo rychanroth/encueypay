@@ -73,12 +73,13 @@ class AdminRepositoryImpl implements IAdminRepository {
     try {
       final rows = await _client
           .from('categories')
-          .select('id, name')
+          .select('id, name, image_url')
           .order('name');
-      return rows
-          .map(AdminCategoryDto.fromJson)
-          .map((dto) => AdminCategory(id: dto.id, name: dto.name))
-          .toList();
+      return rows.map(AdminCategoryDto.fromJson).map((dto) => AdminCategory(
+            id: dto.id,
+            name: dto.name,
+            imageUrl: dto.imageUrl,
+          )).toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
@@ -87,10 +88,15 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<void> createCategory({required String name, String? parentId}) {
+  Future<void> createCategory({
+    required String name,
+    String? parentId,
+    String? imageUrl,
+  }) {
     return _rpc('create_category', {
       'p_name': name,
       'p_parent_id': parentId,
+      'p_image_url': imageUrl,
     });
   }
 
@@ -98,10 +104,12 @@ class AdminRepositoryImpl implements IAdminRepository {
   Future<void> renameCategory({
     required String categoryId,
     required String name,
+    String? imageUrl,
   }) {
     return _rpc('rename_category', {
       'p_category_id': categoryId,
       'p_name': name,
+      'p_image_url': imageUrl,
     });
   }
 
@@ -119,6 +127,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             id: dto.id,
             name: dto.name,
             description: dto.description ?? '',
+            imageUrl: dto.imageUrl,
             status: AdminCatalogStatus.fromName(dto.status),
           )).toList();
     } on PostgrestException catch (e) {
@@ -129,11 +138,16 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<void> createBrand({required String name, String? description}) async {
+  Future<void> createBrand({
+    required String name,
+    String? description,
+    String? imageUrl,
+  }) async {
     try {
       await _client.from('brands').insert({
         'name': name,
         'description': description ?? '',
+        'image_url': imageUrl,
       });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
@@ -147,11 +161,13 @@ class AdminRepositoryImpl implements IAdminRepository {
     required String brandId,
     required String name,
     String? description,
+    String? imageUrl,
   }) async {
     try {
       await _client.from('brands').update({
         'name': name,
         'description': description ?? '',
+        'image_url': imageUrl,
       }).eq('id', brandId);
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);

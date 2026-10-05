@@ -17,12 +17,15 @@ class AdminBrandsController extends _$AdminBrandsController {
   Future<void> create({
     required String name,
     String? description,
+    String? imageUrl,
   }) async {
     final current = state.value ?? const <AdminBrand>[];
     state = await AsyncValue.guard(() async {
-      await ref
-          .read(adminRepositoryProvider)
-          .createBrand(name: name, description: description);
+      await ref.read(adminRepositoryProvider).createBrand(
+            name: name,
+            description: description,
+            imageUrl: imageUrl,
+          );
       ref.invalidateSelf();
       return current;
     });
@@ -34,6 +37,7 @@ class AdminBrandsController extends _$AdminBrandsController {
     required String brandId,
     required String name,
     String? description,
+    String? imageUrl,
   }) async {
     final current = state.value ?? const <AdminBrand>[];
     state = await AsyncValue.guard(() async {
@@ -41,6 +45,7 @@ class AdminBrandsController extends _$AdminBrandsController {
             brandId: brandId,
             name: name,
             description: description,
+            imageUrl: imageUrl,
           );
       ref.invalidateSelf();
       return current;

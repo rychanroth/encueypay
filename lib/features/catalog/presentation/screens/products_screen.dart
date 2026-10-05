@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/presentation/responsive/screen_size.dart';
-import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/product_sort.dart';
 import '../controllers/brands_provider.dart';
 import '../controllers/categories_provider.dart';
 import '../controllers/products_controller.dart';
 import '../widgets/category_chip.dart';
-import '../widgets/product_card.dart';
+import '../widgets/product_grid.dart';
 
 /// Product discovery (spec §32): search, category + brand filters (assignment
 /// §2), sort, pagination. Route parameters seed the initial filter set.
@@ -45,11 +42,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ref.watch(productsControllerProvider(widget.categoryId, widget.query, widget.brandId));
     final categoriesAsync = ref.watch(categoriesProvider);
     final brandsAsync = ref.watch(brandsProvider);
-    final columns = switch (context.screenSize) {
-      ScreenSize.expanded => 4,
-      ScreenSize.medium => 3,
-      ScreenSize.compact => 2,
-    };
 
     return Scaffold(
       appBar: AppBar(
@@ -207,50 +199,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   ],
                 ),
               ),
-              data: (listState) {
-                if (listState.items.isEmpty) {
-                  return const Center(child: Text('No products found.'));
-                }
-                return NotificationListener<ScrollEndNotification>(
-                  onNotification: (notification) {
-                    if (notification.metrics.extentAfter < 400) {
-                      ref
-                          .read(productsControllerProvider(
-                                  widget.categoryId, widget.query,
-                                  widget.brandId)
-                              .notifier)
-                          .loadMore();
-                    }
-                    return false;
-                  },
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: columns,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
-                      childAspectRatio: 0.62,
-                    ),
-                    itemCount: listState.items.length +
-                        (listState.hasMore ? columns : 0),
-                    itemBuilder: (context, index) {
-                      if (index >= listState.items.length) {
-                        return const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        );
-                      }
-                      final product = listState.items[index];
-                      return ProductCard(
-                        product: product,
-                        onTap: () => context.pushNamed(
-                          AppRoutes.productDetail,
-                          pathParameters: {'id': product.id},
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
+              data: (listState) => ProductGrid(
+                listState: listState,
+                onLoadMore: () => ref
+                    .read(productsControllerProvider(widget.categoryId,
+                            widget.query, widget.brandId)
+                        .notifier)
+                    .loadMore(),
+              ),
             ),
           ),
         ],

@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/brand.dart';
 import '../../domain/entities/category.dart';
+import '../controllers/brands_provider.dart';
 import '../controllers/categories_provider.dart';
 import '../controllers/home_feed_providers.dart';
-import '../widgets/category_chip.dart';
 import '../widgets/product_card.dart';
 
 /// Customer tab 1 — Home. Discovery entry point: search, categories, banners,
@@ -68,16 +69,15 @@ class HomeScreen extends ConsumerWidget {
           ),
           _SectionTitle('Featured'),
           const _BannersStrip(),
-          _SectionTitle('Categories'),
-          _CategoriesStrip(onCategoryTap: (category) {
-            context.pushNamed(
-              AppRoutes.products,
-              queryParameters: {'category': category.id},
-            );
-          }),
-          // 2-Role Academic Prototype: the Businesses strip (L-04) is hidden.
-          // Restore with _SectionTitle('Businesses') + _BusinessesStrip and
-          // the /home/business/:id route in home_branch.dart.
+          // Section 2c: card-based discovery navigation (assignment §2
+          // "intuitive Search Bar and navigation for rapid discovery") —
+          // categories as an image card grid, brands as a logo rail, both
+          // tapping into the discovery screen. The chips remain in the
+          // products screen's filter bar.
+          _SectionTitle('Shop by category'),
+          _CategoryCardGrid(),
+          _SectionTitle('Top brands'),
+          _BrandRail(),
           _SectionTitle('New arrivals'),
           _HomeProductsGrid(columns: columns),
         ],
@@ -160,34 +160,211 @@ class _BannersStrip extends ConsumerWidget {
   }
 }
 
-class _CategoriesStrip extends ConsumerWidget {
-  const _CategoriesStrip({required this.onCategoryTap});
-
-  final void Function(Category category) onCategoryTap;
+/// Category discovery cards (Section 2c): image tile + scrim name. Parent
+/// categories aggregate their sub-category products in the discovery screen.
+class _CategoryCardGrid extends ConsumerWidget {
+  const _CategoryCardGrid();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesProvider);
-    return categoriesAsync.when(
-      loading: () => const _StripLoading(),
-      error: (error, _) => _StripError(
-        message: '$error',
-        onRetry: () => ref.invalidate(categoriesProvider),
-      ),
-      data: (categories) => SizedBox(
-        height: 40,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
+    return categoriesAsync.maybeWhen(
+      data: (categories) {
+        if (categories.isEmpty) return const SizedBox.shrink();
+        return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: categories.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 0),
-          itemBuilder: (context, index) => CategoryChip(
-            category: categories[index],
-            selected: false,
-            onTap: () => onCategoryTap(categories[index]),
+          child: LayoutBuilder(builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final crossAxisCount = width >= 840
+                ? 4
+                : width >= 600
+                    ? 3
+                    : 2;
+            final tileWidth =
+                (width - (crossAxisCount - 1) * 8) / crossAxisCount;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final category in categories)
+                  SizedBox(
+                    width: tileWidth,
+                    child: _CategoryCard(category: category),
+                  ),
+              ],
+            );
+          }),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({required this.category});
+
+  final Category category;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.pushNamed(
+          AppRoutes.discovery,
+          queryParameters: {
+            'kind': 'category',
+            'id': category.id,
+            'name': category.name,
+            if (category.imageUrl != null) 'image': category.imageUrl!,
+          },
+        ),
+        child: AspectRatio(
+          aspectRatio: 4 / 3,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (category.imageUrl != null)
+                Image.network(
+                  category.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const _CategoryFallback(),
+                )
+              else
+                const _CategoryFallback(),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  color: Colors.black.withValues(alpha: 0.45),
+                  child: Text(
+                    category.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CategoryFallback extends StatelessWidget {
+  const _CategoryFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ColoredBox(
+      color: theme.colorScheme.primaryContainer,
+      child: Icon(Icons.category_outlined,
+          size: 36, color: theme.colorScheme.onPrimaryContainer),
+    );
+  }
+}
+
+/// Brand discovery rail (Section 2c): rounded logo cards in a horizontal
+/// scroll, tapping into the brand's discovery page.
+class _BrandRail extends ConsumerWidget {
+  const _BrandRail();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final brandsAsync = ref.watch(brandsProvider);
+    return brandsAsync.maybeWhen(
+      data: (brands) {
+        if (brands.isEmpty) return const SizedBox.shrink();
+        return SizedBox(
+          height: 132,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: brands.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final brand = brands[index];
+              return _BrandCard(brand: brand);
+            },
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _BrandCard extends StatelessWidget {
+  const _BrandCard({required this.brand});
+
+  final Brand brand;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 108,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            clipBehavior: Clip.antiAlias,
+            margin: EdgeInsets.zero,
+            child: InkWell(
+              onTap: () => context.pushNamed(
+                AppRoutes.discovery,
+                queryParameters: {
+                  'kind': 'brand',
+                  'id': brand.id,
+                  'name': brand.name,
+                  if (brand.imageUrl != null) 'image': brand.imageUrl!,
+                },
+              ),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: brand.imageUrl != null
+                    ? Image.network(
+                        brand.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const _BrandFallback(),
+                      )
+                    : const _BrandFallback(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            brand.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BrandFallback extends StatelessWidget {
+  const _BrandFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ColoredBox(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.sell_outlined,
+          size: 32, color: theme.colorScheme.outline),
     );
   }
 }
@@ -241,24 +418,6 @@ class _HomeProductsGrid extends ConsumerWidget {
           },
         );
       },
-    );
-  }
-}
-
-class _StripLoading extends StatelessWidget {
-  const _StripLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: SizedBox(
-          height: 20,
-          width: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
     );
   }
 }
