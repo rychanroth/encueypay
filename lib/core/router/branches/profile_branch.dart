@@ -9,9 +9,13 @@ import '../../../features/profile/presentation/screens/addresses_screen.dart';
 import '../../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
-import '../../../features/role_applications/presentation/screens/role_application_screen.dart';
 import '../../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../app_routes.dart';
+
+// 2-Role Academic Prototype: the role-application route (`/profile/apply`,
+// living spec Part C L-03) is removed — customers can no longer apply to
+// become business owners or drivers. features/role_applications stays in the
+// repository; restore the GoRoute below to bring the flow back.
 
 /// Shared tab — Profile (all roles). Nested routes of this tab are declared
 /// here (ROUTE-04).
@@ -55,11 +59,6 @@ final profileBranch = StatefulShellBranch(
           name: AppRoutes.wishlist,
           path: 'wishlist',
           builder: (context, state) => const WishlistScreen(),
-        ),
-        GoRoute(
-          name: AppRoutes.roleApplication,
-          path: 'apply',
-          builder: (context, state) => const RoleApplicationScreen(),
         ),
         GoRoute(
           name: AppRoutes.settings,

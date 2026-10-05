@@ -3,21 +3,72 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/domain/entities/user_role.dart';
 import 'app_routes.dart';
-import 'branches/admin_applications_branch.dart';
 import 'branches/admin_categories_branch.dart';
 import 'branches/admin_dashboard_branch.dart';
+import 'branches/admin_products_branch.dart';
 import 'branches/admin_promotions_branch.dart';
-import 'branches/business_dashboard_branch.dart';
-import 'branches/business_orders_branch.dart';
-import 'branches/business_products_branch.dart';
-import 'branches/business_transactions_branch.dart';
 import 'branches/cart_branch.dart';
-import 'branches/driver_available_branch.dart';
-import 'branches/driver_deliveries_branch.dart';
-import 'branches/driver_transactions_branch.dart';
 import 'branches/home_branch.dart';
 import 'branches/orders_branch.dart';
 import 'branches/profile_branch.dart';
+
+// 2-Role Academic Prototype (docs/app_implementation_specification.md, Part C):
+// the Business Owner portal (L-01), Driver portal (L-02) and the admin
+// Applications review (L-03) are bypassed — their branch files remain in the
+// repository and compile, but no tab set mounts them. Restore by re-adding the
+// branch imports and tab entries here.
+
+final List<NavigationTab> _customerTabs = [
+  NavigationTab(
+    branch: homeBranch,
+    icon: Icons.storefront,
+    label: 'Home',
+  ),
+  NavigationTab(
+    branch: cartBranch,
+    icon: Icons.shopping_cart_outlined,
+    label: 'Cart',
+  ),
+  NavigationTab(
+    branch: ordersBranch,
+    icon: Icons.receipt_long_outlined,
+    label: 'Orders',
+  ),
+  NavigationTab(
+    branch: profileBranch,
+    icon: Icons.person_outline,
+    label: 'Profile',
+  ),
+];
+
+final List<NavigationTab> _adminTabs = [
+  NavigationTab(
+    branch: adminDashboardBranch,
+    icon: Icons.admin_panel_settings_outlined,
+    label: 'Dashboard',
+  ),
+  // Section 2b — spec §8 "manages Products" (branded catalog management).
+  NavigationTab(
+    branch: adminProductsBranch,
+    icon: Icons.inventory_2_outlined,
+    label: 'Products',
+  ),
+  NavigationTab(
+    branch: adminCategoriesBranch,
+    icon: Icons.category_outlined,
+    label: 'Categories',
+  ),
+  NavigationTab(
+    branch: adminPromotionsBranch,
+    icon: Icons.campaign_outlined,
+    label: 'Promotions',
+  ),
+  NavigationTab(
+    branch: profileBranch,
+    icon: Icons.person_outline,
+    label: 'Profile',
+  ),
+];
 
 /// Single source of truth for tab order per role. BOTH the router's branch
 /// list and the shell's NavigationBar derive from this mapping — that is
@@ -36,104 +87,12 @@ class NavigationTab {
 
 List<NavigationTab> tabsForRole(UserRole role) {
   return switch (role) {
-    UserRole.customer => [
-        NavigationTab(
-          branch: homeBranch,
-          icon: Icons.storefront,
-          label: 'Home',
-        ),
-        NavigationTab(
-          branch: cartBranch,
-          icon: Icons.shopping_cart_outlined,
-          label: 'Cart',
-        ),
-        NavigationTab(
-          branch: ordersBranch,
-          icon: Icons.receipt_long_outlined,
-          label: 'Orders',
-        ),
-        NavigationTab(
-          branch: profileBranch,
-          icon: Icons.person_outline,
-          label: 'Profile',
-        ),
-      ],
-    UserRole.business => [
-        NavigationTab(
-          branch: businessDashboardBranch,
-          icon: Icons.storefront,
-          label: 'Dashboard',
-        ),
-        NavigationTab(
-          branch: businessProductsBranch,
-          icon: Icons.inventory_2_outlined,
-          label: 'Products',
-        ),
-        NavigationTab(
-          branch: businessOrdersBranch,
-          icon: Icons.receipt_long_outlined,
-          label: 'Orders',
-        ),
-        NavigationTab(
-          branch: businessTransactionsBranch,
-          icon: Icons.payments_outlined,
-          label: 'Transactions',
-        ),
-        NavigationTab(
-          branch: profileBranch,
-          icon: Icons.person_outline,
-          label: 'Profile',
-        ),
-      ],
-    UserRole.driver => [
-        NavigationTab(
-          branch: driverAvailableBranch,
-          icon: Icons.local_shipping_outlined,
-          label: 'Available',
-        ),
-        NavigationTab(
-          branch: driverDeliveriesBranch,
-          icon: Icons.route_outlined,
-          label: 'My deliveries',
-        ),
-        NavigationTab(
-          branch: driverTransactionsBranch,
-          icon: Icons.payments_outlined,
-          label: 'Transactions',
-        ),
-        NavigationTab(
-          branch: profileBranch,
-          icon: Icons.person_outline,
-          label: 'Profile',
-        ),
-      ],
-    UserRole.admin => [
-        NavigationTab(
-          branch: adminDashboardBranch,
-          icon: Icons.admin_panel_settings_outlined,
-          label: 'Dashboard',
-        ),
-        NavigationTab(
-          branch: adminApplicationsBranch,
-          icon: Icons.approval_outlined,
-          label: 'Applications',
-        ),
-        NavigationTab(
-          branch: adminCategoriesBranch,
-          icon: Icons.category_outlined,
-          label: 'Categories',
-        ),
-        NavigationTab(
-          branch: adminPromotionsBranch,
-          icon: Icons.campaign_outlined,
-          label: 'Promotions',
-        ),
-        NavigationTab(
-          branch: profileBranch,
-          icon: Icons.person_outline,
-          label: 'Profile',
-        ),
-      ],
+    UserRole.customer => _customerTabs,
+    UserRole.admin => _adminTabs,
+    // Bypassed roles fall back to the customer surface (Part C, L-01/L-02):
+    // the DB enum still admits these values, so the switch must handle them,
+    // but no operator tab set is mounted in the prototype.
+    UserRole.business || UserRole.driver => _customerTabs,
   };
 }
 
@@ -141,8 +100,7 @@ List<NavigationTab> tabsForRole(UserRole role) {
 String defaultRouteForRole(UserRole role) {
   return switch (role) {
     UserRole.customer => AppRoutes.home,
-    UserRole.business => AppRoutes.businessDashboard,
-    UserRole.driver => AppRoutes.driverAvailable,
     UserRole.admin => AppRoutes.adminDashboard,
+    UserRole.business || UserRole.driver => AppRoutes.home,
   };
 }
