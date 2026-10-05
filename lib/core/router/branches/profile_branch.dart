@@ -5,7 +5,9 @@ import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../features/catalog/domain/entities/product.dart';
 import '../../../features/catalog/presentation/widgets/product_card.dart';
-import '../../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../../features/dashboard/presentation/widgets/dashboard_overview_panel.dart';
+import '../../../features/wishlist/domain/entities/wishlist_item.dart';
+import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../../../features/profile/domain/entities/address.dart';
 import '../../../features/profile/presentation/screens/address_edit_screen.dart';
 import '../../../features/profile/presentation/screens/addresses_screen.dart';
@@ -35,7 +37,45 @@ final profileBranch = StatefulShellBranch(
               (auth) => auth.value?.activeRole ?? UserRole.customer,
             ),
           );
-          return ProfileScreen(isCustomer: role == UserRole.customer);
+          // Section 8A: the Profile tab IS the account overview. The
+          // wishlist rail's cards are built here in the composition root
+          // (interactive ProductCards; ARCH-04).
+          final wishlistItems =
+              ref.watch(wishlistControllerProvider).value ?? const [];
+          Product productFromWishlist(WishlistItem item) => Product(
+                id: item.productId,
+                businessId: '',
+                categoryId: '',
+                name: item.productName,
+                basePriceMinor: item.priceMinor,
+                stock: item.stock,
+                fromPriceMinor: item.priceMinor,
+                defaultVariantId: item.defaultVariantId,
+                status: item.status == 'archived'
+                    ? ProductStatus.archived
+                    : ProductStatus.active,
+                imageUrls: [
+                  if (item.imageUrl != null) item.imageUrl!,
+                ],
+              );
+          final wishlistCards = [
+            for (final item in wishlistItems.take(6))
+              ProductCard(
+                product: productFromWishlist(item),
+                onTap: () => context.pushNamed(
+                  AppRoutes.productDetail,
+                  pathParameters: {'id': item.productId},
+                ),
+                actions: productCardActions(
+                    context, ref, productFromWishlist(item)),
+              ),
+          ];
+          return ProfileScreen(
+            isCustomer: role == UserRole.customer,
+            overviewPanel: role == UserRole.customer
+                ? DashboardOverviewPanel(wishlistCards: wishlistCards)
+                : null,
+          );
         },
       ),
       routes: [
@@ -91,12 +131,6 @@ final profileBranch = StatefulShellBranch(
               },
             ),
           ),
-        ),
-        // Customer dashboard (Section 5, assignment §1).
-        GoRoute(
-          name: AppRoutes.dashboard,
-          path: 'dashboard',
-          builder: (context, state) => const DashboardScreen(),
         ),
         GoRoute(
           name: AppRoutes.settings,

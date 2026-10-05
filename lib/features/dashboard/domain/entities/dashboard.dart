@@ -11,7 +11,11 @@ abstract class DashboardSummary with _$DashboardSummary {
     required int activeOrders,
     required int wishlistCount,
     required int cartItemCount,
+    required int cartSubtotalMinor,
     required int totalSpendingMinor,
+    required int completedOrders,
+    required int cancelledOrders,
+    required int totalOrders,
     @Default([]) List<DashboardOrder> recentOrders,
   }) = _DashboardSummary;
 }

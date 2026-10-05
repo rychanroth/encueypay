@@ -10,9 +10,14 @@ import '../controllers/profile_controller.dart';
 /// [isCustomer] (injected by the composition root). Sign-out lives in
 /// Settings and is wired through the composition root, not imported here.
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key, this.isCustomer = true});
+  const ProfileScreen({super.key, this.isCustomer = true, this.overviewPanel});
 
   final bool isCustomer;
+
+  /// Section 8A: the account overview (spending hero, orders panel,
+  /// wishlist rail, cart summary) — injected by the composition root so
+  /// features/profile never imports features/dashboard (ARCH-04).
+  final Widget? overviewPanel;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,6 +43,10 @@ class ProfileScreen extends ConsumerWidget {
         data: (profile) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            if (isCustomer && overviewPanel != null) ...[
+              overviewPanel!,
+              const SizedBox(height: 16),
+            ],
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -84,13 +93,6 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () => context.pushNamed(AppRoutes.profileEdit),
             ),
             if (isCustomer) ...[
-              ListTile(
-                leading: const Icon(Icons.dashboard_outlined),
-                title: const Text('My dashboard'),
-                subtitle: const Text('Orders, spending, wishlist, cart'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.pushNamed(AppRoutes.dashboard),
-              ),
               ListTile(
                 leading: const Icon(Icons.location_on_outlined),
                 title: const Text('Addresses'),

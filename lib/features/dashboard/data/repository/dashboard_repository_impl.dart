@@ -23,8 +23,12 @@ class DashboardRepositoryImpl implements IDashboardRepository {
       final map = Map<String, dynamic>.from(result as Map);
       return DashboardSummary(
         activeOrders: (map['active_orders'] as int?) ?? 0,
+        completedOrders: (map['completed_orders'] as int?) ?? 0,
+        cancelledOrders: (map['cancelled_orders'] as int?) ?? 0,
+        totalOrders: (map['total_orders'] as int?) ?? 0,
         wishlistCount: (map['wishlist_count'] as int?) ?? 0,
         cartItemCount: (map['cart_items'] as int?) ?? 0,
+        cartSubtotalMinor: (map['cart_subtotal_minor'] as int?) ?? 0,
         totalSpendingMinor: (map['total_spending_minor'] as int?) ?? 0,
         recentOrders: ((map['recent_orders'] as List? ?? const [])
                 .whereType<Map<String, dynamic>>())

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DashboardSummary {
 
- int get activeOrders; int get wishlistCount; int get cartItemCount; int get totalSpendingMinor; List<DashboardOrder> get recentOrders;
+ int get activeOrders; int get wishlistCount; int get cartItemCount; int get cartSubtotalMinor; int get totalSpendingMinor; int get completedOrders; int get cancelledOrders; int get totalOrders; List<DashboardOrder> get recentOrders;
 /// Create a copy of DashboardSummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $DashboardSummaryCopyWith<DashboardSummary> get copyWith => _$DashboardSummaryCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardSummary&&(identical(other.activeOrders, activeOrders) || other.activeOrders == activeOrders)&&(identical(other.wishlistCount, wishlistCount) || other.wishlistCount == wishlistCount)&&(identical(other.cartItemCount, cartItemCount) || other.cartItemCount == cartItemCount)&&(identical(other.totalSpendingMinor, totalSpendingMinor) || other.totalSpendingMinor == totalSpendingMinor)&&const DeepCollectionEquality().equals(other.recentOrders, recentOrders));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardSummary&&(identical(other.activeOrders, activeOrders) || other.activeOrders == activeOrders)&&(identical(other.wishlistCount, wishlistCount) || other.wishlistCount == wishlistCount)&&(identical(other.cartItemCount, cartItemCount) || other.cartItemCount == cartItemCount)&&(identical(other.cartSubtotalMinor, cartSubtotalMinor) || other.cartSubtotalMinor == cartSubtotalMinor)&&(identical(other.totalSpendingMinor, totalSpendingMinor) || other.totalSpendingMinor == totalSpendingMinor)&&(identical(other.completedOrders, completedOrders) || other.completedOrders == completedOrders)&&(identical(other.cancelledOrders, cancelledOrders) || other.cancelledOrders == cancelledOrders)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&const DeepCollectionEquality().equals(other.recentOrders, recentOrders));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,activeOrders,wishlistCount,cartItemCount,totalSpendingMinor,const DeepCollectionEquality().hash(recentOrders));
+int get hashCode => Object.hash(runtimeType,activeOrders,wishlistCount,cartItemCount,cartSubtotalMinor,totalSpendingMinor,completedOrders,cancelledOrders,totalOrders,const DeepCollectionEquality().hash(recentOrders));
 
 @override
 String toString() {
-  return 'DashboardSummary(activeOrders: $activeOrders, wishlistCount: $wishlistCount, cartItemCount: $cartItemCount, totalSpendingMinor: $totalSpendingMinor, recentOrders: $recentOrders)';
+  return 'DashboardSummary(activeOrders: $activeOrders, wishlistCount: $wishlistCount, cartItemCount: $cartItemCount, cartSubtotalMinor: $cartSubtotalMinor, totalSpendingMinor: $totalSpendingMinor, completedOrders: $completedOrders, cancelledOrders: $cancelledOrders, totalOrders: $totalOrders, recentOrders: $recentOrders)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $DashboardSummaryCopyWith<$Res>  {
   factory $DashboardSummaryCopyWith(DashboardSummary value, $Res Function(DashboardSummary) _then) = _$DashboardSummaryCopyWithImpl;
 @useResult
 $Res call({
- int activeOrders, int wishlistCount, int cartItemCount, int totalSpendingMinor, List<DashboardOrder> recentOrders
+ int activeOrders, int wishlistCount, int cartItemCount, int cartSubtotalMinor, int totalSpendingMinor, int completedOrders, int cancelledOrders, int totalOrders, List<DashboardOrder> recentOrders
 });
 
 
@@ -63,12 +63,16 @@ class _$DashboardSummaryCopyWithImpl<$Res>
 
 /// Create a copy of DashboardSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? activeOrders = null,Object? wishlistCount = null,Object? cartItemCount = null,Object? totalSpendingMinor = null,Object? recentOrders = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? activeOrders = null,Object? wishlistCount = null,Object? cartItemCount = null,Object? cartSubtotalMinor = null,Object? totalSpendingMinor = null,Object? completedOrders = null,Object? cancelledOrders = null,Object? totalOrders = null,Object? recentOrders = null,}) {
   return _then(DashboardSummary(
 activeOrders: null == activeOrders ? _self.activeOrders : activeOrders // ignore: cast_nullable_to_non_nullable
 as int,wishlistCount: null == wishlistCount ? _self.wishlistCount : wishlistCount // ignore: cast_nullable_to_non_nullable
 as int,cartItemCount: null == cartItemCount ? _self.cartItemCount : cartItemCount // ignore: cast_nullable_to_non_nullable
+as int,cartSubtotalMinor: null == cartSubtotalMinor ? _self.cartSubtotalMinor : cartSubtotalMinor // ignore: cast_nullable_to_non_nullable
 as int,totalSpendingMinor: null == totalSpendingMinor ? _self.totalSpendingMinor : totalSpendingMinor // ignore: cast_nullable_to_non_nullable
+as int,completedOrders: null == completedOrders ? _self.completedOrders : completedOrders // ignore: cast_nullable_to_non_nullable
+as int,cancelledOrders: null == cancelledOrders ? _self.cancelledOrders : cancelledOrders // ignore: cast_nullable_to_non_nullable
+as int,totalOrders: null == totalOrders ? _self.totalOrders : totalOrders // ignore: cast_nullable_to_non_nullable
 as int,recentOrders: null == recentOrders ? _self.recentOrders : recentOrders // ignore: cast_nullable_to_non_nullable
 as List<DashboardOrder>,
   ));
@@ -155,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int activeOrders,  int wishlistCount,  int cartItemCount,  int totalSpendingMinor,  List<DashboardOrder> recentOrders)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int activeOrders,  int wishlistCount,  int cartItemCount,  int cartSubtotalMinor,  int totalSpendingMinor,  int completedOrders,  int cancelledOrders,  int totalOrders,  List<DashboardOrder> recentOrders)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DashboardSummary() when $default != null:
-return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that.totalSpendingMinor,_that.recentOrders);case _:
+return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that.cartSubtotalMinor,_that.totalSpendingMinor,_that.completedOrders,_that.cancelledOrders,_that.totalOrders,_that.recentOrders);case _:
   return orElse();
 
 }
@@ -176,10 +180,10 @@ return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int activeOrders,  int wishlistCount,  int cartItemCount,  int totalSpendingMinor,  List<DashboardOrder> recentOrders)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int activeOrders,  int wishlistCount,  int cartItemCount,  int cartSubtotalMinor,  int totalSpendingMinor,  int completedOrders,  int cancelledOrders,  int totalOrders,  List<DashboardOrder> recentOrders)  $default,) {final _that = this;
 switch (_that) {
 case _DashboardSummary():
-return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that.totalSpendingMinor,_that.recentOrders);case _:
+return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that.cartSubtotalMinor,_that.totalSpendingMinor,_that.completedOrders,_that.cancelledOrders,_that.totalOrders,_that.recentOrders);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +200,10 @@ return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int activeOrders,  int wishlistCount,  int cartItemCount,  int totalSpendingMinor,  List<DashboardOrder> recentOrders)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int activeOrders,  int wishlistCount,  int cartItemCount,  int cartSubtotalMinor,  int totalSpendingMinor,  int completedOrders,  int cancelledOrders,  int totalOrders,  List<DashboardOrder> recentOrders)?  $default,) {final _that = this;
 switch (_that) {
 case _DashboardSummary() when $default != null:
-return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that.totalSpendingMinor,_that.recentOrders);case _:
+return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that.cartSubtotalMinor,_that.totalSpendingMinor,_that.completedOrders,_that.cancelledOrders,_that.totalOrders,_that.recentOrders);case _:
   return null;
 
 }
@@ -211,13 +215,17 @@ return $default(_that.activeOrders,_that.wishlistCount,_that.cartItemCount,_that
 
 
 class _DashboardSummary implements DashboardSummary {
-  const _DashboardSummary({required this.activeOrders, required this.wishlistCount, required this.cartItemCount, required this.totalSpendingMinor,  List<DashboardOrder> recentOrders = const []}): _recentOrders = recentOrders;
+  const _DashboardSummary({required this.activeOrders, required this.wishlistCount, required this.cartItemCount, required this.cartSubtotalMinor, required this.totalSpendingMinor, required this.completedOrders, required this.cancelledOrders, required this.totalOrders,  List<DashboardOrder> recentOrders = const []}): _recentOrders = recentOrders;
   
 
 @override final  int activeOrders;
 @override final  int wishlistCount;
 @override final  int cartItemCount;
+@override final  int cartSubtotalMinor;
 @override final  int totalSpendingMinor;
+@override final  int completedOrders;
+@override final  int cancelledOrders;
+@override final  int totalOrders;
  final  List<DashboardOrder> _recentOrders;
 @override@JsonKey() List<DashboardOrder> get recentOrders {
   if (_recentOrders is EqualUnmodifiableListView) return _recentOrders;
@@ -236,16 +244,16 @@ _$DashboardSummaryCopyWith<_DashboardSummary> get copyWith => __$DashboardSummar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardSummary&&(identical(other.activeOrders, activeOrders) || other.activeOrders == activeOrders)&&(identical(other.wishlistCount, wishlistCount) || other.wishlistCount == wishlistCount)&&(identical(other.cartItemCount, cartItemCount) || other.cartItemCount == cartItemCount)&&(identical(other.totalSpendingMinor, totalSpendingMinor) || other.totalSpendingMinor == totalSpendingMinor)&&const DeepCollectionEquality().equals(other._recentOrders, _recentOrders));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardSummary&&(identical(other.activeOrders, activeOrders) || other.activeOrders == activeOrders)&&(identical(other.wishlistCount, wishlistCount) || other.wishlistCount == wishlistCount)&&(identical(other.cartItemCount, cartItemCount) || other.cartItemCount == cartItemCount)&&(identical(other.cartSubtotalMinor, cartSubtotalMinor) || other.cartSubtotalMinor == cartSubtotalMinor)&&(identical(other.totalSpendingMinor, totalSpendingMinor) || other.totalSpendingMinor == totalSpendingMinor)&&(identical(other.completedOrders, completedOrders) || other.completedOrders == completedOrders)&&(identical(other.cancelledOrders, cancelledOrders) || other.cancelledOrders == cancelledOrders)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&const DeepCollectionEquality().equals(other._recentOrders, _recentOrders));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,activeOrders,wishlistCount,cartItemCount,totalSpendingMinor,const DeepCollectionEquality().hash(_recentOrders));
+int get hashCode => Object.hash(runtimeType,activeOrders,wishlistCount,cartItemCount,cartSubtotalMinor,totalSpendingMinor,completedOrders,cancelledOrders,totalOrders,const DeepCollectionEquality().hash(_recentOrders));
 
 @override
 String toString() {
-  return 'DashboardSummary(activeOrders: $activeOrders, wishlistCount: $wishlistCount, cartItemCount: $cartItemCount, totalSpendingMinor: $totalSpendingMinor, recentOrders: $recentOrders)';
+  return 'DashboardSummary(activeOrders: $activeOrders, wishlistCount: $wishlistCount, cartItemCount: $cartItemCount, cartSubtotalMinor: $cartSubtotalMinor, totalSpendingMinor: $totalSpendingMinor, completedOrders: $completedOrders, cancelledOrders: $cancelledOrders, totalOrders: $totalOrders, recentOrders: $recentOrders)';
 }
 
 
@@ -256,7 +264,7 @@ abstract mixin class _$DashboardSummaryCopyWith<$Res> implements $DashboardSumma
   factory _$DashboardSummaryCopyWith(_DashboardSummary value, $Res Function(_DashboardSummary) _then) = __$DashboardSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- int activeOrders, int wishlistCount, int cartItemCount, int totalSpendingMinor, List<DashboardOrder> recentOrders
+ int activeOrders, int wishlistCount, int cartItemCount, int cartSubtotalMinor, int totalSpendingMinor, int completedOrders, int cancelledOrders, int totalOrders, List<DashboardOrder> recentOrders
 });
 
 
@@ -273,12 +281,16 @@ class __$DashboardSummaryCopyWithImpl<$Res>
 
 /// Create a copy of DashboardSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? activeOrders = null,Object? wishlistCount = null,Object? cartItemCount = null,Object? totalSpendingMinor = null,Object? recentOrders = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? activeOrders = null,Object? wishlistCount = null,Object? cartItemCount = null,Object? cartSubtotalMinor = null,Object? totalSpendingMinor = null,Object? completedOrders = null,Object? cancelledOrders = null,Object? totalOrders = null,Object? recentOrders = null,}) {
   return _then(_DashboardSummary(
 activeOrders: null == activeOrders ? _self.activeOrders : activeOrders // ignore: cast_nullable_to_non_nullable
 as int,wishlistCount: null == wishlistCount ? _self.wishlistCount : wishlistCount // ignore: cast_nullable_to_non_nullable
 as int,cartItemCount: null == cartItemCount ? _self.cartItemCount : cartItemCount // ignore: cast_nullable_to_non_nullable
+as int,cartSubtotalMinor: null == cartSubtotalMinor ? _self.cartSubtotalMinor : cartSubtotalMinor // ignore: cast_nullable_to_non_nullable
 as int,totalSpendingMinor: null == totalSpendingMinor ? _self.totalSpendingMinor : totalSpendingMinor // ignore: cast_nullable_to_non_nullable
+as int,completedOrders: null == completedOrders ? _self.completedOrders : completedOrders // ignore: cast_nullable_to_non_nullable
+as int,cancelledOrders: null == cancelledOrders ? _self.cancelledOrders : cancelledOrders // ignore: cast_nullable_to_non_nullable
+as int,totalOrders: null == totalOrders ? _self.totalOrders : totalOrders // ignore: cast_nullable_to_non_nullable
 as int,recentOrders: null == recentOrders ? _self._recentOrders : recentOrders // ignore: cast_nullable_to_non_nullable
 as List<DashboardOrder>,
   ));
