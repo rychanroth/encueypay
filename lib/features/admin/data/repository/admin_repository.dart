@@ -93,6 +93,13 @@ abstract interface class IAdminRepository {
     String? reason,
   });
 
+  /// Section 7D: records the refund on a cancelled order whose payment was
+  /// already verified (refund_required → refunded + reference).
+  Future<void> markRefunded({
+    required String orderId,
+    String? reference,
+  });
+
   /// Mirrors process_return with admin authority.
   Future<void> processReturn({
     required String returnId,

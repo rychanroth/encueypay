@@ -78,6 +78,19 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                     child: const Text('Simulate QR payment'),
                   ),
                 ),
+              // Section 7D: record the refund on a cancelled order whose
+              // payment had already been verified.
+              if (order.status == AdminOrderStatus.cancelled &&
+                  order.paymentStatus == 'refund_required')
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: FilledButton(
+                    onPressed: () => ref
+                        .read(adminOrdersControllerProvider.notifier)
+                        .markRefunded(orderId: order.id),
+                    child: const Text('Mark refunded'),
+                  ),
+                ),
               const SizedBox(height: 16),
               Text('Items',
                   style: theme.textTheme.titleSmall

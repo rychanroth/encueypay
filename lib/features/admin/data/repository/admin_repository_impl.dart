@@ -444,6 +444,17 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
+  Future<void> markRefunded({
+    required String orderId,
+    String? reference,
+  }) {
+    return _rpc('mark_refunded', {
+      'p_order_id': orderId,
+      'p_reference': reference,
+    });
+  }
+
+  @override
   Future<void> simulateQrPayment({required String orderId}) {
     return _rpc('simulate_qr_payment', {'p_order_id': orderId});
   }

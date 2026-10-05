@@ -35,6 +35,19 @@ class AdminOrdersController extends _$AdminOrdersController {
     });
   }
 
+  /// Section 7D: records the refund on a cancelled order whose payment
+  /// was already verified.
+  Future<void> markRefunded({required String orderId}) async {
+    final current = state.value ?? const <AdminOrderSummary>[];
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(adminRepositoryProvider)
+          .markRefunded(orderId: orderId);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
   /// Section 6b: simulate a confirmed gateway webhook (admin authority) so
   /// the QR payment flow demos without external credentials.
   Future<void> simulateQrPayment({required String orderId}) async {
