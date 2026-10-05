@@ -27,21 +27,25 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   }
 
   List<MyPromotion> _mapRows(List<Map<String, dynamic>> rows) {
-    return rows.map((row) {
-      final dto = PromotionDto.fromJson(row);
-      final bannerPath = dto.bannerImagePath;
+    return rows.map(PromotionDto.fromJson).map((dto) => dto.toDomain()).toList();
+  }
+
+  List<ManagedBanner> _mapBannerRows(List<Map<String, dynamic>> rows) {
+    return rows.map(BannerDto.fromJson).map((dto) {
+      final path = dto.imagePath;
+      // submit_banner stores a FULL public URL; only re-wrap bare paths.
       return dto.toDomain(
-        // submit_banner stores a FULL public URL; only re-wrap bare paths.
-        bannerUrl: bannerPath == null
-            ? null
-            : bannerPath.startsWith('http')
-                ? bannerPath
-                : _client.storage
-                    .from('promo_assets')
-                    .getPublicUrl(bannerPath),
+        imageUrl: path.startsWith('http')
+            ? path
+            : _client.storage.from('promo_assets').getPublicUrl(path),
       );
     }).toList();
   }
+
+  static const _promotionSelect =
+      'id, name, description, scope, discount_type, discount_value, active, '
+      'brands(name), coupons(id, code, active, min_order_amount_minor, '
+      'starts_at, ends_at)';
 
   Future<void> _rpc(String function, Map<String, dynamic> params) async {
     try {
@@ -58,9 +62,7 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     try {
       final rows = await _client
           .from('promotions')
-          .select('id, name, description, scope, discount_type, '
-              'discount_value, banner_image_path, banner_status, ends_at, '
-              'coupons(id, code, active, expires_at)')
+          .select(_promotionSelect)
           .eq('created_by', _uid)
           .order('created_at', ascending: false);
       return _mapRows(rows);
@@ -76,11 +78,40 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     try {
       final rows = await _client
           .from('promotions')
-          .select('id, name, description, scope, discount_type, '
-              'discount_value, banner_image_path, banner_status, ends_at, '
-              'coupons(id, code, active, expires_at)')
+          .select(_promotionSelect)
           .order('created_at', ascending: false);
       return _mapRows(rows);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<List<ManagedBanner>> fetchMyBanners() async {
+    try {
+      final rows = await _client
+          .from('banners')
+          .select()
+          .eq('created_by', _uid)
+          .order('created_at', ascending: false);
+      return _mapBannerRows(rows);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
+  Future<List<ManagedBanner>> fetchAllBanners() async {
+    try {
+      final rows = await _client
+          .from('banners')
+          .select()
+          .order('created_at', ascending: false);
+      return _mapBannerRows(rows);
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
@@ -114,7 +145,9 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     required PromoDiscountType discountType,
     required int discountValue,
     required String code,
-    DateTime? expiresAt,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
     String? brandId,
   }) {
     return _rpc('create_platform_promotion', {
@@ -123,7 +156,9 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
       'p_discount_type': discountType.wireName,
       'p_discount_value': discountValue,
       'p_code': code,
-      'p_expires_at': expiresAt?.toIso8601String(),
+      'p_min_order_amount_minor': minOrderAmountMinor,
+      'p_starts_at': startsAt?.toIso8601String(),
+      'p_ends_at': endsAt?.toIso8601String(),
       'p_brand_id': brandId,
     });
   }
@@ -182,7 +217,7 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     required String action,
   }) {
     return _rpc('moderate_banner', {
-      'p_promotion_id': promotionId,
+      'p_banner_id': promotionId,
       'p_action': action,
     });
   }

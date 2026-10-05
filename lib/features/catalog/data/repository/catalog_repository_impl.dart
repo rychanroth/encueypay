@@ -256,24 +256,38 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   @override
   Future<List<CatalogBanner>> fetchApprovedBanners({int limit = 5}) async {
     try {
+      // Section 5b: banners are their own table — approved rows within
+      // their display window (the window filter is applied here in the
+      // data layer; PostgREST cannot call now() inside or-filters).
+      final now = DateTime.now().toUtc();
       final rows = await _client
-          .from('promotions')
-          .select('id, name, banner_image_path')
-          .eq('banner_status', 'approved')
-          .not('banner_image_path', 'is', null)
+          .from('banners')
+          .select('id, name, image_path, starts_at, ends_at')
+          .eq('status', 'approved')
           .order('created_at', ascending: false)
-          .limit(limit);
-      return rows.map((row) {
-        final path = row['banner_image_path'] as String;
-        return CatalogBanner(
-          id: row['id'] as String,
-          name: row['name'] as String? ?? '',
-          // submit_banner stores a FULL public URL; only re-wrap bare paths.
-          imageUrl: path.startsWith('http')
-              ? path
-              : _client.storage.from('promo_assets').getPublicUrl(path),
-        );
-      }).toList();
+          .limit(limit * 2);
+      final nowIso = now.toIso8601String();
+      return rows
+          .where((row) {
+            final startsAt = row['starts_at'] as String?;
+            final endsAt = row['ends_at'] as String?;
+            final started = startsAt == null || startsAt.compareTo(nowIso) <= 0;
+            final notEnded = endsAt == null || endsAt.compareTo(nowIso) > 0;
+            return started && notEnded;
+          })
+          .take(limit)
+          .map((row) {
+            final path = row['image_path'] as String;
+            return CatalogBanner(
+              id: row['id'] as String,
+              name: row['name'] as String? ?? '',
+              // submit_banner stores a FULL public URL; only re-wrap bare paths.
+              imageUrl: path.startsWith('http')
+                  ? path
+                  : _client.storage.from('promo_assets').getPublicUrl(path),
+            );
+          })
+          .toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {

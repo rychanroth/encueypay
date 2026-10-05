@@ -2,7 +2,7 @@ import '../../domain/entities/promotion.dart';
 import '../dtos/promotion_dtos.dart';
 
 extension PromotionDtoX on PromotionDto {
-  MyPromotion toDomain({String? bannerUrl}) {
+  MyPromotion toDomain() {
     return MyPromotion(
       id: id,
       name: name,
@@ -10,18 +10,31 @@ extension PromotionDtoX on PromotionDto {
       scope: PromotionScope.fromName(scope),
       discountType: PromoDiscountType.fromName(discountType),
       discountValue: discountValue,
-      isBanner: bannerImagePath != null,
-      bannerStatus: BannerStatus.fromName(bannerStatus),
-      bannerUrl: bannerUrl,
-      endsAt: endsAt,
+      active: active,
+      brandName: brands?.name,
       coupons: coupons
           .map((coupon) => MyCoupon(
                 id: coupon.id,
                 code: coupon.code,
                 active: coupon.active,
-                expiresAt: coupon.expiresAt,
+                minOrderAmountMinor: coupon.minOrderAmountMinor,
+                startsAt: coupon.startsAt,
+                endsAt: coupon.endsAt,
               ))
           .toList(),
+    );
+  }
+}
+
+extension BannerDtoX on BannerDto {
+  ManagedBanner toDomain({required String imageUrl}) {
+    return ManagedBanner(
+      id: id,
+      name: name,
+      imageUrl: imageUrl,
+      status: BannerStatus.fromName(status),
+      startsAt: startsAt,
+      endsAt: endsAt,
     );
   }
 }

@@ -107,7 +107,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
 | Calculation engine: price, qty, subtotal, item discounts, coupon discounts, shipping, mock tax, grand total, instant updates | 🟡 | `create_order_from_cart` + `validate_coupon` RPCs (server-authoritative, exact `numeric`); `checkout_state.dart` preview getters | ✅ all except mock tax (❌ not modeled — documented) |
-| Coupons: ID, code, discount type, discount value, min order amount, start/end date, status; validated before applying | ✅ | `promotions` + `coupons` tables; `validate_coupon` RPC; checkout coupon field; admin creation `admin_promotions_screen.dart` | Scopes (Section 2d): **platform-wide or brand-wide** (creation via admin); ⛔ business-scoped coupon *creation* unreachable (business portal hidden, L-01) — existing business-scoped rows still validate server-side; ❌ min-order-amount field (documented) |
+| Coupons: ID, code, discount type, discount value, min order amount, start/end date, status; validated before applying | ✅ | **Section 5b redesign** (0036): promotion = rule (scope platform/brand/legacy business, mechanic, kill switch) + coupon = instrument (code, **min_order_amount_minor**, **starts_at/ends_at window**, status); `validate_coupon` + `create_order_from_cart` validate the full attribute set (existence → status → derived window → kill switch → scope eligibility → min order on the eligible-scope subtotal); admin creation is one atomic flow (`create_platform_promotion`); per-coupon enable/disable toggles; legacy business-scoped rows still validate | Status/expiration **derived from dates at validation time** — no Edge Function/cron; multi-code-per-promotion deferred (documented) |
 
 ## B.6 Assignment §6 — Checkout, Shipping & Payments
 
@@ -188,9 +188,15 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
   (purchasing any variant deducts the product's counter; variants carry no stock).
   Disabled (archived) products of active businesses remain **visible** to customers,
   rendered "Unavailable" with purchase blocked client- and server-side.
-- **Coupon scopes (Section 2d):** `platform` (cart-wide), `brand` (the brand's cart
+- **Coupon scopes (Section 2d/5b):** `platform` (cart-wide), `brand` (the brand's cart
   lines; discount distributed across participating businesses proportionally), and
   legacy `business` rows (still validate; creation path bypassed with the portal).
+- **Promotion/coupon/banner model (Section 5b):** promotion = discount rule
+  (scope + mechanic + `active` kill switch); coupon = redemption instrument
+  (code, min order amount, start/end window, status → assignment §5 set);
+  banner = advertising surface (separate `banners` table, optional promotion
+  reference, moderation status). Expiration is **derived at validation time**;
+  no scheduled jobs.
 - **Money:** exact `numeric` server-side; decimal display, no float arithmetic (§22).
 - **Historical integrity:** order items, shipping address, applied coupon amounts, and
   purchased prices are snapshots; later catalog/profile/coupon edits never rewrite history
@@ -345,6 +351,26 @@ appended as sections land.)
   cancelled/refund orders render a notice instead of the stepper.
 * Mock tracking number (order-id prefix) + mock ETA (created + 3 days)
   on the order detail header — no data-model changes.
+
+## Section 5b — Coupon/banner redesign (`20261005000036`)
+
+* Convention enforced: **promotion = discount rule** (scope, mechanic,
+  `active` kill switch), **coupon = redemption instrument** (code,
+  `min_order_amount_minor`, `starts_at`/`ends_at`, status — the assignment
+  §5 set), **banner = advertising surface** (separate `banners` table with
+  optional promotion reference, display window, moderation status).
+* Expiration/status **derived at validation time** in `validate_coupon` +
+  `create_order_from_cart` (window, kill switch, scope eligibility, min
+  order on the eligible-scope subtotal). No Edge Function/cron.
+* `create_platform_promotion` atomically creates the rule + its first
+  coupon; legacy `expires_at` migrated to `ends_at`; banner rows migrated
+  into `banners`; banner columns and the discount-check exemption dropped
+  (strict `discount_value > 0` restored).
+* Admin Promotions tab: Coupons section (atomic creation incl. min-order +
+  date pickers + scope picker; per-coupon enable/disable) + Banners section
+  (moderation). Business screen lists its submitted banners from the new
+  table; `submit_banner`/`moderate_banner` re-pointed (portal bypassed but
+  runtime-correct). Home strip reads approved in-window banners.
 
 ## Realtime
 

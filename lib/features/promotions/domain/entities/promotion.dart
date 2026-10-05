@@ -2,8 +2,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'promotion.freezed.dart';
 
-/// Promotions & coupons (spec §24–§27). Business coupons need no approval;
-/// banners require admin moderation. Slim management view.
+/// The discount RULE (Section 5b convention): scope + mechanic. Coupons are
+/// the redemption instruments referencing it; banners are a separate
+/// advertising surface ([ManagedBanner]). [active] is the admin kill switch;
+/// the date window lives on the coupon (assignment §5 lists dates on the
+/// coupon) and is derived at validation time — no scheduled jobs.
 @freezed
 abstract class MyPromotion with _$MyPromotion {
   const factory MyPromotion({
@@ -13,12 +16,39 @@ abstract class MyPromotion with _$MyPromotion {
     required PromotionScope scope,
     required PromoDiscountType discountType,
     required int discountValue,
-    required bool isBanner,
-    required BannerStatus bannerStatus,
-    required List<MyCoupon> coupons,
-    String? bannerUrl,
-    DateTime? endsAt,
+    @Default(true) bool active,
+    String? brandName,
+    @Default([]) List<MyCoupon> coupons,
   }) = _MyPromotion;
+}
+
+/// The redemption instrument (assignment §5 attribute set): code, minimum
+/// order amount, start/end window, status. Window violations are derived at
+/// validation time.
+@freezed
+abstract class MyCoupon with _$MyCoupon {
+  const factory MyCoupon({
+    required String id,
+    required String code,
+    required bool active,
+    @Default(0) int minOrderAmountMinor,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) = _MyCoupon;
+}
+
+/// A promotional banner (Section 5b): the advertising surface, moderation
+/// status, and display window. Carries no discount.
+@freezed
+abstract class ManagedBanner with _$ManagedBanner {
+  const factory ManagedBanner({
+    required String id,
+    required String name,
+    required String imageUrl,
+    required BannerStatus status,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) = _ManagedBanner;
 }
 
 /// Slim brand reference for the coupon-scope picker (Section 2d):
@@ -29,19 +59,10 @@ abstract class PromoBrandRef with _$PromoBrandRef {
       = _PromoBrandRef;
 }
 
-@freezed
-abstract class MyCoupon with _$MyCoupon {
-  const factory MyCoupon({
-    required String id,
-    required String code,
-    required bool active,
-    DateTime? expiresAt,
-  }) = _MyCoupon;
-}
-
 enum PromotionScope {
   business,
-  platform;
+  platform,
+  brand;
 
   static PromotionScope fromName(String? name) =>
       PromotionScope.values.asNameMap()[name] ?? PromotionScope.business;

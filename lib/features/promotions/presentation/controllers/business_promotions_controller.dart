@@ -68,3 +68,9 @@ class BusinessPromotionsController extends _$BusinessPromotionsController {
     });
   }
 }
+
+/// The business user's submitted banners (Section 5b — separate table).
+@riverpod
+Future<List<ManagedBanner>> myBanners(Ref ref) async {
+  return ref.watch(promotionsRepositoryProvider).fetchMyBanners();
+}

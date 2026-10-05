@@ -60,3 +60,49 @@ abstract class _$BusinessPromotionsController
     return element.handleCreate(ref, build);
   }
 }
+
+/// The business user's submitted banners (Section 5b — separate table).
+
+@ProviderFor(myBanners)
+final myBannersProvider = MyBannersProvider._();
+
+/// The business user's submitted banners (Section 5b — separate table).
+
+final class MyBannersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ManagedBanner>>,
+          List<ManagedBanner>,
+          FutureOr<List<ManagedBanner>>
+        >
+    with
+        $FutureModifier<List<ManagedBanner>>,
+        $FutureProvider<List<ManagedBanner>> {
+  /// The business user's submitted banners (Section 5b — separate table).
+  MyBannersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'myBannersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$myBannersHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ManagedBanner>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ManagedBanner>> create(Ref ref) {
+    return myBanners(ref);
+  }
+}
+
+String _$myBannersHash() => r'066776b852f4b007b4de8071be9b9afe10a913f3';

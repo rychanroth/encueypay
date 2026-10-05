@@ -1,12 +1,18 @@
 import '../../domain/entities/promotion.dart';
 
-/// Promotions contract (spec §58 Promotions ops) (DATA-03).
+/// Promotions contract (spec §58 Promotions ops; §5b redesign) (DATA-03).
 abstract interface class IPromotionsRepository {
   /// Own promotions (business or admin creator).
   Future<List<MyPromotion>> fetchMyPromotions();
 
   /// All promotions — admin only, enforced server-side (§35.4).
   Future<List<MyPromotion>> fetchAllPromotions();
+
+  /// Own banners (business submission tracking; Section 5b table).
+  Future<List<ManagedBanner>> fetchMyBanners();
+
+  /// All banners — admin moderation view.
+  Future<List<ManagedBanner>> fetchAllBanners();
 
   /// Active brands for the coupon-scope picker (Section 2d).
   Future<List<PromoBrandRef>> fetchActiveBrands();
@@ -20,14 +26,18 @@ abstract interface class IPromotionsRepository {
     DateTime? expiresAt,
   });
 
-  /// Platform-wide when [brandId] is null, brand-wide otherwise (Section 2d).
+  /// Atomic admin creation (Section 5b): the promotion (rule + scope) and
+  /// its first coupon (code, min order, window) in one call. Platform-wide
+  /// when [brandId] is null, brand-wide otherwise.
   Future<void> createPlatformPromotion({
     required String name,
     required String description,
     required PromoDiscountType discountType,
     required int discountValue,
     required String code,
-    DateTime? expiresAt,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
     String? brandId,
   });
 

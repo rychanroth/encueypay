@@ -35,7 +35,7 @@ final class AdminPromotionsControllerProvider
 }
 
 String _$adminPromotionsControllerHash() =>
-    r'e1d450e50fa09edd2eb5ce2fa4ef977b7a45e93a';
+    r'546bd0b7831dccdd4bfdb72c63744cff321b1a4e';
 
 abstract class _$AdminPromotionsController
     extends $AsyncNotifier<List<MyPromotion>> {
@@ -50,6 +50,60 @@ abstract class _$AdminPromotionsController
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<List<MyPromotion>>, List<MyPromotion>>,
               AsyncValue<List<MyPromotion>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Banner moderation list (Section 5b — banners are their own table).
+
+@ProviderFor(AdminBannersController)
+final adminBannersControllerProvider = AdminBannersControllerProvider._();
+
+/// Banner moderation list (Section 5b — banners are their own table).
+final class AdminBannersControllerProvider
+    extends
+        $AsyncNotifierProvider<AdminBannersController, List<ManagedBanner>> {
+  /// Banner moderation list (Section 5b — banners are their own table).
+  AdminBannersControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminBannersControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminBannersControllerHash();
+
+  @$internal
+  @override
+  AdminBannersController create() => AdminBannersController();
+}
+
+String _$adminBannersControllerHash() =>
+    r'05c7cc939e66c74d6e417e99ce0b271d0a476c05';
+
+/// Banner moderation list (Section 5b — banners are their own table).
+
+abstract class _$AdminBannersController
+    extends $AsyncNotifier<List<ManagedBanner>> {
+  FutureOr<List<ManagedBanner>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ManagedBanner>>, List<ManagedBanner>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ManagedBanner>>, List<ManagedBanner>>,
+              AsyncValue<List<ManagedBanner>>,
               Object?,
               Object?
             >;

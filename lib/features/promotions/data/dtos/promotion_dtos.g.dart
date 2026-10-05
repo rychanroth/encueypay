@@ -13,11 +13,10 @@ PromotionDto _$PromotionDtoFromJson(Map<String, dynamic> json) => PromotionDto(
   discountValue: (json['discount_value'] as num).toInt(),
   scope: json['scope'] as String?,
   discountType: json['discount_type'] as String?,
-  bannerImagePath: json['banner_image_path'] as String?,
-  bannerStatus: json['banner_status'] as String?,
-  endsAt: json['ends_at'] == null
+  active: json['active'] as bool? ?? true,
+  brands: json['brands'] == null
       ? null
-      : DateTime.parse(json['ends_at'] as String),
+      : PromoBrandRefDto.fromJson(json['brands'] as Map<String, dynamic>),
   coupons:
       (json['coupons'] as List<dynamic>?)
           ?.map((e) => CouponJoinDto.fromJson(e as Map<String, dynamic>))
@@ -33,9 +32,8 @@ Map<String, dynamic> _$PromotionDtoToJson(PromotionDto instance) =>
       'scope': instance.scope,
       'discount_type': instance.discountType,
       'discount_value': instance.discountValue,
-      'banner_image_path': instance.bannerImagePath,
-      'banner_status': instance.bannerStatus,
-      'ends_at': instance.endsAt?.toIso8601String(),
+      'active': instance.active,
+      'brands': instance.brands,
       'coupons': instance.coupons,
     };
 
@@ -50,9 +48,14 @@ CouponJoinDto _$CouponJoinDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       code: json['code'] as String,
       active: json['active'] as bool,
-      expiresAt: json['expires_at'] == null
+      minOrderAmountMinor:
+          (json['min_order_amount_minor'] as num?)?.toInt() ?? 0,
+      startsAt: json['starts_at'] == null
           ? null
-          : DateTime.parse(json['expires_at'] as String),
+          : DateTime.parse(json['starts_at'] as String),
+      endsAt: json['ends_at'] == null
+          ? null
+          : DateTime.parse(json['ends_at'] as String),
     );
 
 Map<String, dynamic> _$CouponJoinDtoToJson(CouponJoinDto instance) =>
@@ -60,5 +63,31 @@ Map<String, dynamic> _$CouponJoinDtoToJson(CouponJoinDto instance) =>
       'id': instance.id,
       'code': instance.code,
       'active': instance.active,
-      'expires_at': instance.expiresAt?.toIso8601String(),
+      'min_order_amount_minor': instance.minOrderAmountMinor,
+      'starts_at': instance.startsAt?.toIso8601String(),
+      'ends_at': instance.endsAt?.toIso8601String(),
     };
+
+BannerDto _$BannerDtoFromJson(Map<String, dynamic> json) => BannerDto(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  imagePath: json['image_path'] as String,
+  description: json['description'] as String?,
+  status: json['status'] as String?,
+  startsAt: json['starts_at'] == null
+      ? null
+      : DateTime.parse(json['starts_at'] as String),
+  endsAt: json['ends_at'] == null
+      ? null
+      : DateTime.parse(json['ends_at'] as String),
+);
+
+Map<String, dynamic> _$BannerDtoToJson(BannerDto instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'image_path': instance.imagePath,
+  'description': instance.description,
+  'status': instance.status,
+  'starts_at': instance.startsAt?.toIso8601String(),
+  'ends_at': instance.endsAt?.toIso8601String(),
+};

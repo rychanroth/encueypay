@@ -114,6 +114,7 @@ class BusinessPromotionsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final promotionsAsync = ref.watch(businessPromotionsControllerProvider);
+    final bannersAsync = ref.watch(myBannersProvider);
     final theme = Theme.of(context);
 
     ref.listen(businessPromotionsControllerProvider, (previous, next) {
@@ -163,47 +164,70 @@ class BusinessPromotionsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('$error')),
         data: (promotions) {
-          if (promotions.isEmpty) {
-            return const Center(child: Text('No promotions yet.'));
-          }
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              for (final promotion in promotions)
-                Card(
-                  child: ListTile(
-                    leading: Icon(
-                      promotion.isBanner
-                          ? Icons.campaign_outlined
-                          : Icons.confirmation_number_outlined,
+              // Section 5b: banners are a separate surface — their list
+              // comes from the banners table, not the promotions rows.
+              Text('Banners',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              bannersAsync.maybeWhen(
+                data: (banners) => banners.isEmpty
+                    ? const Text('No banners submitted.')
+                    : Column(
+                        children: [
+                          for (final banner in banners)
+                            ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              leading: Image.network(banner.imageUrl,
+                                  width: 56, height: 40, fit: BoxFit.cover),
+                              title: Text(banner.name),
+                              subtitle: Text(
+                                  'Banner · ${banner.status.name}'),
+                            ),
+                        ],
+                      ),
+                orElse: () => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 16),
+              Text('Coupons',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              if (promotions.isEmpty)
+                const Text('No promotions yet.')
+              else
+                for (final promotion in promotions)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(
+                          Icons.confirmation_number_outlined),
+                      title: Text(promotion.name),
+                      subtitle: Text(
+                        'Coupon ${promotion.coupons.firstOrNull?.code ?? '—'} · '
+                        '${promotion.discountType.name} '
+                        '${promotion.discountValue}'
+                        '${promotion.discountType == PromoDiscountType.percent ? '%' : ''}',
+                      ),
+                      trailing: Switch(
+                        value:
+                            promotion.coupons.firstOrNull?.active ?? false,
+                        onChanged: (active) {
+                          final coupon = promotion.coupons.firstOrNull;
+                          if (coupon == null) return;
+                          ref
+                              .read(businessPromotionsControllerProvider
+                                  .notifier)
+                              .toggleCoupon(
+                                couponId: coupon.id,
+                                active: active,
+                              );
+                        },
+                      ),
                     ),
-                    title: Text(promotion.name),
-                    subtitle: promotion.isBanner
-                        ? Text('Banner · ${promotion.bannerStatus.name}')
-                        : Text(
-                            'Coupon ${promotion.coupons.firstOrNull?.code ?? '—'} · '
-                            '${promotion.discountType.name} '
-                            '${promotion.discountValue}'
-                            '${promotion.discountType == PromoDiscountType.percent ? '%' : ''}',
-                          ),
-                    trailing: promotion.isBanner
-                        ? null
-                        : Switch(
-                            value: promotion.coupons.firstOrNull?.active ?? false,
-                            onChanged: (active) {
-                              final coupon = promotion.coupons.firstOrNull;
-                              if (coupon == null) return;
-                              ref
-                                  .read(businessPromotionsControllerProvider
-                                      .notifier)
-                                  .toggleCoupon(
-                                    couponId: coupon.id,
-                                    active: active,
-                                  );
-                            },
-                          ),
                   ),
-                ),
+              const SizedBox(height: 8),
               Text(
                 'Business coupons apply at checkout without approval. '
                 'Banners appear on the home screen once approved.',
