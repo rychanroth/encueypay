@@ -39,6 +39,12 @@ Map<String, dynamic> _$PromotionDtoToJson(PromotionDto instance) =>
       'coupons': instance.coupons,
     };
 
+PromoBrandRefDto _$PromoBrandRefDtoFromJson(Map<String, dynamic> json) =>
+    PromoBrandRefDto(id: json['id'] as String, name: json['name'] as String);
+
+Map<String, dynamic> _$PromoBrandRefDtoToJson(PromoBrandRefDto instance) =>
+    <String, dynamic>{'id': instance.id, 'name': instance.name};
+
 CouponJoinDto _$CouponJoinDtoFromJson(Map<String, dynamic> json) =>
     CouponJoinDto(
       id: json['id'] as String,

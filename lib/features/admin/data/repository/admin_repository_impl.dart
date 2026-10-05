@@ -235,6 +235,7 @@ class AdminRepositoryImpl implements IAdminRepository {
           businessName: dto.businesses?.name ?? '',
           basePriceMinor: dto.basePriceMinor,
           variantCount: dto.productVariants.length,
+          stock: dto.stock,
           description: dto.description ?? '',
           status: AdminCatalogStatus.fromName(dto.status),
           brandId: dto.brandId,
@@ -286,6 +287,7 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_description': draft.description,
         'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
+        'p_stock': draft.stock,
         'p_variants': <Map<String, dynamic>>[],
       }) as String;
       return productId;
@@ -310,6 +312,7 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_description': draft.description,
         'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
+        'p_stock': draft.stock,
       });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);

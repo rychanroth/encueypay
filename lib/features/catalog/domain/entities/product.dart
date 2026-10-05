@@ -15,6 +15,10 @@ abstract class Product with _$Product {
     @Default('') String description,
     required int basePriceMinor,
 
+    /// Product-wide stock (Section 2d, assignment §3): purchasing any
+    /// variant deducts this counter; variants carry no stock of their own.
+    @Default(0) int stock,
+
     /// Cheapest selectable price — min over variant effective prices, base
     /// price when the product has none. What grids/cards display.
     required int fromPriceMinor,
@@ -26,6 +30,18 @@ abstract class Product with _$Product {
 
   /// Public URLs resolved from Storage references in the data layer (§48).
   String get thumbnailUrl => imageUrls.isEmpty ? '' : imageUrls.first;
+
+  /// Disabled products (archived) and out-of-stock products are both shown
+  /// to customers (Section 2d) but cannot be purchased.
+  bool get isPurchasable =>
+      status == ProductStatus.active && stock > 0;
+
+  /// Short availability label for cards/detail (Section 2d).
+  String? get availabilityLabel {
+    if (status == ProductStatus.archived) return 'Unavailable';
+    if (stock <= 0) return 'Out of stock';
+    return null;
+  }
 }
 
 enum ProductStatus {

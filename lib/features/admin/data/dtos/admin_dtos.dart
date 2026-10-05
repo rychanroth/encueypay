@@ -157,6 +157,7 @@ class AdminProductRowDto {
     this.description,
     this.brandId,
     this.status,
+    this.stock = 0,
     this.brands,
     this.categories,
     this.businesses,
@@ -176,6 +177,10 @@ class AdminProductRowDto {
   final String? description;
   final String? brandId;
   final String? status;
+
+  /// Product-wide stock (Section 2d; column re-added by 0031).
+  @JsonKey(defaultValue: 0)
+  final int stock;
 
   @JsonKey(name: 'brands')
   final AdminNamedJoinDto? brands;

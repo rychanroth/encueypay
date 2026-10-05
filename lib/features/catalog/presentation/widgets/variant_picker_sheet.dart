@@ -55,6 +55,14 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
       widget.variants.length == 1 ? widget.variants.first.id : null;
   int _quantity = 1;
 
+  /// Product-wide stock (Section 2d) caps the quantity selector; the server
+  /// re-validates authoritatively at add and at checkout.
+  int get _stockCap => widget.product.stock < 1
+      ? 0
+      : (widget.product.stock < _maxQuantity
+          ? widget.product.stock
+          : _maxQuantity);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -168,6 +176,16 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
             children: [
               Text('Quantity', style: theme.textTheme.titleSmall),
               const Spacer(),
+              if (widget.product.stock > 0)
+                Text(
+                  '${widget.product.stock} available',
+                  style: theme.textTheme.bodySmall,
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
               IconButton(
                 tooltip: 'Decrease',
                 onPressed: _quantity > 1
@@ -185,7 +203,7 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
               ),
               IconButton(
                 tooltip: 'Increase',
-                onPressed: _quantity < _maxQuantity
+                onPressed: _quantity < _stockCap
                     ? () => setState(() => _quantity++)
                     : null,
                 icon: const Icon(Icons.add_circle_outline),
@@ -199,7 +217,10 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: selected == null ? null : () => _confirm(selected),
+                  // Out-of-stock products cannot be purchased (Section 2d).
+                  onPressed: selected == null || _stockCap < 1
+                      ? null
+                      : () => _confirm(selected),
                   child: const Text('Add to cart'),
                 ),
               ),

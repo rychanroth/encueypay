@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/money.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/product.dart';
 import '../controllers/product_detail_controller.dart';
 import '../widgets/product_card.dart';
 import '../widgets/product_image_gallery.dart';
@@ -29,6 +30,14 @@ class ProductDetailScreen extends ConsumerWidget {
   /// (variantId, quantity) — the sheet always resolves a concrete variant;
   /// server-side RPC re-validates availability (spec §53).
   final Future<void> Function(String variantId, int quantity) onAddToCart;
+
+  static String _availabilityText(Product product) {
+    if (product.status == ProductStatus.archived) {
+      return 'This product is currently unavailable.';
+    }
+    if (product.stock <= 0) return 'Out of stock';
+    return 'In stock: ${product.stock}';
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -92,6 +101,28 @@ class ProductDetailScreen extends ConsumerWidget {
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.outline,
                                 ),
+                              ),
+                            ),
+                          // Availability (Section 2d, assignment §3): stock
+                          // is product-wide; archived = disabled.
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              _availabilityText(product),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: product.isPurchasable
+                                    ? theme.colorScheme.outline
+                                    : theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                          // Rating UI (assignment §3/§7): visual stars over
+                          // the aggregate; the written list follows below.
+                          if (detail.averageRating != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: RatingStars(
+                                rating: detail.averageRating!,
                               ),
                             ),
                           const SizedBox(height: 16),
@@ -176,12 +207,17 @@ class ProductDetailScreen extends ConsumerWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: () => showVariantPickerSheet(
-                        context,
-                        product: product,
-                        variants: detail.variants,
-                        onAddToCart: onAddToCart,
-                      ),
+                      // Disabled products and out-of-stock products cannot be
+                      // purchased (Section 2d); checkout re-validates both
+                      // server-side (§53).
+                      onPressed: product.isPurchasable
+                          ? () => showVariantPickerSheet(
+                                context,
+                                product: product,
+                                variants: detail.variants,
+                                onAddToCart: onAddToCart,
+                              )
+                          : null,
                       child: const Text('Add to cart'),
                     ),
                   ),
@@ -191,6 +227,36 @@ class ProductDetailScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// Visual star display of the aggregate rating (assignment §3/§7). Half
+/// steps render via the half-star glyph; fewer than 0.25 rounds down.
+class RatingStars extends StatelessWidget {
+  const RatingStars({super.key, required this.rating, this.starSize = 18});
+
+  final double rating;
+  final double starSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 1; i <= 5; i++)
+          Icon(
+            rating >= i
+                ? Icons.star
+                : rating >= i - 0.5
+                    ? Icons.star_half
+                    : Icons.star_border,
+            size: starSize,
+            color: Colors.amber,
+          ),
+        const SizedBox(width: 4),
+        Text(rating.toStringAsFixed(1)),
+      ],
     );
   }
 }

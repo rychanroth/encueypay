@@ -18,6 +18,7 @@ class ProductDto {
     required this.basePriceMinor,
     this.brandId,
     this.status,
+    this.stock = 0,
     this.productImages = const [],
     this.productVariants = const [],
   });
@@ -36,6 +37,10 @@ class ProductDto {
   /// separate embed consumed only where displayed.
   final String? brandId;
   final String? status;
+
+  /// Product-wide stock (Section 2d); column re-added by 0031.
+  @JsonKey(defaultValue: 0)
+  final int stock;
 
   /// PostgREST embed key `product_images` (fieldRename.snake matches).
   @JsonKey(defaultValue: [])

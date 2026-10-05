@@ -34,6 +34,7 @@ class AdminPromotionsController extends _$AdminPromotionsController {
     required int discountValue,
     required String code,
     DateTime? expiresAt,
+    String? brandId,
   }) async {
     final current = state.value ?? const <MyPromotion>[];
     state = await AsyncValue.guard(() async {
@@ -44,9 +45,16 @@ class AdminPromotionsController extends _$AdminPromotionsController {
             discountValue: discountValue,
             code: code,
             expiresAt: expiresAt,
+            brandId: brandId,
           );
       ref.invalidateSelf();
       return current;
     });
   }
+}
+
+/// Active brands for the coupon-scope picker (Section 2d).
+@riverpod
+Future<List<PromoBrandRef>> promoBrands(Ref ref) async {
+  return ref.watch(promotionsRepositoryProvider).fetchActiveBrands();
 }

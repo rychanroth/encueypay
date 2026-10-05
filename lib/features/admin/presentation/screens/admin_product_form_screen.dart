@@ -11,6 +11,7 @@ import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../controllers/admin_categories_controller.dart';
 import '../controllers/admin_products_controller.dart';
+import '../widgets/searchable_picker_field.dart';
 
 /// Create/edit product form (Section 2b, spec §8). Local text/dropdown state
 /// lives in this StatefulWidget; mutations go through
@@ -43,10 +44,16 @@ class _AdminProductFormScreenState
         ? ''
         : Money(widget.product!.basePriceMinor).format(),
   );
+  late final _stockController = TextEditingController(
+    text: widget.product == null ? '0' : '${widget.product!.stock}',
+  );
 
   String? _businessId;
-  String? _categoryId;
-  String? _brandId;
+  // Initialized from the product in edit mode (`late` so the initializer may
+  // read `widget`); the pickers then own the values outright — clearing a
+  // field really clears it.
+  late String? _categoryId = widget.product?.categoryId;
+  late String? _brandId = widget.product?.brandId;
   // `late` so the initializer may read `widget` (initial copy of the
   // product's existing images in edit mode).
   late final List<AdminProductImageRef> _images = List.of(
@@ -59,6 +66,7 @@ class _AdminProductFormScreenState
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _stockController.dispose();
     super.dispose();
   }
 
@@ -68,6 +76,12 @@ class _AdminProductFormScreenState
     } on FormatException {
       return null;
     }
+  }
+
+  int? _parseStock(String input) {
+    final value = int.tryParse(input.trim());
+    if (value == null || value < 0) return null;
+    return value;
   }
 
   Future<void> _pickImage() async {
@@ -85,12 +99,14 @@ class _AdminProductFormScreenState
 
   Future<void> _save() async {
     final price = _parseMoney(_priceController.text);
+    final stock = _parseStock(_stockController.text);
     final businessId = _businessId;
     final categoryId = _categoryId;
-    if (businessId == null || categoryId == null || price == null) {
+    if (businessId == null || categoryId == null || price == null || stock == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Store, category and a valid price are required'),
+          content:
+              Text('Store, category, a valid price and stock are required'),
         ),
       );
       return;
@@ -103,6 +119,7 @@ class _AdminProductFormScreenState
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
       basePriceMinor: price,
+      stock: stock,
     );
     final controller = ref.read(adminProductsControllerProvider(null).notifier);
     if (widget.product == null) {
@@ -175,19 +192,28 @@ class _AdminProductFormScreenState
                 const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 12),
+          TextField(
+            controller: _stockController,
+            decoration: const InputDecoration(
+              labelText: 'Stock quantity (product-wide)',
+              helperText:
+                  'Purchasing any variant deducts from this counter',
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 12),
+          // Searchable pickers (Section 2d): FK references scale better with
+          // search than with plain dropdowns.
           businessesAsync.when(
             loading: () => const LinearProgressIndicator(),
             error: (error, _) => Text('$error'),
-            data: (businesses) => DropdownButtonFormField<String>(
-              initialValue: _businessId,
-              decoration: const InputDecoration(labelText: 'Store'),
-              items: [
+            data: (businesses) => SearchablePickerField(
+              label: 'Store',
+              options: [
                 for (final business in businesses)
-                  DropdownMenuItem(
-                    value: business.id,
-                    child: Text(business.name),
-                  ),
+                  SearchableOption(id: business.id, label: business.name),
               ],
+              valueId: _businessId,
               onChanged: (value) => setState(() => _businessId = value),
             ),
           ),
@@ -195,16 +221,13 @@ class _AdminProductFormScreenState
           categoriesAsync.when(
             loading: () => const LinearProgressIndicator(),
             error: (error, _) => Text('$error'),
-            data: (categories) => DropdownButtonFormField<String>(
-              initialValue: _categoryId ?? widget.product?.categoryId,
-              decoration: const InputDecoration(labelText: 'Category'),
-              items: [
+            data: (categories) => SearchablePickerField(
+              label: 'Category',
+              options: [
                 for (final category in categories)
-                  DropdownMenuItem(
-                    value: category.id,
-                    child: Text(category.name),
-                  ),
+                  SearchableOption(id: category.id, label: category.name),
               ],
+              valueId: _categoryId,
               onChanged: (value) => setState(() => _categoryId = value),
             ),
           ),
@@ -212,25 +235,19 @@ class _AdminProductFormScreenState
           brandsAsync.when(
             loading: () => const LinearProgressIndicator(),
             error: (error, _) => Text('$error'),
-            data: (brands) => DropdownButtonFormField<String>(
-              initialValue: _brandId ?? widget.product?.brandId,
-              decoration:
-                  const InputDecoration(labelText: 'Brand (optional)'),
-              items: [
-                const DropdownMenuItem(
-                  value: null,
-                  child: Text('— No brand —'),
-                ),
+            data: (brands) => SearchablePickerField(
+              label: 'Brand (optional)',
+              allowEmpty: true,
+              options: [
                 for (final brand in brands)
-                  DropdownMenuItem(
-                    value: brand.id,
-                    child: Text(
-                      brand.status == AdminCatalogStatus.archived
-                          ? '${brand.name} (archived)'
-                          : brand.name,
-                    ),
+                  SearchableOption(
+                    id: brand.id,
+                    label: brand.status == AdminCatalogStatus.archived
+                        ? '${brand.name} (archived)'
+                        : brand.name,
                   ),
               ],
+              valueId: _brandId,
               onChanged: (value) => setState(() => _brandId = value),
             ),
           ),

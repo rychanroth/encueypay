@@ -35,7 +35,7 @@ final class AdminPromotionsControllerProvider
 }
 
 String _$adminPromotionsControllerHash() =>
-    r'efa34b8f965c9fda042c80dfb4df299d24d70569';
+    r'e1d450e50fa09edd2eb5ce2fa4ef977b7a45e93a';
 
 abstract class _$AdminPromotionsController
     extends $AsyncNotifier<List<MyPromotion>> {
@@ -56,3 +56,49 @@ abstract class _$AdminPromotionsController
     return element.handleCreate(ref, build);
   }
 }
+
+/// Active brands for the coupon-scope picker (Section 2d).
+
+@ProviderFor(promoBrands)
+final promoBrandsProvider = PromoBrandsProvider._();
+
+/// Active brands for the coupon-scope picker (Section 2d).
+
+final class PromoBrandsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<PromoBrandRef>>,
+          List<PromoBrandRef>,
+          FutureOr<List<PromoBrandRef>>
+        >
+    with
+        $FutureModifier<List<PromoBrandRef>>,
+        $FutureProvider<List<PromoBrandRef>> {
+  /// Active brands for the coupon-scope picker (Section 2d).
+  PromoBrandsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'promoBrandsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$promoBrandsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<PromoBrandRef>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<PromoBrandRef>> create(Ref ref) {
+    return promoBrands(ref);
+  }
+}
+
+String _$promoBrandsHash() => r'645ad40ece89843d63140388521c9ccdf138207c';

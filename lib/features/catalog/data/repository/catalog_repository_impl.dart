@@ -127,8 +127,10 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     try {
       var request = _client
           .from('products')
-          .select(_productSelect)
-          .eq('status', 'active');
+          .select(_productSelect);
+      // Visibility (Section 2d): products of active businesses are listed
+      // regardless of product status — archived ones render as "Unavailable"
+      // in the UI and fail checkout server-side.
       if (categoryId != null) {
         // Discovery aggregates: a parent category includes its own products
         // plus all sub-category products (2-level hierarchy, Section 2c).
@@ -240,7 +242,6 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final rows = await _client
           .from('products')
           .select(_productSelect)
-          .eq('status', 'active')
           .eq('category_id', categoryId)
           .neq('id', excludeProductId)
           .limit(limit);

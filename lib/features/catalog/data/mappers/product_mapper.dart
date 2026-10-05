@@ -15,6 +15,7 @@ extension ProductDtoX on ProductDto {
       name: name,
       description: description,
       basePriceMinor: basePriceMinor,
+      stock: stock,
       fromPriceMinor: _fromPriceMinor(),
       status: ProductStatus.fromName(status),
       imageUrls: imageUrls,

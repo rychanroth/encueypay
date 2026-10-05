@@ -127,6 +127,7 @@ AdminProductRowDto _$AdminProductRowDtoFromJson(
   description: json['description'] as String?,
   brandId: json['brand_id'] as String?,
   status: json['status'] as String?,
+  stock: (json['stock'] as num?)?.toInt() ?? 0,
   brands: json['brands'] == null
       ? null
       : AdminNamedJoinDto.fromJson(json['brands'] as Map<String, dynamic>),
@@ -163,6 +164,7 @@ Map<String, dynamic> _$AdminProductRowDtoToJson(AdminProductRowDto instance) =>
       'description': instance.description,
       'brand_id': instance.brandId,
       'status': instance.status,
+      'stock': instance.stock,
       'brands': instance.brands,
       'categories': instance.categories,
       'businesses': instance.businesses,

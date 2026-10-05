@@ -306,6 +306,266 @@ as DateTime?,
 }
 
 /// @nodoc
+mixin _$PromoBrandRef {
+
+ String get id; String get name;
+/// Create a copy of PromoBrandRef
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PromoBrandRefCopyWith<PromoBrandRef> get copyWith => _$PromoBrandRefCopyWithImpl<PromoBrandRef>(this as PromoBrandRef, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PromoBrandRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'PromoBrandRef(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PromoBrandRefCopyWith<$Res>  {
+  factory $PromoBrandRefCopyWith(PromoBrandRef value, $Res Function(PromoBrandRef) _then) = _$PromoBrandRefCopyWithImpl;
+@useResult
+$Res call({
+ String id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class _$PromoBrandRefCopyWithImpl<$Res>
+    implements $PromoBrandRefCopyWith<$Res> {
+  _$PromoBrandRefCopyWithImpl(this._self, this._then);
+
+  final PromoBrandRef _self;
+  final $Res Function(PromoBrandRef) _then;
+
+/// Create a copy of PromoBrandRef
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
+  return _then(PromoBrandRef(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [PromoBrandRef].
+extension PromoBrandRefPatterns on PromoBrandRef {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PromoBrandRef value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PromoBrandRef() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PromoBrandRef value)  $default,){
+final _that = this;
+switch (_that) {
+case _PromoBrandRef():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PromoBrandRef value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PromoBrandRef() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PromoBrandRef() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name)  $default,) {final _that = this;
+switch (_that) {
+case _PromoBrandRef():
+return $default(_that.id,_that.name);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name)?  $default,) {final _that = this;
+switch (_that) {
+case _PromoBrandRef() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _PromoBrandRef implements PromoBrandRef {
+  const _PromoBrandRef({required this.id, required this.name});
+  
+
+@override final  String id;
+@override final  String name;
+
+/// Create a copy of PromoBrandRef
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PromoBrandRefCopyWith<_PromoBrandRef> get copyWith => __$PromoBrandRefCopyWithImpl<_PromoBrandRef>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PromoBrandRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'PromoBrandRef(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PromoBrandRefCopyWith<$Res> implements $PromoBrandRefCopyWith<$Res> {
+  factory _$PromoBrandRefCopyWith(_PromoBrandRef value, $Res Function(_PromoBrandRef) _then) = __$PromoBrandRefCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class __$PromoBrandRefCopyWithImpl<$Res>
+    implements _$PromoBrandRefCopyWith<$Res> {
+  __$PromoBrandRefCopyWithImpl(this._self, this._then);
+
+  final _PromoBrandRef _self;
+  final $Res Function(_PromoBrandRef) _then;
+
+/// Create a copy of PromoBrandRef
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
+  return _then(_PromoBrandRef(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$MyCoupon {
 
  String get id; String get code; bool get active; DateTime? get expiresAt;

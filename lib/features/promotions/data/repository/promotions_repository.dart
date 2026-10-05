@@ -8,6 +8,9 @@ abstract interface class IPromotionsRepository {
   /// All promotions — admin only, enforced server-side (§35.4).
   Future<List<MyPromotion>> fetchAllPromotions();
 
+  /// Active brands for the coupon-scope picker (Section 2d).
+  Future<List<PromoBrandRef>> fetchActiveBrands();
+
   Future<void> createCouponPromotion({
     required String name,
     required String description,
@@ -17,6 +20,7 @@ abstract interface class IPromotionsRepository {
     DateTime? expiresAt,
   });
 
+  /// Platform-wide when [brandId] is null, brand-wide otherwise (Section 2d).
   Future<void> createPlatformPromotion({
     required String name,
     required String description,
@@ -24,6 +28,7 @@ abstract interface class IPromotionsRepository {
     required int discountValue,
     required String code,
     DateTime? expiresAt,
+    String? brandId,
   });
 
   /// Uploads the banner image, then submits for approval (§27).

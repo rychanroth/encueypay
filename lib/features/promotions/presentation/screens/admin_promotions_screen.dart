@@ -18,11 +18,13 @@ class AdminPromotionsScreen extends ConsumerWidget {
     final value = TextEditingController();
     final code = TextEditingController();
     var isPercent = false;
+    String? brandId;
+    final brandsAsync = ref.read(promoBrandsProvider);
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('New platform promotion'),
+          title: const Text('New promotion'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -53,6 +55,29 @@ class AdminPromotionsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              // Scope picker (Section 2d): no brand = platform-wide, a brand
+              // = brand-wide (applies to that brand's cart lines only).
+              brandsAsync.maybeWhen(
+                data: (brands) => DropdownButtonFormField<String>(
+                  initialValue: brandId,
+                  decoration: const InputDecoration(
+                    labelText: 'Scope',
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text('Platform-wide'),
+                    ),
+                    for (final brand in brands)
+                      DropdownMenuItem(
+                        value: brand.id,
+                        child: Text('Brand: ${brand.name}'),
+                      ),
+                  ],
+                  onChanged: (v) => setDialogState(() => brandId = v),
+                ),
+                orElse: () => const SizedBox.shrink(),
+              ),
             ],
           ),
           actions: [
@@ -76,6 +101,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
               isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
           discountValue: int.tryParse(value.text) ?? 0,
           code: code.text.trim(),
+          brandId: brandId,
         );
   }
 

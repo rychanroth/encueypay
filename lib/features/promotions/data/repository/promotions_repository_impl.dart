@@ -115,6 +115,7 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     required int discountValue,
     required String code,
     DateTime? expiresAt,
+    String? brandId,
   }) {
     return _rpc('create_platform_promotion', {
       'p_name': name,
@@ -123,7 +124,27 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
       'p_discount_value': discountValue,
       'p_code': code,
       'p_expires_at': expiresAt?.toIso8601String(),
+      'p_brand_id': brandId,
     });
+  }
+
+  @override
+  Future<List<PromoBrandRef>> fetchActiveBrands() async {
+    try {
+      final rows = await _client
+          .from('brands')
+          .select('id, name')
+          .eq('status', 'active')
+          .order('name');
+      return rows
+          .map(PromoBrandRefDto.fromJson)
+          .map((dto) => PromoBrandRef(id: dto.id, name: dto.name))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
   }
 
   @override

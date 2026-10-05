@@ -21,6 +21,14 @@ abstract class MyPromotion with _$MyPromotion {
   }) = _MyPromotion;
 }
 
+/// Slim brand reference for the coupon-scope picker (Section 2d):
+/// platform-wide coupons carry no brand; brand-wide ones target one.
+@freezed
+abstract class PromoBrandRef with _$PromoBrandRef {
+  const factory PromoBrandRef({required String id, required String name})
+      = _PromoBrandRef;
+}
+
 @freezed
 abstract class MyCoupon with _$MyCoupon {
   const factory MyCoupon({

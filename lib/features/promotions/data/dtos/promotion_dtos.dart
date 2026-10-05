@@ -38,6 +38,19 @@ class PromotionDto {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class PromoBrandRefDto {
+  const PromoBrandRefDto({required this.id, required this.name});
+
+  factory PromoBrandRefDto.fromJson(Map<String, dynamic> json) =>
+      _$PromoBrandRefDtoFromJson(json);
+
+  final String id;
+  final String name;
+
+  Map<String, dynamic> toJson() => _$PromoBrandRefDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class CouponJoinDto {
   const CouponJoinDto({
     required this.id,

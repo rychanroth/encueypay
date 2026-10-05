@@ -53,6 +53,7 @@ abstract class AdminProductSummary with _$AdminProductSummary {
     required String businessName,
     required int basePriceMinor,
     required int variantCount,
+    required int stock,
     @Default('') String description,
     @Default(AdminCatalogStatus.active) AdminCatalogStatus status,
     String? brandId,
@@ -91,7 +92,8 @@ abstract class AdminBusinessRef with _$AdminBusinessRef {
 }
 
 /// Form input for creating/updating a product (Section 2b). [id] is null for
-/// creation; [brandId] is nullable — a product may be brand-less.
+/// creation; [brandId] is nullable — a product may be brand-less. [stock] is
+/// product-wide (Section 2d): purchasing any variant deducts it.
 @freezed
 abstract class AdminProductDraft with _$AdminProductDraft {
   const factory AdminProductDraft({
@@ -102,6 +104,7 @@ abstract class AdminProductDraft with _$AdminProductDraft {
     required String name,
     @Default('') String description,
     required int basePriceMinor,
+    @Default(0) int stock,
   }) = _AdminProductDraft;
 }
 

@@ -89,9 +89,9 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Product attributes: ID, name, code, category, brand, image, description, price, discount price, stock, rating, status | 🟡 | `products` / `product_variants` / `product_images` / `brands` tables; entity `features/catalog/domain/entities/product.dart` | Covered: id, name, category, **brand (`products.brand_id`, Section 2b)**, images, description, base+variant price, rating (reviews), status. ❌ product code; discount = checkout-time coupon, not a product field; stock ⛔ removed; ⛔ vendor identity bypassed (vendor model retained underneath, L-04) |
+| Product attributes: ID, name, code, category, brand, image, description, price, discount price, stock, rating, status | 🟡 | `products` / `product_variants` / `product_images` / `brands` tables; entity `features/catalog/domain/entities/product.dart` | Covered: id, name, category, **brand (`products.brand_id`, Section 2b)**, images, description, base+variant price, **stock (product-wide, reintroduced Section 2d per user decision — supersedes the old §7 inventory-removal)**, rating (reviews), status. ❌ product code; ⛔ discount price field (discounts are coupon-only, §5); ⛔ vendor identity bypassed (vendor model retained underneath, L-04) |
 | Multiple images + variants (size/color/model) | ✅ | `add_product_image` / `add_product_variant` / `update_product_variant` / `set_variant_image` RPCs; `product_image_gallery.dart`, `variant_picker_sheet.dart` | Managed historically via Business portal (⛔ hidden); seeded/demo products carry images+variants |
-| Detail screen: gallery, name, price, discount, description, rating, stock, variant selector, related products; select variant, quantity, wishlist, add to cart | 🟡 → ✅ §6 | `product_detail_screen.dart`, `product_detail_controller.dart` | Gallery/name/price/description/rating/variants/related/add-to-cart ✅; stock availability ⛔ (removed); owning-business card ⛔ **hidden (Section 2, L-04)**; wishlist add wired in §6; brand display → Section 2b |
+| Detail screen: gallery, name, price, discount, description, rating, stock, variant selector, related products; select variant, quantity, wishlist, add to cart | 🟡 → ✅ §6 | `product_detail_screen.dart`, `product_detail_controller.dart` | Gallery/name/price/description/**rating UI (visual stars, Section 2d)**/**stock availability + Unavailable state (Section 2d)**/variants/related ✅; purchase blocked when disabled or out of stock (client + server); owning-business card ⛔ hidden (Section 2, L-04); wishlist add wired in §6 |
 
 ## B.4 Assignment §4 — Wishlist & Shopping Cart
 
@@ -100,14 +100,14 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 | Wishlist: save, remove, transfer to cart | 🟡 → ✅ §6 | `features/wishlist` (screen/controller/`wishlist_repository_impl.dart`; `wishlists` + `wishlist_items` tables) | Remove ✅; **add never wired to any UI** (controller `add()` exists, unused) → §6 wires it on product detail; transfer-to-cart §6 (single-variant direct, multi-variant routes to detail — 🟡 documented partial) |
 | Cart: add, remove, update quantity, select variants | ✅ | `features/cart` (`cart_screen.dart`, `cart_controller.dart`, RPCs `add_cart_item`/`update_cart_item`/`remove_cart_item`/`clear_cart`) | Per-business group headers ⛔ **flattened (Section 2, L-06)** — server pricing still groups per business at checkout |
 | Calculations: unit price, quantity, subtotal, discount, shipping fee, grand total | ✅ | Server-authoritative (`coalesce(variant price, product base price)`, Part D); totals rendered display-only | — |
-| Validation: quantity + stock before checkout | 🟡 | Server validates product/variant/business status + cart ownership at checkout | Stock validation ⛔ N/A (inventory removed, Part D) |
+| Validation: quantity + stock before checkout | ✅ | Server validates product/variant/business status **and product-wide stock** at checkout (`create_order_from_cart`, 0032): line quantity > product stock → order rejected; stock deducted atomically under row locks; cancellation restores stock | Quantity capped client-side in the variant sheet (stock cap) |
 
 ## B.5 Assignment §5 — Pricing, Coupons & Promotions
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
 | Calculation engine: price, qty, subtotal, item discounts, coupon discounts, shipping, mock tax, grand total, instant updates | 🟡 | `create_order_from_cart` + `validate_coupon` RPCs (server-authoritative, exact `numeric`); `checkout_state.dart` preview getters | ✅ all except mock tax (❌ not modeled — documented) |
-| Coupons: ID, code, discount type, discount value, min order amount, start/end date, status; validated before applying | ✅ | `promotions` + `coupons` tables; `validate_coupon` RPC; checkout coupon field; admin creation `admin_promotions_screen.dart` | Platform-scoped coupons ✅; ⛔ business-scoped coupon *creation* unreachable (business portal hidden, L-01) — existing/business-scoped rows still validate server-side |
+| Coupons: ID, code, discount type, discount value, min order amount, start/end date, status; validated before applying | ✅ | `promotions` + `coupons` tables; `validate_coupon` RPC; checkout coupon field; admin creation `admin_promotions_screen.dart` | Scopes (Section 2d): **platform-wide or brand-wide** (creation via admin); ⛔ business-scoped coupon *creation* unreachable (business portal hidden, L-01) — existing business-scoped rows still validate server-side; ❌ min-order-amount field (documented) |
 
 ## B.6 Assignment §6 — Checkout, Shipping & Payments
 
@@ -162,9 +162,11 @@ Bypassed code is **not deleted** — it remains compiling and analyzed.
 | L-08 | ~~Admin product **creation**~~ → **Built in Section 2b** (user decision, 2026-10-05). Admin creates/edits products (name, description, base price, category, brand, images) under a designated store business via the admin-guarded RPCs of `20261005000029`; created products auto-receive a 'Default' variant (null price tracks base price) keeping carts strictly variant-based. Variant *editing* stays business-portal-only — seeded products demonstrate variants (documented partial) | `features/admin/presentation/screens/admin_products_screen.dart`, `admin_product_form_screen.dart`, `brands_admin_screen.dart` | — | n/a — built |
 | L-09 | Business-order ownership rules (business owner transitions own orders; business processes own returns) | `transition_business_order`, `process_return` RPCs | Superseded **for the prototype** by admin-guarded equivalents (§3); original RPCs remain in force | Re-mount business portal |
 
-Not bypassed but related: **stock/inventory** was removed before the prototype decision
-(migration `20260928000021`; availability = status-based). It is a spec-level exclusion
-recorded in Part D, not a ledger entry.
+Not bypassed but related: **stock/inventory** was removed before the prototype
+decision (migration `20260928000021`) and **reintroduced in Section 2d**
+(`20261005000031`, product-wide) per user decision — the assignment mandates
+stock quantity and pre-checkout stock validation, and Low-Stock reporting
+(§8) is unblocked again. Ledger entries unaffected.
 
 ---
 
@@ -181,6 +183,14 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
   participating business → OrderItems; one Payment per order; one Delivery per order with
   one PickupStop per BusinessOrder. The prototype merely hides vendor *discovery* (L-04/L-06)
   and fulfills administratively (L-07).
+- **Availability & stock (Section 2d):** purchase requires variant active + product
+  active + business active + product stock ≥ quantity. Stock is **product-wide**
+  (purchasing any variant deducts the product's counter; variants carry no stock).
+  Disabled (archived) products of active businesses remain **visible** to customers,
+  rendered "Unavailable" with purchase blocked client- and server-side.
+- **Coupon scopes (Section 2d):** `platform` (cart-wide), `brand` (the brand's cart
+  lines; discount distributed across participating businesses proportionally), and
+  legacy `business` rows (still validate; creation path bypassed with the portal).
 - **Money:** exact `numeric` server-side; decimal display, no float arithmetic (§22).
 - **Historical integrity:** order items, shipping address, applied coupon amounts, and
   purchased prices are snapshots; later catalog/profile/coupon edits never rewrite history
@@ -242,6 +252,27 @@ appended as sections land.)
 * Parent categories aggregate their sub-category products server-side
   (`category_id IN (id + children)`); no separate sub-category browsing
   level (deferred, documented in Part B §2).
+
+## Section 2d — Stock, availability visibility, brand coupons (`20261005000031` + `0032`)
+
+* Stock reintroduced **product-wide** (`products.stock`): `create_order_from_cart`
+  locks product rows (`FOR UPDATE`), rejects any line exceeding stock, deducts on
+  commit; `cancel_order` restores from historical order items. Variants carry no
+  stock (user decision — supersedes the old §7 inventory removal).
+* Visibility: `products_public_read` replaces `products_public_read_active` —
+  products of active businesses stay listable while archived ("Unavailable"
+  badge, purchase blocked client- and server-side).
+* Coupon scope `brand`: `promotions.brand_id` + enum value; `validate_coupon`
+  previews brand-scope discounts; `create_order_from_cart` distributes the brand
+  discount across participating businesses proportionally (rounding remainder to
+  the largest share). `create_platform_promotion` gains `p_brand_id`
+  (null → platform scope); the admin promotions dialog gains a scope picker.
+* Admin product RPCs manage stock (`p_stock`); the product form gains a stock
+  field and **searchable pickers** (bottom-sheet search over fetched options)
+  for store/category/brand; the list shows stock.
+* Customer UI: product-wide stock line + Unavailable state on the detail screen,
+  availability badges on cards, quantity capped to stock in the variant sheet,
+  and a `RatingStars` visual aggregate (assignment §3).
 
 ## Realtime
 

@@ -152,7 +152,8 @@ class _AdminProductTile extends ConsumerWidget {
           '${product.categoryName}'
           '${product.brandName == null ? '' : ' · ${product.brandName}'}'
           ' · ${Money(product.basePriceMinor).format()}'
-          ' · ${product.variantCount} variant(s)',
+          ' · ${product.variantCount} variant(s)'
+          ' · stock ${product.stock}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
