@@ -26,8 +26,12 @@ code is preserved** and the multi-vendor data model remains intact underneath (P
 |---|---|---|
 | **Customer** | Active — the default and only end-user role | Every new account (Supabase Auth → `users.active_role = 'customer'`) |
 | **Admin Prototype** | Active — manages Products, Categories, Orders, System Reports | Server-side promotion only (below) |
-| Business Owner | ⛔ **Bypassed (Section 1)** — code preserved, UI unreachable | — |
-| Driver | ⛔ **Bypassed (Section 1)** — code preserved, UI unreachable | — |
+| Business Owner | ❌ **Removed (Section 9)** — feature and server paths deleted | — |
+| Driver | ❌ **Removed (Section 9)** — feature and server paths deleted | — |
+
+The `user_role` DB enum keeps its legacy values (`business`, `driver`) — a
+DB row holding one falls back to the customer surface; no Dart/UI path
+mounts anything for them.
 
 The `user_role` DB enum (`customer | business | driver | admin`, migration `20260923000001`)
 is **unchanged**; the simplification lives entirely in the navigation layer
@@ -51,13 +55,16 @@ the GoRouter rebuilds and mounts the admin tab set (`ROUTE-07`).
 `supabase/seed.sql` seeds categories; a prototype business + products are seeded for the
 demo (Section 3). Catalog products require an owning business row (`products.business_id`);
 the prototype seeds one "Prototype Store" business rather than introducing admin product
-creation (see ledger L-08).
+creation (Section 2b).
 
-## A.4 What "bypassed" means
+## A.4 What "removed" means
 
-Bypassed code is **kept in the repository, compiling, and analyzed** — it is only made
-unreachable from the UI/navigation layer. Nothing was deleted; every Part C ledger entry
-records how to restore an element.
+Sections 0–2 originally **bypassed** the obsolete surfaces (hidden in the
+navigation layer, code preserved). Per the user mandate change (2026-10-05,
+during the two-role pivot): *obsolete code is deleted, not preserved for
+legacy compatibility.* Section 9 therefore **removed** the actor features and
+their superseded server paths outright; the current product's codebase no
+longer carries them. Part C is the removal record.
 
 ## A.5 QR payment external prerequisites (Section 6b)
 
@@ -78,8 +85,9 @@ real banking app before pointing it at a production account.
 
 # Part B — Assignment Clause Mapping
 
-Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ bypassed by prototype decision.
-"→ §N" = resolved by prototype Section N of the simplification plan.
+Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ intentionally excluded.
+"Section N" references the prototype work packages; superseded actor concepts
+are covered by the removal record (Part C).
 
 ## B.1 Assignment §1 — Core Workflows & User Profiles
 
@@ -94,7 +102,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Home: featured, new arrivals, best sellers, popular categories, flash sales, special offers, recommended, recently viewed + search bar | 🟡 | `features/catalog/presentation/screens/home_screen.dart`; feed providers `home_feed_providers.dart` | Present: search bar, **category card grid ("Shop by category") + brand logo rail ("Top brands") navigating to a per-item `DiscoveryScreen` (Section 2c)**, approved promotion banners (= special offers), newest products (= new arrivals). ❌ featured / best sellers / flash sales / recommended / recently viewed (documented gaps); popular/rating sorts ❌ (documented). ⛔ businesses strip hidden (Section 2, L-05) |
+| Home: featured, new arrivals, best sellers, popular categories, flash sales, special offers, recommended, recently viewed + search bar | 🟡 | `features/catalog/presentation/screens/home_screen.dart`; feed providers `home_feed_providers.dart` | Present: search bar, **category card grid ("Shop by category") + brand logo rail ("Top brands") navigating to a per-item `DiscoveryScreen` (Section 2c)**, approved promotion banners (= special offers), newest products (= new arrivals). ❌ featured / best sellers / flash sales / recommended / recently viewed (documented gaps); popular/rating sorts ❌ (documented). businesses strip removed (Section 9) |
 | Categories & subcategories (ID, name, description, image, icon, status) | 🟡 | `categories` table (`20260923000003` + image_url `20261005000030`); `categories_provider.dart`; admin CRUD `categories_admin_screen.dart` (+image URL) | Name ✅, **image ✅ (Section 2c)**; hierarchy: a parent category's discovery page aggregates its own + all sub-category products server-side (`category_id IN (id + children)`); separate sub-category browsing UI deferred (documented). ❌ description/icon/status columns (documented) |
 | Search by name/category/brand/price/rating/availability/keyword | 🟡 | `products_screen.dart` + `products_controller.dart` — server-side search matching product name **or brand name** (PostgREST or-filter, Section 2b) + category filter | Name/category/brand ✅; ❌ price/rating/availability (documented) |
 | Filters: category, brand, price, rating, stock | 🟡 | Category ✅; brand filter chips ✅ (Section 2b — `brands` table, `products.brand_id`, `fetchBrands`) | Price/rating ❌; stock ⛔ N/A — inventory removed (`20260928000021`, Part D) |
@@ -104,16 +112,16 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
-| Product attributes: ID, name, code, category, brand, image, description, price, discount price, stock, rating, status | 🟡 | `products` / `product_variants` / `product_images` / `brands` tables; entity `features/catalog/domain/entities/product.dart` | Covered: id, name, category, **brand (`products.brand_id`, Section 2b)**, images, description, base+variant price, **stock (product-wide, reintroduced Section 2d per user decision — supersedes the old §7 inventory-removal)**, rating (reviews), status. ❌ product code; ⛔ discount price field (discounts are coupon-only, §5); ⛔ vendor identity bypassed (vendor model retained underneath, L-04) |
+| Product attributes: ID, name, code, category, brand, image, description, price, discount price, stock, rating, status | 🟡 | `products` / `product_variants` / `product_images` / `brands` tables; entity `features/catalog/domain/entities/product.dart` | Covered: id, name, category, **brand (`products.brand_id`, Section 2b)**, images, description, base+variant price, **stock (product-wide, reintroduced Section 2d per user decision — supersedes the old §7 inventory-removal)**, rating (reviews), status. ❌ product code; ⛔ discount price field (discounts are coupon-only, §5); vendor identity removed from the customer UI (vendor model retained underneath; removal record) |
 | Multiple images + variants (size/color/model) | ✅ | `add_product_image` / `add_product_variant` / `update_product_variant` / `set_variant_image` RPCs; `product_image_gallery.dart`, `variant_picker_sheet.dart` | Managed historically via Business portal (⛔ hidden); seeded/demo products carry images+variants |
-| Detail screen: gallery, name, price, discount, description, rating, stock, variant selector, related products; select variant, quantity, wishlist, add to cart | ✅ | `product_detail_screen.dart`, `product_detail_controller.dart` | Gallery/name/price/description/**rating UI (visual stars, Section 2d)**/**stock availability + Unavailable state (Section 2d)**/variants/related ✅; purchase blocked when disabled or out of stock (client + server); owning-business card ⛔ hidden (Section 2, L-04); long-press quick actions wired (Section 6) |
+| Detail screen: gallery, name, price, discount, description, rating, stock, variant selector, related products; select variant, quantity, wishlist, add to cart | ✅ | `product_detail_screen.dart`, `product_detail_controller.dart` | Gallery/name/price/description/**rating UI (visual stars, Section 2d)**/**stock availability + Unavailable state (Section 2d)**/variants/related ✅; purchase blocked when disabled or out of stock (client + server); owning-business card removed (Section 9); long-press quick actions wired (Section 6) |
 
 ## B.4 Assignment §4 — Wishlist & Shopping Cart
 
 | Clause | Status | Fulfilling component(s) | Notes / bypassed elements |
 |---|---|---|---|
 | Wishlist: save, remove, transfer to cart | ✅ | `features/wishlist` (`wishlists` + `wishlist_items` tables); **rendered as the shared catalog `ProductCard` grid via a composition-root card builder (Section 6)**: tap → detail, long-press → quick actions (remove from wishlist / add-to-cart via default variant) | Multi-variant add-to-cart from the card uses the **default variant** per user decision; full variant choice lives on the detail screen's picker |
-| Cart: add, remove, update quantity, select variants | ✅ | `features/cart` (`cart_screen.dart`, `cart_controller.dart`, RPCs `add_cart_item`/`update_cart_item`/`remove_cart_item`/`clear_cart`) | Per-business group headers ⛔ **flattened (Section 2, L-06)**; `CartItemTile` keeps its own quantity controls, now capped at **product-wide stock** (Section 6) |
+| Cart: add, remove, update quantity, select variants | ✅ | `features/cart` (`cart_screen.dart`, `cart_controller.dart`, RPCs `add_cart_item`/`update_cart_item`/`remove_cart_item`/`clear_cart`) | Per-business group headers removed (Section 9); `CartItemTile` keeps its own quantity controls, now capped at **product-wide stock** (Section 6) |
 | Calculations: unit price, quantity, subtotal, discount, shipping fee, grand total | ✅ | Server-authoritative (`coalesce(variant price, product base price)`, Part D); totals rendered display-only | — |
 | Validation: quantity + stock before checkout | ✅ | Server validates product/variant/business status **and product-wide stock** at checkout (`create_order_from_cart`, 0032): line quantity > product stock → order rejected; stock deducted atomically under row locks; cancellation restores stock | Quantity capped client-side in the variant sheet (stock cap) |
 
@@ -151,7 +159,7 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 |---|---|---|---|
 | Auth, authorization, session management, validation, secure storage; customers restricted to own data | ✅ | Supabase Auth (email + Google OAuth); RLS everywhere; server-authoritative state (Part D); `Failure` taxonomy at repo boundary (DATA-05/06) | — |
 | Customer prototype: personalized wishlist, cart, address book, order history | ✅ | `features/wishlist`, `features/cart`, `features/profile` (addresses), `features/orders` | — |
-| Admin prototype: manages Products, Categories, Orders, System Reports | ✅ | Categories ✅ (`categories_admin_screen.dart` + RPCs); **Products ✅ (Section 2b: `admin_products_screen.dart` + `admin_product_form_screen.dart`, admin-guarded RPCs `admin_create_product` / `admin_update_product` / `admin_set_product_archived` / `admin_add_product_image`)**; brand management ✅ (`brands_admin_screen.dart`, RLS `brands_admin_*`); **Orders ✅ (Section 3: `admin_orders_screen.dart` + `admin_order_detail_screen.dart`, RPCs `admin_transition_business_order` / `admin_complete_order` / `admin_process_return` + `orders_admin_read`/`payments_admin_read` policies)**; promotions/banner moderation ✅ (`admin_promotions_screen.dart`); audit logs ✅; platform settings ✅; platform report ✅ | Dashboard KPIs ✅ (Section 4, next row); ⛔ role-application review hidden (L-03) |
+| Admin prototype: manages Products, Categories, Orders, System Reports | ✅ | Categories ✅ (`categories_admin_screen.dart` + RPCs); **Products ✅ (Section 2b: `admin_products_screen.dart` + `admin_product_form_screen.dart`, admin-guarded RPCs `admin_create_product` / `admin_update_product` / `admin_set_product_archived` / `admin_add_product_image`)**; brand management ✅ (`brands_admin_screen.dart`, RLS `brands_admin_*`); **Orders ✅ (Section 3: `admin_orders_screen.dart` + `admin_order_detail_screen.dart`, RPCs `admin_transition_business_order` / `admin_complete_order` / `admin_process_return` + `orders_admin_read`/`payments_admin_read` policies)**; promotions/banner moderation ✅ (`admin_promotions_screen.dart`); audit logs ✅; platform settings ✅; platform report ✅ | Dashboard KPIs ✅ (Section 4, next row); role-application review removed (Section 9) |
 | Admin dashboard: total products, orders, customers, sales, low-stock, best-selling, sales trends | ✅ | `get_admin_kpis` (Section 4, `20261005000034`) on `admin_dashboard_screen.dart`: KPI cards (total products / orders / customers / total sales), **low-stock (≤5) + out-of-stock counts (unblocked by 2d stock)**, best-sellers list (top 5 by units), and a 14-day sales-trend bar chart (plain Flutter, no charting dependency) alongside the existing `get_platform_report` row | — |
 | Notifications (local/in-app): order updates, payment statuses, delivery stages, promotions, coupons | 🟡 | `features/notifications` (realtime inbox); DB triggers notify customers on business-order created/status, delivery status, return status | ❌ FCM push (device_tokens unused); ❌ promotion/coupon notifications (documented) |
 | Audit trails: cart additions, wishlist updates, order creation, payment changes, status updates, cancellations | 🟡 | `audit_logs` + `state_history` tables; admin viewer `audit_logs_screen.dart` | Domain events (order/payment/delivery/return states) logged server-side; cart/wishlist additions not audited (🟡 documented) |
@@ -160,28 +168,51 @@ Legend: ✅ covered · 🟡 partial · ❌ gap (documented, not built) · ⛔ by
 
 ---
 
-# Part C — Simplification Ledger
+# Part C — Removal Record
 
-Every over-engineered element bypassed/hidden by the 2-Role prototype, how, and how to restore.
-Bypassed code is **not deleted** — it remains compiling and analyzed.
+The original simplification ledger documented *bypassed* elements (hidden,
+code preserved). Per the mandate change (A.4), Section 9 **removed** the
+obsolete actor infrastructure. What remains load-bearing is listed last.
 
-| # | Element | Where it lives | How bypassed | Restore |
-|---|---|---|---|---|
-| L-01 | **Business Owner portal** (onboarding wizard, product/variant/image CRUD, order fulfillment, analytics, transactions, returns processing, coupon/banner creation) | `features/business/**`; branches `business_*_branch.dart` | **Hidden in Section 1:** removed from `tabsForRole` — branch files no longer imported by `core/router/navigation_tabs.dart`, which falls back to the customer tab set for `business`/`driver` roles | Re-add business case to `tabsForRole` + `defaultRouteForRole` in `core/router/navigation_tabs.dart` |
-| L-02 | **Driver portal** (available deliveries, my deliveries, pickup stops, transactions) | `features/delivery/**`; branches `driver_*_branch.dart` | **Hidden in Section 1:** same mechanism as L-01 | Same as L-01 |
-| L-03 | **Role applications** (apply to become business/driver + admin review) | `features/role_applications/**`; `/profile/apply` route in `profile_branch.dart`; profile row in `profile_screen.dart`; `/admin/applications` branch | **Hidden in Section 1:** `/profile/apply` GoRoute removed from `profile_branch.dart`, the profile ListTile removed from `profile_screen.dart`, and the admin Applications tab removed from `_adminTabs` (no applications can be submitted once the apply UI is gone). `AppRoutes.roleApplication` const retained (dormant) | Re-add route, profile row, admin tab |
-| L-04 | **Business discovery chrome** (home businesses strip, business storefront screen + route, product-detail business card) | `features/catalog/.../home_screen.dart`, `business_detail_screen.dart`, `product_detail_screen.dart` | **Hidden in Section 2:** strip + `_BusinessesStrip`/`_BusinessPlaceholder` widgets removed from `home_screen.dart`; `business/:id` GoRoute removed from `home_branch.dart`; product-detail vendor card removed. `businesses` data model + joins retained | Re-add widgets + `business/:id` nested route in `home_branch.dart` |
-| L-05 | Home "businesses" feed provider | `features/catalog/.../home_feed_providers.dart` (`homeBusinesses`) | **Hidden in Section 2:** provider retained, no longer rendered by `home_screen.dart` | Render again on `home_screen.dart` |
-| L-06 | Cart per-business grouping | `features/cart/.../cart_screen.dart` | **Hidden in Section 2:** group headers/subtotals flattened to a single list (`_group()` deleted); server totals unchanged | Restore grouping layout |
-| L-07 | Driver fulfillment pipeline (atomic driver claims, pickup-stop gating, `start_delivery`, `mark_delivered`, driver earnings) | `features/delivery/**`; RPCs `accept_delivery`, `reject_delivery`, `complete_pickup_stop`, `start_delivery`, `mark_delivered`, `get_driver_transactions`; `deliveries`/`pickup_stops` rows still created at checkout | **Superseded in Section 3** by administrative fulfillment: `admin_transition_business_order` + `admin_complete_order` mirror the old effects (statuses, stop completion, COD verification, notifications, audit); `admin_process_return` replaces business return decisions | Re-mount driver portal (L-02) and use the driver RPCs again |
-| L-08 | ~~Admin product **creation**~~ → **Built in Section 2b** (user decision, 2026-10-05). Admin creates/edits products (name, description, base price, category, brand, images) under a designated store business via the admin-guarded RPCs of `20261005000029`; created products auto-receive a 'Default' variant (null price tracks base price) keeping carts strictly variant-based. Variant *editing* stays business-portal-only — seeded products demonstrate variants (documented partial) | `features/admin/presentation/screens/admin_products_screen.dart`, `admin_product_form_screen.dart`, `brands_admin_screen.dart` | — | n/a — built |
-| L-09 | Business-order ownership rules (business owner transitions own orders; business processes own returns) | `transition_business_order`, `process_return` RPCs | Superseded **for the prototype** by admin-guarded equivalents (§3); original RPCs remain in force | Re-mount business portal |
+## Removed with their features (Section 9a)
 
-Not bypassed but related: **stock/inventory** was removed before the prototype
-decision (migration `20260928000021`) and **reintroduced in Section 2d**
-(`20261005000031`, product-wide) per user decision — the assignment mandates
-stock quantity and pre-checkout stock validation, and Low-Stock reporting
-(§8) is unblocked again. Ledger entries unaffected.
+| Removed | Where it lived |
+|---|---|
+| Business Owner portal (onboarding, product/variant/image CRUD, fulfillment, analytics, transactions) | `features/business/**`; `business_*` branch files |
+| Driver portal (available deliveries, my deliveries, pickup stops, transactions) | `features/delivery/**`; `driver_*` branch files |
+| Role applications (apply flow + admin review) | `features/role_applications/**`; `/profile/apply` route; admin review screen/controller |
+| Business storefront discovery (detail screen/controller, `Business`/`BusinessDetail` entities, `homeBusinesses` feed) | `features/catalog` |
+| Business-side screens in shared features (banner submission, returns processing) | `features/promotions`, `features/returns` |
+| Their route-name constants | `core/router/app_routes.dart` |
+
+## Removed server-side (Section 9b, migration `20261005000039`)
+
+| Removed | Superseded by |
+|---|---|
+| `transition_business_order` | `admin_transition_business_order` (Section 3) |
+| Business product/variant/image CRUD (`create_product`, `update_product`, `set_product_archived`, `add/update_product_variant`, `set_variant_image`, `add_product_image`), `create_business`, `update_my_business` | `admin_*` equivalents (Section 2b) |
+| `get_business_analytics`, `get_business_transactions`, `get_driver_transactions` | `get_admin_kpis` / `get_platform_report` (Section 4) |
+| Driver pipeline (`accept_delivery`, `reject_delivery`, `complete_pickup_stop`, `start_delivery`, `mark_delivered`) | `admin_ship_order` + `admin_complete_order` (Sections 3/6b) |
+| `process_return` (business authority) | `admin_process_return` (Section 3) |
+| `submit_banner` (business submission), `create_coupon_promotion` (business coupons) | `admin_create_banner` (Section 9), admin coupon creation (§5b) |
+| `is_driver()` + `driver_can_view_*` helpers and all driver/owner RLS policies | admin read/write policies (same migration) |
+| Business-owner "new order" notification insert | customer notifications only |
+| `pending_applications` in the platform report | applications flow removed |
+
+## Kept — load-bearing in the current workflow (not legacy)
+
+* `businesses` + `products.business_id` — catalog ownership, pricing, checkout
+  splits, admin product management (a businesses row is still required; the
+  prototype store is created via the seed snippet, Part A.3).
+* `business_orders` / `deliveries` / `pickup_stops` — the fulfillment and
+  tracking engine: checkout creates them, the **admin** drives them
+  (accept → preparing → ready → shipped → delivered), the **customer** tracks
+  the derived timeline. Multi-business checkout semantics are unchanged
+  (Part D).
+* The legacy `business` promotion scope and `payment_method='bank_transfer'`
+  values remain valid on the wire for historical rows; no creation path exists.
+* The `user_role` DB enum keeps its four values; unknown/legacy roles fall
+  back to the customer surface.
 
 ---
 
@@ -196,8 +227,8 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
 - **Multi-vendor data model retained underneath:** `products.business_id` → `businesses`;
   cart lines embed variants→products→businesses; one Order → one BusinessOrder per
   participating business → OrderItems; one Payment per order; one Delivery per order with
-  one PickupStop per BusinessOrder. The prototype merely hides vendor *discovery* (L-04/L-06)
-  and fulfills administratively (L-07).
+  one PickupStop per BusinessOrder. Vendor *discovery* was removed from the customer UI (Section 9) and
+  fulfillment is administratively driven (Sections 3/6b).
 - **Availability & stock (Section 2d):** purchase requires variant active + product
   active + business active + product stock ≥ quantity. Stock is **product-wide**
   (purchasing any variant deducts the product's counter; variants carry no stock).
@@ -254,7 +285,7 @@ appended as sections land.)
   `admin_set_product_archived` / `admin_add_product_image` — explicit `is_admin()`
   guards, audit-logged, mirroring the business-portal RPC shapes. `admin_create_product`
   auto-creates a 'Default' variant (null price → tracks base price) so carts stay
-  strictly variant-based; the original owner-guarded RPCs remain untouched (L-09).
+  strictly variant-based; the original owner-guarded RPCs were removed (Section 9).
 * `products_admin_read` lets the admin list see archived products;
   `product_images_admin_all` + storage `product_images_admin_write/delete` give admin
   full image-row and binary management under the same `{business_id}/...` path
@@ -328,7 +359,7 @@ appended as sections land.)
   trend (zero-filled via `generate_series`).
 * Dashboard renders KPI cards, best-seller list, and a plain-Flutter bar
   chart (DEPS-03: no charting package). The pending-applications mention
-  was dropped from the dashboard (applications flow hidden, L-03).
+  was dropped from the dashboard (applications flow removed, Section 9).
 
 ## Section 5 — Customer dashboard (`20261005000035` + `features/dashboard`)
 
