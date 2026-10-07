@@ -77,14 +77,6 @@ abstract interface class IAdminRepository {
   // -------------------------------------------------------- orders (§3)
   Future<List<AdminOrderSummary>> fetchOrders();
 
-  /// Mirrors transition_business_order with admin authority (L-07):
-  /// pending→accepted/rejected, accepted→preparing, preparing→ready.
-  Future<void> transitionBusinessOrder({
-    required String businessOrderId,
-    required String target,
-    String? reason,
-  });
-
   /// Section 7A: advances the order's single lifecycle one step (or
   /// cancels a not-yet-shipped order with a reason).
   Future<void> transitionOrder({

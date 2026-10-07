@@ -459,19 +459,6 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<void> transitionBusinessOrder({
-    required String businessOrderId,
-    required String target,
-    String? reason,
-  }) {
-    return _rpc('admin_transition_business_order', {
-      'p_business_order_id': businessOrderId,
-      'p_target': target,
-      'p_reason': reason,
-    });
-  }
-
-  @override
   Future<void> transitionOrder({
     required String orderId,
     required String status,
@@ -609,7 +596,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         return const PlatformSettings(
           deliveryFeeMinor: 0,
           platformCommissionPercent: 0,
-          driverCommissionPercent: 0,
           paymentAccount: '',
           qrAccountId: '',
         );
@@ -618,7 +604,6 @@ class AdminRepositoryImpl implements IAdminRepository {
       return PlatformSettings(
         deliveryFeeMinor: dto.deliveryFeeMinor,
         platformCommissionPercent: dto.platformCommissionPercent,
-        driverCommissionPercent: dto.driverCommissionPercent,
         paymentAccount: dto.paymentAccount,
         qrAccountId: dto.qrAccountId,
       );
@@ -635,7 +620,6 @@ class AdminRepositoryImpl implements IAdminRepository {
       await _client.from('platform_settings').update({
         'delivery_fee_minor': settings.deliveryFeeMinor,
         'platform_commission_percent': settings.platformCommissionPercent,
-        'driver_commission_percent': settings.driverCommissionPercent,
         'payment_account': settings.paymentAccount,
         'qr_account_id': settings.qrAccountId,
       }).eq('id', 1);

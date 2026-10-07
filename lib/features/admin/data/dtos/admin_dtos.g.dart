@@ -31,7 +31,6 @@ PlatformSettingsAdminDto _$PlatformSettingsAdminDtoFromJson(
   deliveryFeeMinor: (json['delivery_fee_minor'] as num).toInt(),
   platformCommissionPercent: (json['platform_commission_percent'] as num)
       .toInt(),
-  driverCommissionPercent: (json['driver_commission_percent'] as num).toInt(),
   paymentAccount: json['payment_account'] as String,
   qrAccountId: json['qr_account_id'] as String? ?? '',
 );
@@ -41,7 +40,6 @@ Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
 ) => <String, dynamic>{
   'delivery_fee_minor': instance.deliveryFeeMinor,
   'platform_commission_percent': instance.platformCommissionPercent,
-  'driver_commission_percent': instance.driverCommissionPercent,
   'payment_account': instance.paymentAccount,
   'qr_account_id': instance.qrAccountId,
 };

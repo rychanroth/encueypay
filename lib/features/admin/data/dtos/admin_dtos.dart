@@ -33,7 +33,6 @@ class PlatformSettingsAdminDto {
   const PlatformSettingsAdminDto({
     required this.deliveryFeeMinor,
     required this.platformCommissionPercent,
-    required this.driverCommissionPercent,
     required this.paymentAccount,
     this.qrAccountId = '',
   });
@@ -43,7 +42,6 @@ class PlatformSettingsAdminDto {
 
   final int deliveryFeeMinor;
   final int platformCommissionPercent;
-  final int driverCommissionPercent;
   final String paymentAccount;
 
   @JsonKey(defaultValue: '')

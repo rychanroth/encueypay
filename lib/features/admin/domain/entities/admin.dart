@@ -279,7 +279,6 @@ abstract class PlatformSettings with _$PlatformSettings {
   const factory PlatformSettings({
     required int deliveryFeeMinor,
     required int platformCommissionPercent,
-    required int driverCommissionPercent,
     required String paymentAccount,
 
     /// Bakong account receiving QR payments (Section 6b; '' = unconfigured).

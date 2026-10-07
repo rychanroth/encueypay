@@ -24,7 +24,7 @@ class ReturnsRepositoryImpl implements IReturnsRepository {
       final rows = await _client
           .from('order_items')
           .select('id, product_name, variant_name, quantity')
-          .eq('business_orders.order_id', orderId)
+          .eq('order_id', orderId)
           .order('created_at');
       return rows
           .map(ReturnableItemDto.fromJson)

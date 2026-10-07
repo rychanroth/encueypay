@@ -20,7 +20,6 @@ class _PlatformSettingsScreenState
     extends ConsumerState<PlatformSettingsScreen> {
   final _feeController = TextEditingController();
   final _platformCommissionController = TextEditingController();
-  final _driverCommissionController = TextEditingController();
   final _paymentAccountController = TextEditingController();
   final _qrAccountController = TextEditingController();
   bool _filled = false;
@@ -29,7 +28,6 @@ class _PlatformSettingsScreenState
   void dispose() {
     _feeController.dispose();
     _platformCommissionController.dispose();
-    _driverCommissionController.dispose();
     _paymentAccountController.dispose();
     _qrAccountController.dispose();
     super.dispose();
@@ -43,12 +41,7 @@ class _PlatformSettingsScreenState
       feeMinor = -1;
     }
     final platformCommission = int.tryParse(_platformCommissionController.text) ?? -1;
-    final driverCommission = int.tryParse(_driverCommissionController.text) ?? -1;
-    if (feeMinor < 0 ||
-        platformCommission < 0 ||
-        platformCommission > 100 ||
-        driverCommission < 0 ||
-        driverCommission > 100) {
+    if (feeMinor < 0 || platformCommission < 0 || platformCommission > 100) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Check the values (commissions 0-100)')),
       );
@@ -58,7 +51,6 @@ class _PlatformSettingsScreenState
           PlatformSettings(
             deliveryFeeMinor: feeMinor,
             platformCommissionPercent: platformCommission,
-            driverCommissionPercent: driverCommission,
             paymentAccount: _paymentAccountController.text.trim(),
             qrAccountId: _qrAccountController.text.trim(),
           ),
@@ -98,8 +90,6 @@ class _PlatformSettingsScreenState
                 (settings.deliveryFeeMinor / 100).toStringAsFixed(2);
             _platformCommissionController.text =
                 '${settings.platformCommissionPercent}';
-            _driverCommissionController.text =
-                '${settings.driverCommissionPercent}';
             _paymentAccountController.text = settings.paymentAccount;
             _qrAccountController.text = settings.qrAccountId;
             _filled = true;
@@ -120,14 +110,6 @@ class _PlatformSettingsScreenState
                 controller: _platformCommissionController,
                 decoration: const InputDecoration(
                   labelText: 'Platform commission (%)',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _driverCommissionController,
-                decoration: const InputDecoration(
-                  labelText: 'Driver commission share (%)',
                 ),
                 keyboardType: TextInputType.number,
               ),

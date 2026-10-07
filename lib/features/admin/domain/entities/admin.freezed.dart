@@ -4672,7 +4672,7 @@ as int,
 /// @nodoc
 mixin _$PlatformSettings {
 
- int get deliveryFeeMinor; int get platformCommissionPercent; int get driverCommissionPercent; String get paymentAccount;/// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
+ int get deliveryFeeMinor; int get platformCommissionPercent; String get paymentAccount;/// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
  String get qrAccountId;
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
@@ -4684,16 +4684,16 @@ $PlatformSettingsCopyWith<PlatformSettings> get copyWith => _$PlatformSettingsCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.driverCommissionPercent, driverCommissionPercent) || other.driverCommissionPercent == driverCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount)&&(identical(other.qrAccountId, qrAccountId) || other.qrAccountId == qrAccountId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount)&&(identical(other.qrAccountId, qrAccountId) || other.qrAccountId == qrAccountId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,driverCommissionPercent,paymentAccount,qrAccountId);
+int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,paymentAccount,qrAccountId);
 
 @override
 String toString() {
-  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, driverCommissionPercent: $driverCommissionPercent, paymentAccount: $paymentAccount, qrAccountId: $qrAccountId)';
+  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, paymentAccount: $paymentAccount, qrAccountId: $qrAccountId)';
 }
 
 
@@ -4704,7 +4704,7 @@ abstract mixin class $PlatformSettingsCopyWith<$Res>  {
   factory $PlatformSettingsCopyWith(PlatformSettings value, $Res Function(PlatformSettings) _then) = _$PlatformSettingsCopyWithImpl;
 @useResult
 $Res call({
- int deliveryFeeMinor, int platformCommissionPercent, int driverCommissionPercent, String paymentAccount, String qrAccountId
+ int deliveryFeeMinor, int platformCommissionPercent, String paymentAccount, String qrAccountId
 });
 
 
@@ -4721,11 +4721,10 @@ class _$PlatformSettingsCopyWithImpl<$Res>
 
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? driverCommissionPercent = null,Object? paymentAccount = null,Object? qrAccountId = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? paymentAccount = null,Object? qrAccountId = null,}) {
   return _then(PlatformSettings(
 deliveryFeeMinor: null == deliveryFeeMinor ? _self.deliveryFeeMinor : deliveryFeeMinor // ignore: cast_nullable_to_non_nullable
 as int,platformCommissionPercent: null == platformCommissionPercent ? _self.platformCommissionPercent : platformCommissionPercent // ignore: cast_nullable_to_non_nullable
-as int,driverCommissionPercent: null == driverCommissionPercent ? _self.driverCommissionPercent : driverCommissionPercent // ignore: cast_nullable_to_non_nullable
 as int,paymentAccount: null == paymentAccount ? _self.paymentAccount : paymentAccount // ignore: cast_nullable_to_non_nullable
 as String,qrAccountId: null == qrAccountId ? _self.qrAccountId : qrAccountId // ignore: cast_nullable_to_non_nullable
 as String,
@@ -4813,10 +4812,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount,  String qrAccountId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  String paymentAccount,  String qrAccountId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlatformSettings() when $default != null:
-return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
+return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
   return orElse();
 
 }
@@ -4834,10 +4833,10 @@ return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.dri
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount,  String qrAccountId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int deliveryFeeMinor,  int platformCommissionPercent,  String paymentAccount,  String qrAccountId)  $default,) {final _that = this;
 switch (_that) {
 case _PlatformSettings():
-return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
+return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -4854,10 +4853,10 @@ return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.dri
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int deliveryFeeMinor,  int platformCommissionPercent,  int driverCommissionPercent,  String paymentAccount,  String qrAccountId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int deliveryFeeMinor,  int platformCommissionPercent,  String paymentAccount,  String qrAccountId)?  $default,) {final _that = this;
 switch (_that) {
 case _PlatformSettings() when $default != null:
-return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.driverCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
+return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.paymentAccount,_that.qrAccountId);case _:
   return null;
 
 }
@@ -4869,12 +4868,11 @@ return $default(_that.deliveryFeeMinor,_that.platformCommissionPercent,_that.dri
 
 
 class _PlatformSettings implements PlatformSettings {
-  const _PlatformSettings({required this.deliveryFeeMinor, required this.platformCommissionPercent, required this.driverCommissionPercent, required this.paymentAccount, this.qrAccountId = ''});
+  const _PlatformSettings({required this.deliveryFeeMinor, required this.platformCommissionPercent, required this.paymentAccount, this.qrAccountId = ''});
   
 
 @override final  int deliveryFeeMinor;
 @override final  int platformCommissionPercent;
-@override final  int driverCommissionPercent;
 @override final  String paymentAccount;
 /// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
 @override@JsonKey() final  String qrAccountId;
@@ -4889,16 +4887,16 @@ _$PlatformSettingsCopyWith<_PlatformSettings> get copyWith => __$PlatformSetting
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.driverCommissionPercent, driverCommissionPercent) || other.driverCommissionPercent == driverCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount)&&(identical(other.qrAccountId, qrAccountId) || other.qrAccountId == qrAccountId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformSettings&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.platformCommissionPercent, platformCommissionPercent) || other.platformCommissionPercent == platformCommissionPercent)&&(identical(other.paymentAccount, paymentAccount) || other.paymentAccount == paymentAccount)&&(identical(other.qrAccountId, qrAccountId) || other.qrAccountId == qrAccountId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,driverCommissionPercent,paymentAccount,qrAccountId);
+int get hashCode => Object.hash(runtimeType,deliveryFeeMinor,platformCommissionPercent,paymentAccount,qrAccountId);
 
 @override
 String toString() {
-  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, driverCommissionPercent: $driverCommissionPercent, paymentAccount: $paymentAccount, qrAccountId: $qrAccountId)';
+  return 'PlatformSettings(deliveryFeeMinor: $deliveryFeeMinor, platformCommissionPercent: $platformCommissionPercent, paymentAccount: $paymentAccount, qrAccountId: $qrAccountId)';
 }
 
 
@@ -4909,7 +4907,7 @@ abstract mixin class _$PlatformSettingsCopyWith<$Res> implements $PlatformSettin
   factory _$PlatformSettingsCopyWith(_PlatformSettings value, $Res Function(_PlatformSettings) _then) = __$PlatformSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- int deliveryFeeMinor, int platformCommissionPercent, int driverCommissionPercent, String paymentAccount, String qrAccountId
+ int deliveryFeeMinor, int platformCommissionPercent, String paymentAccount, String qrAccountId
 });
 
 
@@ -4926,11 +4924,10 @@ class __$PlatformSettingsCopyWithImpl<$Res>
 
 /// Create a copy of PlatformSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? driverCommissionPercent = null,Object? paymentAccount = null,Object? qrAccountId = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? deliveryFeeMinor = null,Object? platformCommissionPercent = null,Object? paymentAccount = null,Object? qrAccountId = null,}) {
   return _then(_PlatformSettings(
 deliveryFeeMinor: null == deliveryFeeMinor ? _self.deliveryFeeMinor : deliveryFeeMinor // ignore: cast_nullable_to_non_nullable
 as int,platformCommissionPercent: null == platformCommissionPercent ? _self.platformCommissionPercent : platformCommissionPercent // ignore: cast_nullable_to_non_nullable
-as int,driverCommissionPercent: null == driverCommissionPercent ? _self.driverCommissionPercent : driverCommissionPercent // ignore: cast_nullable_to_non_nullable
 as int,paymentAccount: null == paymentAccount ? _self.paymentAccount : paymentAccount // ignore: cast_nullable_to_non_nullable
 as String,qrAccountId: null == qrAccountId ? _self.qrAccountId : qrAccountId // ignore: cast_nullable_to_non_nullable
 as String,
