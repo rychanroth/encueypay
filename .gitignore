@@ -48,3 +48,5 @@ app.*.map.json
 .env
 .zcode
 android/build
+
+android/app/google-services.json

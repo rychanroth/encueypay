@@ -1,46 +1,46 @@
--- Demo/dev seed data (idempotent). Auth users cannot be seeded via plain
--- SQL reliably — create test users in the Supabase dashboard
--- (Authentication → Users) and seed roles in `users` directly if needed.
--- Categories are guarded by name so re-running never duplicates.
-
-insert into public.categories (name)
-select c.name
-from (values
-  ('Electronics'),
-  ('Fashion'),
-  ('Food & Beverages'),
-  ('Home & Living'),
-  ('Beauty'),
-  ('Sports')
-) as c(name)
-where not exists (
-  select 1 from public.categories existing where existing.name = c.name
-);
-
--- Brands (Section 2b): the admin populates these through the Products tab;
--- this seed gives the demo catalog a starting set. Guarded by name.
-insert into public.brands (name, description)
-select b.name, b.description
-from (values
-  ('Acme', 'Reliable everyday essentials.'),
-  ('Nordwind', 'Outdoor and adventure gear.'),
-  ('Lumina', 'Modern lighting and electronics.'),
-  ('Verde', 'Natural beauty and wellness.')
-) as b(name, description)
-where not exists (
-  select 1 from public.brands existing where existing.name = b.name
-);
-
--- Prototype store + admin (Sections 2b/3). Businesses require an auth user
--- as owner and auth users cannot be seeded via plain SQL — create two users
--- in the dashboard (Authentication → Users) or sign them up, then run:
+---- Demo/dev seed data (idempotent). Auth users cannot be seeded via plain
+---- SQL reliably — create test users in the Supabase dashboard
+---- (Authentication → Users) and seed roles in `users` directly if needed.
+---- Categories are guarded by name so re-running never duplicates.
 --
---   -- the store owner (any role; its portal is bypassed in the prototype)
---   insert into public.businesses (owner_id, name, description, status)
---     select id, 'Prototype Store', '2-role prototype catalog', 'active'
---     from public.users u join auth.users a on a.id = u.id
---     where a.email = '<store-owner-email>';
+--insert into public.categories (name)
+--select c.name
+--from (values
+--  ('Electronics'),
+--  ('Fashion'),
+--  ('Food & Beverages'),
+--  ('Home & Living'),
+--  ('Beauty'),
+--  ('Sports')
+--) as c(name)
+--where not exists (
+--  select 1 from public.categories existing where existing.name = c.name
+--);
 --
---   -- the administrator (living spec Part A.2)
---   update public.users set active_role = 'admin'
---     where id in (select id from auth.users where email = '<admin-email>');
+---- Brands (Section 2b): the admin populates these through the Products tab;
+---- this seed gives the demo catalog a starting set. Guarded by name.
+--insert into public.brands (name, description)
+--select b.name, b.description
+--from (values
+--  ('Acme', 'Reliable everyday essentials.'),
+--  ('Nordwind', 'Outdoor and adventure gear.'),
+--  ('Lumina', 'Modern lighting and electronics.'),
+--  ('Verde', 'Natural beauty and wellness.')
+--) as b(name, description)
+--where not exists (
+--  select 1 from public.brands existing where existing.name = b.name
+--);
+--
+---- Prototype store + admin (Sections 2b/3). Businesses require an auth user
+---- as owner and auth users cannot be seeded via plain SQL — create two users
+---- in the dashboard (Authentication → Users) or sign them up, then run:
+----
+----   -- the store owner (any role; its portal is bypassed in the prototype)
+----   insert into public.businesses (owner_id, name, description, status)
+----     select id, 'Prototype Store', '2-role prototype catalog', 'active'
+----     from public.users u join auth.users a on a.id = u.id
+----     where a.email = '<store-owner-email>';
+----
+----   -- the administrator (living spec Part A.2)
+----   update public.users set active_role = 'admin'
+----     where id in (select id from auth.users where email = '<admin-email>');
