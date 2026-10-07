@@ -211,7 +211,7 @@ obsolete actor infrastructure. What remains load-bearing is listed last.
 | `transition_business_order` | `admin_transition_business_order` (Section 3) |
 | Business product/variant/image CRUD (`create_product`, `update_product`, `set_product_archived`, `add/update_product_variant`, `set_variant_image`, `add_product_image`), `create_business`, `update_my_business` | `admin_*` equivalents (Section 2b) |
 | `get_business_analytics`, `get_business_transactions`, `get_driver_transactions` | `get_admin_kpis` / `get_platform_report` (Section 4) |
-| Driver pipeline (`accept_delivery`, `reject_delivery`, `complete_pickup_stop`, `start_delivery`, `mark_delivered`) | `admin_ship_order` + `admin_complete_order` (Sections 3/6b) |
+| Driver pipeline (`accept_delivery`, `reject_delivery`, `complete_pickup_stop`, `start_delivery`, `mark_delivered`) | `admin_transition_order` (Section 7A — one validated machine) |
 | `process_return` (business authority) | `admin_process_return` (Section 3) |
 | `submit_banner` (business submission), `create_coupon_promotion` (business coupons) | `admin_create_banner` (Section 9), admin coupon creation (§5b) |
 | `is_driver()` + `driver_can_view_*` helpers and all driver/owner RLS policies | admin read/write policies (same migration) |
@@ -222,20 +222,37 @@ obsolete actor infrastructure. What remains load-bearing is listed last.
 |---|---|
 | `business_orders`, `deliveries`, `pickup_stops` tables (+ `business_order_status` / `delivery_status` / `pickup_stop_status` enums) | **`orders.status`** — the single lifecycle (assignment vocabulary) |
 | `admin_transition_business_order`, `admin_ship_order`, `admin_complete_order` | `admin_transition_order` (one validated machine) |
-| `notify_on_*` per-family notification triggers | `notify_customer_on_order_status` on `orders` |
+| `notify_on_*` per-family notification triggers | `orders_notify_status` + `payments_notify_status` on `orders`/`payments` |
 | Business-owner "new order" notification insert | customer notifications only |
 | `pending_applications` in the platform report | applications flow removed |
+
+## Applied server-side (DB bridge, migrations `20261008000001`–`20261008000006`)
+
+The frozen 4-role baseline (`20261007000000_frozen_baseline.sql`, the consolidated
+pre-pivot dump) predates Sections 9b/7A and everything from 2b–8E. The bridge
+series applies the database side of this specification on top of it (the earlier
+`2026100500*` migration files were consolidated away and no longer exist):
+
+| Migration | Content |
+|---|---|
+| `…000001_drop_deprecated_tables` | Drops `business_orders` / `deliveries` / `pickup_stops` / `role_applications` + their enums; pivots `order_items.business_order_id` → `order_id` (direct orders FK); re-attaches the `auth.users` signup trigger lost in the baseline dump |
+| `…000002_drop_deprecated_routines` | Drops the 9b function/policy inventory + `platform_settings.driver_commission_percent` + the promotions banner/window columns; strict `discount_value > 0` restored |
+| `…000003_schema_evolution` | `brands`, `banners` tables; `products.stock`/`brand_id`; `order_status` enum + `orders.status`/`note`/`cancelled_at`/`cancellation_reason`; `payments` QR columns + method `'qr'`; `coupons` min-order/windows (absorbs `expires_at`); `addresses.is_default`; `promotions.active`/`brand_id` + scope `'brand'`; `platform_settings.qr_account_id` + singleton row; realtime `payments` |
+| `…000004_rls_authority_storage` | Admin `is_admin()` read/ALL policies (mandatory for PostgREST embeds); public products-any-status/brands/banners reads; promotions RPC-only; storage buckets `product_images` / `promo_assets` / `payment_proofs` + object policies |
+| `…000005_triggers` | `orders_record_state` (state_history), `orders_notify_status` + `payments_notify_status` (customer notifications); brands touch trigger |
+| `…000006_rpcs_2role` | Full §6 RPC inventory with the §4 stock/coupon/QR/return chokepoints; narrow admin UPDATE policies on `orders`/`payments`/`return_requests` |
+
+Two documented authority nuances: `create_order_from_cart` and `validate_coupon`
+run as SECURITY DEFINER (stock deduction and promotions reads cannot run
+INVOKER as a customer without unsafe policies); admin mutations audit via the
+definer-only `record_admin_audit` helper. Full lifecycle verified end-to-end by
+`supabase/testing/smoke_test_2role.sql`.
 
 ## Kept — load-bearing in the current workflow (not legacy)
 
 * `businesses` + `products.business_id` — catalog ownership, pricing, checkout
   splits, admin product management (a businesses row is still required; the
   prototype store is created via the seed snippet, Part A.3).
-* `business_orders` / `deliveries` / `pickup_stops` — the fulfillment and
-  tracking engine: checkout creates them, the **admin** drives them
-  (accept → preparing → ready → shipped → delivered), the **customer** tracks
-  the derived timeline. Multi-business checkout semantics are unchanged
-  (Part D).
 * The legacy `business` promotion scope and `payment_method='bank_transfer'`
   values remain valid on the wire for historical rows; no creation path exists.
 * The `user_role` DB enum keeps its four values; unknown/legacy roles fall

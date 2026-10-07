@@ -10,9 +10,15 @@ committed. The authoritative feature record is
 supabase db reset   # applies all migrations + re-runs seed.sql
 ```
 
-Old demo orders are intentionally lost (pre-cleanup orders reference removed
-tables/RPCs). Seed provides categories + demo brands (Acme, Nordwind, Lumina,
-Verde).
+The frozen 4-role baseline (`20261007000000_frozen_baseline.sql`) is bridged to
+the 2-role schema by migrations `20261008000001`–`…000006` (see the "Applied
+server-side (DB bridge)" ledger in the living spec, Part C). Old demo data is
+intentionally lost on reset. Seed provides 6 categories, 4 demo brands (Acme,
+Nordwind, Lumina, Verde) and the `platform_settings` singleton. The full server
+lifecycle is verified by `supabase/testing/smoke_test_2role.sql` (optional:
+`psql … -f supabase/testing/smoke_test_2role.sql` against the local DB).
+Note: `supabase/testing/smoke_test.sql` is the old 4-role harness and is
+obsolete.
 
 ## Phase 1 — Users, store, admin
 
@@ -69,6 +75,10 @@ windows, min order).
 
 Without this, the app runs fine — the in-app realtime inbox is unaffected.
 
+⚠ **Known defect (flagged, unfixed):** `push-dispatch/index.ts` reads
+`notification.recipient`, but the column is `recipient_id` — real pushes will
+silently skip every device until that one line is corrected.
+
 ## Phase 5 — Run + demo script
 
 ```bash
@@ -91,6 +101,7 @@ flutter run --dart-define=SUPABASE_URL=<url> \
 
 | Prerequisite | Unlocks |
 |---|---|
+| Google Cloud Console OAuth client (Android + Web) → Supabase auth provider config (`SUPABASE_AUTH_EXTERNAL_GOOGLE_*` locally; Dashboard → Auth → Providers when hosted) | Google sign-in (the primary method per DEPS-04); the deep-link redirect `io.supabase.encueypay://login-callback/` is already pre-wired in `config.toml`. Until configured, email/password sign-in is the working fallback. |
 | Personal Bakong ID in Platform settings | Scannable KHQR at checkout |
 | `BAKONG_TOKEN` secret + deployed `bakong-check` | Real QR payment confirmation polling |
 | ABA merchant account + `PAYWAY_API_KEY` + callback URL | Real webhook confirmation |
