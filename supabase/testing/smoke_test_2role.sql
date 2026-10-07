@@ -40,7 +40,7 @@ SET LOCAL request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","r
 select pg_temp.assert_eq((select public.is_admin()::text), 'true', 'admin role recognized');
 
 insert into public.brands (name) values ('Smoke Brand');
-select pg_temp.assert_eq((select count(*) from public.brands)::text, '1', 'admin inserts brand directly');
+select pg_temp.assert_eq((select count(*) from public.brands where name='Smoke Brand')::text, '1', 'admin inserts brand directly');
 
 select public.create_category('Smoke Cat') as cat_id \gset
 
