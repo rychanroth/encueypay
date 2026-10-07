@@ -3,10 +3,12 @@
 -- Authority model (map §0/§5): is_admin() at the top of every admin RPC;
 -- audit-log insert in every admin mutation; auth.uid() at the top of every
 -- customer RPC; SD reserved for the primitives that must bypass RLS:
--- cancel_order, confirm_qr_payment, the report/dashboard builders, notify_*,
--- plus — deliberate deviation, documented — create_order_from_cart, whose
--- set-based stock deduction (UPDATE products) cannot run INVOKER as a
--- customer without either an unsafe products policy or a silent no-op.
+-- cancel_order, confirm_qr_payment, validate_coupon (reads promotions,
+-- which are RPC-only with no public read policy), the report/dashboard
+-- builders, notify_*, plus — deliberate deviation, documented —
+-- create_order_from_cart, whose set-based stock deduction (UPDATE
+-- products) cannot run INVOKER as a customer without either an unsafe
+-- products policy or a silent no-op.
 --
 -- ENUM values added in M3 ('qr', 'brand', 'completed') are first used here —
 -- a separate transaction from M3, per the map §0 rule.
@@ -272,7 +274,8 @@ end;
 $$;
 
 CREATE OR REPLACE FUNCTION public.validate_coupon(p_code text) RETURNS jsonb
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 declare
   v_user uuid := auth.uid();

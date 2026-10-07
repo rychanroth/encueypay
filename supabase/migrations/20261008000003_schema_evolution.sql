@@ -122,5 +122,10 @@ CREATE UNIQUE INDEX "addresses_user_default_key"
 ALTER TABLE "public"."platform_settings"
   ADD COLUMN "qr_account_id" "text" DEFAULT '' NOT NULL;
 
+-- The singleton row: the frozen baseline is schema-only, and both the
+-- checkout fee read and the admin settings update target this row.
+INSERT INTO "public"."platform_settings" ("id") VALUES (1)
+ON CONFLICT ("id") DO NOTHING;
+
 -- -------------------------------------------------------------- realtime
 ALTER PUBLICATION "supabase_realtime" ADD TABLE "public"."payments";
