@@ -30,6 +30,11 @@ abstract class Product with _$Product {
     @Default('') String brandName,
     double? ratingAvg,
     @Default(0) int reviewCount,
+
+    /// Catalog creation instant — feeds the new-arrivals qualification
+    /// (§5.1.1) and the card NEW badge (§6.1). Null on synthetically built
+    /// products (e.g. wishlist rows) which never qualify.
+    DateTime? createdAt,
     @Default(ProductStatus.active) ProductStatus status,
     @Default([]) List<String> imageUrls,
   }) = _Product;
@@ -49,6 +54,19 @@ abstract class Product with _$Product {
     if (status == ProductStatus.archived) return 'Unavailable';
     if (stock <= 0) return 'Out of stock';
     return null;
+  }
+
+  /// The new-arrivals window (§5.1.1/§6.1) — one definition for both the
+  /// Home shelf filter (server-side) and the card badge (client-side).
+  static const Duration newArrivalWindow = Duration(days: 14);
+
+  /// True when the product was created inside the window. Null createdAt
+  /// (synthetic rows) never qualifies.
+  bool get isNewArrival {
+    final created = createdAt;
+    if (created == null) return false;
+    return DateTime.now().toUtc().difference(created.toUtc()) <=
+        newArrivalWindow;
   }
 }
 

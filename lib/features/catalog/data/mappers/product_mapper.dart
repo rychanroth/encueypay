@@ -21,6 +21,7 @@ extension ProductDtoX on ProductDto {
       brandName: brand?.name ?? '',
       ratingAvg: reviews.firstOrNull?.ratingAvg,
       reviewCount: reviews.firstOrNull?.reviewCount ?? 0,
+      createdAt: createdAt,
       status: ProductStatus.fromName(status),
       imageUrls: imageUrls,
     );

@@ -23,6 +23,17 @@ abstract interface class ICatalogRepository {
     ProductSort sort = ProductSort.newest,
     int limit = 20,
     int offset = 0,
+
+    /// New-arrivals qualification (DESIGN.md §5.1.1): only products created
+    /// at/after this instant.
+    DateTime? createdAfter,
+
+    /// Exclude archived products (they render "Unavailable" in catalog
+    /// contexts but a curated shelf is merchandising).
+    bool activeOnly = false,
+
+    /// Exclude zero-stock products from curated shelves.
+    bool inStockOnly = false,
   });
 
   Future<ProductDetail> fetchProductDetail(String productId);

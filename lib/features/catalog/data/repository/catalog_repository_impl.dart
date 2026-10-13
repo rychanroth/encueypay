@@ -111,6 +111,9 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     ProductSort sort = ProductSort.newest,
     int limit = 20,
     int offset = 0,
+    DateTime? createdAfter,
+    bool activeOnly = false,
+    bool inStockOnly = false,
   }) async {
     try {
       var request = _client
@@ -158,11 +161,25 @@ class CatalogRepositoryImpl implements ICatalogRepository {
                 );
         }
       }
+      // New-arrivals qualification (§5.1.1): recency window + merchandising
+      // eligibility — server-executed filters (§1.2 server authority).
+      final cutoff = createdAfter?.toUtc().toIso8601String();
+      if (cutoff != null) {
+        request = request.gte('created_at', cutoff);
+      }
+      if (activeOnly) {
+        request = request.eq('status', 'active');
+      }
+      if (inStockOnly) {
+        request = request.gt('stock', 0);
+      }
+
       // order()/range() are transforms — they run last, off the filtered
-      // builder.
+      // builder. `id` tiebreak keeps equal-timestamp order deterministic.
       final ordered = switch (sort) {
-        ProductSort.newest =>
-          request.order('created_at', ascending: false),
+        ProductSort.newest => request
+            .order('created_at', ascending: false)
+            .order('id'),
         ProductSort.priceAsc => request.order('base_price_minor'),
         ProductSort.priceDesc =>
           request.order('base_price_minor', ascending: false),

@@ -66,17 +66,33 @@ class ProductCard extends StatelessWidget {
                         : product.thumbnailUrl,
                     name: product.name,
                   ),
-                  // Top-left: brand chip (§6.1).
-                  if (hasBrand)
+                  // Top-left: NEW badge (coral) over the brand chip (§6.1) —
+                  // the badge uses the same 14-day rule as the Home shelf.
+                  if (product.isNewArrival || hasBrand)
                     Positioned(
                       top: AppSpacing.sm,
                       left: AppSpacing.sm,
-                      child: _Pill(
-                        background: isLight
-                            ? Colors.white.withValues(alpha: 0.9)
-                            : theme.colorScheme.surfaceContainerLowest,
-                        foreground: theme.colorScheme.onSurfaceVariant,
-                        label: product.brandName,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (product.isNewArrival)
+                            _Pill(
+                              background: AppColors.promotionCoral,
+                              foreground: Colors.white,
+                              label: 'NEW',
+                            ),
+                          if (hasBrand) ...[
+                            if (product.isNewArrival)
+                              const SizedBox(height: AppSpacing.xs),
+                            _Pill(
+                              background: isLight
+                                  ? Colors.white.withValues(alpha: 0.9)
+                                  : theme.colorScheme.surfaceContainerLowest,
+                              foreground: theme.colorScheme.onSurfaceVariant,
+                              label: product.brandName,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   // Top-right: wishlist heart with micro-animation (§6.1).

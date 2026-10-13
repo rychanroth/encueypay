@@ -23,6 +23,7 @@ class ProductDto {
     this.productVariants = const [],
     this.brand,
     this.reviews = const [],
+    this.createdAt,
   });
 
   factory ProductDto.fromJson(Map<String, dynamic> json) =>
@@ -64,6 +65,9 @@ class ProductDto {
   /// full `reviews` rows instead; that key is simply absent here.
   @JsonKey(name: 'product_ratings', defaultValue: [])
   final List<ReviewAggregateDto> reviews;
+
+  /// Catalog creation instant — feeds the new-arrivals rule (§5.1.1).
+  final DateTime? createdAt;
 
   Map<String, dynamic> toJson() => _$ProductDtoToJson(this);
 }

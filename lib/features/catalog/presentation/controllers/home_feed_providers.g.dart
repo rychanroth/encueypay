@@ -60,8 +60,18 @@ final class HomeBannersProvider
 
 String _$homeBannersHash() => r'e244df33d977d29af6caa3c8a1b6d62004cdb141';
 
+/// New arrivals (DESIGN.md §5.1.1): the qualification rule is a 14-day
+/// recency window, active status, and positive stock — merchandising-
+/// eligible products only (§2d keeps the Unavailable badge for catalog
+/// surfaces). Deterministic: newest first with an id tiebreak (repo).
+
 @ProviderFor(homeProducts)
 final homeProductsProvider = HomeProductsProvider._();
+
+/// New arrivals (DESIGN.md §5.1.1): the qualification rule is a 14-day
+/// recency window, active status, and positive stock — merchandising-
+/// eligible products only (§2d keeps the Unavailable badge for catalog
+/// surfaces). Deterministic: newest first with an id tiebreak (repo).
 
 final class HomeProductsProvider
     extends
@@ -71,6 +81,10 @@ final class HomeProductsProvider
           FutureOr<List<Product>>
         >
     with $FutureModifier<List<Product>>, $FutureProvider<List<Product>> {
+  /// New arrivals (DESIGN.md §5.1.1): the qualification rule is a 14-day
+  /// recency window, active status, and positive stock — merchandising-
+  /// eligible products only (§2d keeps the Unavailable badge for catalog
+  /// surfaces). Deterministic: newest first with an id tiebreak (repo).
   HomeProductsProvider._()
     : super(
         from: null,
@@ -97,4 +111,4 @@ final class HomeProductsProvider
   }
 }
 
-String _$homeProductsHash() => r'4e6dcdca3e26f6dc3c8cc89bb1cc8028b583e650';
+String _$homeProductsHash() => r'7806f098e92d4a41543a55e32586d1c52e312df3';

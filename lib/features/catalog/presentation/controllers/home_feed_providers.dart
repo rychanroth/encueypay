@@ -15,10 +15,19 @@ Future<List<CatalogBanner>> homeBanners(Ref ref) async {
   return ref.watch(catalogRepositoryProvider).fetchApprovedBanners();
 }
 
+/// New arrivals (DESIGN.md §5.1.1): the qualification rule is a 14-day
+/// recency window, active status, and positive stock — merchandising-
+/// eligible products only (§2d keeps the Unavailable badge for catalog
+/// surfaces). Deterministic: newest first with an id tiebreak (repo).
 @riverpod
 Future<List<Product>> homeProducts(Ref ref) async {
-  return ref
-      .watch(catalogRepositoryProvider)
-      .fetchProducts(sort: ProductSort.newest, limit: 10, offset: 0);
+  return ref.watch(catalogRepositoryProvider).fetchProducts(
+        sort: ProductSort.newest,
+        limit: 8,
+        offset: 0,
+        createdAfter: DateTime.now().toUtc().subtract(const Duration(days: 14)),
+        activeOnly: true,
+        inStockOnly: true,
+      );
 }
 

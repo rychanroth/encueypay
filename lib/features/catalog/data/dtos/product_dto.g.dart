@@ -36,6 +36,9 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
           ?.map((e) => ReviewAggregateDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
+  createdAt: json['created_at'] == null
+      ? null
+      : DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
@@ -53,6 +56,7 @@ Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
       'product_variants': instance.productVariants,
       'brands': instance.brand,
       'product_ratings': instance.reviews,
+      'created_at': instance.createdAt?.toIso8601String(),
     };
 
 BrandEmbedDto _$BrandEmbedDtoFromJson(Map<String, dynamic> json) =>
