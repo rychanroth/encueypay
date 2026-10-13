@@ -10,10 +10,10 @@
 
 CREATE OR REPLACE FUNCTION public.admin_create_product(
     p_business_id uuid DEFAULT NULL,
-    p_category_id uuid,
-    p_name text,
-    p_description text,
-    p_base_price_minor bigint,
+    p_category_id uuid DEFAULT NULL,
+    p_name text DEFAULT NULL,
+    p_description text DEFAULT NULL,
+    p_base_price_minor bigint DEFAULT 0,
     p_brand_id uuid DEFAULT NULL,
     p_stock integer DEFAULT 0,
     p_variants jsonb DEFAULT '[]'
