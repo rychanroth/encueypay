@@ -20,7 +20,7 @@ import '../widgets/variant_picker_sheet.dart';
 ///
 /// 2-Role Academic Prototype: the owning-business card was removed (living
 /// spec Part C L-04) — vendor identity is bypassed in the customer UI; the
-/// `businessId`/`businessName` fields remain on the entities/data model.
+/// The single-seller retirement removed the vendor fields entirely.
 class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({
     super.key,

@@ -8,7 +8,6 @@ part of 'product_dto.dart';
 
 ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
   id: json['id'] as String,
-  businessId: json['business_id'] as String,
   categoryId: json['category_id'] as String,
   name: json['name'] as String,
   description: json['description'] as String,
@@ -44,7 +43,6 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
 Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'business_id': instance.businessId,
       'category_id': instance.categoryId,
       'name': instance.name,
       'description': instance.description,

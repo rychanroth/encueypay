@@ -9,7 +9,6 @@ extension ProductDtoX on ProductDto {
   Product toDomain({List<String> imageUrls = const []}) {
     return Product(
       id: id,
-      businessId: businessId,
       categoryId: categoryId,
       brandId: brandId,
       name: name,

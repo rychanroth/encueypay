@@ -65,7 +65,7 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .from('cart_items')
           .select(
             'id, quantity, product_variants(name, price_minor, '
-            'products(name, base_price_minor, businesses(name)))',
+            'products(name, base_price_minor))',
           )
           .eq('cart_id', cart['id'] as String)
           .order('created_at');

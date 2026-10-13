@@ -16,8 +16,6 @@ extension CartItemDtoX on CartItemDto {
       unitPriceMinor: variant?.priceMinor ?? product?.basePriceMinor ?? 0,
       quantity: quantity,
       stock: product?.stock ?? 0,
-      businessId: product?.businesses?.id,
-      businessName: product?.businesses?.name,
       imageUrl: imageUrl,
     );
   }

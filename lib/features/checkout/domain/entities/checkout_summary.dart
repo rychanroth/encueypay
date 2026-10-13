@@ -10,7 +10,6 @@ abstract class CheckoutItem with _$CheckoutItem {
   const factory CheckoutItem({
     required String id,
     required String productName,
-    required String businessName,
     required int unitPriceMinor,
     required int quantity,
     String? variantName,

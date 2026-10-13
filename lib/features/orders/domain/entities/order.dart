@@ -40,7 +40,6 @@ abstract class CustomerOrder with _$CustomerOrder {
 }
 
 /// Historical purchase line (§19) — current catalog edits never rewrite it.
-/// [businessName] is a display snapshot from the owning business.
 @freezed
 abstract class OrderItemSnapshot with _$OrderItemSnapshot {
   const factory OrderItemSnapshot({
@@ -50,7 +49,6 @@ abstract class OrderItemSnapshot with _$OrderItemSnapshot {
     required int quantity,
     required int lineTotalMinor,
     String? variantName,
-    @Default('') String businessName,
     @Default(0) int discountMinor,
   }) = _OrderItemSnapshot;
 }

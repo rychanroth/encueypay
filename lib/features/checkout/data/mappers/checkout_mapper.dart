@@ -25,7 +25,6 @@ extension CheckoutItemDtoX on CheckoutItemDto {
       id: id,
       productName: product?.name ?? 'Unknown product',
       variantName: variant?.name,
-      businessName: product?.businesses?.name ?? 'Unknown business',
       unitPriceMinor: variant?.priceMinor ?? product?.basePriceMinor ?? 0,
       quantity: quantity,
     );

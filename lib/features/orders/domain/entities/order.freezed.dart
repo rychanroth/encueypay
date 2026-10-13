@@ -356,7 +356,7 @@ $OrderPaymentCopyWith<$Res>? get payment {
 /// @nodoc
 mixin _$OrderItemSnapshot {
 
- String get id; String get productName; int get unitPriceMinor; int get quantity; int get lineTotalMinor; String? get variantName; String get businessName; int get discountMinor;
+ String get id; String get productName; int get unitPriceMinor; int get quantity; int get lineTotalMinor; String? get variantName; int get discountMinor;
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -367,16 +367,16 @@ $OrderItemSnapshotCopyWith<OrderItemSnapshot> get copyWith => _$OrderItemSnapsho
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,businessName,discountMinor);
+int get hashCode => Object.hash(runtimeType,id,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,discountMinor);
 
 @override
 String toString() {
-  return 'OrderItemSnapshot(id: $id, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, businessName: $businessName, discountMinor: $discountMinor)';
+  return 'OrderItemSnapshot(id: $id, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, discountMinor: $discountMinor)';
 }
 
 
@@ -387,7 +387,7 @@ abstract mixin class $OrderItemSnapshotCopyWith<$Res>  {
   factory $OrderItemSnapshotCopyWith(OrderItemSnapshot value, $Res Function(OrderItemSnapshot) _then) = _$OrderItemSnapshotCopyWithImpl;
 @useResult
 $Res call({
- String id, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, String businessName, int discountMinor
+ String id, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, int discountMinor
 });
 
 
@@ -404,7 +404,7 @@ class _$OrderItemSnapshotCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? businessName = null,Object? discountMinor = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? discountMinor = null,}) {
   return _then(OrderItemSnapshot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -412,8 +412,7 @@ as String,unitPriceMinor: null == unitPriceMinor ? _self.unitPriceMinor : unitPr
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotalMinor // ignore: cast_nullable_to_non_nullable
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
-as String?,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
-as String,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
+as String?,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -499,10 +498,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  String businessName,  int discountMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderItemSnapshot() when $default != null:
-return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.businessName,_that.discountMinor);case _:
+return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor);case _:
   return orElse();
 
 }
@@ -520,10 +519,10 @@ return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  String businessName,  int discountMinor)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor)  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemSnapshot():
-return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.businessName,_that.discountMinor);case _:
+return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -540,10 +539,10 @@ return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  String businessName,  int discountMinor)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemSnapshot() when $default != null:
-return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.businessName,_that.discountMinor);case _:
+return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor);case _:
   return null;
 
 }
@@ -555,7 +554,7 @@ return $default(_that.id,_that.productName,_that.unitPriceMinor,_that.quantity,_
 
 
 class _OrderItemSnapshot implements OrderItemSnapshot {
-  const _OrderItemSnapshot({required this.id, required this.productName, required this.unitPriceMinor, required this.quantity, required this.lineTotalMinor, this.variantName, this.businessName = '', this.discountMinor = 0});
+  const _OrderItemSnapshot({required this.id, required this.productName, required this.unitPriceMinor, required this.quantity, required this.lineTotalMinor, this.variantName, this.discountMinor = 0});
   
 
 @override final  String id;
@@ -564,7 +563,6 @@ class _OrderItemSnapshot implements OrderItemSnapshot {
 @override final  int quantity;
 @override final  int lineTotalMinor;
 @override final  String? variantName;
-@override@JsonKey() final  String businessName;
 @override@JsonKey() final  int discountMinor;
 
 /// Create a copy of OrderItemSnapshot
@@ -577,16 +575,16 @@ _$OrderItemSnapshotCopyWith<_OrderItemSnapshot> get copyWith => __$OrderItemSnap
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,businessName,discountMinor);
+int get hashCode => Object.hash(runtimeType,id,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,discountMinor);
 
 @override
 String toString() {
-  return 'OrderItemSnapshot(id: $id, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, businessName: $businessName, discountMinor: $discountMinor)';
+  return 'OrderItemSnapshot(id: $id, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, discountMinor: $discountMinor)';
 }
 
 
@@ -597,7 +595,7 @@ abstract mixin class _$OrderItemSnapshotCopyWith<$Res> implements $OrderItemSnap
   factory _$OrderItemSnapshotCopyWith(_OrderItemSnapshot value, $Res Function(_OrderItemSnapshot) _then) = __$OrderItemSnapshotCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, String businessName, int discountMinor
+ String id, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, int discountMinor
 });
 
 
@@ -614,7 +612,7 @@ class __$OrderItemSnapshotCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? businessName = null,Object? discountMinor = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? discountMinor = null,}) {
   return _then(_OrderItemSnapshot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -622,8 +620,7 @@ as String,unitPriceMinor: null == unitPriceMinor ? _self.unitPriceMinor : unitPr
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotalMinor // ignore: cast_nullable_to_non_nullable
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
-as String?,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
-as String,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
+as String?,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

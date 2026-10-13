@@ -63,7 +63,7 @@ class CartRepositoryImpl implements ICartRepository {
           .select(
             'id, quantity, product_variants(id, name, price_minor, '
             'products(id, name, base_price_minor, stock, '
-            'product_images(storage_path, sort_order), businesses(id, name)))',
+            'product_images(storage_path, sort_order)))',
           )
           .eq('cart_id', cart['id'] as String)
           .order('created_at');

@@ -127,7 +127,6 @@ class AdminProductRowDto {
     required this.id,
     required this.name,
     required this.categoryId,
-    required this.businessId,
     required this.basePriceMinor,
     required this.createdAt,
     this.description,
@@ -147,7 +146,6 @@ class AdminProductRowDto {
   final String id;
   final String name;
   final String categoryId;
-  final String businessId;
   final int basePriceMinor;
   final DateTime createdAt;
   final String? description;
@@ -275,7 +273,6 @@ class AdminItemJoinDto {
     required this.quantity,
     required this.lineTotalMinor,
     this.variantName,
-    this.businessName,
   });
 
   factory AdminItemJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -285,7 +282,6 @@ class AdminItemJoinDto {
   final int quantity;
   final int lineTotalMinor;
   final String? variantName;
-  final String? businessName;
 
   Map<String, dynamic> toJson() => _$AdminItemJoinDtoToJson(this);
 }

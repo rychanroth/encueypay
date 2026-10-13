@@ -205,7 +205,7 @@ class AdminRepositoryImpl implements IAdminRepository {
   Future<List<AdminProductSummary>> fetchProducts({String? query}) async {
     try {
       var request = _client.from('products').select(
-            '*, brands(name), categories(name), businesses(name), '
+            '*, brands(name), categories(name), '
             'product_variants(id), product_images(id, storage_path, sort_order)',
           );
       final q = query?.trim() ?? '';
@@ -221,9 +221,7 @@ class AdminRepositoryImpl implements IAdminRepository {
           id: dto.id,
           name: dto.name,
           categoryId: dto.categoryId,
-          businessId: dto.businessId,
           categoryName: dto.categories?.name ?? '',
-          businessName: dto.businesses?.name ?? '',
           basePriceMinor: dto.basePriceMinor,
           variantCount: dto.productVariants.length,
           stock: dto.stock,
@@ -326,7 +324,6 @@ class AdminRepositoryImpl implements IAdminRepository {
       // p_variants stays empty: admin_create_product auto-creates a 'Default'
       // variant with a null price, which keeps tracking the base price.
       final productId = await _client.rpc('admin_create_product', params: {
-        'p_business_id': draft.businessId,
         'p_category_id': draft.categoryId,
         'p_name': draft.name,
         'p_description': draft.description,
@@ -397,19 +394,11 @@ class AdminRepositoryImpl implements IAdminRepository {
       // The storage path's first segment must be the owning business id —
       // the same {business_id}/... convention the storage policies enforce
       // for owners (0020); admins may write any folder in the bucket.
-      final row = await _client
-          .from('products')
-          .select('business_id')
-          .eq('id', productId)
-          .maybeSingle();
-      final businessId = row?['business_id'] as String?;
-      if (businessId == null) {
-        throw const ServerFailure('Product not found');
-      }
       final fileName = filePath.split(Platform.pathSeparator).last;
       final bytes = await File(filePath).readAsBytes();
+      // Single-seller convention: images live under the product's own folder.
       final path =
-          '$businessId/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+          '$productId/${DateTime.now().millisecondsSinceEpoch}_$fileName';
       await _client.storage.from('product_images').uploadBinary(path, bytes);
       await _client.rpc('admin_add_product_image', params: {
         'p_product_id': productId,
@@ -456,7 +445,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             'id, status, cancellation_reason, subtotal_minor, '
             'discount_minor, delivery_fee_minor, total_minor, created_at, '
             'users(full_name), payments(method, status), '
-            'order_items(product_name, variant_name, business_name, '
+            'order_items(product_name, variant_name, '
             'quantity, line_total_minor), '
             // Return reason lives on the return_items lines (per-item
             // reason in request_return), not on the return_requests header
@@ -483,7 +472,6 @@ class AdminRepositoryImpl implements IAdminRepository {
               .map((item) => AdminOrderItem(
                     productName: item.productName,
                     variantName: item.variantName,
-                    businessName: item.businessName ?? '',
                     quantity: item.quantity,
                     lineTotalMinor: item.lineTotalMinor,
                   ))

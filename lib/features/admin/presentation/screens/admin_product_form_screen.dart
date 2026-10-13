@@ -113,7 +113,6 @@ class _AdminProductFormScreenState
       // 2-role prototype (DESIGN.md §1.1): no store picker. Create passes
       // null — the server resolves/provisions the prototype business; edits
       // carry the product's existing business.
-      businessId: widget.product?.businessId,
       categoryId: categoryId,
       brandId: _brandId,
       name: _nameController.text.trim(),

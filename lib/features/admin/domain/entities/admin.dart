@@ -41,9 +41,7 @@ abstract class AdminProductSummary with _$AdminProductSummary {
     required String id,
     required String name,
     required String categoryId,
-    required String businessId,
     required String categoryName,
-    required String businessName,
     required int basePriceMinor,
     required int variantCount,
     required int stock,
@@ -89,7 +87,6 @@ abstract class AdminProductDraft with _$AdminProductDraft {
     /// Null on create — the server resolves (or provisions) the singleton
     /// prototype business (DESIGN.md §1.1); edits carry the product's
     /// existing business.
-    String? businessId,
     required String categoryId,
     String? brandId,
     required String name,
@@ -147,7 +144,6 @@ abstract class AdminOrderItem with _$AdminOrderItem {
     required String productName,
     required int quantity,
     required int lineTotalMinor,
-    @Default('') String businessName,
     String? variantName,
   }) = _AdminOrderItem;
 }

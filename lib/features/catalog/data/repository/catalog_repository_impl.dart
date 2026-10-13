@@ -201,7 +201,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final data = await _client
           .from('products')
           .select(
-            '*, businesses(name), brands(name), product_variants(*), '
+            '*, brands(name), product_variants(*), '
             'product_images(*), '
             'reviews(id, rating, text, created_at, users(full_name, avatar_url))',
           )
@@ -212,10 +212,6 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       }
 
       final productDto = ProductDto.fromJson(data);
-      final businessName =
-          ((data['businesses'] as Map<String, dynamic>?)?['name'] as String?)
-              ??
-              '';
       final brandName =
           ((data['brands'] as Map<String, dynamic>?)?['name'] as String?) ??
               '';
@@ -239,7 +235,6 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       return ProductDetail(
         product: productDto.toDomain(imageUrls: _resolveUrls(productDto)),
         variants: variants,
-        businessName: businessName,
         brandName: brandName,
         reviews: reviews,
       );

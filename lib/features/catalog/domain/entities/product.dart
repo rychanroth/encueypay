@@ -8,7 +8,6 @@ part 'product.freezed.dart';
 abstract class Product with _$Product {
   const factory Product({
     required String id,
-    required String businessId,
     required String categoryId,
     String? brandId,
     required String name,

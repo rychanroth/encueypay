@@ -11,7 +11,6 @@ part 'product_dto.g.dart';
 class ProductDto {
   const ProductDto({
     required this.id,
-    required this.businessId,
     required this.categoryId,
     required this.name,
     required this.description,
@@ -30,7 +29,6 @@ class ProductDto {
       _$ProductDtoFromJson(json);
 
   final String id;
-  final String businessId;
   final String categoryId;
   final String name;
   final String description;

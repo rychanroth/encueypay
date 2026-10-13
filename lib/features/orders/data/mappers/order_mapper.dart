@@ -51,7 +51,6 @@ extension OrderItemJoinDtoX on OrderItemJoinDto {
       discountMinor: discountMinor ?? 0,
       quantity: quantity,
       lineTotalMinor: lineTotalMinor,
-      businessName: businessName ?? '',
     );
   }
 }

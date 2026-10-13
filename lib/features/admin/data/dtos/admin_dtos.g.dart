@@ -98,7 +98,6 @@ AdminProductRowDto _$AdminProductRowDtoFromJson(
   id: json['id'] as String,
   name: json['name'] as String,
   categoryId: json['category_id'] as String,
-  businessId: json['business_id'] as String,
   basePriceMinor: (json['base_price_minor'] as num).toInt(),
   createdAt: DateTime.parse(json['created_at'] as String),
   description: json['description'] as String?,
@@ -135,7 +134,6 @@ Map<String, dynamic> _$AdminProductRowDtoToJson(AdminProductRowDto instance) =>
       'id': instance.id,
       'name': instance.name,
       'category_id': instance.categoryId,
-      'business_id': instance.businessId,
       'base_price_minor': instance.basePriceMinor,
       'created_at': instance.createdAt.toIso8601String(),
       'description': instance.description,
@@ -236,7 +234,6 @@ AdminItemJoinDto _$AdminItemJoinDtoFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       lineTotalMinor: (json['line_total_minor'] as num).toInt(),
       variantName: json['variant_name'] as String?,
-      businessName: json['business_name'] as String?,
     );
 
 Map<String, dynamic> _$AdminItemJoinDtoToJson(AdminItemJoinDto instance) =>
@@ -245,7 +242,6 @@ Map<String, dynamic> _$AdminItemJoinDtoToJson(AdminItemJoinDto instance) =>
       'quantity': instance.quantity,
       'line_total_minor': instance.lineTotalMinor,
       'variant_name': instance.variantName,
-      'business_name': instance.businessName,
     };
 
 AdminReturnJoinDto _$AdminReturnJoinDtoFromJson(Map<String, dynamic> json) =>

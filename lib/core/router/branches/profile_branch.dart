@@ -44,7 +44,6 @@ final profileBranch = StatefulShellBranch(
               ref.watch(wishlistControllerProvider).value ?? const [];
           Product productFromWishlist(WishlistItem item) => Product(
                 id: item.productId,
-                businessId: '',
                 categoryId: '',
                 name: item.productName,
                 basePriceMinor: item.priceMinor,
@@ -106,7 +105,6 @@ final profileBranch = StatefulShellBranch(
               cardBuilder: (item) {
                 final product = Product(
                   id: item.productId,
-                  businessId: '',
                   categoryId: '',
                   name: item.productName,
                   basePriceMinor: item.priceMinor,

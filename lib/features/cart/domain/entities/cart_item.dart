@@ -20,8 +20,6 @@ abstract class CartItem with _$CartItem {
     /// share it; caps the tile's quantity stepper. The server re-validates
     /// authoritatively at checkout (§53).
     @Default(0) int stock,
-    String? businessId,
-    String? businessName,
     String? imageUrl,
   }) = _CartItem;
 

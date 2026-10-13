@@ -64,7 +64,6 @@ OrderItemJoinDto _$OrderItemJoinDtoFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       lineTotalMinor: (json['line_total_minor'] as num).toInt(),
       variantName: json['variant_name'] as String?,
-      businessName: json['business_name'] as String?,
       discountMinor: (json['discount_minor'] as num?)?.toInt(),
     );
 
@@ -77,7 +76,6 @@ Map<String, dynamic> _$OrderItemJoinDtoToJson(OrderItemJoinDto instance) =>
       'discount_minor': instance.discountMinor,
       'quantity': instance.quantity,
       'line_total_minor': instance.lineTotalMinor,
-      'business_name': instance.businessName,
     };
 
 ReturnRequestJoinDto _$ReturnRequestJoinDtoFromJson(

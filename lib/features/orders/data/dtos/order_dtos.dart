@@ -67,7 +67,6 @@ class OrderItemJoinDto {
     required this.quantity,
     required this.lineTotalMinor,
     this.variantName,
-    this.businessName,
     this.discountMinor,
   });
 
@@ -81,7 +80,6 @@ class OrderItemJoinDto {
   final int? discountMinor;
   final int quantity;
   final int lineTotalMinor;
-  final String? businessName;
 
   Map<String, dynamic> toJson() => _$OrderItemJoinDtoToJson(this);
 }

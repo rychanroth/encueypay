@@ -106,9 +106,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  subtitle: item.businessName.isEmpty
-                      ? null
-                      : Text(item.businessName),
                   trailing: Text(Money(item.lineTotalMinor).format()),
                 ),
               const SizedBox(height: 16),
