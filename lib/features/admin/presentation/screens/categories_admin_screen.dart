@@ -14,23 +14,26 @@ class CategoriesAdminScreen extends ConsumerWidget {
   const CategoriesAdminScreen({super.key});
 
   /// Uploads a freshly picked image (catalog_assets) or passes the kept
-  /// existing path through. Null when no imagery is set.
+  /// existing path through. Null when no imagery is set. Takes plain values
+  /// — the dialog's widget state dies with its subtree, so the picked path
+  /// must be captured via [CatalogImagePickField.onPicked] into a variable
+  /// declared outside the dialog.
   Future<String?> _resolveImagePath(
-    WidgetRef ref,
-    CatalogImagePickFieldState? field,
-  ) async {
-    if (field == null) return null;
-    if (field.hasNewPick) {
+    WidgetRef ref, {
+    required String? pickedLocalPath,
+    required String? existingPath,
+  }) async {
+    if (pickedLocalPath != null) {
       return ref
           .read(adminCategoriesControllerProvider.notifier)
-          .uploadImage(filePath: field.pickedPath!);
+          .uploadImage(filePath: pickedLocalPath);
     }
-    return field.existingPathOrClear;
+    return existingPath;
   }
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
-    final imageFieldKey = GlobalKey<CatalogImagePickFieldState>();
+    String? pickedLocalPath;
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -44,8 +47,8 @@ class CategoriesAdminScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             CatalogImagePickField(
-              key: imageFieldKey,
               label: 'Category image (optional)',
+              onPicked: (path) => pickedLocalPath = path,
             ),
           ],
         ),
@@ -64,8 +67,11 @@ class CategoriesAdminScreen extends ConsumerWidget {
     if (created != true) return;
     String? imagePath;
     try {
-      imagePath =
-          await _resolveImagePath(ref, imageFieldKey.currentState);
+      imagePath = await _resolveImagePath(
+        ref,
+        pickedLocalPath: pickedLocalPath,
+        existingPath: null,
+      );
     } on Failure catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
@@ -85,7 +91,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
     AdminCategory category,
   ) async {
     final nameController = TextEditingController(text: category.name);
-    final imageFieldKey = GlobalKey<CatalogImagePickFieldState>();
+    String? pickedLocalPath;
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -99,10 +105,10 @@ class CategoriesAdminScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             CatalogImagePickField(
-              key: imageFieldKey,
               label: 'Category image (optional)',
               existingUrl: category.imageUrl,
               existingPath: category.imagePath,
+              onPicked: (path) => pickedLocalPath = path,
             ),
           ],
         ),
@@ -121,8 +127,11 @@ class CategoriesAdminScreen extends ConsumerWidget {
     if (saved != true) return;
     String? imagePath;
     try {
-      imagePath =
-          await _resolveImagePath(ref, imageFieldKey.currentState);
+      imagePath = await _resolveImagePath(
+        ref,
+        pickedLocalPath: pickedLocalPath,
+        existingPath: category.imagePath,
+      );
     } on Failure catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)

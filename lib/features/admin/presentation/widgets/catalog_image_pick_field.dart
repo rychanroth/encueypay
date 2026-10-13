@@ -8,16 +8,23 @@ import '../../../../core/presentation/widgets/monogram_image.dart';
 
 /// Brand/category imagery picker (DESIGN.md imagery pipeline): previews the
 /// current storage reference (resolved display URL) or a freshly picked
-/// local file, and exposes which state it is in via [hasNewPick]/[pickedPath].
+/// local file.
 ///
-/// The dialog flow is: pick → (on save) upload via the controller → persist
-/// the returned path. No repo access from screens (PRES-04).
+/// The picked local path is reported through [onPicked] (null on undo) — the
+/// CALLER must own it in a variable declared *outside* the dialog. The
+/// field's own state dies with the dialog subtree, so reading it after
+/// `showDialog` returns would always yield null (the bug this callback
+/// replaced).
+///
+/// Dialog flow: pick → (on save) upload via the controller → persist the
+/// returned path. No repo access from screens (PRES-04).
 class CatalogImagePickField extends StatefulWidget {
   const CatalogImagePickField({
     super.key,
     required this.label,
     this.existingUrl,
     this.existingPath,
+    this.onPicked,
   });
 
   final String label;
@@ -29,30 +36,28 @@ class CatalogImagePickField extends StatefulWidget {
   /// keeps the current image.
   final String? existingPath;
 
+  /// Fired when the user picks a new local file (with its path) or undoes
+  /// the pick (with null).
+  final ValueChanged<String?>? onPicked;
+
   @override
-  State<CatalogImagePickField> createState() => CatalogImagePickFieldState();
+  State<CatalogImagePickField> createState() => _CatalogImagePickFieldState();
 }
 
-class CatalogImagePickFieldState extends State<CatalogImagePickField> {
+class _CatalogImagePickFieldState extends State<CatalogImagePickField> {
   String? _pickedLocalPath;
-
-  /// True when the user picked a new local file that still needs uploading.
-  bool get hasNewPick => _pickedLocalPath != null;
-
-  /// The picked local file path (only when [hasNewPick]).
-  String? get pickedPath => _pickedLocalPath;
-
-  /// The value to persist when nothing new was picked: the existing raw
-  /// path (or null to clear).
-  String? get existingPathOrClear => widget.existingPath;
 
   Future<void> _pick() async {
     final file = await FilePicker.pickFile(type: FileType.image);
     if (!mounted || file == null || file.path == null) return;
     setState(() => _pickedLocalPath = file.path);
+    widget.onPicked?.call(file.path);
   }
 
-  void _clear() => setState(() => _pickedLocalPath = null);
+  void _clear() {
+    setState(() => _pickedLocalPath = null);
+    widget.onPicked?.call(null);
+  }
 
   @override
   Widget build(BuildContext context) {
