@@ -33,13 +33,13 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   // `*` is required: an embed-only select makes PostgREST omit the product's
   // own columns, which then fail ProductDto.fromJson's required fields.
   // price-only variants feed the card "from" price; `brands(name)` feeds the
-  // card badge. NOTE: no PostgREST aggregate embeds here — the aggregate
-  // syntax (reviews(rating_avg=avg(rating), ...)) requires PostgREST ≥ 12
-  // (opt-in db-aggregates) and fails to parse on this backend, stalling
-  // every catalog surface. Card ratings stay null until a backend-supported
-  // aggregate path (view/RPC) exists.
+  // card badge. Card ratings come from the product_ratings view (§6.1) —
+  // plain SQL aggregation, embeddable via the reviews.product_id FK, because
+  // inline PostgREST aggregates (avg()/count() in the select parameter)
+  // require PostgREST ≥ 12 and fail to parse on this backend.
   static const _productSelect =
-      '*, brands(name), product_images(storage_path, sort_order), '
+      '*, brands(name), product_ratings(rating_avg, review_count), '
+      'product_images(storage_path, sort_order), '
       'product_variants(id, price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are

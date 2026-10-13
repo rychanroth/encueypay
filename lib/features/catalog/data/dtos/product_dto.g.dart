@@ -32,7 +32,7 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
       ? null
       : BrandEmbedDto.fromJson(json['brands'] as Map<String, dynamic>),
   reviews:
-      (json['reviews'] as List<dynamic>?)
+      (json['product_ratings'] as List<dynamic>?)
           ?.map((e) => ReviewAggregateDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
@@ -52,7 +52,7 @@ Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
       'product_images': instance.productImages,
       'product_variants': instance.productVariants,
       'brands': instance.brand,
-      'reviews': instance.reviews,
+      'product_ratings': instance.reviews,
     };
 
 BrandEmbedDto _$BrandEmbedDtoFromJson(Map<String, dynamic> json) =>

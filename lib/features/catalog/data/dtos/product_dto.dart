@@ -58,11 +58,11 @@ class ProductDto {
   @JsonKey(name: 'brands')
   final BrandEmbedDto? brand;
 
-  /// PostgREST aggregate embed `reviews(rating_avg=avg(rating),
-  /// review_count=count())` for card ratings (§6.1). Detail selects embed
-  /// full review rows instead — those parse as aggregates with null fields
-  /// and are ignored by the mapper.
-  @JsonKey(name: 'reviews', defaultValue: [])
+  /// `product_ratings` view embed (§6.1): one `{rating_avg, review_count}`
+  /// row per product from the migration-owned SQL view — inline PostgREST
+  /// aggregates are not supported on this backend. Detail selects embed
+  /// full `reviews` rows instead; that key is simply absent here.
+  @JsonKey(name: 'product_ratings', defaultValue: [])
   final List<ReviewAggregateDto> reviews;
 
   Map<String, dynamic> toJson() => _$ProductDtoToJson(this);
