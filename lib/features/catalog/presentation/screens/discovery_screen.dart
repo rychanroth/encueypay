@@ -6,6 +6,7 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/category.dart';
 import '../../domain/entities/product_sort.dart';
 import '../controllers/brands_provider.dart';
 import '../controllers/categories_provider.dart';
@@ -121,25 +122,42 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
           SizedBox(
             height: 44,
             child: categoriesAsync.maybeWhen(
-              data: (categories) => ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                children: [
-                  _FilterChip(
-                    label: 'All',
-                    selected: controller.value?.categoryId == null,
-                    onTap: () => ref.read(provider.notifier).setCategory(null),
-                  ),
-                  for (final category in categories)
+              data: (categories) {
+                // 2-level taxonomy (§2c): top-level chips in name order, each
+                // immediately followed by its subcategories (indent glyph) —
+                // the strip mirrors the hierarchy, and filtering by a child
+                // aggregates through the same controller.
+                final chips = <(Category, bool)>[];
+                for (final parent in categories.where((c) => c.isTopLevel)) {
+                  chips.add((parent, false));
+                  for (final child
+                      in categories.where((c) => c.parentId == parent.id)) {
+                    chips.add((child, true));
+                  }
+                }
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  children: [
                     _FilterChip(
-                      label: category.name,
-                      imageUrl: category.imageUrl,
-                      selected: controller.value?.categoryId == category.id,
+                      label: 'All',
+                      selected: controller.value?.categoryId == null,
                       onTap: () =>
-                          ref.read(provider.notifier).setCategory(category.id),
+                          ref.read(provider.notifier).setCategory(null),
                     ),
-                ],
-              ),
+                    for (final (category, isChild) in chips)
+                      _FilterChip(
+                        label: isChild ? '↳ ${category.name}' : category.name,
+                        imageUrl: category.imageUrl,
+                        selected: controller.value?.categoryId == category.id,
+                        onTap: () => ref
+                            .read(provider.notifier)
+                            .setCategory(category.id),
+                      ),
+                  ],
+                );
+              },
               orElse: () => const SizedBox.shrink(),
             ),
           ),
