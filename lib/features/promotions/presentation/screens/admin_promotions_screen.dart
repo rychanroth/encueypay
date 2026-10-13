@@ -182,6 +182,22 @@ class AdminPromotionsScreen extends ConsumerWidget {
         );
   }
 
+  /// Manual refresh: re-fetch coupons and banners (PRES-03 allows screens to
+  /// invalidate providers). Awaited so the RefreshIndicator tracks the fetch.
+  Future<void> _refresh(WidgetRef ref) async {
+    ref.invalidate(adminPromotionsControllerProvider);
+    ref.invalidate(adminBannersControllerProvider);
+    try {
+      await Future.wait([
+        ref.read(adminPromotionsControllerProvider.future),
+        ref.read(adminBannersControllerProvider.future),
+      ]);
+    } on Exception catch (_) {
+      // Failure states render through the controllers' error branches and
+      // the ref.listen snackbars below — nothing to rethrow here.
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final promotionsAsync = ref.watch(adminPromotionsControllerProvider);
@@ -210,6 +226,11 @@ class AdminPromotionsScreen extends ConsumerWidget {
         title: const Text('Promotions'),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _refresh(ref),
+          ),
+          IconButton(
             tooltip: 'New coupon',
             icon: const Icon(Icons.add),
             onPressed: () => _createCoupon(context, ref),
@@ -221,9 +242,17 @@ class AdminPromotionsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: promotionsAsync.when(
+      body: RefreshIndicator(
+        onRefresh: () => _refresh(ref),
+        child: promotionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) => ListView(
+          // Scrollable so the pull-to-refresh gesture works on errors too.
+          children: [Center(child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text('$error', textAlign: TextAlign.center),
+          ))],
+        ),
         data: (promotions) {
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -345,6 +374,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
             ],
           );
         },
+        ),
       ),
     );
   }
