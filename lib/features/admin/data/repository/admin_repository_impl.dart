@@ -477,7 +477,10 @@ class AdminRepositoryImpl implements IAdminRepository {
             'users(full_name), payments(method, status), '
             'order_items(product_name, variant_name, business_name, '
             'quantity, line_total_minor), '
-            'return_requests(id, status, reason)',
+            // Return reason lives on the return_items lines (per-item
+            // reason in request_return), not on the return_requests header
+            // — same fix as the customer orders repository.
+            'return_requests(id, status, return_items(reason, quantity))',
           )
           .order('created_at', ascending: false)
           .limit(50);
@@ -508,7 +511,11 @@ class AdminRepositoryImpl implements IAdminRepository {
               .map((request) => AdminReturnRequest(
                     id: request.id,
                     status: request.status ?? 'pending',
-                    reason: request.reason ?? '',
+                    // Aggregate the per-line reasons into one display string.
+                    reason: request.returnItems
+                        .map((item) => item.reason)
+                        .where((reason) => reason.isNotEmpty)
+                        .join(' · '),
                   ))
               .toList(),
         );

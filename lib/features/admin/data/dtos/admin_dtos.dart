@@ -306,14 +306,34 @@ class AdminItemJoinDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AdminReturnJoinDto {
-  const AdminReturnJoinDto({required this.id, this.status, this.reason});
+  const AdminReturnJoinDto({required this.id, this.status, this.returnItems = const []});
 
   factory AdminReturnJoinDto.fromJson(Map<String, dynamic> json) =>
       _$AdminReturnJoinDtoFromJson(json);
 
   final String id;
   final String? status;
-  final String? reason;
+
+  /// `return_items` lines — the per-item return reason (the header table
+  /// carries no reason column).
+  @JsonKey(name: 'return_items', defaultValue: [])
+  final List<AdminReturnItemJoinDto> returnItems;
 
   Map<String, dynamic> toJson() => _$AdminReturnJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminReturnItemJoinDto {
+  const AdminReturnItemJoinDto({this.quantity = 0, this.reason = ''});
+
+  factory AdminReturnItemJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminReturnItemJoinDtoFromJson(json);
+
+  @JsonKey(defaultValue: 0)
+  final int quantity;
+
+  @JsonKey(defaultValue: '')
+  final String reason;
+
+  Map<String, dynamic> toJson() => _$AdminReturnItemJoinDtoToJson(this);
 }

@@ -259,12 +259,33 @@ AdminReturnJoinDto _$AdminReturnJoinDtoFromJson(Map<String, dynamic> json) =>
     AdminReturnJoinDto(
       id: json['id'] as String,
       status: json['status'] as String?,
-      reason: json['reason'] as String?,
+      returnItems:
+          (json['return_items'] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    AdminReturnItemJoinDto.fromJson(e as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
     );
 
 Map<String, dynamic> _$AdminReturnJoinDtoToJson(AdminReturnJoinDto instance) =>
     <String, dynamic>{
       'id': instance.id,
       'status': instance.status,
-      'reason': instance.reason,
+      'return_items': instance.returnItems,
     };
+
+AdminReturnItemJoinDto _$AdminReturnItemJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminReturnItemJoinDto(
+  quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+  reason: json['reason'] as String? ?? '',
+);
+
+Map<String, dynamic> _$AdminReturnItemJoinDtoToJson(
+  AdminReturnItemJoinDto instance,
+) => <String, dynamic>{
+  'quantity': instance.quantity,
+  'reason': instance.reason,
+};
