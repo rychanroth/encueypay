@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
+import '../widgets/catalog_image_pick_field.dart';
 
 /// Brand management (Section 2b, assignment §2/§3): admin-owned catalog
 /// brands. Nested under the Products tab (`/admin/products/brands`).
@@ -13,7 +15,7 @@ class BrandsAdminScreen extends ConsumerWidget {
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
-    final imageController = TextEditingController();
+    final imageFieldKey = GlobalKey<CatalogImagePickFieldState>();
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -30,12 +32,10 @@ class BrandsAdminScreen extends ConsumerWidget {
               decoration:
                   const InputDecoration(labelText: 'Description (optional)'),
             ),
-            TextField(
-              controller: imageController,
-              decoration: const InputDecoration(
-                labelText: 'Image URL (optional)',
-                hintText: 'https://…',
-              ),
+            const SizedBox(height: 12),
+            CatalogImagePickField(
+              key: imageFieldKey,
+              label: 'Logo image (optional)',
             ),
           ],
         ),
@@ -52,13 +52,37 @@ class BrandsAdminScreen extends ConsumerWidget {
       ),
     );
     if (created != true) return;
-    final imageUrl =
-        imageController.text.trim().isEmpty ? null : imageController.text.trim();
+    String? imagePath;
+    try {
+      imagePath =
+          await _resolveImagePath(ref, imageFieldKey.currentState);
+    } on Failure catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     await ref.read(adminBrandsControllerProvider.notifier).create(
           name: nameController.text.trim(),
           description: descriptionController.text.trim(),
-          imageUrl: imageUrl,
+          imagePath: imagePath,
         );
+  }
+
+  /// Uploads a freshly picked image (catalog_assets) or passes the kept
+  /// existing path through. Null when no imagery is set.
+  Future<String?> _resolveImagePath(
+    WidgetRef ref,
+    CatalogImagePickFieldState? field,
+  ) async {
+    if (field == null) return null;
+    if (field.hasNewPick) {
+      return ref
+          .read(adminBrandsControllerProvider.notifier)
+          .uploadImage(filePath: field.pickedPath!);
+    }
+    return field.existingPathOrClear;
   }
 
   Future<void> _edit(
@@ -69,8 +93,7 @@ class BrandsAdminScreen extends ConsumerWidget {
     final nameController = TextEditingController(text: brand.name);
     final descriptionController =
         TextEditingController(text: brand.description);
-    final imageController =
-        TextEditingController(text: brand.imageUrl ?? '');
+    final imageFieldKey = GlobalKey<CatalogImagePickFieldState>();
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -87,12 +110,11 @@ class BrandsAdminScreen extends ConsumerWidget {
               decoration:
                   const InputDecoration(labelText: 'Description (optional)'),
             ),
-            TextField(
-              controller: imageController,
-              decoration: const InputDecoration(
-                labelText: 'Image URL (optional)',
-                hintText: 'https://…',
-              ),
+            CatalogImagePickField(
+              key: imageFieldKey,
+              label: 'Logo image (optional)',
+              existingUrl: brand.imageUrl,
+              existingPath: brand.imagePath,
             ),
           ],
         ),
@@ -109,13 +131,22 @@ class BrandsAdminScreen extends ConsumerWidget {
       ),
     );
     if (saved != true) return;
-    final imageUrl =
-        imageController.text.trim().isEmpty ? null : imageController.text.trim();
+    String? imagePath;
+    try {
+      imagePath =
+          await _resolveImagePath(ref, imageFieldKey.currentState);
+    } on Failure catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     await ref.read(adminBrandsControllerProvider.notifier).edit(
           brandId: brand.id,
           name: nameController.text.trim(),
           description: descriptionController.text.trim(),
-          imageUrl: imageUrl,
+          imagePath: imagePath,
         );
   }
 
@@ -184,21 +215,18 @@ class BrandsAdminScreen extends ConsumerWidget {
               final brand = brands[index];
               final isArchived = brand.status == AdminCatalogStatus.archived;
               return ListTile(
-                leading: brand.imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: Image.network(
-                            brand.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) =>
-                                const Icon(Icons.sell_outlined),
-                          ),
-                        ),
-                      )
-                    : const Icon(Icons.sell_outlined),
+                leading: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: MonogramImage(
+                      imageUrl: brand.imageUrl,
+                      name: brand.name,
+                      icon: Icons.sell_outlined,
+                    ),
+                  ),
+                ),
                 title: Text(
                   brand.name,
                   style: isArchived

@@ -13,14 +13,19 @@ abstract interface class IAdminRepository {
   Future<void> createCategory({
     required String name,
     String? parentId,
-    String? imageUrl,
+    String? imagePath,
   });
 
   Future<void> renameCategory({
     required String categoryId,
     required String name,
-    String? imageUrl,
+    String? imagePath,
   });
+
+  /// Uploads brand/category imagery into the public `catalog_assets` bucket
+  /// (DESIGN.md imagery pipeline) and returns the stored path (or an
+  /// http(s) reference passthrough). Admin-write RLS applies.
+  Future<String> uploadCatalogImage({required String filePath});
 
   Future<void> deleteCategory({required String categoryId});
 
@@ -30,14 +35,14 @@ abstract interface class IAdminRepository {
   Future<void> createBrand({
     required String name,
     String? description,
-    String? imageUrl,
+    String? imagePath,
   });
 
   Future<void> updateBrand({
     required String brandId,
     required String name,
     String? description,
-    String? imageUrl,
+    String? imagePath,
   });
 
   Future<void> setBrandArchived({

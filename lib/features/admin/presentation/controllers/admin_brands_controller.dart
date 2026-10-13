@@ -17,18 +17,27 @@ class AdminBrandsController extends _$AdminBrandsController {
   Future<void> create({
     required String name,
     String? description,
-    String? imageUrl,
+    String? imagePath,
   }) async {
     final current = state.value ?? const <AdminBrand>[];
     state = await AsyncValue.guard(() async {
       await ref.read(adminRepositoryProvider).createBrand(
             name: name,
             description: description,
-            imageUrl: imageUrl,
+            imagePath: imagePath,
           );
       ref.invalidateSelf();
       return current;
     });
+  }
+
+  /// Uploads brand imagery into `catalog_assets` and returns the stored
+  /// path (DESIGN.md imagery pipeline). Errors surface as [Failure]s for
+  /// the caller to render — the widget shows them via snackbar.
+  Future<String> uploadImage({required String filePath}) {
+    return ref
+        .read(adminRepositoryProvider)
+        .uploadCatalogImage(filePath: filePath);
   }
 
   // Named `edit`, not `update`: Riverpod's generated async notifier already
@@ -37,7 +46,7 @@ class AdminBrandsController extends _$AdminBrandsController {
     required String brandId,
     required String name,
     String? description,
-    String? imageUrl,
+    String? imagePath,
   }) async {
     final current = state.value ?? const <AdminBrand>[];
     state = await AsyncValue.guard(() async {
@@ -45,7 +54,7 @@ class AdminBrandsController extends _$AdminBrandsController {
             brandId: brandId,
             name: name,
             description: description,
-            imageUrl: imageUrl,
+            imagePath: imagePath,
           );
       ref.invalidateSelf();
       return current;

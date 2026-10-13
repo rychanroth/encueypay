@@ -34,14 +34,40 @@ class AdminRepositoryImpl implements IAdminRepository {
     try {
       final rows = await _client
           .from('categories')
-          .select('id, name, image_url')
+          .select('id, name, image_path')
           .order('name');
       return rows.map(AdminCategoryDto.fromJson).map((dto) => AdminCategory(
             id: dto.id,
             name: dto.name,
-            imageUrl: dto.imageUrl,
+            imageUrl: _catalogImageUrl(dto.imagePath),
+            imagePath: dto.imagePath,
           )).toList();
     } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  /// Resolves a brand/category `image_path` to a display URL — http(s)
+  /// passthrough, bare paths against the public `catalog_assets` bucket.
+  String? _catalogImageUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+    return _client.storage.from('catalog_assets').getPublicUrl(path);
+  }
+
+  @override
+  Future<String> uploadCatalogImage({required String filePath}) async {
+    try {
+      final fileName = filePath.split(Platform.pathSeparator).last;
+      final path = 'catalog/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      final bytes = await File(filePath).readAsBytes();
+      await _client.storage.from('catalog_assets').uploadBinary(path, bytes);
+      return path;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } on StorageException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();
@@ -52,12 +78,12 @@ class AdminRepositoryImpl implements IAdminRepository {
   Future<void> createCategory({
     required String name,
     String? parentId,
-    String? imageUrl,
+    String? imagePath,
   }) {
     return _rpc('create_category', {
       'p_name': name,
       'p_parent_id': parentId,
-      'p_image_url': imageUrl,
+      'p_image_path': imagePath,
     });
   }
 
@@ -65,12 +91,12 @@ class AdminRepositoryImpl implements IAdminRepository {
   Future<void> renameCategory({
     required String categoryId,
     required String name,
-    String? imageUrl,
+    String? imagePath,
   }) {
     return _rpc('rename_category', {
       'p_category_id': categoryId,
       'p_name': name,
-      'p_image_url': imageUrl,
+      'p_image_path': imagePath,
     });
   }
 
@@ -83,12 +109,16 @@ class AdminRepositoryImpl implements IAdminRepository {
   @override
   Future<List<AdminBrand>> fetchBrands() async {
     try {
-      final rows = await _client.from('brands').select().order('name');
+      final rows = await _client
+          .from('brands')
+          .select('id, name, description, image_path, status')
+          .order('name');
       return rows.map(AdminBrandDto.fromJson).map((dto) => AdminBrand(
             id: dto.id,
             name: dto.name,
             description: dto.description ?? '',
-            imageUrl: dto.imageUrl,
+            imageUrl: _catalogImageUrl(dto.imagePath),
+            imagePath: dto.imagePath,
             status: AdminCatalogStatus.fromName(dto.status),
           )).toList();
     } on PostgrestException catch (e) {
@@ -102,13 +132,13 @@ class AdminRepositoryImpl implements IAdminRepository {
   Future<void> createBrand({
     required String name,
     String? description,
-    String? imageUrl,
+    String? imagePath,
   }) async {
     try {
       await _client.from('brands').insert({
         'name': name,
         'description': description ?? '',
-        'image_url': imageUrl,
+        'image_path': imagePath,
       });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
@@ -122,13 +152,13 @@ class AdminRepositoryImpl implements IAdminRepository {
     required String brandId,
     required String name,
     String? description,
-    String? imageUrl,
+    String? imagePath,
   }) async {
     try {
       await _client.from('brands').update({
         'name': name,
         'description': description ?? '',
-        'image_url': imageUrl,
+        'image_path': imagePath,
       }).eq('id', brandId);
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);

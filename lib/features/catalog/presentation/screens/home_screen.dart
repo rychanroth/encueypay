@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/responsive/screen_size.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/brand.dart';
 import '../../domain/entities/category.dart';
@@ -232,14 +233,12 @@ class _CategoryCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (category.imageUrl != null)
-                Image.network(
-                  category.imageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const _CategoryFallback(),
-                )
-              else
-                const _CategoryFallback(),
+              // Graceful imagery: skeleton while loading, monogram fallback
+              // on null/error (DESIGN.md §6.1) — no blank tiles, ever.
+              MonogramImage(
+                imageUrl: category.imageUrl,
+                name: category.name,
+              ),
               Positioned(
                 left: 0,
                 right: 0,
@@ -261,20 +260,6 @@ class _CategoryCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _CategoryFallback extends StatelessWidget {
-  const _CategoryFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ColoredBox(
-      color: theme.colorScheme.primaryContainer,
-      child: Icon(Icons.category_outlined,
-          size: 36, color: theme.colorScheme.onPrimaryContainer),
     );
   }
 }
@@ -337,13 +322,13 @@ class _BrandCard extends StatelessWidget {
               ),
               child: AspectRatio(
                 aspectRatio: 1,
-                child: brand.imageUrl != null
-                    ? Image.network(
-                        brand.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const _BrandFallback(),
-                      )
-                    : const _BrandFallback(),
+                // Graceful imagery (§6.1): monogram fallback when the brand
+                // has no logo or the network fails.
+                child: MonogramImage(
+                  imageUrl: brand.imageUrl,
+                  name: brand.name,
+                  icon: Icons.sell_outlined,
+                ),
               ),
             ),
           ),
@@ -357,20 +342,6 @@ class _BrandCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BrandFallback extends StatelessWidget {
-  const _BrandFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ColoredBox(
-      color: theme.colorScheme.surfaceContainerHighest,
-      child: Icon(Icons.sell_outlined,
-          size: 32, color: theme.colorScheme.outline),
     );
   }
 }

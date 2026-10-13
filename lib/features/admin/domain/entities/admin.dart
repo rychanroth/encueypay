@@ -8,12 +8,17 @@ abstract class AdminCategory with _$AdminCategory {
     required String id,
     required String name,
     String? imageUrl,
+
+    /// Raw storage reference (catalog_assets path or http passthrough) —
+    /// passed back on edit so the display URL is never re-persisted.
+    String? imagePath,
   }) = _AdminCategory;
 }
 
 /// Brand management read model (living spec Part B §2/§8, Section 2b):
 /// admin-managed catalog brands (assignment §2/§3). [imageUrl] is a full
-/// public URL (Section 2c, banner convention).
+/// public URL (Section 2c, banner convention); [imagePath] is the raw
+/// catalog_assets reference carried for round-trip edits.
 @freezed
 abstract class AdminBrand with _$AdminBrand {
   const factory AdminBrand({
@@ -21,6 +26,7 @@ abstract class AdminBrand with _$AdminBrand {
     required String name,
     @Default('') String description,
     String? imageUrl,
+    String? imagePath,
     @Default(AdminCatalogStatus.active) AdminCatalogStatus status,
   }) = _AdminBrand;
 }

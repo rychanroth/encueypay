@@ -15,31 +15,39 @@ class AdminCategoriesController extends _$AdminCategoriesController {
   Future<void> create({
     required String name,
     String? parentId,
-    String? imageUrl,
+    String? imagePath,
   }) async {
     final current = state.value ?? const <AdminCategory>[];
     state = await AsyncValue.guard(() async {
       await ref.read(adminRepositoryProvider).createCategory(
             name: name,
             parentId: parentId,
-            imageUrl: imageUrl,
+            imagePath: imagePath,
           );
       ref.invalidateSelf();
       return current;
     });
   }
 
+  /// Uploads category imagery into `catalog_assets` and returns the stored
+  /// path (DESIGN.md imagery pipeline).
+  Future<String> uploadImage({required String filePath}) {
+    return ref
+        .read(adminRepositoryProvider)
+        .uploadCatalogImage(filePath: filePath);
+  }
+
   Future<void> rename({
     required String categoryId,
     required String name,
-    String? imageUrl,
+    String? imagePath,
   }) async {
     final current = state.value ?? const <AdminCategory>[];
     state = await AsyncValue.guard(() async {
       await ref.read(adminRepositoryProvider).renameCategory(
             categoryId: categoryId,
             name: name,
-            imageUrl: imageUrl,
+            imagePath: imagePath,
           );
       ref.invalidateSelf();
       return current;

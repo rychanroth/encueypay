@@ -57,7 +57,7 @@ AdminCategoryDto _$AdminCategoryDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       name: json['name'] as String,
       parentId: json['parent_id'] as String?,
-      imageUrl: json['image_url'] as String?,
+      imagePath: json['image_path'] as String?,
     );
 
 Map<String, dynamic> _$AdminCategoryDtoToJson(AdminCategoryDto instance) =>
@@ -65,7 +65,7 @@ Map<String, dynamic> _$AdminCategoryDtoToJson(AdminCategoryDto instance) =>
       'id': instance.id,
       'name': instance.name,
       'parent_id': instance.parentId,
-      'image_url': instance.imageUrl,
+      'image_path': instance.imagePath,
     };
 
 AdminBrandDto _$AdminBrandDtoFromJson(Map<String, dynamic> json) =>
@@ -73,7 +73,7 @@ AdminBrandDto _$AdminBrandDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
-      imageUrl: json['image_url'] as String?,
+      imagePath: json['image_path'] as String?,
       status: json['status'] as String?,
     );
 
@@ -82,7 +82,7 @@ Map<String, dynamic> _$AdminBrandDtoToJson(AdminBrandDto instance) =>
       'id': instance.id,
       'name': instance.name,
       'description': instance.description,
-      'image_url': instance.imageUrl,
+      'image_path': instance.imagePath,
       'status': instance.status,
     };
 

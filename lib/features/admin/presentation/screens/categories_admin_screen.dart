@@ -2,16 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
+import '../../domain/entities/admin.dart';
 import '../controllers/admin_categories_controller.dart';
+import '../widgets/catalog_image_pick_field.dart';
 
-/// Admin tab 3 — Category management (spec §2.4): global parent/child
-/// catalog structure.
+/// Category management (spec §2.4): global parent/child catalog structure,
+/// now with the DESIGN.md imagery pipeline (upload → catalog_assets →
+/// image_path).
 class CategoriesAdminScreen extends ConsumerWidget {
   const CategoriesAdminScreen({super.key});
 
+  /// Uploads a freshly picked image (catalog_assets) or passes the kept
+  /// existing path through. Null when no imagery is set.
+  Future<String?> _resolveImagePath(
+    WidgetRef ref,
+    CatalogImagePickFieldState? field,
+  ) async {
+    if (field == null) return null;
+    if (field.hasNewPick) {
+      return ref
+          .read(adminCategoriesControllerProvider.notifier)
+          .uploadImage(filePath: field.pickedPath!);
+    }
+    return field.existingPathOrClear;
+  }
+
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
-    final imageController = TextEditingController();
+    final imageFieldKey = GlobalKey<CatalogImagePickFieldState>();
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -23,12 +42,10 @@ class CategoriesAdminScreen extends ConsumerWidget {
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Name'),
             ),
-            TextField(
-              controller: imageController,
-              decoration: const InputDecoration(
-                labelText: 'Image URL (optional)',
-                hintText: 'https://…',
-              ),
+            const SizedBox(height: 12),
+            CatalogImagePickField(
+              key: imageFieldKey,
+              label: 'Category image (optional)',
             ),
           ],
         ),
@@ -45,24 +62,30 @@ class CategoriesAdminScreen extends ConsumerWidget {
       ),
     );
     if (created != true) return;
-    final imageUrl =
-        imageController.text.trim().isEmpty ? null : imageController.text.trim();
+    String? imagePath;
+    try {
+      imagePath =
+          await _resolveImagePath(ref, imageFieldKey.currentState);
+    } on Failure catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     await ref.read(adminCategoriesControllerProvider.notifier).create(
           name: nameController.text.trim(),
-          imageUrl: imageUrl,
+          imagePath: imagePath,
         );
   }
 
-  Future<void> _rename(
+  Future<void> _edit(
     BuildContext context,
     WidgetRef ref,
-    String categoryId,
-    String currentName,
-    String? currentImageUrl,
+    AdminCategory category,
   ) async {
-    final nameController = TextEditingController(text: currentName);
-    final imageController =
-        TextEditingController(text: currentImageUrl ?? '');
+    final nameController = TextEditingController(text: category.name);
+    final imageFieldKey = GlobalKey<CatalogImagePickFieldState>();
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -74,12 +97,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Name'),
             ),
-            TextField(
-              controller: imageController,
-              decoration: const InputDecoration(
-                labelText: 'Image URL (optional)',
-                hintText: 'https://…',
-              ),
+            const SizedBox(height: 12),
+            CatalogImagePickField(
+              key: imageFieldKey,
+              label: 'Category image (optional)',
+              existingUrl: category.imageUrl,
+              existingPath: category.imagePath,
             ),
           ],
         ),
@@ -96,12 +119,21 @@ class CategoriesAdminScreen extends ConsumerWidget {
       ),
     );
     if (saved != true) return;
-    final imageUrl =
-        imageController.text.trim().isEmpty ? null : imageController.text.trim();
+    String? imagePath;
+    try {
+      imagePath =
+          await _resolveImagePath(ref, imageFieldKey.currentState);
+    } on Failure catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     await ref.read(adminCategoriesControllerProvider.notifier).rename(
-          categoryId: categoryId,
+          categoryId: category.id,
           name: nameController.text.trim(),
-          imageUrl: imageUrl,
+          imagePath: imagePath,
         );
   }
 
@@ -165,20 +197,25 @@ class CategoriesAdminScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final category = categories[index];
               return ListTile(
-                leading: const Icon(Icons.category_outlined),
+                leading: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: MonogramImage(
+                      imageUrl: category.imageUrl,
+                      name: category.name,
+                      icon: Icons.category_outlined,
+                    ),
+                  ),
+                ),
                 title: Text(category.name),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
-                      onPressed: () => _rename(
-                        context,
-                        ref,
-                        category.id,
-                        category.name,
-                        category.imageUrl,
-                      ),
+                      onPressed: () => _edit(context, ref, category),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),

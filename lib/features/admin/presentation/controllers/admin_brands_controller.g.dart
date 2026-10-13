@@ -40,7 +40,7 @@ final class AdminBrandsControllerProvider
 }
 
 String _$adminBrandsControllerHash() =>
-    r'ce55afd69130e696886ac530fa1406aa796a114f';
+    r'2fa7b0ae0601698723cfe9810b9967f4e96de06d';
 
 /// Brand management (Section 2b, assignment §2/§3): list + create + edit +
 /// archive/activate + delete. Mutations persist-then-invalidate (PRES-03).

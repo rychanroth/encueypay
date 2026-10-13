@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AdminCategory {
 
- String get id; String get name; String? get imageUrl;
+ String get id; String get name; String? get imageUrl;/// Raw storage reference (catalog_assets path or http passthrough) —
+/// passed back on edit so the display URL is never re-persisted.
+ String? get imagePath;
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +28,16 @@ $AdminCategoryCopyWith<AdminCategory> get copyWith => _$AdminCategoryCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,name,imageUrl,imagePath);
 
 @override
 String toString() {
-  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl)';
+  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl, imagePath: $imagePath)';
 }
 
 
@@ -46,7 +48,7 @@ abstract mixin class $AdminCategoryCopyWith<$Res>  {
   factory $AdminCategoryCopyWith(AdminCategory value, $Res Function(AdminCategory) _then) = _$AdminCategoryCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? imageUrl
+ String id, String name, String? imageUrl, String? imagePath
 });
 
 
@@ -63,11 +65,12 @@ class _$AdminCategoryCopyWithImpl<$Res>
 
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,Object? imagePath = freezed,}) {
   return _then(AdminCategory(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -153,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl,  String? imagePath)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminCategory() when $default != null:
-return $default(_that.id,_that.name,_that.imageUrl);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
   return orElse();
 
 }
@@ -174,10 +177,10 @@ return $default(_that.id,_that.name,_that.imageUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl,  String? imagePath)  $default,) {final _that = this;
 switch (_that) {
 case _AdminCategory():
-return $default(_that.id,_that.name,_that.imageUrl);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +197,10 @@ return $default(_that.id,_that.name,_that.imageUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? imageUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? imageUrl,  String? imagePath)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminCategory() when $default != null:
-return $default(_that.id,_that.name,_that.imageUrl);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
   return null;
 
 }
@@ -209,12 +212,15 @@ return $default(_that.id,_that.name,_that.imageUrl);case _:
 
 
 class _AdminCategory implements AdminCategory {
-  const _AdminCategory({required this.id, required this.name, this.imageUrl});
+  const _AdminCategory({required this.id, required this.name, this.imageUrl, this.imagePath});
   
 
 @override final  String id;
 @override final  String name;
 @override final  String? imageUrl;
+/// Raw storage reference (catalog_assets path or http passthrough) —
+/// passed back on edit so the display URL is never re-persisted.
+@override final  String? imagePath;
 
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
@@ -226,16 +232,16 @@ _$AdminCategoryCopyWith<_AdminCategory> get copyWith => __$AdminCategoryCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,name,imageUrl,imagePath);
 
 @override
 String toString() {
-  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl)';
+  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl, imagePath: $imagePath)';
 }
 
 
@@ -246,7 +252,7 @@ abstract mixin class _$AdminCategoryCopyWith<$Res> implements $AdminCategoryCopy
   factory _$AdminCategoryCopyWith(_AdminCategory value, $Res Function(_AdminCategory) _then) = __$AdminCategoryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? imageUrl
+ String id, String name, String? imageUrl, String? imagePath
 });
 
 
@@ -263,11 +269,12 @@ class __$AdminCategoryCopyWithImpl<$Res>
 
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,Object? imagePath = freezed,}) {
   return _then(_AdminCategory(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -278,7 +285,7 @@ as String?,
 /// @nodoc
 mixin _$AdminBrand {
 
- String get id; String get name; String get description; String? get imageUrl; AdminCatalogStatus get status;
+ String get id; String get name; String get description; String? get imageUrl; String? get imagePath; AdminCatalogStatus get status;
 /// Create a copy of AdminBrand
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -289,16 +296,16 @@ $AdminBrandCopyWith<AdminBrand> get copyWith => _$AdminBrandCopyWithImpl<AdminBr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminBrand&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminBrand&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.status, status) || other.status == status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,status);
+int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,imagePath,status);
 
 @override
 String toString() {
-  return 'AdminBrand(id: $id, name: $name, description: $description, imageUrl: $imageUrl, status: $status)';
+  return 'AdminBrand(id: $id, name: $name, description: $description, imageUrl: $imageUrl, imagePath: $imagePath, status: $status)';
 }
 
 
@@ -309,7 +316,7 @@ abstract mixin class $AdminBrandCopyWith<$Res>  {
   factory $AdminBrandCopyWith(AdminBrand value, $Res Function(AdminBrand) _then) = _$AdminBrandCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String description, String? imageUrl, AdminCatalogStatus status
+ String id, String name, String description, String? imageUrl, String? imagePath, AdminCatalogStatus status
 });
 
 
@@ -326,12 +333,13 @@ class _$AdminBrandCopyWithImpl<$Res>
 
 /// Create a copy of AdminBrand
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? status = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? imagePath = freezed,Object? status = null,}) {
   return _then(AdminBrand(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
 as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as AdminCatalogStatus,
   ));
@@ -418,10 +426,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String description,  String? imageUrl,  AdminCatalogStatus status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String description,  String? imageUrl,  String? imagePath,  AdminCatalogStatus status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminBrand() when $default != null:
-return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.status);case _:
+return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.imagePath,_that.status);case _:
   return orElse();
 
 }
@@ -439,10 +447,10 @@ return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.statu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String description,  String? imageUrl,  AdminCatalogStatus status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String description,  String? imageUrl,  String? imagePath,  AdminCatalogStatus status)  $default,) {final _that = this;
 switch (_that) {
 case _AdminBrand():
-return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.status);case _:
+return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.imagePath,_that.status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -459,10 +467,10 @@ return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.statu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String description,  String? imageUrl,  AdminCatalogStatus status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String description,  String? imageUrl,  String? imagePath,  AdminCatalogStatus status)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminBrand() when $default != null:
-return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.status);case _:
+return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.imagePath,_that.status);case _:
   return null;
 
 }
@@ -474,13 +482,14 @@ return $default(_that.id,_that.name,_that.description,_that.imageUrl,_that.statu
 
 
 class _AdminBrand implements AdminBrand {
-  const _AdminBrand({required this.id, required this.name, this.description = '', this.imageUrl, this.status = AdminCatalogStatus.active});
+  const _AdminBrand({required this.id, required this.name, this.description = '', this.imageUrl, this.imagePath, this.status = AdminCatalogStatus.active});
   
 
 @override final  String id;
 @override final  String name;
 @override@JsonKey() final  String description;
 @override final  String? imageUrl;
+@override final  String? imagePath;
 @override@JsonKey() final  AdminCatalogStatus status;
 
 /// Create a copy of AdminBrand
@@ -493,16 +502,16 @@ _$AdminBrandCopyWith<_AdminBrand> get copyWith => __$AdminBrandCopyWithImpl<_Adm
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminBrand&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminBrand&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.status, status) || other.status == status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,status);
+int get hashCode => Object.hash(runtimeType,id,name,description,imageUrl,imagePath,status);
 
 @override
 String toString() {
-  return 'AdminBrand(id: $id, name: $name, description: $description, imageUrl: $imageUrl, status: $status)';
+  return 'AdminBrand(id: $id, name: $name, description: $description, imageUrl: $imageUrl, imagePath: $imagePath, status: $status)';
 }
 
 
@@ -513,7 +522,7 @@ abstract mixin class _$AdminBrandCopyWith<$Res> implements $AdminBrandCopyWith<$
   factory _$AdminBrandCopyWith(_AdminBrand value, $Res Function(_AdminBrand) _then) = __$AdminBrandCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String description, String? imageUrl, AdminCatalogStatus status
+ String id, String name, String description, String? imageUrl, String? imagePath, AdminCatalogStatus status
 });
 
 
@@ -530,12 +539,13 @@ class __$AdminBrandCopyWithImpl<$Res>
 
 /// Create a copy of AdminBrand
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? status = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? imageUrl = freezed,Object? imagePath = freezed,Object? status = null,}) {
   return _then(_AdminBrand(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
 as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as AdminCatalogStatus,
   ));

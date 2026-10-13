@@ -68,9 +68,12 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     try {
       final rows = await _client
           .from('categories')
-          .select()
+          .select('id, name, parent_id, image_path')
           .order('name');
-      return rows.map(CategoryDto.fromJson).map((d) => d.toDomain()).toList();
+      return rows
+          .map(CategoryDto.fromJson)
+          .map((d) => d.toDomain(imageUrl: _catalogImageUrl(d.imagePath)))
+          .toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
@@ -83,10 +86,13 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     try {
       final rows = await _client
           .from('brands')
-          .select('id, name, image_url')
+          .select('id, name, image_path')
           .eq('status', 'active')
           .order('name');
-      return rows.map(BrandDto.fromJson).map((d) => d.toDomain()).toList();
+      return rows
+          .map(BrandDto.fromJson)
+          .map((d) => d.toDomain(imageUrl: _catalogImageUrl(d.imagePath)))
+          .toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
     } catch (_) {
@@ -231,6 +237,16 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     } catch (_) {
       throw const NetworkFailure();
     }
+  }
+
+  /// Resolves a brand/category `image_path` to a display URL (DESIGN.md
+  /// imagery pipeline): full http(s) references pass through (the seed and
+  /// legacy rows may carry them), bare paths resolve against the public
+  /// `catalog_assets` bucket — same convention as banners (§5b).
+  String? _catalogImageUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+    return _client.storage.from('catalog_assets').getPublicUrl(path);
   }
 
   @override
