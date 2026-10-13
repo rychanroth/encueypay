@@ -97,7 +97,22 @@ abstract class AdminProductDraft with _$AdminProductDraft {
     @Default('') String description,
     required int basePriceMinor,
     @Default(0) int stock,
+
+    /// Create-time variant authoring (map §10.3): empty → the server
+    /// auto-creates a 'Default' variant whose null price tracks the base
+    /// price. The update RPC does not touch variants.
+    @Default([]) List<AdminProductVariantDraft> variants,
   }) = _AdminProductDraft;
+}
+
+/// One variant row authored in the product form.
+@freezed
+abstract class AdminProductVariantDraft with _$AdminProductVariantDraft {
+  const factory AdminProductVariantDraft({
+    required String name,
+    /// Null tracks the product's base price (server rule §1.2).
+    int? priceMinor,
+  }) = _AdminProductVariantDraft;
 }
 
 /// Order oversight read model (Section 7A): the order's SINGLE lifecycle

@@ -334,7 +334,11 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
         'p_stock': draft.stock,
-        'p_variants': <Map<String, dynamic>>[],
+        // Empty → the server auto-creates the 'Default' variant.
+        'p_variants': [
+          for (final variant in draft.variants)
+            {'name': variant.name, 'price_minor': variant.priceMinor},
+        ],
       }) as String;
       return productId;
     } on PostgrestException catch (e) {

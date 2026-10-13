@@ -1126,7 +1126,10 @@ mixin _$AdminProductDraft {
  String? get id;/// Null on create — the server resolves (or provisions) the singleton
 /// prototype business (DESIGN.md §1.1); edits carry the product's
 /// existing business.
- String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;
+ String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;/// Create-time variant authoring (map §10.3): empty → the server
+/// auto-creates a 'Default' variant whose null price tracks the base
+/// price. The update RPC does not touch variants.
+ List<AdminProductVariantDraft> get variants;
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1137,16 +1140,16 @@ $AdminProductDraftCopyWith<AdminProductDraft> get copyWith => _$AdminProductDraf
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&const DeepCollectionEquality().equals(other.variants, variants));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,categoryId,brandId,name,description,basePriceMinor,stock);
+int get hashCode => Object.hash(runtimeType,id,categoryId,brandId,name,description,basePriceMinor,stock,const DeepCollectionEquality().hash(variants));
 
 @override
 String toString() {
-  return 'AdminProductDraft(id: $id, categoryId: $categoryId, brandId: $brandId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock)';
+  return 'AdminProductDraft(id: $id, categoryId: $categoryId, brandId: $brandId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, variants: $variants)';
 }
 
 
@@ -1157,7 +1160,7 @@ abstract mixin class $AdminProductDraftCopyWith<$Res>  {
   factory $AdminProductDraftCopyWith(AdminProductDraft value, $Res Function(AdminProductDraft) _then) = _$AdminProductDraftCopyWithImpl;
 @useResult
 $Res call({
- String? id, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock
+ String? id, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock, List<AdminProductVariantDraft> variants
 });
 
 
@@ -1174,7 +1177,7 @@ class _$AdminProductDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? variants = null,}) {
   return _then(AdminProductDraft(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
@@ -1183,7 +1186,8 @@ as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_no
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,basePriceMinor: null == basePriceMinor ? _self.basePriceMinor : basePriceMinor // ignore: cast_nullable_to_non_nullable
 as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
-as int,
+as int,variants: null == variants ? _self.variants : variants // ignore: cast_nullable_to_non_nullable
+as List<AdminProductVariantDraft>,
   ));
 }
 
@@ -1268,10 +1272,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock,  List<AdminProductVariantDraft> variants)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminProductDraft() when $default != null:
-return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock);case _:
+return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.variants);case _:
   return orElse();
 
 }
@@ -1289,10 +1293,10 @@ return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.descrip
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock,  List<AdminProductVariantDraft> variants)  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductDraft():
-return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock);case _:
+return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.variants);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1309,10 +1313,10 @@ return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.descrip
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock,  List<AdminProductVariantDraft> variants)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductDraft() when $default != null:
-return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock);case _:
+return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock,_that.variants);case _:
   return null;
 
 }
@@ -1324,7 +1328,7 @@ return $default(_that.id,_that.categoryId,_that.brandId,_that.name,_that.descrip
 
 
 class _AdminProductDraft implements AdminProductDraft {
-  const _AdminProductDraft({this.id, required this.categoryId, this.brandId, required this.name, this.description = '', required this.basePriceMinor, this.stock = 0});
+  const _AdminProductDraft({this.id, required this.categoryId, this.brandId, required this.name, this.description = '', required this.basePriceMinor, this.stock = 0,  List<AdminProductVariantDraft> variants = const []}): _variants = variants;
   
 
 @override final  String? id;
@@ -1337,6 +1341,19 @@ class _AdminProductDraft implements AdminProductDraft {
 @override@JsonKey() final  String description;
 @override final  int basePriceMinor;
 @override@JsonKey() final  int stock;
+/// Create-time variant authoring (map §10.3): empty → the server
+/// auto-creates a 'Default' variant whose null price tracks the base
+/// price. The update RPC does not touch variants.
+ final  List<AdminProductVariantDraft> _variants;
+/// Create-time variant authoring (map §10.3): empty → the server
+/// auto-creates a 'Default' variant whose null price tracks the base
+/// price. The update RPC does not touch variants.
+@override@JsonKey() List<AdminProductVariantDraft> get variants {
+  if (_variants is EqualUnmodifiableListView) return _variants;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_variants);
+}
+
 
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1348,16 +1365,16 @@ _$AdminProductDraftCopyWith<_AdminProductDraft> get copyWith => __$AdminProductD
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.stock, stock) || other.stock == stock)&&const DeepCollectionEquality().equals(other._variants, _variants));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,categoryId,brandId,name,description,basePriceMinor,stock);
+int get hashCode => Object.hash(runtimeType,id,categoryId,brandId,name,description,basePriceMinor,stock,const DeepCollectionEquality().hash(_variants));
 
 @override
 String toString() {
-  return 'AdminProductDraft(id: $id, categoryId: $categoryId, brandId: $brandId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock)';
+  return 'AdminProductDraft(id: $id, categoryId: $categoryId, brandId: $brandId, name: $name, description: $description, basePriceMinor: $basePriceMinor, stock: $stock, variants: $variants)';
 }
 
 
@@ -1368,7 +1385,7 @@ abstract mixin class _$AdminProductDraftCopyWith<$Res> implements $AdminProductD
   factory _$AdminProductDraftCopyWith(_AdminProductDraft value, $Res Function(_AdminProductDraft) _then) = __$AdminProductDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock
+ String? id, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock, List<AdminProductVariantDraft> variants
 });
 
 
@@ -1385,7 +1402,7 @@ class __$AdminProductDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,Object? variants = null,}) {
   return _then(_AdminProductDraft(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
@@ -1394,7 +1411,270 @@ as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_no
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,basePriceMinor: null == basePriceMinor ? _self.basePriceMinor : basePriceMinor // ignore: cast_nullable_to_non_nullable
 as int,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
-as int,
+as int,variants: null == variants ? _self._variants : variants // ignore: cast_nullable_to_non_nullable
+as List<AdminProductVariantDraft>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$AdminProductVariantDraft {
+
+ String get name;/// Null tracks the product's base price (server rule §1.2).
+ int? get priceMinor;
+/// Create a copy of AdminProductVariantDraft
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminProductVariantDraftCopyWith<AdminProductVariantDraft> get copyWith => _$AdminProductVariantDraftCopyWithImpl<AdminProductVariantDraft>(this as AdminProductVariantDraft, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductVariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,name,priceMinor);
+
+@override
+String toString() {
+  return 'AdminProductVariantDraft(name: $name, priceMinor: $priceMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminProductVariantDraftCopyWith<$Res>  {
+  factory $AdminProductVariantDraftCopyWith(AdminProductVariantDraft value, $Res Function(AdminProductVariantDraft) _then) = _$AdminProductVariantDraftCopyWithImpl;
+@useResult
+$Res call({
+ String name, int? priceMinor
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminProductVariantDraftCopyWithImpl<$Res>
+    implements $AdminProductVariantDraftCopyWith<$Res> {
+  _$AdminProductVariantDraftCopyWithImpl(this._self, this._then);
+
+  final AdminProductVariantDraft _self;
+  final $Res Function(AdminProductVariantDraft) _then;
+
+/// Create a copy of AdminProductVariantDraft
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? priceMinor = freezed,}) {
+  return _then(AdminProductVariantDraft(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminProductVariantDraft].
+extension AdminProductVariantDraftPatterns on AdminProductVariantDraft {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminProductVariantDraft value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminProductVariantDraft() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminProductVariantDraft value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductVariantDraft():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminProductVariantDraft value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductVariantDraft() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int? priceMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminProductVariantDraft() when $default != null:
+return $default(_that.name,_that.priceMinor);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int? priceMinor)  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductVariantDraft():
+return $default(_that.name,_that.priceMinor);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int? priceMinor)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductVariantDraft() when $default != null:
+return $default(_that.name,_that.priceMinor);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminProductVariantDraft implements AdminProductVariantDraft {
+  const _AdminProductVariantDraft({required this.name, this.priceMinor});
+  
+
+@override final  String name;
+/// Null tracks the product's base price (server rule §1.2).
+@override final  int? priceMinor;
+
+/// Create a copy of AdminProductVariantDraft
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminProductVariantDraftCopyWith<_AdminProductVariantDraft> get copyWith => __$AdminProductVariantDraftCopyWithImpl<_AdminProductVariantDraft>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductVariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,name,priceMinor);
+
+@override
+String toString() {
+  return 'AdminProductVariantDraft(name: $name, priceMinor: $priceMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminProductVariantDraftCopyWith<$Res> implements $AdminProductVariantDraftCopyWith<$Res> {
+  factory _$AdminProductVariantDraftCopyWith(_AdminProductVariantDraft value, $Res Function(_AdminProductVariantDraft) _then) = __$AdminProductVariantDraftCopyWithImpl;
+@override @useResult
+$Res call({
+ String name, int? priceMinor
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminProductVariantDraftCopyWithImpl<$Res>
+    implements _$AdminProductVariantDraftCopyWith<$Res> {
+  __$AdminProductVariantDraftCopyWithImpl(this._self, this._then);
+
+  final _AdminProductVariantDraft _self;
+  final $Res Function(_AdminProductVariantDraft) _then;
+
+/// Create a copy of AdminProductVariantDraft
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? priceMinor = freezed,}) {
+  return _then(_AdminProductVariantDraft(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

@@ -17,10 +17,12 @@ import '../widgets/searchable_picker_field.dart';
 /// lives in this StatefulWidget; mutations go through
 /// [AdminProductsController] (AsyncValue.guard + invalidate, PRES-03).
 ///
-/// Created products have no explicit variants — the server auto-creates a
-/// 'Default' variant whose null price tracks the base price, keeping carts
-/// strictly variant-based. Existing images can be removed; new ones are
-/// uploaded on save.
+/// Created products may author variants inline (name + optional price);
+/// leaving the list empty lets the server auto-create a 'Default' variant
+/// whose null price tracks the base price, keeping carts strictly
+/// variant-based (map §10.3). Existing images can be removed; new ones are
+/// uploaded on save. Variant authoring is create-time only — the update
+/// RPC does not touch variants.
 class AdminProductFormScreen extends ConsumerStatefulWidget {
   const AdminProductFormScreen({super.key, this.product});
 
@@ -60,12 +62,28 @@ class _AdminProductFormScreenState
   );
   final List<String> _imageDrafts = <String>[];
 
+  /// Create-time variant rows (name + optional price). Edit mode never
+  /// populates this — the update RPC does not touch variants.
+  final List<_VariantRow> _variantRows = <_VariantRow>[];
+
+  void _addVariantRow() => setState(() => _variantRows.add(_VariantRow()));
+
+  void _removeVariantRow(_VariantRow row) {
+    setState(() {
+      _variantRows.remove(row);
+      row.dispose();
+    });
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
     _stockController.dispose();
+    for (final row in _variantRows) {
+      row.dispose();
+    }
     super.dispose();
   }
 
@@ -139,6 +157,7 @@ class _AdminProductFormScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final categoriesAsync = ref.watch(adminCategoriesControllerProvider);
     final brandsAsync = ref.watch(adminBrandsControllerProvider);
 
@@ -188,6 +207,74 @@ class _AdminProductFormScreenState
             ),
             keyboardType: TextInputType.number,
           ),
+          const SizedBox(height: 12),
+          // Variant authoring (map §10.3, create-time only).
+          if (widget.product == null) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Variants', style: theme.textTheme.titleSmall),
+                TextButton.icon(
+                  onPressed: _addVariantRow,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add variant'),
+                ),
+              ],
+            ),
+            Text(
+              'Leave empty to auto-create a single Default variant. '
+              'A variant without a price tracks the base price.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            for (final row in _variantRows)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: row.name,
+                        decoration: const InputDecoration(
+                          labelText: 'Variant name',
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: row.price,
+                        decoration: const InputDecoration(
+                          labelText: 'Price (+ base optional)',
+                          prefixText: '\$ ',
+                          isDense: true,
+                          hintText: 'Base price',
+                        ),
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Remove variant',
+                      onPressed: () => _removeVariantRow(row),
+                      icon: const Icon(Icons.remove_circle_outline),
+                    ),
+                  ],
+                ),
+              ),
+          ] else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Variants are authored at creation; editing existing '
+                'variants is not supported yet.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           const SizedBox(height: 12),
           // Searchable pickers (Section 2d): FK references scale better with
           // search than with plain dropdowns. The store is intentionally
@@ -312,5 +399,19 @@ class _ImageTile extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// One editable variant row — owns its text controllers so removal can
+/// dispose them deterministically.
+class _VariantRow {
+  _VariantRow();
+
+  final TextEditingController name = TextEditingController();
+  final TextEditingController price = TextEditingController();
+
+  void dispose() {
+    name.dispose();
+    price.dispose();
   }
 }
