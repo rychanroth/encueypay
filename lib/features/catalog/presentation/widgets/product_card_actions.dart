@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/product.dart';
 
 /// Injected quick-action wiring for [ProductCard] long-press (Section 6):
@@ -30,7 +32,7 @@ class ProductCardActions {
     return showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.r24)),
       ),
       builder: (sheetContext) => SafeArea(
         child: Column(
@@ -51,7 +53,7 @@ class ProductCardActions {
             ListTile(
               leading: Icon(
                 inWishlist ? Icons.favorite : Icons.favorite_border,
-                color: inWishlist ? Colors.redAccent : null,
+                color: inWishlist ? AppColors.accentRose : null,
               ),
               title: Text(inWishlist
                   ? 'Remove from wishlist'

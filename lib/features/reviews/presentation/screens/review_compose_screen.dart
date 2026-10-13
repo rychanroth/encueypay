@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../core/presentation/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -79,7 +81,7 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
                   iconSize: 36,
                   icon: Icon(
                     star <= _rating ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
+                    color: AppColors.accentAmber,
                   ),
                   onPressed: () => setState(() => _rating = star),
                 ),

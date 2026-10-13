@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/status_badge.dart';
@@ -43,7 +44,7 @@ class DashboardOverviewPanel extends ConsumerWidget {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1E3A8A), Color(0xFF1D4ED8)],
+                colors: [AppColors.primaryRoyal, AppColors.primaryRoyalHover],
               ),
             ),
             child: Column(

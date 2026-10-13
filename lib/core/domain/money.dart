@@ -7,19 +7,24 @@ part 'money.freezed.dart';
 const int kKhrPerUsd = 4100;
 
 /// Thousands-separator grouping for display strings (`1234567` →
-/// `1,234,567`).
+/// `1,234,567`; `10.50` → `10.50` — the fractional part is untouched).
 String _group(String digits) {
   final negative = digits.startsWith('-');
   final body = negative ? digits.substring(1) : digits;
+  final dot = body.indexOf('.');
+  final intPart = dot == -1 ? body : body.substring(0, dot);
+  final rest = dot == -1 ? '' : body.substring(dot);
+
   final buffer = StringBuffer();
-  for (var i = 0; i < body.length; i++) {
-    final remaining = body.length - i;
-    buffer.write(body[i]);
+  for (var i = 0; i < intPart.length; i++) {
+    final remaining = intPart.length - i;
+    buffer.write(intPart[i]);
     if (remaining > 1 && remaining % 3 == 1) {
       buffer.write(',');
     }
   }
-  return negative ? '-$buffer' : buffer.toString();
+  final grouped = '$buffer$rest';
+  return negative ? '-$grouped' : grouped;
 }
 
 /// Exact monetary value in minor units (spec §22: never rely on binary
