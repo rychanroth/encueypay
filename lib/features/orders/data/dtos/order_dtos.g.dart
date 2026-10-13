@@ -85,7 +85,11 @@ ReturnRequestJoinDto _$ReturnRequestJoinDtoFromJson(
 ) => ReturnRequestJoinDto(
   id: json['id'] as String,
   status: json['status'] as String?,
-  reason: json['reason'] as String?,
+  returnItems:
+      (json['return_items'] as List<dynamic>?)
+          ?.map((e) => ReturnItemJoinDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
 );
 
 Map<String, dynamic> _$ReturnRequestJoinDtoToJson(
@@ -93,8 +97,17 @@ Map<String, dynamic> _$ReturnRequestJoinDtoToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'status': instance.status,
-  'reason': instance.reason,
+  'return_items': instance.returnItems,
 };
+
+ReturnItemJoinDto _$ReturnItemJoinDtoFromJson(Map<String, dynamic> json) =>
+    ReturnItemJoinDto(
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      reason: json['reason'] as String? ?? '',
+    );
+
+Map<String, dynamic> _$ReturnItemJoinDtoToJson(ReturnItemJoinDto instance) =>
+    <String, dynamic>{'quantity': instance.quantity, 'reason': instance.reason};
 
 PaymentJoinDto _$PaymentJoinDtoFromJson(Map<String, dynamic> json) =>
     PaymentJoinDto(

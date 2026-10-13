@@ -23,7 +23,11 @@ extension OrderDtoX on OrderDto {
           .map((request) => ReturnRequestInfo(
                 id: request.id,
                 status: ReturnStatus.fromName(request.status),
-                reason: request.reason ?? '',
+                // Aggregate the per-line reasons into one display string.
+                reason: request.returnItems
+                    .map((item) => item.reason)
+                    .where((reason) => reason.isNotEmpty)
+                    .join(' · '),
               ))
           .toList(),
       payment: payments == null

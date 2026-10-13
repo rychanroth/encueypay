@@ -33,11 +33,13 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   // `*` is required: an embed-only select makes PostgREST omit the product's
   // own columns, which then fail ProductDto.fromJson's required fields.
   // price-only variants feed the card "from" price; `brands(name)` feeds the
-  // card badge and the brand-name search filter (§5.1.2); the reviews
-  // aggregate feeds the card rating (§6.1).
+  // card badge. NOTE: no PostgREST aggregate embeds here — the aggregate
+  // syntax (reviews(rating_avg=avg(rating), ...)) requires PostgREST ≥ 12
+  // (opt-in db-aggregates) and fails to parse on this backend, stalling
+  // every catalog surface. Card ratings stay null until a backend-supported
+  // aggregate path (view/RPC) exists.
   static const _productSelect =
-      '*, brands(name), reviews(rating_avg=avg(rating), review_count=count()), '
-      'product_images(storage_path, sort_order), '
+      '*, brands(name), product_images(storage_path, sort_order), '
       'product_variants(id, price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
@@ -134,12 +136,26 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         request = request.eq('brand_id', brandId);
       }
       if (query != null && query.trim().isNotEmpty) {
-        // Assignment §2: search matches product name OR brand name. The
-        // PostgREST or-filter syntax reserves commas/parens — sanitize them
-        // out of user input.
+        // Assignment §2 / §5.1.2: search matches product name OR brand name.
+        // The or-filter syntax reserves commas/parens — sanitize them out of
+        // user input. Brand matching resolves matching brand ids first and
+        // ORs the plain `brand_id.in.(...)` column reference — embed columns
+        // inside or() (brands.name.ilike) require PostgREST ≥ 12 semantics
+        // this backend does not guarantee.
         final q = query.trim().replaceAll(RegExp(r'[,()]'), ' ').trim();
         if (q.isNotEmpty) {
-          request = request.or('name.ilike.%$q%,brands.name.ilike.%$q%');
+          final brandIds = await _client
+              .from('brands')
+              .select('id')
+              .ilike('name', '%$q%');
+          final idList = [
+            for (final row in brandIds) row['id'] as String,
+          ];
+          request = idList.isEmpty
+              ? request.ilike('name', '%$q%')
+              : request.or(
+                  'name.ilike.%$q%,brand_id.in.(${idList.join(',')})',
+                );
         }
       }
       // order()/range() are transforms — they run last, off the filtered
