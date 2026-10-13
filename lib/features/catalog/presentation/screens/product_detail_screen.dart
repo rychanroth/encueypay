@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/product.dart';
 import '../controllers/product_detail_controller.dart';
@@ -80,18 +81,28 @@ class ProductDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            product.name,
-                            style: theme.textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
+                          Text(product.name,
+                              style: theme.textTheme.headlineSmall),
                           const SizedBox(height: 8),
-                          Text(
-                            Money(detail.fromPriceMinor).format(),
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
-                            ),
+                          // Dual-currency price (DESIGN.md §1.4): USD
+                          // primary, KHR approximation secondary.
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                Money(detail.fromPriceMinor).formatUsd(),
+                                style: AppTypography.priceHighlight
+                                    .copyWith(fontSize: 24),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '≈ ${Money(detail.fromPriceMinor).formatKhr()}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
                           // Brand line (assignment §3) — Section 2b. Hidden
                           // entirely when the product carries no brand.
@@ -128,11 +139,7 @@ class ProductDetailScreen extends ConsumerWidget {
                               ),
                             ),
                           const SizedBox(height: 16),
-                    Text(
-                      'Description',
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
+                    Text('Description', style: theme.textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text(
                       product.description.isEmpty
@@ -145,8 +152,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       Text(
                         'Reviews (${detail.reviews.length})'
                         '${detail.averageRating == null ? '' : ' · ${detail.averageRating!.toStringAsFixed(1)}★'}',
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: theme.textTheme.titleMedium,
                       ),
                       for (final review in detail.reviews)
                         ReviewCard(review: review),
@@ -157,11 +163,8 @@ class ProductDetailScreen extends ConsumerWidget {
                     if (state.relatedProducts.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Related products',
-                          style: theme.textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
+                        child: Text('Related products',
+                            style: theme.textTheme.titleMedium),
                       ),
                       const SizedBox(height: 8),
                       SizedBox(

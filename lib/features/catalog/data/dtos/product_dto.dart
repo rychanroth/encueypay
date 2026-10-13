@@ -21,6 +21,8 @@ class ProductDto {
     this.stock = 0,
     this.productImages = const [],
     this.productVariants = const [],
+    this.brand,
+    this.reviews = const [],
   });
 
   factory ProductDto.fromJson(Map<String, dynamic> json) =>
@@ -51,5 +53,46 @@ class ProductDto {
   @JsonKey(name: 'product_variants', defaultValue: [])
   final List<ProductVariantPriceDto> productVariants;
 
+  /// `brands(name)` embed — the display name for card badges (§6.1).
+  /// Null when the select omits the embed.
+  @JsonKey(name: 'brands')
+  final BrandEmbedDto? brand;
+
+  /// PostgREST aggregate embed `reviews(rating_avg=avg(rating),
+  /// review_count=count())` for card ratings (§6.1). Detail selects embed
+  /// full review rows instead — those parse as aggregates with null fields
+  /// and are ignored by the mapper.
+  @JsonKey(name: 'reviews', defaultValue: [])
+  final List<ReviewAggregateDto> reviews;
+
   Map<String, dynamic> toJson() => _$ProductDtoToJson(this);
+}
+
+/// `brands(name)` embed (name-only).
+@JsonSerializable(fieldRename: FieldRename.snake)
+class BrandEmbedDto {
+  const BrandEmbedDto({this.name});
+
+  factory BrandEmbedDto.fromJson(Map<String, dynamic> json) =>
+      _$BrandEmbedDtoFromJson(json);
+
+  final String? name;
+
+  Map<String, dynamic> toJson() => _$BrandEmbedDtoToJson(this);
+}
+
+/// Aggregate review embed for card ratings (§6.1) — one entry per product.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ReviewAggregateDto {
+  const ReviewAggregateDto({this.ratingAvg, this.reviewCount = 0});
+
+  factory ReviewAggregateDto.fromJson(Map<String, dynamic> json) =>
+      _$ReviewAggregateDtoFromJson(json);
+
+  final double? ratingAvg;
+
+  @JsonKey(defaultValue: 0)
+  final int reviewCount;
+
+  Map<String, dynamic> toJson() => _$ReviewAggregateDtoToJson(this);
 }

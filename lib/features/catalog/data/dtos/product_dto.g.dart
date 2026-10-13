@@ -28,6 +28,14 @@ ProductDto _$ProductDtoFromJson(Map<String, dynamic> json) => ProductDto(
           )
           .toList() ??
       [],
+  brand: json['brands'] == null
+      ? null
+      : BrandEmbedDto.fromJson(json['brands'] as Map<String, dynamic>),
+  reviews:
+      (json['reviews'] as List<dynamic>?)
+          ?.map((e) => ReviewAggregateDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
 );
 
 Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
@@ -43,4 +51,24 @@ Map<String, dynamic> _$ProductDtoToJson(ProductDto instance) =>
       'stock': instance.stock,
       'product_images': instance.productImages,
       'product_variants': instance.productVariants,
+      'brands': instance.brand,
+      'reviews': instance.reviews,
+    };
+
+BrandEmbedDto _$BrandEmbedDtoFromJson(Map<String, dynamic> json) =>
+    BrandEmbedDto(name: json['name'] as String?);
+
+Map<String, dynamic> _$BrandEmbedDtoToJson(BrandEmbedDto instance) =>
+    <String, dynamic>{'name': instance.name};
+
+ReviewAggregateDto _$ReviewAggregateDtoFromJson(Map<String, dynamic> json) =>
+    ReviewAggregateDto(
+      ratingAvg: (json['rating_avg'] as num?)?.toDouble(),
+      reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$ReviewAggregateDtoToJson(ReviewAggregateDto instance) =>
+    <String, dynamic>{
+      'rating_avg': instance.ratingAvg,
+      'review_count': instance.reviewCount,
     };

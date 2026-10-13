@@ -27,6 +27,9 @@ abstract class Product with _$Product {
     /// the product's default variant. Never null in practice —
     /// `create_product` auto-creates 'Default' — but tolerated here.
     String? defaultVariantId,
+    @Default('') String brandName,
+    double? ratingAvg,
+    @Default(0) int reviewCount,
     @Default(ProductStatus.active) ProductStatus status,
     @Default([]) List<String> imageUrls,
   }) = _Product;

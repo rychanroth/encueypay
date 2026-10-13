@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/theme/app_colors.dart';
+
 /// Visual star display of an aggregate or individual rating (assignment
 /// §3/§7F). Half steps render via the half-star glyph.
 class RatingStars extends StatelessWidget {
@@ -21,7 +23,7 @@ class RatingStars extends StatelessWidget {
                     ? Icons.star_half
                     : Icons.star_border,
             size: starSize,
-            color: Colors.amber,
+            color: AppColors.accentAmber,
           ),
         const SizedBox(width: 4),
         Text(rating.toStringAsFixed(1)),

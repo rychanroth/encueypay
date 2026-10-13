@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/responsive/screen_size.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/banner.dart';
 import '../../domain/entities/brand.dart';
 import '../../domain/entities/category.dart';
 import '../controllers/brands_provider.dart';
@@ -81,11 +85,19 @@ class HomeScreen extends ConsumerWidget {
           // categories as an image card grid, brands as a logo rail, both
           // tapping into the discovery screen. The chips remain in the
           // products screen's filter bar.
-          _SectionTitle('Shop by category'),
+          _SectionTitle(
+            'Shop by category',
+            actionLabel: 'See all',
+            onAction: () => context.goNamed(AppRoutes.discovery),
+          ),
           _CategoryCardGrid(),
           _SectionTitle('Top brands'),
           _BrandRail(),
-          _SectionTitle('New arrivals'),
+          _SectionTitle(
+            'New arrivals',
+            actionLabel: 'See all',
+            onAction: () => context.goNamed(AppRoutes.discovery),
+          ),
           _HomeProductsGrid(columns: columns, actionsBuilder: actionsBuilder),
         ],
       ),
@@ -93,73 +105,160 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+/// Section header (DESIGN.md §5.1.1): titleLarge headline with optional
+/// "See all" action deep-linking into the Discover tab.
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
+  const _SectionTitle(this.title, {this.actionLabel, this.onAction});
 
   final String title;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: Theme.of(context)
-            .textTheme
-            .titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Row(
+        children: [
+          Expanded(child: Text(title, style: theme.textTheme.titleLarge)),
+          if (actionLabel != null && onAction != null)
+            TextButton(
+              onPressed: onAction,
+              child: Text(actionLabel!),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _BannersStrip extends ConsumerWidget {
+/// Hero promotion banner carousel (DESIGN.md §5.1.1): autoplaying PageView
+/// with page indicators and a gradient scrim title. Monogram fallback keeps
+/// the tile presentable when imagery is missing or offline.
+class _BannersStrip extends ConsumerStatefulWidget {
   const _BannersStrip();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_BannersStrip> createState() => _BannersStripState();
+}
+
+class _BannersStripState extends ConsumerState<_BannersStrip> {
+  final PageController _pageController = PageController();
+  Timer? _autoplay;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoplay = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final banners =
+          ref.read(homeBannersProvider).value ?? const <CatalogBanner>[];
+      if (banners.length < 2) return;
+      final next = (_pageController.page ?? 0).floor() + 1;
+      _pageController.animateToPage(
+        next % banners.length,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoplay?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final bannersAsync = ref.watch(homeBannersProvider);
+    final theme = Theme.of(context);
     return bannersAsync.maybeWhen(
       data: (banners) {
         if (banners.isEmpty) return const SizedBox.shrink();
-        return SizedBox(
-          height: 120,
-          child: PageView.builder(
-            itemCount: banners.length,
-            itemBuilder: (context, index) {
-              final banner = banners[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        banner.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                      ),
-                      Positioned(
-                        left: 12,
-                        bottom: 8,
-                        child: Text(
-                          banner.name,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                shadows: const [Shadow(blurRadius: 8)],
+        return Column(
+          children: [
+            SizedBox(
+              height: 148,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: banners.length,
+                itemBuilder: (context, index) {
+                  final banner = banners[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: ClipRRect(
+                      borderRadius: AppRadii.br16,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          MonogramImage(
+                            imageUrl: banner.imageUrl,
+                            name: banner.name,
+                          ),
+                          // Gradient scrim — bottom-weighted title panel.
+                          const DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: [0.45, 1.0],
+                                colors: [Colors.transparent, Color(0xB30F172A)],
                               ),
-                        ),
+                            ),
+                          ),
+                          Positioned(
+                            left: AppSpacing.md,
+                            right: AppSpacing.md,
+                            bottom: AppSpacing.sm + 2,
+                            child: Text(
+                              banner.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (var i = 0; i < banners.length; i++)
+                  AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, _) {
+                      final current =
+                          _pageController.hasClients
+                              ? (_pageController.page ?? 0).round()
+                              : 0;
+                      final active = current == i;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: active ? 18 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      );
+                    },
                   ),
-                ),
-              );
-            },
-          ),
+              ],
+            ),
+          ],
         );
       },
       orElse: () => const SizedBox.shrink(),
@@ -243,16 +342,24 @@ class _CategoryCard extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  color: Colors.black.withValues(alpha: 0.45),
-                  child: Text(
-                    category.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(color: Colors.white),
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.55],
+                      colors: [Colors.transparent, Color(0xB30F172A)],
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 14, 10, 8),
+                    child: Text(
+                      category.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(color: Colors.white),
+                    ),
                   ),
                 ),
               ),

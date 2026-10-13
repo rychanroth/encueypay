@@ -32,11 +32,12 @@ class CatalogRepositoryImpl implements ICatalogRepository {
 
   // `*` is required: an embed-only select makes PostgREST omit the product's
   // own columns, which then fail ProductDto.fromJson's required fields.
-  // price-only variants feed the card "from" price. `brands(name)` backs the
-  // brand-name search filter (assignment §2); ProductDto ignores the extra
-  // embed key.
+  // price-only variants feed the card "from" price; `brands(name)` feeds the
+  // card badge and the brand-name search filter (§5.1.2); the reviews
+  // aggregate feeds the card rating (§6.1).
   static const _productSelect =
-      '*, brands(name), product_images(storage_path, sort_order), '
+      '*, brands(name), reviews(rating_avg=avg(rating), review_count=count()), '
+      'product_images(storage_path, sort_order), '
       'product_variants(id, price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are

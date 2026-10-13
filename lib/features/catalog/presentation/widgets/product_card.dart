@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/theme/app_typography.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
+import '../../../../core/presentation/widgets/price_text.dart';
 import '../../domain/entities/product.dart';
+import 'rating_stars.dart';
 import 'product_card_actions.dart';
 
-/// Reusable product grid card (PRES-06). Price is exact minor-unit money
-/// formatted at the display edge (spec §22). Disabled/out-of-stock products
-/// render an availability badge (Section 2d) but stay tappable — the detail
-/// screen explains the state.
+/// Reusable product grid card (DESIGN.md §6.1): 1:1 image with skeleton →
+/// monogram fallback, brand chip (top-left), wishlist heart (top-right),
+/// "Unavailable" pill (bottom-center), brand + title + rating + dual-
+/// currency price metadata. Price is exact minor-unit money formatted at
+/// the display edge (spec §22).
+///
+/// Disabled/out-of-stock products render the availability pill but stay
+/// tappable — the detail screen explains the state.
 ///
 /// Tap always navigates to the product detail; long-press (Section 6) opens
 /// the quick-actions sheet when [actions] is injected by the composition
@@ -27,8 +37,16 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
+    final isLight = theme.brightness == Brightness.light;
+    final hasBrand = product.brandName.isNotEmpty;
+
+    return Material(
+      color: isLight
+          ? AppColors.surfaceLight
+          : theme.colorScheme.surfaceContainerLowest,
+      borderRadius: AppRadii.br16,
       clipBehavior: Clip.antiAlias,
+      elevation: 0,
       child: InkWell(
         onTap: onTap,
         onLongPress:
@@ -36,58 +54,115 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
+            // --- 1:1 image with badge layering -----------------------------
+            AspectRatio(
+              aspectRatio: 1,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  product.thumbnailUrl.isEmpty
-                      ? ColoredBox(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            Icons.image_outlined,
-                            size: 40,
-                            color: theme.colorScheme.outline,
-                          ),
-                        )
-                      : Image.network(
-                          product.thumbnailUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => ColoredBox(
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: Icon(
-                              Icons.image_outlined,
-                              size: 40,
-                              color: theme.colorScheme.outline,
-                            ),
-                          ),
-                        ),
+                  MonogramImage(
+                    imageUrl: product.thumbnailUrl.isEmpty
+                        ? null
+                        : product.thumbnailUrl,
+                    name: product.name,
+                  ),
+                  // Top-left: brand chip (§6.1).
+                  if (hasBrand)
+                    Positioned(
+                      top: AppSpacing.sm,
+                      left: AppSpacing.sm,
+                      child: _Pill(
+                        background: isLight
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : theme.colorScheme.surfaceContainerLowest,
+                        foreground: theme.colorScheme.onSurfaceVariant,
+                        label: product.brandName,
+                      ),
+                    ),
+                  // Top-right: wishlist heart with micro-animation (§6.1).
+                  if (actions != null)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: _WishlistHeart(actions: actions!),
+                    ),
+                  // Bottom-center: availability pill (§6.1).
                   if (product.availabilityLabel != null)
                     Positioned(
-                      top: 6,
-                      right: 6,
-                      child: _AvailabilityBadge(
-                        label: product.availabilityLabel!,
+                      left: AppSpacing.sm,
+                      right: AppSpacing.sm,
+                      bottom: AppSpacing.sm,
+                      child: Align(
+                        child: _Pill(
+                          background: isLight
+                              ? AppColors.accentRoseLight
+                              : AppColors.errorContainerDark,
+                          foreground: isLight
+                              ? const Color(0xFFBE123C)
+                              : AppColors.onErrorContainerDark,
+                          label: product.availabilityLabel!,
+                          icon: Icons.block_outlined,
+                        ),
                       ),
                     ),
                 ],
               ),
             ),
+
+            // --- Metadata -----------------------------------------------------
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppSpacing.sm + 2),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (hasBrand)
+                    Text(
+                      product.brandName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  const SizedBox(height: 2),
                   Text(
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium,
+                    style: theme.textTheme.titleSmall,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
+                  // Star rating with review count when the catalog exposes
+                  // the aggregate; absent data renders nothing (§6.1).
+                  if (product.ratingAvg != null && product.reviewCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: Row(
+                        children: [
+                          RatingStars(rating: product.ratingAvg!, starSize: 12),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            '(${product.reviewCount})',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  PriceText(
+                    money: Money(product.fromPriceMinor),
+                    showKhr: false,
+                    mainStyle: theme.textTheme.titleSmall?.copyWith(
+                      fontSize: 15,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
                   Text(
-                    Money(product.fromPriceMinor).format(),
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    Money(product.fromPriceMinor).formatKhr(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -99,24 +174,111 @@ class ProductCard extends StatelessWidget {
   }
 }
 
-class _AvailabilityBadge extends StatelessWidget {
-  const _AvailabilityBadge({required this.label});
+/// Translucent status pill used for the brand chip and availability badge.
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.background,
+    required this.foreground,
+    required this.label,
+    this.icon,
+  });
 
+  final Color background;
+  final Color foreground;
   final String label;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(6),
+        color: background,
+        borderRadius: AppRadii.br8,
       ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onErrorContainer,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: foreground),
+            const SizedBox(width: AppSpacing.xs),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.labelSmall.copyWith(color: foreground),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Heart toggle with a scale micro-animation (§6.1) — rose fill when saved.
+class _WishlistHeart extends StatefulWidget {
+  const _WishlistHeart({required this.actions});
+
+  final ProductCardActions actions;
+
+  @override
+  State<_WishlistHeart> createState() => _WishlistHeartState();
+}
+
+class _WishlistHeartState extends State<_WishlistHeart>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 240),
+    value: 1,
+  );
+  bool _pending = false;
+
+  Future<void> _toggle() async {
+    if (_pending) return;
+    _pending = true;
+    _pulse.forward(from: 0.55).then((_) => _pulse.animateTo(1));
+    await widget.actions.onToggleWishlist();
+    _pending = false;
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final saved = widget.actions.inWishlist;
+    return ScaleTransition(
+      scale: Tween(begin: 0.7, end: 1.0)
+          .animate(CurvedAnimation(parent: _pulse, curve: Curves.easeOutBack)),
+      child: IconButton(
+        tooltip: saved ? 'Remove from wishlist' : 'Add to wishlist',
+        // 40dp inside the 1:1 tile — still ≥40 and comfortably in the
+        // thumb zone on a 2-col grid (§1.5).
+        constraints:
+            const BoxConstraints(minWidth: 40, minHeight: 40),
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        iconSize: 20,
+        icon: Icon(
+          saved ? Icons.favorite : Icons.favorite_border,
+          color: saved
+              ? AppColors.accentRose
+              : (theme.brightness == Brightness.light
+                  ? Colors.white
+                  : theme.colorScheme.onSurface),
+          shadows: saved || theme.brightness == Brightness.dark
+              ? null
+              : const [
+                  Shadow(color: Color(0x66000000), blurRadius: 4),
+                ],
+        ),
+        onPressed: _toggle,
       ),
     );
   }

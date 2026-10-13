@@ -18,6 +18,9 @@ extension ProductDtoX on ProductDto {
       stock: stock,
       fromPriceMinor: _fromPriceMinor(),
       defaultVariantId: productVariants.firstOrNull?.id,
+      brandName: brand?.name ?? '',
+      ratingAvg: reviews.firstOrNull?.ratingAvg,
+      reviewCount: reviews.firstOrNull?.reviewCount ?? 0,
       status: ProductStatus.fromName(status),
       imageUrls: imageUrls,
     );
