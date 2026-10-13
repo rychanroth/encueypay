@@ -1,29 +1,54 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/theme/app_typography.dart';
 import '../../domain/entities/order.dart';
 
-/// Step-progress timeline for an order (assignment §7: "visual status
-/// timeline"/"step-progress indicators"). Presentation-only: it maps the
-/// customer's derived lifecycle onto the assignment's status vocabulary
-/// (Part D mapping). Cancelled/refund orders render a notice instead of the
-/// stepper — those lifecycles have no forward track.
-class OrderStatusTimeline extends StatelessWidget {
+/// Vertical connected stepper for order tracking (DESIGN.md §6.2):
+///
+/// * completed nodes — solid emerald fill with a check icon;
+/// * the active node — pulsing royal dot;
+/// * future nodes — muted hollow outlines;
+/// * cancelled/returned lifecycles replace the track with a dedicated
+///   status callout banner (no forward track exists for them).
+///
+/// Presentation-only: it maps the customer's derived lifecycle onto the
+/// assignment's status vocabulary (Part D mapping).
+class OrderStatusTimeline extends StatefulWidget {
   const OrderStatusTimeline({super.key, required this.status});
 
   final OrderStatus status;
 
-  static const _steps = [
+  static const _stages = [
     'Pending',
     'Confirmed',
     'Processing',
     'Packed',
     'Shipped',
-    'Out for delivery',
+    'Out for Delivery',
     'Delivered',
   ];
 
-  /// The order's own lifecycle (Section 7A) maps 1:1 onto the steps.
-  int get _currentIndex => switch (status) {
+  @override
+  State<OrderStatusTimeline> createState() => _OrderStatusTimelineState();
+}
+
+class _OrderStatusTimelineState extends State<OrderStatusTimeline>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  /// The order's own lifecycle (Section 7A) maps 1:1 onto the stages.
+  int get _currentIndex => switch (widget.status) {
         OrderStatus.pending => 0,
         OrderStatus.confirmed => 1,
         OrderStatus.processing => 2,
@@ -31,11 +56,11 @@ class OrderStatusTimeline extends StatelessWidget {
         OrderStatus.shipped => 4,
         OrderStatus.outForDelivery => 5,
         OrderStatus.delivered => 6,
-        // Non-trackable states render as a notice (see [hasNotice]).
+        // Non-trackable states render as a notice (see [_hasNotice]).
         _ => -1,
       };
 
-  bool get hasNotice => switch (status) {
+  bool get _hasNotice => switch (widget.status) {
         OrderStatus.cancelled || OrderStatus.returned => true,
         _ => false,
       };
@@ -43,15 +68,15 @@ class OrderStatusTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (hasNotice) {
-      final isCancelled = status == OrderStatus.cancelled;
+    if (_hasNotice) {
+      final isCancelled = widget.status == OrderStatus.cancelled;
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: isCancelled
               ? theme.colorScheme.errorContainer
               : theme.colorScheme.tertiaryContainer,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.br12,
         ),
         child: Row(
           children: [
@@ -62,7 +87,7 @@ class OrderStatusTimeline extends StatelessWidget {
                   ? theme.colorScheme.onErrorContainer
                   : theme.colorScheme.onTertiaryContainer,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 isCancelled
@@ -80,84 +105,147 @@ class OrderStatusTimeline extends StatelessWidget {
       );
     }
 
-    final current = _currentIndex.clamp(0, _steps.length - 1);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final current = _currentIndex.clamp(0, OrderStatusTimeline._stages.length - 1);
+    return Column(
       children: [
-        for (var i = 0; i < _steps.length; i++) ...[
-          if (i > 0)
-            Expanded(
-              child: Container(
-                height: 2,
-                margin: const EdgeInsets.only(top: 7),
-                color: i <= current
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.surfaceContainerHighest,
-              ),
-            ),
-          _StepDot(
-            label: _steps[i],
+        for (var i = 0; i < OrderStatusTimeline._stages.length; i++)
+          _StageRow(
+            label: OrderStatusTimeline._stages[i],
+            isFirst: i == 0,
+            isLast: i == OrderStatusTimeline._stages.length - 1,
             state: i < current
-                ? _StepState.done
+                ? _StageState.done
                 : i == current
-                    ? _StepState.current
-                    : _StepState.upcoming,
+                    ? _StageState.current
+                    : _StageState.upcoming,
+            pulse: _pulse,
           ),
-        ],
       ],
     );
   }
 }
 
-enum _StepState { done, current, upcoming }
+enum _StageState { done, current, upcoming }
 
-class _StepDot extends StatelessWidget {
-  const _StepDot({required this.label, required this.state});
+class _StageRow extends StatelessWidget {
+  const _StageRow({
+    required this.label,
+    required this.isFirst,
+    required this.isLast,
+    required this.state,
+    required this.pulse,
+  });
 
   final String label;
-  final _StepState state;
+  final bool isFirst;
+  final bool isLast;
+  final _StageState state;
+  final Animation<double> pulse;
+
+  static const _nodeSize = 22.0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = switch (state) {
-      _StepState.done || _StepState.current => theme.colorScheme.primary,
-      _StepState.upcoming => theme.colorScheme.surfaceContainerHighest,
+    final nodeColor = switch (state) {
+      _StageState.done => AppColors.accentEmerald,
+      _StageState.current => theme.colorScheme.primary,
+      _StageState.upcoming => theme.colorScheme.outline,
     };
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: state == _StepState.done
-                ? theme.colorScheme.primary
-                : theme.colorScheme.surface,
-            border: Border.all(color: color, width: 2),
-          ),
-          child: state == _StepState.current
-              ? Icon(Icons.circle, size: 8, color: theme.colorScheme.primary)
-              : null,
-        ),
-        const SizedBox(height: 4),
-        SizedBox(
-          width: 44,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelSmall?.copyWith(
-              fontSize: 9,
-              color: state == _StepState.upcoming
-                  ? theme.colorScheme.outline
-                  : null,
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // --- Track + node column -------------------------------------------
+          SizedBox(
+            width: _nodeSize + 8,
+            child: Column(
+              children: [
+                if (!isFirst)
+                  Container(
+                    width: 2,
+                    height: 14,
+                    color: state == _StageState.upcoming
+                        ? theme.colorScheme.outlineVariant
+                        : nodeColor,
+                  ),
+                SizedBox(
+                  width: _nodeSize + 8,
+                  height: _nodeSize + 8,
+                  child: Center(
+                    child: state == _StageState.current
+                        ? FadeTransition(
+                            opacity: Tween(begin: 0.55, end: 1.0)
+                                .animate(pulse),
+                            child: ScaleTransition(
+                              scale: Tween(begin: 0.9, end: 1.0)
+                                  .animate(pulse),
+                              child: Container(
+                                width: _nodeSize,
+                                height: _nodeSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: nodeColor,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: nodeColor.withValues(alpha: 0.35),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(Icons.circle,
+                                    size: 8, color: Colors.white),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: _nodeSize,
+                            height: _nodeSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: state == _StageState.done
+                                  ? nodeColor
+                                  : theme.colorScheme.surfaceContainerLowest,
+                              border: Border.all(color: nodeColor, width: 2),
+                            ),
+                            child: state == _StageState.done
+                                ? const Icon(Icons.check,
+                                    size: 13, color: Colors.white)
+                                : null,
+                          ),
+                  ),
+                ),
+                if (!isLast)
+                  Container(
+                    width: 2,
+                    height: 14,
+                    color: state == _StageState.done
+                        ? nodeColor
+                        : theme.colorScheme.outlineVariant,
+                  ),
+              ],
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: AppSpacing.sm + 2),
+          // --- Label ---------------------------------------------------------
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: _nodeSize / 2 + 7),
+              child: Text(
+                label,
+                style: AppTypography.labelLarge.copyWith(
+                  color: switch (state) {
+                    _StageState.upcoming => theme.colorScheme.outline,
+                    _ => theme.colorScheme.onSurface,
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

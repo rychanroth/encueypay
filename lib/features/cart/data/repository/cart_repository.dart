@@ -1,3 +1,4 @@
+import '../../domain/entities/cart_coupon.dart';
 import '../../domain/entities/cart_item.dart';
 
 /// Cart contract (spec §8, §58 Shopping ops) (DATA-03). Quantity
@@ -12,4 +13,9 @@ abstract interface class ICartRepository {
   Future<void> removeItem({required String itemId});
 
   Future<void> clear();
+
+  /// Cart voucher preview (DESIGN.md §5.1.3): server validation of the
+  /// code against the live cart — never throws for a logically invalid
+  /// coupon; the result carries `valid`/`message`/scope.
+  Future<CartCoupon> validateCoupon(String code);
 }

@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/theme/app_typography.dart';
+import '../../../../core/presentation/widgets/khqr_card.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../data/repository/checkout_repository_impl.dart';
 import '../controllers/order_payment_controller.dart';
@@ -53,15 +56,14 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
+            // Success celebration (§6.4): emerald check over the royal
+            // headline.
             Icon(Icons.check_circle_outline,
-                size: 72, color: theme.colorScheme.primary),
+                size: 72, color: AppColors.accentEmerald),
             const SizedBox(height: 16),
-            Text(
-              'Thank you!',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
+            Text('Thank you!',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineMedium),
             const SizedBox(height: 8),
             Text(
               'Your order has been placed and is awaiting confirmation.',
@@ -78,16 +80,28 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                   return const SizedBox.shrink();
                 }
                 if (payment.isVerified) {
-                  return Column(
-                    children: [
-                      Icon(Icons.verified_outlined,
-                          size: 48, color: theme.colorScheme.primary),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Payment received · ${Money(payment.amountMinor).format()}',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                    ],
+                  final money = Money(payment.amountMinor);
+                  return Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentEmeraldLight,
+                      borderRadius: AppRadii.br16,
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.verified_outlined,
+                            size: 48, color: AppColors.accentEmerald),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text('Payment received',
+                            style: theme.textTheme.titleMedium),
+                        Text(
+                          '${money.formatUsd()} · ≈ ${money.formatKhr()}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: const Color(0xFF047857),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 // Pending QR: register on first build (account id comes from
@@ -107,39 +121,34 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                 });
                 final payload = payment.qrPayload;
                 _startPolling();
+                final money = Money(payment.amountMinor);
                 return Column(
                   children: [
+                    Text('Complete your payment',
+                        style: theme.textTheme.titleMedium),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Complete your payment',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Scan with any Bakong-connected banking app · '
-                      '${Money(payment.amountMinor).format()}',
+                      'Realtime listener follows the payment lifecycle — '
+                      'webhook, poller and admin simulation all settle here.',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     if (payload == null)
                       const Padding(
                         padding: EdgeInsets.all(24),
                         child: CircularProgressIndicator(),
                       )
                     else
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: QrImageView(
-                          data: payload,
-                          size: 220,
-                          backgroundColor: Colors.white,
-                        ),
+                      // Official NBC Bakong KHQR card (§6.4).
+                      KhqrCard(
+                        qrPayload: payload,
+                        amountUsd: money.formatUsd(),
+                        amountKhr: money.formatKhr(),
                       ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.md),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

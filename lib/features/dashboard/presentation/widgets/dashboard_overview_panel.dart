@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/theme/app_typography.dart';
+import '../../../../core/presentation/widgets/status_badge.dart';
 import '../../../../core/router/app_routes.dart';
 import '../controllers/dashboard_controller.dart';
 
@@ -29,33 +32,59 @@ class DashboardOverviewPanel extends ConsumerWidget {
       data: (summary) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Spending hero — money that actually contributed (cancelled and
-          // returned orders excluded, §8A).
-          Card(
-            color: theme.colorScheme.primaryContainer,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Total spending',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer)),
-                  Text(
-                    Money(summary.totalSpendingMinor).format(),
-                    style: theme.textTheme.headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${summary.totalOrders} orders · '
-                    '${summary.completedOrders} completed · '
-                    '${summary.cancelledOrders} cancelled',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer),
-                  ),
-                ],
+          // Spending hero (DESIGN.md §5.1.5): money that actually
+          // contributed (cancelled and returned orders excluded, §8A) over
+          // the royal gradient, with status-tinted order count badges.
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              borderRadius: AppRadii.br24,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1E3A8A), Color(0xFF1D4ED8)],
               ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Total spending',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  Money(summary.totalSpendingMinor).formatUsd(),
+                  style: AppTypography.displayLarge.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  '≈ ${Money(summary.totalSpendingMinor).formatKhr()}',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    _CountBadge(
+                        wireName: 'confirmed',
+                        label: '${summary.totalOrders} active-ish'),
+                    const SizedBox(width: AppSpacing.sm),
+                    _CountBadge(
+                        wireName: 'delivered',
+                        label: '${summary.completedOrders} done'),
+                    const SizedBox(width: AppSpacing.sm),
+                    _CountBadge(
+                        wireName: 'cancelled',
+                        label: '${summary.cancelledOrders} cancelled'),
+                  ],
+                ),
+              ],
             ),
           ),
           _PanelHeader(
@@ -86,12 +115,25 @@ class DashboardOverviewPanel extends ConsumerWidget {
                     _ => theme.colorScheme.secondary,
                   },
                 ),
-                title: Text(Money(order.totalMinor).format()),
-                subtitle: Text(
-                  '${order.state} · '
-                  '${order.createdAt.toLocal().toString().substring(0, 10)}',
+                title: Text(
+                  Money(order.totalMinor).formatUsd(),
+                  style: theme.textTheme.titleSmall,
                 ),
-                trailing: const Icon(Icons.chevron_right, size: 18),
+                subtitle: Text(
+                  '${order.createdAt.toLocal().toString().substring(0, 10)}'
+                  ' · ≈ ${Money(order.totalMinor).formatKhr()}',
+                ),
+                // §2.2 badge: wire name falls back to the derived state for
+                // dashboard rows (completed/cancelled map directly).
+                trailing: StatusBadge(
+                  wireName: switch (order.state) {
+                    'completed' => 'delivered',
+                    'cancelled' => 'cancelled',
+                    _ => 'processing',
+                  },
+                  label: order.state,
+                  dense: true,
+                ),
                 onTap: () => context.pushNamed(
                   AppRoutes.orderDetail,
                   pathParameters: {'id': order.id},
@@ -135,7 +177,8 @@ class DashboardOverviewPanel extends ConsumerWidget {
               leading: const Icon(Icons.shopping_cart_outlined),
               title: Text(
                 '${summary.cartItemCount} item(s) · '
-                '${Money(summary.cartSubtotalMinor).format()}',
+                '${Money(summary.cartSubtotalMinor).formatUsd()}'
+                ' · ≈ ${Money(summary.cartSubtotalMinor).formatKhr()}',
               ),
               subtitle: const Text('Ready at checkout'),
             ),
@@ -167,10 +210,7 @@ class _PanelHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
           if (actionLabel != null)
@@ -181,5 +221,19 @@ class _PanelHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+
+/// Status-tinted order count badge (§5.1.5 / §2.2 palette).
+class _CountBadge extends StatelessWidget {
+  const _CountBadge({required this.wireName, required this.label});
+
+  final String wireName;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return StatusBadge(wireName: wireName, label: label, dense: true);
   }
 }

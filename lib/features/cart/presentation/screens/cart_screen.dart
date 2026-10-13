@@ -1,15 +1,28 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/theme/app_typography.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/cart_item.dart';
 import '../controllers/cart_controller.dart';
+import '../controllers/cart_coupon_controller.dart';
 
-/// Customer tab 2 — Cart. Totals are display previews; the server
-/// recalculates authoritatively at checkout (spec §25/§53).
+/// Customer tab 3 — Cart (DESIGN.md §5.1.3): line items with product-wide
+/// stock-capped steppers, voucher input with scope recognition, and the
+/// **Floating Action Dock** (§6.5) — backdrop blur, elevation shadow, total
+/// payable and the one-tap checkout entry floating above the navigation bar.
+///
+/// Totals are display previews; the server recalculates authoritatively at
+/// checkout (spec §25/§53).
 ///
 /// 2-Role Academic Prototype: the per-business grouping (multi-vendor model,
 /// old spec §9) is flattened to a single list (living spec Part C L-06) —
@@ -22,7 +35,6 @@ class CartScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartAsync = ref.watch(cartControllerProvider);
-    final theme = Theme.of(context);
 
     ref.listen(cartControllerProvider, (previous, next) {
       final error = next.hasError ? next.error : null;
@@ -88,53 +100,41 @@ class CartScreen extends ConsumerWidget {
         ),
         data: (items) {
           if (items.isEmpty) {
-            return const Center(
-              child: Text('Your cart is empty.'),
+            return const EmptyStateView(
+              icon: Icons.shopping_cart_outlined,
+              title: 'Your cart is empty',
+              description: 'Discover products and add them to your bag.',
             );
           }
-          final totalMinor = items.fold<int>(0, (sum, i) => sum + i.lineTotalMinor);
+          final totalMinor =
+              items.fold<int>(0, (sum, i) => sum + i.lineTotalMinor);
+          final discount =
+              ref.watch(cartCouponControllerProvider.notifier).discountMinorTotal;
+          final payable = totalMinor - discount;
 
-          return Column(
+          return Stack(
             children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    // Flat list (L-06): the previous layout grouped lines per
-                    // business with per-group subtotals.
-                    for (final item in items) _CartItemTile(item: item),
-                  ],
+              ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  148, // clearance above the floating dock (§1.5/§6.5)
                 ),
+                children: [
+                  for (final item in items) _CartItemTile(item: item),
+                  _VoucherSection(totalMinor: totalMinor),
+                ],
               ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Total',
-                              style: theme.textTheme.titleMedium),
-                          Text(
-                            Money(totalMinor).format(),
-                            style: theme.textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: () =>
-                              context.pushNamed(AppRoutes.checkout),
-                          child: const Text('Checkout'),
-                        ),
-                      ),
-                    ],
-                  ),
+              // Floating Action Dock (§6.5): blurred glass, E2 shadow, docked
+              // above the navigation bar with safe-area respect.
+              Positioned(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                bottom: AppSpacing.md,
+                child: _FloatingCheckoutDock(
+                  payableMinor: payable,
+                  hasDiscount: discount > 0,
                 ),
               ),
             ],
@@ -143,8 +143,233 @@ class CartScreen extends ConsumerWidget {
       ),
     );
   }
-
 }
+
+/// Voucher input + applied chips with scope recognition (§5.1.3).
+class _VoucherSection extends ConsumerStatefulWidget {
+  const _VoucherSection({required this.totalMinor});
+
+  final int totalMinor;
+
+  @override
+  ConsumerState<_VoucherSection> createState() => _VoucherSectionState();
+}
+
+class _VoucherSectionState extends ConsumerState<_VoucherSection> {
+  final _codeController = TextEditingController();
+  bool _applying = false;
+  String? _feedback;
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _apply() async {
+    setState(() {
+      _applying = true;
+      _feedback = null;
+    });
+    final error = await ref
+        .read(cartCouponControllerProvider.notifier)
+        .apply(_codeController.text);
+    if (!mounted) return;
+    setState(() {
+      _applying = false;
+      _feedback = error;
+      if (error == null) _codeController.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final coupons = ref.watch(cartCouponControllerProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _codeController,
+                decoration: const InputDecoration(
+                  hintText: 'Voucher code',
+                  prefixIcon: Icon(Icons.local_offer_outlined),
+                  isDense: true,
+                ),
+                textCapitalization: TextCapitalization.characters,
+                onSubmitted: (_) => _apply(),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            FilledButton.tonal(
+              onPressed: _applying ? null : _apply,
+              child: _applying
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Apply'),
+            ),
+          ],
+        ),
+        if (_feedback != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            _feedback!,
+            style: theme.textTheme.labelMedium
+                ?.copyWith(color: theme.colorScheme.error),
+          ),
+        ],
+        for (final coupon in coupons) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm + 2,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.accentEmeraldLight,
+              borderRadius: AppRadii.br8,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle_outline,
+                    size: 16, color: AppColors.accentEmerald),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  coupon.code.toUpperCase(),
+                  style: AppTypography.labelSmall
+                      .copyWith(color: const Color(0xFF047857)),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                // Scope recognition chip (§5.1.3).
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    borderRadius: AppRadii.br8,
+                  ),
+                  child: Text(
+                    coupon.scopeLabel,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: const Color(0xFF047857),
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '-${Money(coupon.discountMinor).formatUsd()}',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: const Color(0xFF047857),
+                  ),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Remove voucher',
+                  icon: const Icon(Icons.close, size: 16),
+                  onPressed: () => ref
+                      .read(cartCouponControllerProvider.notifier)
+                      .remove(coupon.code),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Floating Action Dock (DESIGN.md §6.5): anchored above the 5-tab shell,
+/// backdrop blur + elevation shadow, total payable (dual currency) and the
+/// one-tap checkout entry.
+class _FloatingCheckoutDock extends StatelessWidget {
+  const _FloatingCheckoutDock({
+    required this.payableMinor,
+    required this.hasDiscount,
+  });
+
+  final int payableMinor;
+  final bool hasDiscount;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final money = Money(payableMinor);
+    return ClipRRect(
+      borderRadius: AppRadii.br24,
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface.withValues(alpha: 0.82),
+            borderRadius: AppRadii.br24,
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+            boxShadow: AppElevation.dock,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Total payable', style: theme.textTheme.labelSmall),
+                    Text(
+                      money.formatUsd(),
+                      style: AppTypography.priceHighlight.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '≈ ${money.formatKhr()}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: () => context.pushNamed(AppRoutes.checkout),
+                icon: const Icon(Icons.arrow_forward, size: 18),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: 14,
+                  ),
+                ),
+                label: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('Checkout'),
+                    Text('Step 1 of 7', style: TextStyle(fontSize: 10)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _CartItemTile extends ConsumerWidget {
   const _CartItemTile({required this.item});
 
@@ -161,98 +386,118 @@ class _CartItemTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final controller = ref.read(cartControllerProvider.notifier);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      // Tapping the line opens its product page (same cross-tab push as the
-      // wishlist); the quantity/delete buttons keep their own handlers.
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: item.productId.isEmpty
-            ? null
-            : () => context.pushNamed(
-                  AppRoutes.productDetail,
-                  pathParameters: {'id': item.productId},
-                ),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: item.imageUrl != null
-                    ? Image.network(
-                        item.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const _Placeholder(),
-                      )
-                    : const _Placeholder(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.productName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Material(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: AppRadii.br16,
+        child: InkWell(
+          borderRadius: AppRadii.br16,
+          // Tapping the line opens its product page (same cross-tab push as
+          // the wishlist); the quantity/delete buttons keep their handlers.
+          onTap: item.productId.isEmpty
+              ? null
+              : () => context.pushNamed(
+                    AppRoutes.productDetail,
+                    pathParameters: {'id': item.productId},
                   ),
-                  if (item.variantName != null)
-                    Text(item.variantName!,
-                        style: theme.textTheme.bodySmall),
-                  Text(
-                    '${Money(item.unitPriceMinor).format()} × ${item.quantity}',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.sm + 2),
+            decoration: BoxDecoration(
+              borderRadius: AppRadii.br16,
+              border: Border.all(color: theme.colorScheme.outlineVariant),
             ),
-            Column(
+            child: Row(
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      onPressed: item.quantity <= 1
-                          ? null
-                          : () => controller.updateQuantity(
-                                itemId: item.id,
-                                quantity: item.quantity - 1,
-                              ),
-                      icon: const Icon(Icons.remove_circle_outline),
+                SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: ClipRRect(
+                    borderRadius: AppRadii.br12,
+                    child: MonogramImage(
+                      imageUrl: item.imageUrl,
+                      name: item.productName,
                     ),
-                    Text('${item.quantity}'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm + 2),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.productName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      if (item.variantName != null)
+                        Text(item.variantName!, style: theme.textTheme.bodySmall),
+                      Text(
+                        '${Money(item.unitPriceMinor).formatUsd()} × ${item.quantity}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Quantity stepper — pill with circular buttons (§4.2 full).
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: AppRadii.brFull,
+                        color: theme.colorScheme.surfaceContainer,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _StepButton(
+                            icon: Icons.remove,
+                            tooltip: 'Decrease quantity',
+                            onPressed: item.quantity <= 1
+                                ? null
+                                : () => controller.updateQuantity(
+                                      itemId: item.id,
+                                      quantity: item.quantity - 1,
+                                    ),
+                          ),
+                          SizedBox(
+                            width: 28,
+                            child: Text(
+                              '${item.quantity}',
+                              textAlign: TextAlign.center,
+                              style: AppTypography.labelMedium,
+                            ),
+                          ),
+                          _StepButton(
+                            icon: Icons.add,
+                            tooltip: 'Increase quantity',
+                            // Stock is product-wide (Section 6) — the stepper
+                            // is capped at the product's stock.
+                            onPressed: item.quantity >= _stockCap
+                                ? null
+                                : () => controller.updateQuantity(
+                                      itemId: item.id,
+                                      quantity: item.quantity + 1,
+                                    ),
+                          ),
+                        ],
+                      ),
+                    ),
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      // Stock is product-wide (Section 6) — the stepper is
-                      // capped at the product's stock instead of a fixed
-                      // sanity maximum.
-                      onPressed: item.quantity >= _stockCap
-                          ? null
-                          : () => controller.updateQuantity(
-                                itemId: item.id,
-                                quantity: item.quantity + 1,
-                              ),
-                      icon: const Icon(Icons.add_circle_outline),
+                      tooltip: 'Remove item',
+                      onPressed: () => controller.remove(itemId: item.id),
+                      icon: Icon(Icons.delete_outline,
+                          size: 20, color: theme.colorScheme.error),
                     ),
                   ],
                 ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => controller.remove(itemId: item.id),
-                  icon: Icon(Icons.delete_outline,
-                      color: theme.colorScheme.error),
-                ),
               ],
             ),
-          ],
           ),
         ),
       ),
@@ -260,15 +505,24 @@ class _CartItemTile extends ConsumerWidget {
   }
 }
 
-class _Placeholder extends StatelessWidget {
-  const _Placeholder();
+class _StepButton extends StatelessWidget {
+  const _StepButton({
+    required this.icon,
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Icon(Icons.image_outlined,
-          size: 24, color: Theme.of(context).colorScheme.outline),
+    return IconButton(
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
     );
   }
 }

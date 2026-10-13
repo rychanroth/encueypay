@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/supabase_client_provider.dart';
+import '../../domain/entities/cart_coupon.dart';
 import '../../domain/entities/cart_item.dart';
 import '../dtos/cart_item_dto.dart';
 import '../mappers/cart_item_mapper.dart';
@@ -14,6 +15,29 @@ final cartRepositoryProvider = Provider<ICartRepository>((ref) {
 });
 
 class CartRepositoryImpl implements ICartRepository {
+  @override
+  Future<CartCoupon> validateCoupon(String code) async {
+    try {
+      final result =
+          await _client.rpc('validate_coupon', params: {'p_code': code});
+      final map = Map<String, dynamic>.from(result as Map);
+      final rawScope = map['scope'] as String?;
+      return CartCoupon(
+        code: code,
+        valid: map['valid'] == true,
+        discountMinor: (map['discount_minor'] as int?) ?? 0,
+        message: map['message'] as String?,
+        // Scope recognition (§5.1.3): brand-scoped promotions badge as
+        // 'Brand'; platform/business act cart-wide in the 2-role prototype.
+        scopeLabel: rawScope == 'brand' ? 'Brand' : 'Platform',
+      );
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
   CartRepositoryImpl(this._client);
 
   final SupabaseClient _client;

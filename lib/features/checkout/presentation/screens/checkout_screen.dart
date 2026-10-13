@@ -305,9 +305,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               ? theme.colorScheme.primary
                               : theme.colorScheme.error,
                         ),
-                        title: Text(coupon.code),
+                        title: Row(
+                          children: [
+                            Text(coupon.code),
+                            const SizedBox(width: 8),
+                            // Scope recognition chip (DESIGN.md §6.3 step 5).
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                'Scope',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         subtitle: coupon.valid
-                            ? Text('-${Money(coupon.discountMinor).format()}')
+                            ? Text(
+                                '-${Money(coupon.discountMinor).formatUsd()} · ≈ ${Money(coupon.discountMinor).formatKhr()}')
                             : Text(coupon.message ?? 'Not applicable'),
                       ),
                   ],
@@ -335,22 +357,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (summary != null) ...[
-                      _SummaryRow(
-                          'Subtotal', Money(summary.subtotalMinor).format()),
+                      _SummaryRow('Subtotal',
+                          Money(summary.subtotalMinor).formatUsd()),
                       if (state.discountPreviewMinor > 0)
                         _SummaryRow(
                           'Discount (preview)',
-                          '-${Money(state.discountPreviewMinor).format()}',
+                          '-${Money(state.discountPreviewMinor).formatUsd()}',
                         ),
                       _SummaryRow(
                         'Delivery fee',
-                        Money(summary.deliveryFeeMinor).format(),
+                        Money(summary.deliveryFeeMinor).formatUsd(),
                       ),
                       const Divider(height: 24),
                       _SummaryRow(
                         'Total',
-                        Money(state.totalPreviewMinor).format(),
+                        Money(state.totalPreviewMinor).formatUsd(),
                         bold: true,
+                      ),
+                      _SummaryRow(
+                        '',
+                        '≈ ${Money(state.totalPreviewMinor).formatKhr()}',
                       ),
                       if (state.method == PaymentMethod.qr)
                         Padding(
