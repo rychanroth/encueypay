@@ -276,7 +276,11 @@ class _CategoryCardGrid extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoriesProvider);
     return categoriesAsync.maybeWhen(
       data: (categories) {
-        if (categories.isEmpty) return const SizedBox.shrink();
+        // Section 2c: the hero grid browses the top-level taxonomy —
+        // subcategory products aggregate under their parent in Discover.
+        final topLevel =
+            categories.where((category) => category.isTopLevel).toList();
+        if (topLevel.isEmpty) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LayoutBuilder(builder: (context, constraints) {
@@ -292,7 +296,7 @@ class _CategoryCardGrid extends ConsumerWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final category in categories)
+                for (final category in topLevel)
                   SizedBox(
                     width: tileWidth,
                     child: _CategoryCard(category: category),

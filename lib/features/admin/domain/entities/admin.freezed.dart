@@ -17,7 +17,9 @@ mixin _$AdminCategory {
 
  String get id; String get name; String? get imageUrl;/// Raw storage reference (catalog_assets path or http passthrough) —
 /// passed back on edit so the display URL is never re-persisted.
- String? get imagePath;
+ String? get imagePath;/// Parent category id — null for top-level (Section 2c, 2-level
+/// taxonomy).
+ String? get parentId;
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $AdminCategoryCopyWith<AdminCategory> get copyWith => _$AdminCategoryCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.parentId, parentId) || other.parentId == parentId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,imageUrl,imagePath);
+int get hashCode => Object.hash(runtimeType,id,name,imageUrl,imagePath,parentId);
 
 @override
 String toString() {
-  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl, imagePath: $imagePath)';
+  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl, imagePath: $imagePath, parentId: $parentId)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $AdminCategoryCopyWith<$Res>  {
   factory $AdminCategoryCopyWith(AdminCategory value, $Res Function(AdminCategory) _then) = _$AdminCategoryCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? imageUrl, String? imagePath
+ String id, String name, String? imageUrl, String? imagePath, String? parentId
 });
 
 
@@ -65,12 +67,13 @@ class _$AdminCategoryCopyWithImpl<$Res>
 
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,Object? imagePath = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,Object? imagePath = freezed,Object? parentId = freezed,}) {
   return _then(AdminCategory(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
+as String?,parentId: freezed == parentId ? _self.parentId : parentId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -156,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl,  String? imagePath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl,  String? imagePath,  String? parentId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminCategory() when $default != null:
-return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath,_that.parentId);case _:
   return orElse();
 
 }
@@ -177,10 +180,10 @@ return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl,  String? imagePath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? imageUrl,  String? imagePath,  String? parentId)  $default,) {final _that = this;
 switch (_that) {
 case _AdminCategory():
-return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath,_that.parentId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +200,10 @@ return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? imageUrl,  String? imagePath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? imageUrl,  String? imagePath,  String? parentId)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminCategory() when $default != null:
-return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath,_that.parentId);case _:
   return null;
 
 }
@@ -212,7 +215,7 @@ return $default(_that.id,_that.name,_that.imageUrl,_that.imagePath);case _:
 
 
 class _AdminCategory implements AdminCategory {
-  const _AdminCategory({required this.id, required this.name, this.imageUrl, this.imagePath});
+  const _AdminCategory({required this.id, required this.name, this.imageUrl, this.imagePath, this.parentId});
   
 
 @override final  String id;
@@ -221,6 +224,9 @@ class _AdminCategory implements AdminCategory {
 /// Raw storage reference (catalog_assets path or http passthrough) —
 /// passed back on edit so the display URL is never re-persisted.
 @override final  String? imagePath;
+/// Parent category id — null for top-level (Section 2c, 2-level
+/// taxonomy).
+@override final  String? parentId;
 
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
@@ -232,16 +238,16 @@ _$AdminCategoryCopyWith<_AdminCategory> get copyWith => __$AdminCategoryCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.parentId, parentId) || other.parentId == parentId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,imageUrl,imagePath);
+int get hashCode => Object.hash(runtimeType,id,name,imageUrl,imagePath,parentId);
 
 @override
 String toString() {
-  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl, imagePath: $imagePath)';
+  return 'AdminCategory(id: $id, name: $name, imageUrl: $imageUrl, imagePath: $imagePath, parentId: $parentId)';
 }
 
 
@@ -252,7 +258,7 @@ abstract mixin class _$AdminCategoryCopyWith<$Res> implements $AdminCategoryCopy
   factory _$AdminCategoryCopyWith(_AdminCategory value, $Res Function(_AdminCategory) _then) = __$AdminCategoryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? imageUrl, String? imagePath
+ String id, String name, String? imageUrl, String? imagePath, String? parentId
 });
 
 
@@ -269,12 +275,13 @@ class __$AdminCategoryCopyWithImpl<$Res>
 
 /// Create a copy of AdminCategory
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,Object? imagePath = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? imageUrl = freezed,Object? imagePath = freezed,Object? parentId = freezed,}) {
   return _then(_AdminCategory(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
+as String?,parentId: freezed == parentId ? _self.parentId : parentId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

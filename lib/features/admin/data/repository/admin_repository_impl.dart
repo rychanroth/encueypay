@@ -34,13 +34,14 @@ class AdminRepositoryImpl implements IAdminRepository {
     try {
       final rows = await _client
           .from('categories')
-          .select('id, name, image_path')
+          .select('id, name, parent_id, image_path')
           .order('name');
       return rows.map(AdminCategoryDto.fromJson).map((dto) => AdminCategory(
             id: dto.id,
             name: dto.name,
             imageUrl: _catalogImageUrl(dto.imagePath),
             imagePath: dto.imagePath,
+            parentId: dto.parentId,
           )).toList();
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
@@ -92,11 +93,13 @@ class AdminRepositoryImpl implements IAdminRepository {
     required String categoryId,
     required String name,
     String? imagePath,
+    String? parentId,
   }) {
     return _rpc('rename_category', {
       'p_category_id': categoryId,
       'p_name': name,
       'p_image_path': imagePath,
+      'p_parent_id': parentId,
     });
   }
 

@@ -20,6 +20,7 @@ abstract interface class IAdminRepository {
     required String categoryId,
     required String name,
     String? imagePath,
+    String? parentId,
   });
 
   /// Uploads brand/category imagery into the public `catalog_assets` bucket

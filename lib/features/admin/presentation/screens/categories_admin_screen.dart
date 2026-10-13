@@ -6,6 +6,7 @@ import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_categories_controller.dart';
 import '../widgets/catalog_image_pick_field.dart';
+import '../widgets/searchable_picker_field.dart';
 
 /// Category management (spec §2.4): global parent/child catalog structure,
 /// now with the DESIGN.md imagery pipeline (upload → catalog_assets →
@@ -34,6 +35,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
     String? pickedLocalPath;
+    // 2-level taxonomy (§2c): a new category may nest under a top-level
+    // parent; parent products aggregate in Discovery automatically.
+    final topLevelCategories = (ref.read(adminCategoriesControllerProvider).value ?? const <AdminCategory>[])
+        .where((category) => category.parentId == null)
+        .toList();
+    String? parentId;
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -49,6 +56,17 @@ class CategoriesAdminScreen extends ConsumerWidget {
             CatalogImagePickField(
               label: 'Category image (optional)',
               onPicked: (path) => pickedLocalPath = path,
+            ),
+            const SizedBox(height: 12),
+            SearchablePickerField(
+              label: 'Parent category (optional)',
+              allowEmpty: true,
+              options: [
+                for (final category in topLevelCategories)
+                  SearchableOption(id: category.id, label: category.name),
+              ],
+              valueId: parentId,
+              onChanged: (value) => parentId = value,
             ),
           ],
         ),
@@ -81,6 +99,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
     }
     await ref.read(adminCategoriesControllerProvider.notifier).create(
           name: nameController.text.trim(),
+          parentId: parentId,
           imagePath: imagePath,
         );
   }
@@ -92,6 +111,13 @@ class CategoriesAdminScreen extends ConsumerWidget {
   ) async {
     final nameController = TextEditingController(text: category.name);
     String? pickedLocalPath;
+    // Parent options: top-level categories only, excluding the category
+    // itself. Picking none promotes back to top-level.
+    final topLevelCategories = (ref.read(adminCategoriesControllerProvider).value ?? const <AdminCategory>[])
+        .where((candidate) =>
+            candidate.parentId == null && candidate.id != category.id)
+        .toList();
+    String? parentId = category.parentId;
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -109,6 +135,17 @@ class CategoriesAdminScreen extends ConsumerWidget {
               existingUrl: category.imageUrl,
               existingPath: category.imagePath,
               onPicked: (path) => pickedLocalPath = path,
+            ),
+            const SizedBox(height: 12),
+            SearchablePickerField(
+              label: 'Parent category (optional)',
+              allowEmpty: true,
+              options: [
+                for (final candidate in topLevelCategories)
+                  SearchableOption(id: candidate.id, label: candidate.name),
+              ],
+              valueId: parentId,
+              onChanged: (value) => parentId = value,
             ),
           ],
         ),
@@ -143,6 +180,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
           categoryId: category.id,
           name: nameController.text.trim(),
           imagePath: imagePath,
+          parentId: parentId,
         );
   }
 
@@ -218,7 +256,11 @@ class CategoriesAdminScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                title: Text(category.name),
+                title: Text(
+                  category.parentId == null
+                      ? category.name
+                      : '   ↳ ${category.name}',
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

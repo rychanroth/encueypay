@@ -12,6 +12,10 @@ abstract class AdminCategory with _$AdminCategory {
     /// Raw storage reference (catalog_assets path or http passthrough) —
     /// passed back on edit so the display URL is never re-persisted.
     String? imagePath,
+
+    /// Parent category id — null for top-level (Section 2c, 2-level
+    /// taxonomy).
+    String? parentId,
   }) = _AdminCategory;
 }
 

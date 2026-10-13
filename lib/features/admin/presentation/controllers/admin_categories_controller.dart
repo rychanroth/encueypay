@@ -41,6 +41,7 @@ class AdminCategoriesController extends _$AdminCategoriesController {
     required String categoryId,
     required String name,
     String? imagePath,
+    String? parentId,
   }) async {
     final current = state.value ?? const <AdminCategory>[];
     state = await AsyncValue.guard(() async {
@@ -48,6 +49,7 @@ class AdminCategoriesController extends _$AdminCategoriesController {
             categoryId: categoryId,
             name: name,
             imagePath: imagePath,
+            parentId: parentId,
           );
       ref.invalidateSelf();
       return current;
