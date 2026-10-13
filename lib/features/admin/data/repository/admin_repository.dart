@@ -66,6 +66,13 @@ abstract interface class IAdminRepository {
     required bool archived,
   });
 
+  /// Quick inline stock adjustment (DESIGN.md §5.2.2) through the
+  /// admin-guarded RPC — server-authoritative (§1.2).
+  Future<void> adjustProductStock({
+    required String productId,
+    required int newStock,
+  });
+
   /// Uploads the file into `product_images` under the owning business's path
   /// convention, then registers the reference via the admin RPC. The file
   /// name is derived from [filePath].

@@ -291,6 +291,27 @@ class AdminRepositoryImpl implements IAdminRepository {
                       orders: (row['orders'] as int?) ?? 0,
                     ))
                 .toList(),
+        // DESIGN.md §5.2.4 executive extras (additive RPC keys).
+        netSettledMinor: (map['net_settled_minor'] as int?) ?? 0,
+        inventoryValuationMinor:
+            (map['inventory_valuation_minor'] as int?) ?? 0,
+        paymentSplit: () {
+          final split = map['payment_split'];
+          if (split is! Map) return const AdminPaymentSplit();
+          return AdminPaymentSplit(
+            qrCount: (split['qr_count'] as int?) ?? 0,
+            codCount: (split['cod_count'] as int?) ?? 0,
+            qrAmountMinor: (split['qr_amount_minor'] as int?) ?? 0,
+            codAmountMinor: (split['cod_amount_minor'] as int?) ?? 0,
+          );
+        }(),
+        brandRevenue: ((map['brand_revenue'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>())
+            .map((row) => AdminBrandRevenue(
+                  name: row['name'] as String? ?? '',
+                  revenueMinor: (row['revenue_minor'] as int?) ?? 0,
+                ))
+            .toList(),
       );
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
@@ -372,6 +393,17 @@ class AdminRepositoryImpl implements IAdminRepository {
     return _rpc('admin_set_product_archived', {
       'p_product_id': productId,
       'p_archived': archived,
+    });
+  }
+
+  @override
+  Future<void> adjustProductStock({
+    required String productId,
+    required int newStock,
+  }) {
+    return _rpc('admin_adjust_product_stock', {
+      'p_product_id': productId,
+      'p_new_stock': newStock,
     });
   }
 

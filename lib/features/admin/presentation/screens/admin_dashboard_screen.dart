@@ -187,7 +187,7 @@ class _HeroCard extends StatelessWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onPrimaryContainer)),
             Text(
-              Money(kpis.totalSalesMinor).format(),
+              Money(kpis.totalSalesMinor).formatUsd(),
               style: theme.textTheme.headlineMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
@@ -209,7 +209,7 @@ class _HeroCard extends StatelessWidget {
                   children: [
                     Icon(up ? Icons.trending_up : Icons.trending_down,
                         size: 16,
-                        color: up ? Colors.green : theme.colorScheme.error),
+                        color: up ? const Color(0xFF059669) : theme.colorScheme.error),
                     const SizedBox(width: 4),
                     Text(momentum, style: theme.textTheme.bodySmall),
                   ],

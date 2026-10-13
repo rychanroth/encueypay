@@ -8,6 +8,63 @@ part of 'admin_products_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+
+@ProviderFor(AdminProductsFilterController)
+final adminProductsFilterControllerProvider =
+    AdminProductsFilterControllerProvider._();
+
+final class AdminProductsFilterControllerProvider
+    extends
+        $NotifierProvider<AdminProductsFilterController, AdminProductsState> {
+  AdminProductsFilterControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminProductsFilterControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminProductsFilterControllerHash();
+
+  @$internal
+  @override
+  AdminProductsFilterController create() => AdminProductsFilterController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AdminProductsState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AdminProductsState>(value),
+    );
+  }
+}
+
+String _$adminProductsFilterControllerHash() =>
+    r'a4f12605eadb42fdb71e1ca3d4962285cd3d2f08';
+
+abstract class _$AdminProductsFilterController
+    extends $Notifier<AdminProductsState> {
+  AdminProductsState build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AdminProductsState, AdminProductsState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AdminProductsState, AdminProductsState>,
+              AdminProductsState,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 /// Admin product catalog (Section 2b, spec §8 "manages Products"): all
 /// statuses, name search, archive/activate, and the draft mutations backing
 /// the product form. List is capped at 100 rows — prototype scale.
@@ -65,7 +122,7 @@ final class AdminProductsControllerProvider
 }
 
 String _$adminProductsControllerHash() =>
-    r'b4b2f1809ccc77bd9c51c602a52485a7dc6de4fc';
+    r'23d3485a54983231fe1cd01a5a580765c708790f';
 
 /// Admin product catalog (Section 2b, spec §8 "manages Products"): all
 /// statuses, name search, archive/activate, and the draft mutations backing

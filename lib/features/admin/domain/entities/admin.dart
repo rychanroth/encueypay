@@ -243,7 +243,32 @@ abstract class AdminSalesReport with _$AdminSalesReport {
     @Default([]) List<AdminBestSeller> bestSellers,
     @Default([]) List<AdminCategoryUnits> topCategories,
     @Default([]) List<AdminCustomerFrequency> purchaseFrequency,
+    // DESIGN.md §5.2.4 executive extras (additive RPC keys).
+    @Default(0) int netSettledMinor,
+    @Default(0) int inventoryValuationMinor,
+    @Default(AdminPaymentSplit()) AdminPaymentSplit paymentSplit,
+    @Default([]) List<AdminBrandRevenue> brandRevenue,
   }) = _AdminSalesReport;
+}
+
+/// Payment gateway distribution (§5.2.4) over realized orders.
+@freezed
+abstract class AdminPaymentSplit with _$AdminPaymentSplit {
+  const factory AdminPaymentSplit({
+    @Default(0) int qrCount,
+    @Default(0) int codCount,
+    @Default(0) int qrAmountMinor,
+    @Default(0) int codAmountMinor,
+  }) = _AdminPaymentSplit;
+}
+
+/// Brand revenue ranking row (§5.2.4).
+@freezed
+abstract class AdminBrandRevenue with _$AdminBrandRevenue {
+  const factory AdminBrandRevenue({
+    required String name,
+    required int revenueMinor,
+  }) = _AdminBrandRevenue;
 }
 
 @freezed
