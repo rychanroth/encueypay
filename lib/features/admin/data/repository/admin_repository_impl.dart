@@ -201,6 +201,7 @@ class AdminRepositoryImpl implements IAdminRepository {
 
   // -------------------------------------------------------- products (2b)
   String _productImageUrl(String storagePath) {
+    if (storagePath.startsWith('http')) return storagePath;
     return _client.storage.from('product_images').getPublicUrl(storagePath);
   }
 

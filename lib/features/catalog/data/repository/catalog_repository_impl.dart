@@ -43,8 +43,11 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       'product_variants(id, price_minor)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
-  /// resolved here in the data layer — never in the UI.
+  /// resolved here in the data layer — never in the UI. Full http(s)
+  /// references pass through (the seed carries remote demo imagery; the
+  /// same convention as banners and catalog assets).
   String _publicUrl(String storagePath) {
+    if (storagePath.startsWith('http')) return storagePath;
     return _client.storage.from('product_images').getPublicUrl(storagePath);
   }
 
