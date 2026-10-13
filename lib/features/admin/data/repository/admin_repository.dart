@@ -55,8 +55,6 @@ abstract interface class IAdminRepository {
   // ------------------------------------------------------ products (2b)
   Future<List<AdminProductSummary>> fetchProducts({String? query});
 
-  Future<List<AdminBusinessRef>> fetchActiveBusinesses();
-
   Future<String> createProduct(AdminProductDraft draft);
 
   Future<void> updateProduct(AdminProductDraft draft);

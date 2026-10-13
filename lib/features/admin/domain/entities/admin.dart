@@ -78,12 +78,6 @@ abstract class AdminProductImageRef with _$AdminProductImageRef {
 }
 
 /// Slim business reference for the product form's store picker (Section 2b).
-@freezed
-abstract class AdminBusinessRef with _$AdminBusinessRef {
-  const factory AdminBusinessRef({required String id, required String name})
-      = _AdminBusinessRef;
-}
-
 /// Form input for creating/updating a product (Section 2b). [id] is null for
 /// creation; [brandId] is nullable — a product may be brand-less. [stock] is
 /// product-wide (Section 2d): purchasing any variant deducts it.
@@ -91,7 +85,11 @@ abstract class AdminBusinessRef with _$AdminBusinessRef {
 abstract class AdminProductDraft with _$AdminProductDraft {
   const factory AdminProductDraft({
     String? id,
-    required String businessId,
+
+    /// Null on create — the server resolves (or provisions) the singleton
+    /// prototype business (DESIGN.md §1.1); edits carry the product's
+    /// existing business.
+    String? businessId,
     required String categoryId,
     String? brandId,
     required String name,

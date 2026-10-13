@@ -48,7 +48,6 @@ class _AdminProductFormScreenState
     text: widget.product == null ? '0' : '${widget.product!.stock}',
   );
 
-  String? _businessId;
   // Initialized from the product in edit mode (`late` so the initializer may
   // read `widget`); the pickers then own the values outright — clearing a
   // field really clears it.
@@ -100,20 +99,21 @@ class _AdminProductFormScreenState
   Future<void> _save() async {
     final price = _parseMoney(_priceController.text);
     final stock = _parseStock(_stockController.text);
-    final businessId = _businessId;
     final categoryId = _categoryId;
-    if (businessId == null || categoryId == null || price == null || stock == null) {
+    if (categoryId == null || price == null || stock == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Store, category, a valid price and stock are required'),
+          content: Text('Category, a valid price and stock are required'),
         ),
       );
       return;
     }
     final draft = AdminProductDraft(
       id: widget.product?.id,
-      businessId: businessId,
+      // 2-role prototype (DESIGN.md §1.1): no store picker. Create passes
+      // null — the server resolves/provisions the prototype business; edits
+      // carry the product's existing business.
+      businessId: widget.product?.businessId,
       categoryId: categoryId,
       brandId: _brandId,
       name: _nameController.text.trim(),
@@ -142,7 +142,6 @@ class _AdminProductFormScreenState
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(adminCategoriesControllerProvider);
     final brandsAsync = ref.watch(adminBrandsControllerProvider);
-    final businessesAsync = ref.watch(adminActiveBusinessesProvider);
 
     ref.listen(adminProductsControllerProvider(null), (previous, next) {
       final error = next.hasError ? next.error : null;
@@ -152,17 +151,6 @@ class _AdminProductFormScreenState
           ..showSnackBar(SnackBar(content: Text(error.message)));
       }
     });
-
-    // Default the store picker to the first active business once loaded.
-    if (_businessId == null) {
-      businessesAsync.maybeWhen(
-        data: (businesses) {
-          if (businesses.isNotEmpty) _businessId = businesses.first.id;
-          return null;
-        },
-        orElse: () => null,
-      );
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -203,21 +191,9 @@ class _AdminProductFormScreenState
           ),
           const SizedBox(height: 12),
           // Searchable pickers (Section 2d): FK references scale better with
-          // search than with plain dropdowns.
-          businessesAsync.when(
-            loading: () => const LinearProgressIndicator(),
-            error: (error, _) => Text('$error'),
-            data: (businesses) => SearchablePickerField(
-              label: 'Store',
-              options: [
-                for (final business in businesses)
-                  SearchableOption(id: business.id, label: business.name),
-              ],
-              valueId: _businessId,
-              onChanged: (value) => setState(() => _businessId = value),
-            ),
-          ),
-          const SizedBox(height: 12),
+          // search than with plain dropdowns. The store is intentionally
+          // absent — products belong to the auto-provisioned prototype
+          // business (§1.1).
           categoriesAsync.when(
             loading: () => const LinearProgressIndicator(),
             error: (error, _) => Text('$error'),

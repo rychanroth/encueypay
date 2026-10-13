@@ -173,13 +173,6 @@ Map<String, dynamic> _$AdminProductImagePathDtoToJson(
   'sort_order': instance.sortOrder,
 };
 
-AdminBusinessRefDto _$AdminBusinessRefDtoFromJson(Map<String, dynamic> json) =>
-    AdminBusinessRefDto(id: json['id'] as String, name: json['name'] as String);
-
-Map<String, dynamic> _$AdminBusinessRefDtoToJson(
-  AdminBusinessRefDto instance,
-) => <String, dynamic>{'id': instance.id, 'name': instance.name};
-
 AdminOrderRowDto _$AdminOrderRowDtoFromJson(
   Map<String, dynamic> json,
 ) => AdminOrderRowDto(

@@ -1120,269 +1120,12 @@ as String,
 }
 
 /// @nodoc
-mixin _$AdminBusinessRef {
-
- String get id; String get name;
-/// Create a copy of AdminBusinessRef
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$AdminBusinessRefCopyWith<AdminBusinessRef> get copyWith => _$AdminBusinessRefCopyWithImpl<AdminBusinessRef>(this as AdminBusinessRef, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminBusinessRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,id,name);
-
-@override
-String toString() {
-  return 'AdminBusinessRef(id: $id, name: $name)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $AdminBusinessRefCopyWith<$Res>  {
-  factory $AdminBusinessRefCopyWith(AdminBusinessRef value, $Res Function(AdminBusinessRef) _then) = _$AdminBusinessRefCopyWithImpl;
-@useResult
-$Res call({
- String id, String name
-});
-
-
-
-
-}
-/// @nodoc
-class _$AdminBusinessRefCopyWithImpl<$Res>
-    implements $AdminBusinessRefCopyWith<$Res> {
-  _$AdminBusinessRefCopyWithImpl(this._self, this._then);
-
-  final AdminBusinessRef _self;
-  final $Res Function(AdminBusinessRef) _then;
-
-/// Create a copy of AdminBusinessRef
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
-  return _then(AdminBusinessRef(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-}
-
-
-/// Adds pattern-matching-related methods to [AdminBusinessRef].
-extension AdminBusinessRefPatterns on AdminBusinessRef {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminBusinessRef value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _AdminBusinessRef() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminBusinessRef value)  $default,){
-final _that = this;
-switch (_that) {
-case _AdminBusinessRef():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminBusinessRef value)?  $default,){
-final _that = this;
-switch (_that) {
-case _AdminBusinessRef() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _AdminBusinessRef() when $default != null:
-return $default(_that.id,_that.name);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name)  $default,) {final _that = this;
-switch (_that) {
-case _AdminBusinessRef():
-return $default(_that.id,_that.name);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name)?  $default,) {final _that = this;
-switch (_that) {
-case _AdminBusinessRef() when $default != null:
-return $default(_that.id,_that.name);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-
-
-class _AdminBusinessRef implements AdminBusinessRef {
-  const _AdminBusinessRef({required this.id, required this.name});
-  
-
-@override final  String id;
-@override final  String name;
-
-/// Create a copy of AdminBusinessRef
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$AdminBusinessRefCopyWith<_AdminBusinessRef> get copyWith => __$AdminBusinessRefCopyWithImpl<_AdminBusinessRef>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminBusinessRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,id,name);
-
-@override
-String toString() {
-  return 'AdminBusinessRef(id: $id, name: $name)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$AdminBusinessRefCopyWith<$Res> implements $AdminBusinessRefCopyWith<$Res> {
-  factory _$AdminBusinessRefCopyWith(_AdminBusinessRef value, $Res Function(_AdminBusinessRef) _then) = __$AdminBusinessRefCopyWithImpl;
-@override @useResult
-$Res call({
- String id, String name
-});
-
-
-
-
-}
-/// @nodoc
-class __$AdminBusinessRefCopyWithImpl<$Res>
-    implements _$AdminBusinessRefCopyWith<$Res> {
-  __$AdminBusinessRefCopyWithImpl(this._self, this._then);
-
-  final _AdminBusinessRef _self;
-  final $Res Function(_AdminBusinessRef) _then;
-
-/// Create a copy of AdminBusinessRef
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
-  return _then(_AdminBusinessRef(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-
-}
-
-/// @nodoc
 mixin _$AdminProductDraft {
 
- String? get id; String get businessId; String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;
+ String? get id;/// Null on create — the server resolves (or provisions) the singleton
+/// prototype business (DESIGN.md §1.1); edits carry the product's
+/// existing business.
+ String? get businessId; String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1413,7 +1156,7 @@ abstract mixin class $AdminProductDraftCopyWith<$Res>  {
   factory $AdminProductDraftCopyWith(AdminProductDraft value, $Res Function(AdminProductDraft) _then) = _$AdminProductDraftCopyWithImpl;
 @useResult
 $Res call({
- String? id, String businessId, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock
+ String? id, String? businessId, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock
 });
 
 
@@ -1430,11 +1173,11 @@ class _$AdminProductDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? businessId = null,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? businessId = freezed,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,}) {
   return _then(AdminProductDraft(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,businessId: null == businessId ? _self.businessId : businessId // ignore: cast_nullable_to_non_nullable
-as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String?,businessId: freezed == businessId ? _self.businessId : businessId // ignore: cast_nullable_to_non_nullable
+as String?,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -1525,7 +1268,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String businessId,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String? businessId,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminProductDraft() when $default != null:
 return $default(_that.id,_that.businessId,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock);case _:
@@ -1546,7 +1289,7 @@ return $default(_that.id,_that.businessId,_that.categoryId,_that.brandId,_that.n
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String businessId,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String? businessId,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductDraft():
 return $default(_that.id,_that.businessId,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock);case _:
@@ -1566,7 +1309,7 @@ return $default(_that.id,_that.businessId,_that.categoryId,_that.brandId,_that.n
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String businessId,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String? businessId,  String categoryId,  String? brandId,  String name,  String description,  int basePriceMinor,  int stock)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductDraft() when $default != null:
 return $default(_that.id,_that.businessId,_that.categoryId,_that.brandId,_that.name,_that.description,_that.basePriceMinor,_that.stock);case _:
@@ -1581,11 +1324,14 @@ return $default(_that.id,_that.businessId,_that.categoryId,_that.brandId,_that.n
 
 
 class _AdminProductDraft implements AdminProductDraft {
-  const _AdminProductDraft({this.id, required this.businessId, required this.categoryId, this.brandId, required this.name, this.description = '', required this.basePriceMinor, this.stock = 0});
+  const _AdminProductDraft({this.id, this.businessId, required this.categoryId, this.brandId, required this.name, this.description = '', required this.basePriceMinor, this.stock = 0});
   
 
 @override final  String? id;
-@override final  String businessId;
+/// Null on create — the server resolves (or provisions) the singleton
+/// prototype business (DESIGN.md §1.1); edits carry the product's
+/// existing business.
+@override final  String? businessId;
 @override final  String categoryId;
 @override final  String? brandId;
 @override final  String name;
@@ -1623,7 +1369,7 @@ abstract mixin class _$AdminProductDraftCopyWith<$Res> implements $AdminProductD
   factory _$AdminProductDraftCopyWith(_AdminProductDraft value, $Res Function(_AdminProductDraft) _then) = __$AdminProductDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String businessId, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock
+ String? id, String? businessId, String categoryId, String? brandId, String name, String description, int basePriceMinor, int stock
 });
 
 
@@ -1640,11 +1386,11 @@ class __$AdminProductDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? businessId = null,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? businessId = freezed,Object? categoryId = null,Object? brandId = freezed,Object? name = null,Object? description = null,Object? basePriceMinor = null,Object? stock = null,}) {
   return _then(_AdminProductDraft(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,businessId: null == businessId ? _self.businessId : businessId // ignore: cast_nullable_to_non_nullable
-as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String?,businessId: freezed == businessId ? _self.businessId : businessId // ignore: cast_nullable_to_non_nullable
+as String?,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable

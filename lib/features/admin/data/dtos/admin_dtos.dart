@@ -207,20 +207,6 @@ class AdminProductImagePathDto {
   Map<String, dynamic> toJson() => _$AdminProductImagePathDtoToJson(this);
 }
 
-/// Wire shape of a slim `businesses` reference row (store picker, DATA-01).
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AdminBusinessRefDto {
-  const AdminBusinessRefDto({required this.id, required this.name});
-
-  factory AdminBusinessRefDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminBusinessRefDtoFromJson(json);
-
-  final String id;
-  final String name;
-
-  Map<String, dynamic> toJson() => _$AdminBusinessRefDtoToJson(this);
-}
-
 /// Wire shape of the `orders` row for admin oversight (Section 3, DATA-01):
 /// customer name, payment, per-business parts, and return requests embedded.
 @JsonSerializable(fieldRename: FieldRename.snake)

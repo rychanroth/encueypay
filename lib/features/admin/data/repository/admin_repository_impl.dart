@@ -321,25 +321,6 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<List<AdminBusinessRef>> fetchActiveBusinesses() async {
-    try {
-      final rows = await _client
-          .from('businesses')
-          .select('id, name')
-          .eq('status', 'active')
-          .order('name');
-      return rows
-          .map(AdminBusinessRefDto.fromJson)
-          .map((dto) => AdminBusinessRef(id: dto.id, name: dto.name))
-          .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
-    }
-  }
-
-  @override
   Future<String> createProduct(AdminProductDraft draft) async {
     try {
       // p_variants stays empty: admin_create_product auto-creates a 'Default'

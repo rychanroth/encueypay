@@ -118,8 +118,3 @@ class AdminProductsController extends _$AdminProductsController {
   }
 }
 
-/// Slim business references for the product form's store picker.
-@riverpod
-Future<List<AdminBusinessRef>> adminActiveBusinesses(Ref ref) async {
-  return ref.watch(adminRepositoryProvider).fetchActiveBusinesses();
-}
