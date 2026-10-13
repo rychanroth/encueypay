@@ -50,7 +50,8 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: InkWell(
               borderRadius: BorderRadius.circular(28),
-              onTap: () => context.pushNamed(AppRoutes.products),
+              // Deep-link into the Discover tab (DESIGN.md §5.1.2).
+              onTap: () => context.goNamed(AppRoutes.discovery),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -217,7 +218,7 @@ class _CategoryCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.pushNamed(
+        onTap: () => context.goNamed(
           AppRoutes.discovery,
           queryParameters: {
             'kind': 'category',
@@ -325,7 +326,7 @@ class _BrandCard extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             margin: EdgeInsets.zero,
             child: InkWell(
-              onTap: () => context.pushNamed(
+              onTap: () => context.goNamed(
                 AppRoutes.discovery,
                 queryParameters: {
                   'kind': 'brand',

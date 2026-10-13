@@ -11,6 +11,7 @@ abstract final class AppRoutes {
 
   // Customer tabs.
   static const home = 'home';
+  static const discovery = 'discovery';
   static const cart = 'cart';
   static const orders = 'orders';
 
@@ -29,10 +30,8 @@ abstract final class AppRoutes {
   static const adminReports = 'adminReports';
 
   // Catalog (nested under Home).
-  static const products = 'products';
   static const productDetail = 'productDetail';
   static const notifications = 'notifications';
-  static const discovery = 'discovery';
 
   // Shared tab (all roles).
   static const profile = 'profile';

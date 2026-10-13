@@ -2,10 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../features/cart/presentation/controllers/cart_controller.dart';
-import '../../../features/catalog/presentation/screens/discovery_screen.dart';
 import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
-import '../../../features/catalog/presentation/screens/products_screen.dart';
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
@@ -17,6 +15,10 @@ import '../product_card_actions.dart';
 ///
 /// The composition root wires the cart feature into product detail via
 /// callback so catalog never imports cart (ARCH-04, ROUTE-08).
+///
+/// Search/browse lives in the Discover tab (DESIGN.md §5.1.2) — the old
+/// `/home/products` and `/home/discovery` routes were absorbed there
+/// (discovery_branch.dart); Home deep-links into the tab via `goNamed`.
 final homeBranch = StatefulShellBranch(
   routes: [
     GoRoute(
@@ -30,15 +32,6 @@ final homeBranch = StatefulShellBranch(
         ),
       ),
       routes: [
-        GoRoute(
-          name: AppRoutes.products,
-          path: 'products',
-          builder: (context, state) => ProductsScreen(
-            categoryId: state.uri.queryParameters['category'],
-            query: state.uri.queryParameters['q'],
-            brandId: state.uri.queryParameters['brand'],
-          ),
-        ),
         GoRoute(
           name: AppRoutes.productDetail,
           path: 'product/:id',
@@ -58,21 +51,6 @@ final homeBranch = StatefulShellBranch(
           name: AppRoutes.notifications,
           path: 'notifications',
           builder: (context, state) => const NotificationsScreen(),
-        ),
-        GoRoute(
-          name: AppRoutes.discovery,
-          path: 'discovery',
-          builder: (context, state) => Consumer(
-            builder: (context, ref, _) => DiscoveryScreen(
-              kind: state.uri.queryParameters['kind'] ?? 'category',
-              id: state.uri.queryParameters['id'] ?? '',
-              name: state.uri.queryParameters['name'] ?? '',
-              imageUrl: state.uri.queryParameters['image'],
-              query: state.uri.queryParameters['q'],
-              actionsBuilder: (product) =>
-                  productCardActions(context, ref, product),
-            ),
-          ),
         ),
       ],
     ),

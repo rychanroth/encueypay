@@ -97,7 +97,37 @@ class AdminDashboardScreen extends ConsumerWidget {
               title: const Text('Reports & analytics'),
               subtitle: const Text('Date-range sales report'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.adminReports),
+              // Reports is a dedicated tab under the DESIGN.md §5.2 shell.
+              onTap: () => context.goNamed(AppRoutes.adminReports),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.category_outlined),
+              title: const Text('Manage categories'),
+              subtitle: const Text('Catalog taxonomy'),
+              trailing: const Icon(Icons.chevron_right),
+              // DESIGN.md §5.2: Categories/Promotions live under Dashboard
+              // quick actions in the 4-tab shell.
+              onTap: () => context.pushNamed(AppRoutes.adminCategories),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.campaign_outlined),
+              title: const Text('Manage promotions'),
+              subtitle: const Text('Banners, coupons & flash sales'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.adminPromotions),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Account & settings'),
+              subtitle: const Text('Profile, theme, sign out'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.profile),
             ),
           ),
           Card(
