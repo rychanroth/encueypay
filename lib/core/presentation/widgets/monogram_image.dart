@@ -48,14 +48,10 @@ class MonogramImage extends StatelessWidget {
         );
       },
       errorBuilder: (_, _, _) => _MonogramFallback(name: name, icon: icon),
-      loadingBuilder: (context, child, progress) {
-        if (progress != null &&
-            progress.expectedTotalBytes != null &&
-            progress.cumulativeBytesLoaded >= progress.expectedTotalBytes!) {
-          return child;
-        }
-        return const _ImageSkeleton();
-      },
+      // `progress` is null once the stream completes — hand over the image
+      // then (an earlier version returned the skeleton here forever).
+      loadingBuilder: (context, child, progress) =>
+          progress == null ? child : const _ImageSkeleton(),
     );
   }
 }
