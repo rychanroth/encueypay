@@ -2,6 +2,26 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'money.freezed.dart';
 
+/// NBC reference peg (DESIGN.md §1.4): 4,100 KHR per USD. Display-only —
+/// the server remains authoritative for every amount.
+const int kKhrPerUsd = 4100;
+
+/// Thousands-separator grouping for display strings (`1234567` →
+/// `1,234,567`).
+String _group(String digits) {
+  final negative = digits.startsWith('-');
+  final body = negative ? digits.substring(1) : digits;
+  final buffer = StringBuffer();
+  for (var i = 0; i < body.length; i++) {
+    final remaining = body.length - i;
+    buffer.write(body[i]);
+    if (remaining > 1 && remaining % 3 == 1) {
+      buffer.write(',');
+    }
+  }
+  return negative ? '-$buffer' : buffer.toString();
+}
+
 /// Exact monetary value in minor units (spec §22: never rely on binary
 /// floating point for financial calculations).
 ///
@@ -64,6 +84,21 @@ abstract class Money with _$Money {
     final amount = '$sign$whole.$fraction';
     return symbol == null ? amount : '$symbol$amount';
   }
+
+  /// `"$10.50"` — USD primary display (§1.4 dual-currency peg), with
+  /// thousands separators and no floating point (pure integer math).
+  String formatUsd() => '\$${_group(format())}';
+
+  /// `"43,050 KHR"` — Cambodian Riel secondary display, pegged at the NBC
+  /// reference rate of 4,100 KHR per USD (DESIGN.md §1.4/§2).
+  ///
+  /// Integer-exact: 4,100 KHR / 100 minor units = 41 KHR per cent, so the
+  /// conversion is `minorUnits * 41` — no `double` ever touches an amount.
+  String formatKhr() => '${_group((minorUnits.abs() * kKhrPerUsd ~/ 100).toString())} KHR';
+
+  /// Approximate Riel amount in whole KHR (minor units × 41 — see
+  /// [formatKhr]).
+  int get khrApproximate => minorUnits * kKhrPerUsd ~/ 100;
 
   Money operator +(Money other) => Money(minorUnits + other.minorUnits);
 
