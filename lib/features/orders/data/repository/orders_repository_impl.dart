@@ -26,7 +26,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       'delivery_fee_minor, total_minor, note, cancellation_reason, '
       'shipping_recipient_name, shipping_phone, shipping_line1, '
       'shipping_line2, shipping_city, '
-      'order_items(id, product_name, variant_name, business_name, '
+      'order_items(id, product_name, variant_name, '
       'unit_price_minor, discount_minor, quantity, line_total_minor), '
       // return reason lives on the return_items lines (per-item reason in
       // request_return), not on the return_requests header.

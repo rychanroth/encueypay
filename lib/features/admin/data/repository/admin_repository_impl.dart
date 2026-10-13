@@ -400,8 +400,8 @@ class AdminRepositoryImpl implements IAdminRepository {
   }) async {
     try {
       // The storage path's first segment must be the owning business id —
-      // the same {business_id}/... convention the storage policies enforce
-      // for owners (0020); admins may write any folder in the bucket.
+      // Images live under the product's own folder (single-seller
+      // convention); admins may write any folder in the bucket.
       final fileName = filePath.split(Platform.pathSeparator).last;
       final bytes = await File(filePath).readAsBytes();
       // Single-seller convention: images live under the product's own folder.
