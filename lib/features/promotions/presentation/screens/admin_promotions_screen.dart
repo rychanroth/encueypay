@@ -424,29 +424,40 @@ class _DateField extends StatelessWidget {
   final DateTime? value;
   final ValueChanged<DateTime?> onChanged;
 
+  Future<void> _pick(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: value ?? DateTime.now(),
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) onChanged(picked);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return InputDecorator(
-      decoration: InputDecoration(
-        labelText: value == null ? label : '$label: ${_day(value!)}',
-        isDense: true,
-        suffixIcon: value == null
-            ? const Icon(Icons.calendar_today, size: 18)
-            : IconButton(
-                icon: const Icon(Icons.close, size: 16),
-                onPressed: () => onChanged(null),
-              ),
-      ),
-      child: GestureDetector(
-        onTap: () async {
-          final picked = await showDatePicker(
-            context: context,
-            initialDate: value ?? DateTime.now(),
-            firstDate: DateTime(2024),
-            lastDate: DateTime(2030),
-          );
-          if (picked != null) onChanged(picked);
-        },
+    // The whole field is the tap target. The previous version wrapped only a
+    // childless SizedBox, which never wins hit tests — the picker could not
+    // open at all.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _pick(context),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: value == null ? label : '$label: ${_day(value!)}',
+          isDense: true,
+          suffixIcon: value == null
+              ? IconButton(
+                  tooltip: 'Pick date',
+                  icon: const Icon(Icons.calendar_today, size: 18),
+                  onPressed: () => _pick(context),
+                )
+              : IconButton(
+                  tooltip: 'Clear date',
+                  icon: const Icon(Icons.close, size: 16),
+                  onPressed: () => onChanged(null),
+                ),
+        ),
         child: const SizedBox(height: 8),
       ),
     );
