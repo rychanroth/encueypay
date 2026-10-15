@@ -65,15 +65,31 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .from('cart_items')
           .select(
             'id, quantity, product_variants(name, price_minor, '
-            'products(name, base_price_minor))',
+            'products(name, base_price_minor, '
+            'product_images(storage_path, sort_order)))',
           )
           .eq('cart_id', cart['id'] as String)
           .order('created_at');
 
-      final items = rows
-          .map(CheckoutItemDto.fromJson)
-          .map((dto) => dto.toDomain())
-          .toList();
+      String? publicUrl(String? storagePath) {
+        if (storagePath == null) return null;
+        // Full http(s) references pass through (seed demo imagery).
+        if (storagePath.startsWith('http')) return storagePath;
+        return _client.storage
+            .from('product_images')
+            .getPublicUrl(storagePath);
+      }
+
+      final items = rows.map((row) {
+        final dto = CheckoutItemDto.fromJson(row);
+        final images = [
+          ...dto.productVariants?.products?.productImages ??
+              const <CheckoutImageJoinDto>[],
+        ]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        return dto.toDomain(
+          imageUrl: publicUrl(images.firstOrNull?.storagePath),
+        );
+      }).toList();
       final subtotal = items.fold<int>(0, (sum, item) => sum + item.lineTotalMinor);
       return CheckoutSummary(
         items: items,

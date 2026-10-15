@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/payment_method.dart';
 import '../controllers/checkout_controller.dart';
@@ -152,16 +153,43 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     else ...[
                       for (final item in summary.items)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
+                              SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: MonogramImage(
+                                    imageUrl: item.imageUrl,
+                                    name: item.productName,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
                               Expanded(
-                                child: Text(
-                                  item.variantName == null
-                                      ? '${item.productName} × ${item.quantity}'
-                                      : '${item.productName} (${item.variantName}) × ${item.quantity}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.variantName == null
+                                          ? '${item.productName} × ${item.quantity}'
+                                          : '${item.productName} (${item.variantName}) × ${item.quantity}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    // Variant-aware unit price under the
+                                    // title (falls back to base server-side).
+                                    Text(
+                                      '${Money(item.unitPriceMinor).formatUsd()} each',
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                        color: theme
+                                            .colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Text(Money(item.lineTotalMinor).format()),

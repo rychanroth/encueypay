@@ -13,6 +13,7 @@ abstract class CheckoutItem with _$CheckoutItem {
     required int unitPriceMinor,
     required int quantity,
     String? variantName,
+    String? imageUrl,
   }) = _CheckoutItem;
 
   const CheckoutItem._();

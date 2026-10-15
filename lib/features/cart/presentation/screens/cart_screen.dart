@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
-import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
@@ -14,12 +13,15 @@ import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/cart_item.dart';
 import '../controllers/cart_controller.dart';
-import '../controllers/cart_coupon_controller.dart';
 
 /// Customer tab 3 — Cart (DESIGN.md §5.1.3): line items with product-wide
-/// stock-capped steppers, voucher input with scope recognition, and the
-/// **Floating Action Dock** (§6.5) — backdrop blur, elevation shadow, total
-/// payable and the one-tap checkout entry floating above the navigation bar.
+/// stock-capped steppers and the **Floating Action Dock** (§6.5) — backdrop
+/// blur, elevation shadow, total payable and the one-tap checkout entry
+/// floating above the navigation bar.
+///
+/// Coupons live in checkout (step 5, the assignment §6 sequence) — the cart
+/// carries no voucher entry: checkout re-validates authoritatively at
+/// placement, so a cart-side entry was a redundant second gate.
 ///
 /// Totals are display previews; the server recalculates authoritatively at
 /// checkout (spec §25/§53).
@@ -108,9 +110,6 @@ class CartScreen extends ConsumerWidget {
           }
           final totalMinor =
               items.fold<int>(0, (sum, i) => sum + i.lineTotalMinor);
-          final discount =
-              ref.watch(cartCouponControllerProvider.notifier).discountMinorTotal;
-          final payable = totalMinor - discount;
 
           return Stack(
             children: [
@@ -123,7 +122,6 @@ class CartScreen extends ConsumerWidget {
                 ),
                 children: [
                   for (final item in items) _CartItemTile(item: item),
-                  _VoucherSection(totalMinor: totalMinor),
                 ],
               ),
               // Floating Action Dock (§6.5): blurred glass, E2 shadow, docked
@@ -132,10 +130,7 @@ class CartScreen extends ConsumerWidget {
                 left: AppSpacing.md,
                 right: AppSpacing.md,
                 bottom: AppSpacing.md,
-                child: _FloatingCheckoutDock(
-                  payableMinor: payable,
-                  hasDiscount: discount > 0,
-                ),
+                child: _FloatingCheckoutDock(payableMinor: totalMinor),
               ),
             ],
           );
@@ -145,160 +140,14 @@ class CartScreen extends ConsumerWidget {
   }
 }
 
-/// Voucher input + applied chips with scope recognition (§5.1.3).
-class _VoucherSection extends ConsumerStatefulWidget {
-  const _VoucherSection({required this.totalMinor});
-
-  final int totalMinor;
-
-  @override
-  ConsumerState<_VoucherSection> createState() => _VoucherSectionState();
-}
-
-class _VoucherSectionState extends ConsumerState<_VoucherSection> {
-  final _codeController = TextEditingController();
-  bool _applying = false;
-  String? _feedback;
-
-  @override
-  void dispose() {
-    _codeController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _apply() async {
-    setState(() {
-      _applying = true;
-      _feedback = null;
-    });
-    final error = await ref
-        .read(cartCouponControllerProvider.notifier)
-        .apply(_codeController.text);
-    if (!mounted) return;
-    setState(() {
-      _applying = false;
-      _feedback = error;
-      if (error == null) _codeController.clear();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final coupons = ref.watch(cartCouponControllerProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _codeController,
-                decoration: const InputDecoration(
-                  hintText: 'Voucher code',
-                  prefixIcon: Icon(Icons.local_offer_outlined),
-                  isDense: true,
-                ),
-                textCapitalization: TextCapitalization.characters,
-                onSubmitted: (_) => _apply(),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            FilledButton.tonal(
-              onPressed: _applying ? null : _apply,
-              child: _applying
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Apply'),
-            ),
-          ],
-        ),
-        if (_feedback != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            _feedback!,
-            style: theme.textTheme.labelMedium
-                ?.copyWith(color: theme.colorScheme.error),
-          ),
-        ],
-        for (final coupon in coupons) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm + 2,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.accentEmeraldLight,
-              borderRadius: AppRadii.br8,
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.check_circle_outline,
-                    size: 16, color: AppColors.accentEmerald),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  coupon.code.toUpperCase(),
-                  style: AppTypography.labelSmall
-                      .copyWith(color: const Color(0xFF047857)),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                // Scope recognition chip (§5.1.3).
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    borderRadius: AppRadii.br8,
-                  ),
-                  child: Text(
-                    coupon.scopeLabel,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: const Color(0xFF047857),
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '-${Money(coupon.discountMinor).formatUsd()}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: const Color(0xFF047857),
-                  ),
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  tooltip: 'Remove voucher',
-                  icon: const Icon(Icons.close, size: 16),
-                  onPressed: () => ref
-                      .read(cartCouponControllerProvider.notifier)
-                      .remove(coupon.code),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
 /// Floating Action Dock (DESIGN.md §6.5): anchored above the 5-tab shell,
-/// backdrop blur + elevation shadow, total payable (dual currency) and the
-/// one-tap checkout entry.
+/// backdrop blur + elevation shadow, cart total (dual currency) and the
+/// one-tap checkout entry. Coupon discounts apply at checkout (step 5) and
+/// are not previewed here.
 class _FloatingCheckoutDock extends StatelessWidget {
-  const _FloatingCheckoutDock({
-    required this.payableMinor,
-    required this.hasDiscount,
-  });
+  const _FloatingCheckoutDock({required this.payableMinor});
 
   final int payableMinor;
-  final bool hasDiscount;
 
   @override
   Widget build(BuildContext context) {
@@ -433,10 +282,21 @@ class _CartItemTile extends ConsumerWidget {
                       ),
                       if (item.variantName != null)
                         Text(item.variantName!, style: theme.textTheme.bodySmall),
+                      const SizedBox(height: 2),
+                      // Variant-aware unit price × quantity, with the line
+                      // subtotal beneath (§1: unit price falls back
+                      // variant → base server-side; the server re-prices
+                      // at checkout).
                       Text(
                         '${Money(item.unitPriceMinor).formatUsd()} × ${item.quantity}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        Money(item.lineTotalMinor).formatUsd(),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

@@ -63,7 +63,10 @@ class WishlistRepositoryImpl implements IWishlistRepository {
     }
   }
 
+  /// Full http(s) references pass through (seed demo imagery — the same
+  /// convention as the catalog; see cart repository note).
   String _publicUrl(String storagePath) {
+    if (storagePath.startsWith('http')) return storagePath;
     return _client.storage.from('product_images').getPublicUrl(storagePath);
   }
 

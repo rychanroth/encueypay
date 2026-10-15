@@ -74,6 +74,7 @@ class CheckoutProductJoinDto {
   const CheckoutProductJoinDto({
     this.name,
     this.basePriceMinor,
+    this.productImages = const [],
   });
 
   factory CheckoutProductJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -82,7 +83,25 @@ class CheckoutProductJoinDto {
   final String? name;
   final int? basePriceMinor;
 
+  @JsonKey(name: 'product_images', defaultValue: [])
+  final List<CheckoutImageJoinDto> productImages;
+
   Map<String, dynamic> toJson() => _$CheckoutProductJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class CheckoutImageJoinDto {
+  const CheckoutImageJoinDto({this.storagePath, this.sortOrder = 0});
+
+  factory CheckoutImageJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$CheckoutImageJoinDtoFromJson(json);
+
+  final String? storagePath;
+
+  @JsonKey(defaultValue: 0)
+  final int sortOrder;
+
+  Map<String, dynamic> toJson() => _$CheckoutImageJoinDtoToJson(this);
 }
 
 /// Wire shape of the `platform_settings` singleton (DATA-01).
