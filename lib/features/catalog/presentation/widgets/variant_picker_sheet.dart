@@ -9,12 +9,14 @@ import 'product_image_gallery.dart';
 /// Taobao-style variant picker sheet: product image on top, dynamic price,
 /// variant grid, quantity selector — one add-to-cart per invocation. Catalog
 /// stays decoupled from cart (ARCH-04): [onAddToCart] is injected by the
-/// composition root.
+/// composition root. [initialVariantId] preselects the variant chosen on the
+/// product page, keeping the sheet and the page's variant rail in sync.
 Future<void> showVariantPickerSheet(
   BuildContext context, {
   required Product product,
   required List<ProductVariant> variants,
   required Future<void> Function(String variantId, int quantity) onAddToCart,
+  String? initialVariantId,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -25,6 +27,7 @@ Future<void> showVariantPickerSheet(
     builder: (_) => _VariantPickerSheet(
       product: product,
       variants: variants,
+      initialVariantId: initialVariantId,
       onAddToCart: onAddToCart,
     ),
   );
@@ -35,10 +38,12 @@ class _VariantPickerSheet extends StatefulWidget {
     required this.product,
     required this.variants,
     required this.onAddToCart,
+    this.initialVariantId,
   });
 
   final Product product;
   final List<ProductVariant> variants;
+  final String? initialVariantId;
   final Future<void> Function(String variantId, int quantity) onAddToCart;
 
   @override
@@ -48,11 +53,11 @@ class _VariantPickerSheet extends StatefulWidget {
 class _VariantPickerSheetState extends State<_VariantPickerSheet> {
   static const _maxQuantity = 99;
 
-  /// Products always have at least one variant (`create_product` auto-creates
-  /// 'Default'), so a single-option product is preselected; multi-option
-  /// products require an explicit choice.
-  late String? _selectedVariantId =
-      widget.variants.length == 1 ? widget.variants.first.id : null;
+  /// Preselected from the product page's variant rail when provided; a
+  /// single-option product is preselected regardless (products always have
+  /// at least one variant — 'Default' — so one-option sheets are direct).
+  late String? _selectedVariantId = widget.initialVariantId ??
+      (widget.variants.length == 1 ? widget.variants.first.id : null);
   int _quantity = 1;
 
   /// Product-wide stock (Section 2d) caps the quantity selector; the server
@@ -87,15 +92,23 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
-                // A variant with its own image views that image full-screen;
-                // otherwise the base product's gallery.
+                // Every product image + every variant image in one
+                // full-screen gallery; a selected variant's own image opens
+                // preselected (Section 9) instead of dropping the rest.
                 onTap: () {
+                  final urls = <String>{
+                    ...widget.product.imageUrls,
+                    for (final variant in widget.variants)
+                      if (variant.imageUrl != null) variant.imageUrl!,
+                  }.toList();
                   final variantImage = selected?.imageUrl;
+                  final initialIndex = variantImage == null
+                      ? 0
+                      : urls.indexOf(variantImage).clamp(0, urls.length - 1);
                   showProductImageGallery(
                     context,
-                    imageUrls: variantImage != null
-                        ? [variantImage]
-                        : widget.product.imageUrls,
+                    imageUrls: urls,
+                    initialIndex: initialIndex,
                   );
                 },
                 child: ClipRRect(

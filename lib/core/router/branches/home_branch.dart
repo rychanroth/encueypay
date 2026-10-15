@@ -5,6 +5,7 @@ import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
@@ -36,15 +37,36 @@ final homeBranch = StatefulShellBranch(
           name: AppRoutes.productDetail,
           path: 'product/:id',
           builder: (context, state) => Consumer(
-            builder: (context, ref, _) => ProductDetailScreen(
-              productId: state.pathParameters['id']!,
-              onAddToCart: (variantId, quantity) async {
-                await ref.read(cartControllerProvider.notifier).add(
-                      variantId: variantId,
-                      quantity: quantity,
-                    );
-              },
-            ),
+            builder: (context, ref, _) {
+              final productId = state.pathParameters['id']!;
+              // Wishlist state rides along with the cart callback — both
+              // wired here in the composition root (ARCH-04, ROUTE-08).
+              final inWishlist = ref.watch(
+                wishlistControllerProvider.select(
+                  (wishlist) =>
+                      wishlist.value?.any((item) => item.productId == productId) ??
+                      false,
+                ),
+              );
+              return ProductDetailScreen(
+                productId: productId,
+                inWishlist: inWishlist,
+                onToggleWishlist: () async {
+                  final wishlist = ref.read(wishlistControllerProvider.notifier);
+                  if (inWishlist) {
+                    await wishlist.remove(productId: productId);
+                  } else {
+                    await wishlist.add(productId: productId);
+                  }
+                },
+                onAddToCart: (variantId, quantity) async {
+                  await ref.read(cartControllerProvider.notifier).add(
+                        variantId: variantId,
+                        quantity: quantity,
+                      );
+                },
+              );
+            },
           ),
         ),
         GoRoute(
