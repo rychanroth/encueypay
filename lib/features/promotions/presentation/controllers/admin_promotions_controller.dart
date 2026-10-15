@@ -41,12 +41,17 @@ class AdminPromotionsController extends _$AdminPromotionsController {
     });
   }
 
-  /// Section 9: admin-created home banners (approved on creation).
+  /// Section 9: admin-created home banners (pending on creation, approved
+  /// via moderation). The destination pickers ride along as the banner's
+  /// Discovery deep-link target.
   Future<void> createBanner({
     required String name,
     required String description,
     required String filePath,
     required String fileName,
+    BannerTargetKind targetKind = BannerTargetKind.none,
+    String? targetId,
+    String? targetName,
   }) async {
     final current = state.value ?? const <MyPromotion>[];
     state = await AsyncValue.guard(() async {
@@ -55,6 +60,9 @@ class AdminPromotionsController extends _$AdminPromotionsController {
             description: description,
             filePath: filePath,
             fileName: fileName,
+            targetKind: targetKind,
+            targetId: targetId,
+            targetName: targetName,
           );
       ref.invalidateSelf();
       return current;
@@ -102,8 +110,15 @@ class AdminBannersController extends _$AdminBannersController {
   }
 }
 
-/// Active brands for the coupon-scope picker (Section 2d).
+/// Active brands for the coupon-scope picker (Section 2d) and the banner
+/// destination picker (Section 9).
 @riverpod
 Future<List<PromoBrandRef>> promoBrands(Ref ref) async {
   return ref.watch(promotionsRepositoryProvider).fetchActiveBrands();
+}
+
+/// All categories for the banner destination picker (Section 9).
+@riverpod
+Future<List<PromoCategoryRef>> promoCategories(Ref ref) async {
+  return ref.watch(promotionsRepositoryProvider).fetchCategories();
 }

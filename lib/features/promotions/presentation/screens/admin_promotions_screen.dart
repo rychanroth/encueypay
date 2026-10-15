@@ -153,32 +153,133 @@ class AdminPromotionsScreen extends ConsumerWidget {
     final file = await FilePicker.pickFile(type: FileType.image);
     if (file == null || file.path == null || !context.mounted) return;
     final name = TextEditingController();
+    var targetKind = BannerTargetKind.none;
+    String? targetId;
+    final brandsAsync = ref.read(promoBrandsProvider);
+    final categoriesAsync = ref.read(promoCategoriesProvider);
     final submitted = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('New banner'),
-        content: TextField(
-          controller: name,
-          decoration: const InputDecoration(labelText: 'Banner name'),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text('New banner'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: name,
+                  decoration: const InputDecoration(labelText: 'Banner name'),
+                ),
+                const SizedBox(height: 8),
+                // Destination (Section 9): the tap-through target — Discovery
+                // pre-filtered to a brand or a category; 'none' stays inert.
+                DropdownButtonFormField<BannerTargetKind>(
+                  initialValue: targetKind,
+                  decoration:
+                      const InputDecoration(labelText: 'Opens (tap target)'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: BannerTargetKind.none,
+                      child: Text('Nothing (display only)'),
+                    ),
+                    DropdownMenuItem(
+                      value: BannerTargetKind.brand,
+                      child: Text('Discovery — Brand'),
+                    ),
+                    DropdownMenuItem(
+                      value: BannerTargetKind.category,
+                      child: Text('Discovery — Category'),
+                    ),
+                  ],
+                  onChanged: (kind) => setDialogState(() {
+                    targetKind = kind ?? BannerTargetKind.none;
+                    targetId = null;
+                  }),
+                ),
+                if (targetKind == BannerTargetKind.brand)
+                  brandsAsync.maybeWhen(
+                    data: (brands) =>
+                        DropdownButtonFormField<String>(
+                      initialValue: targetId,
+                      decoration:
+                          const InputDecoration(labelText: 'Brand'),
+                      items: [
+                        for (final brand in brands)
+                          DropdownMenuItem(
+                            value: brand.id,
+                            child: Text(brand.name),
+                          ),
+                      ],
+                      onChanged: (id) => setDialogState(() => targetId = id),
+                    ),
+                    orElse: () => const LinearProgressIndicator(),
+                  ),
+                if (targetKind == BannerTargetKind.category)
+                  categoriesAsync.maybeWhen(
+                    data: (categories) =>
+                        DropdownButtonFormField<String>(
+                      initialValue: targetId,
+                      decoration:
+                          const InputDecoration(labelText: 'Category'),
+                      items: [
+                        for (final category in categories)
+                          DropdownMenuItem(
+                            value: category.id,
+                            child: Text(category.name),
+                          ),
+                      ],
+                      onChanged: (id) => setDialogState(() => targetId = id),
+                    ),
+                    orElse: () => const LinearProgressIndicator(),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Create'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Create'),
-          ),
-        ],
       ),
     );
     if (submitted != true) return;
+    if (!context.mounted) return;
+    if (targetKind != BannerTargetKind.none && targetId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pick the brand or category the banner opens'),
+        ),
+      );
+      return;
+    }
+    // The Discovery context banner shows a name — snapshot it at creation
+    // so the CTA survives later renames/archivals of the target.
+    String? targetName;
+    if (targetKind == BannerTargetKind.brand) {
+      targetName = brandsAsync.value
+          ?.where((brand) => brand.id == targetId)
+          .firstOrNull
+          ?.name;
+    } else if (targetKind == BannerTargetKind.category) {
+      targetName = categoriesAsync.value
+          ?.where((category) => category.id == targetId)
+          .firstOrNull
+          ?.name;
+    }
     await ref.read(adminPromotionsControllerProvider.notifier).createBanner(
           name: name.text.trim(),
           description: '',
           filePath: file.path!,
           fileName: file.name,
+          targetKind: targetKind,
+          targetId: targetId,
+          targetName: targetName,
         );
   }
 
@@ -352,7 +453,10 @@ class AdminPromotionsScreen extends ConsumerWidget {
                           leading: Image.network(banner.imageUrl,
                               width: 56, height: 40, fit: BoxFit.cover),
                           title: Text(banner.name),
-                          subtitle: Text('Banner · ${banner.status.name}'),
+                          subtitle: Text(
+                            'Banner · ${banner.status.name}'
+                            '${banner.targetKind == BannerTargetKind.none ? '' : ' · opens ${banner.targetKind.name}: ${banner.targetName ?? banner.targetId}'}',
+                          ),
                           trailing: PopupMenuButton<String>(
                             onSelected: (action) => ref
                                 .read(adminBannersControllerProvider.notifier)

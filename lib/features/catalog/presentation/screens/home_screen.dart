@@ -187,42 +187,79 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
                 itemCount: banners.length,
                 itemBuilder: (context, index) {
                   final banner = banners[index];
+                  // Targeted banners are CTAs (Section 9): tap-through to the
+                  // Discovery feed pre-filtered to the configured brand or
+                  // category — the same deep-link contract as the home
+                  // category/brand cards. Untargeted banners stay inert.
+                  final onTap = switch (banner.target) {
+                    CatalogBannerTarget.brand ||
+                    CatalogBannerTarget.category =>
+                      banner.targetId == null
+                          ? null
+                          : () => context.goNamed(
+                                AppRoutes.discovery,
+                                queryParameters: {
+                                  'kind': banner.target.name,
+                                  'id': banner.targetId!,
+                                  'name': banner.targetName ?? banner.name,
+                                  'image': banner.imageUrl,
+                                },
+                              ),
+                    CatalogBannerTarget.none => null,
+                  };
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ClipRRect(
+                    child: InkWell(
+                      onTap: onTap,
                       borderRadius: AppRadii.br16,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          MonogramImage(
-                            imageUrl: banner.imageUrl,
-                            name: banner.name,
-                          ),
-                          // Gradient scrim — bottom-weighted title panel.
-                          const DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                stops: [0.45, 1.0],
-                                colors: [Colors.transparent, Color(0xB30F172A)],
+                      child: ClipRRect(
+                        borderRadius: AppRadii.br16,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            MonogramImage(
+                              imageUrl: banner.imageUrl,
+                              name: banner.name,
+                            ),
+                            // Gradient scrim — bottom-weighted title panel.
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  stops: [0.45, 1.0],
+                                  colors: [
+                                    Colors.transparent,
+                                    Color(0xB30F172A)
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          Positioned(
-                            left: AppSpacing.md,
-                            right: AppSpacing.md,
-                            bottom: AppSpacing.sm + 2,
-                            child: Text(
-                              banner.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
+                            Positioned(
+                              left: AppSpacing.md,
+                              right: AppSpacing.md,
+                              bottom: AppSpacing.sm + 2,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      banner.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  if (onTap != null)
+                                    const Icon(Icons.arrow_forward_ios,
+                                        size: 14, color: Colors.white),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );

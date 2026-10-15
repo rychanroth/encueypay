@@ -132,12 +132,30 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   }
 
   @override
+  Future<List<PromoCategoryRef>> fetchCategories() async {
+    try {
+      final rows = await _client.from('categories').select('id, name').order('name');
+      return rows
+          .map(PromoCategoryRefDto.fromJson)
+          .map((dto) => PromoCategoryRef(id: dto.id, name: dto.name))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<void> createBanner({
     required String name,
     required String description,
     required String filePath,
     required String fileName,
     DateTime? endsAt,
+    BannerTargetKind targetKind = BannerTargetKind.none,
+    String? targetId,
+    String? targetName,
   }) async {
     try {
       final bytes = await File(filePath).readAsBytes();
@@ -150,6 +168,9 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
         'p_description': description,
         'p_image_url': url,
         'p_ends_at': endsAt?.toIso8601String(),
+        'p_target_kind': targetKind.wireName,
+        'p_target_id': targetId,
+        'p_target_name': targetName,
       });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);

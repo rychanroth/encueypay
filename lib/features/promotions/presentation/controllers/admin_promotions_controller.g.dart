@@ -35,7 +35,7 @@ final class AdminPromotionsControllerProvider
 }
 
 String _$adminPromotionsControllerHash() =>
-    r'7b17eb8cd18c08dfe48096fc87f69aafbbed0bea';
+    r'2a3f66f963753bd946a0fa29c00a9a2f31fada91';
 
 abstract class _$AdminPromotionsController
     extends $AsyncNotifier<List<MyPromotion>> {
@@ -111,12 +111,14 @@ abstract class _$AdminBannersController
   }
 }
 
-/// Active brands for the coupon-scope picker (Section 2d).
+/// Active brands for the coupon-scope picker (Section 2d) and the banner
+/// destination picker (Section 9).
 
 @ProviderFor(promoBrands)
 final promoBrandsProvider = PromoBrandsProvider._();
 
-/// Active brands for the coupon-scope picker (Section 2d).
+/// Active brands for the coupon-scope picker (Section 2d) and the banner
+/// destination picker (Section 9).
 
 final class PromoBrandsProvider
     extends
@@ -128,7 +130,8 @@ final class PromoBrandsProvider
     with
         $FutureModifier<List<PromoBrandRef>>,
         $FutureProvider<List<PromoBrandRef>> {
-  /// Active brands for the coupon-scope picker (Section 2d).
+  /// Active brands for the coupon-scope picker (Section 2d) and the banner
+  /// destination picker (Section 9).
   PromoBrandsProvider._()
     : super(
         from: null,
@@ -156,3 +159,49 @@ final class PromoBrandsProvider
 }
 
 String _$promoBrandsHash() => r'645ad40ece89843d63140388521c9ccdf138207c';
+
+/// All categories for the banner destination picker (Section 9).
+
+@ProviderFor(promoCategories)
+final promoCategoriesProvider = PromoCategoriesProvider._();
+
+/// All categories for the banner destination picker (Section 9).
+
+final class PromoCategoriesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<PromoCategoryRef>>,
+          List<PromoCategoryRef>,
+          FutureOr<List<PromoCategoryRef>>
+        >
+    with
+        $FutureModifier<List<PromoCategoryRef>>,
+        $FutureProvider<List<PromoCategoryRef>> {
+  /// All categories for the banner destination picker (Section 9).
+  PromoCategoriesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'promoCategoriesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$promoCategoriesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<PromoCategoryRef>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<PromoCategoryRef>> create(Ref ref) {
+    return promoCategories(ref);
+  }
+}
+
+String _$promoCategoriesHash() => r'f9da1869c4e336042be766867b5f891577d6a025';

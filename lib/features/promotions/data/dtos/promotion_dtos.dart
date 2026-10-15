@@ -42,6 +42,19 @@ class PromotionDto {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class PromoCategoryRefDto {
+  const PromoCategoryRefDto({required this.id, required this.name});
+
+  factory PromoCategoryRefDto.fromJson(Map<String, dynamic> json) =>
+      _$PromoCategoryRefDtoFromJson(json);
+
+  final String id;
+  final String name;
+
+  Map<String, dynamic> toJson() => _$PromoCategoryRefDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class PromoBrandRefDto {
   const PromoBrandRefDto({required this.id, required this.name});
 
@@ -92,6 +105,9 @@ class BannerDto {
     this.status,
     this.startsAt,
     this.endsAt,
+    this.targetKind,
+    this.targetId,
+    this.targetName,
   });
 
   factory BannerDto.fromJson(Map<String, dynamic> json) =>
@@ -104,6 +120,12 @@ class BannerDto {
   final String? status;
   final DateTime? startsAt;
   final DateTime? endsAt;
+
+  /// Discovery deep-link destination (Section 9): 'none' | 'brand' |
+  /// 'category'; null on legacy rows maps to 'none' in the mapper.
+  final String? targetKind;
+  final String? targetId;
+  final String? targetName;
 
   Map<String, dynamic> toJson() => _$BannerDtoToJson(this);
 }

@@ -37,8 +37,9 @@ abstract class MyCoupon with _$MyCoupon {
   }) = _MyCoupon;
 }
 
-/// A promotional banner (Section 5b): the advertising surface, moderation
-/// status, and display window. Carries no discount.
+/// A promotional banner (Section 5b/§9): the advertising surface, moderation
+/// status, display window, and — when targeted — the Discovery destination
+/// it deep-links to ([BannerTargetKind]). Carries no discount.
 @freezed
 abstract class ManagedBanner with _$ManagedBanner {
   const factory ManagedBanner({
@@ -48,7 +49,30 @@ abstract class ManagedBanner with _$ManagedBanner {
     required BannerStatus status,
     DateTime? startsAt,
     DateTime? endsAt,
+    @Default(BannerTargetKind.none) BannerTargetKind targetKind,
+    String? targetId,
+    String? targetName,
   }) = _ManagedBanner;
+}
+
+/// Where a targeted banner sends the customer (Section 9): Discovery
+/// pre-filtered to a brand or a category; 'none' renders an inert banner.
+enum BannerTargetKind {
+  none,
+  brand,
+  category;
+
+  String get wireName => name;
+
+  static BannerTargetKind fromName(String? name) =>
+      BannerTargetKind.values.asNameMap()[name] ?? BannerTargetKind.none;
+}
+
+/// Slim category reference for the banner-destination picker (Section 9).
+@freezed
+abstract class PromoCategoryRef with _$PromoCategoryRef {
+  const factory PromoCategoryRef({required String id, required String name})
+      = _PromoCategoryRef;
 }
 
 /// Slim brand reference for the coupon-scope picker (Section 2d):

@@ -293,7 +293,10 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final now = DateTime.now().toUtc();
       final rows = await _client
           .from('banners')
-          .select('id, name, image_path, starts_at, ends_at')
+          .select(
+            'id, name, image_path, starts_at, ends_at, '
+            'target_kind, target_id, target_name',
+          )
           .eq('status', 'approved')
           .order('created_at', ascending: false)
           .limit(limit * 2);
@@ -309,6 +312,13 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .take(limit)
           .map((row) {
             final path = row['image_path'] as String;
+            // Targeted banners deep-link into Discovery (Section 9); unknown
+            // wire kinds map to 'none' — an inert banner beats a dead CTA.
+            final target = switch (row['target_kind'] as String?) {
+              'brand' => CatalogBannerTarget.brand,
+              'category' => CatalogBannerTarget.category,
+              _ => CatalogBannerTarget.none,
+            };
             return CatalogBanner(
               id: row['id'] as String,
               name: row['name'] as String? ?? '',
@@ -316,6 +326,9 @@ class CatalogRepositoryImpl implements ICatalogRepository {
               imageUrl: path.startsWith('http')
                   ? path
                   : _client.storage.from('promo_assets').getPublicUrl(path),
+              target: target,
+              targetId: row['target_id'] as String?,
+              targetName: row['target_name'] as String?,
             );
           })
           .toList();
