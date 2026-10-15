@@ -1,8 +1,8 @@
 # EncueYPay — Living Implementation Specification
 
-**Mode:** 2-Role Academic Prototype · **Status:** Living document · **Owner:** Project maintainer
+**Mode:** Single-Seller Academic Prototype · **Status:** Living document · **Owner:** Project maintainer
 **Source of requirements:** `docs/assignment_specifications.md` (E-Commerce Mobile Application assignment)
-**Architectural law:** `docs/architecture-contract.md` (v2.1.0) — unchanged and still fully in force.
+**Architectural law:** `docs/architecture-contract.md` (**v2.2.0** — DATA-09, THEME-03 token system, ACTION-02 single-seller retirement).
 
 This document is the **living alignment record** between the assignment specification and the
 codebase. It is updated incrementally: each time a section of the app is refactored or
@@ -11,10 +11,11 @@ assignment clause being fulfilled, (2) the codebase path/component handling that
 (3) which over-engineered elements were bypassed or hidden for that section.
 
 The app previously implemented a 4-role multi-vendor ecosystem (Customer, Business Owner,
-Driver, Admin). Per the prototype decision (2026-10-05) it is simplified to a **2-Role
-Academic Prototype** (Customer + Admin Prototype) by **bypassing, hiding, or stubbing**
-unnecessary workflows in the UI/navigation layer — **all previously verified customer-facing
-code is preserved** and the multi-vendor data model remains intact underneath (Part D).
+Driver, Admin). Per the prototype decision (2026-10-05) it was simplified to a **2-Role
+Academic Prototype** (Customer + Admin Prototype) by removing the obsolete actor workflows;
+per the follow-on decision (2026-10-13, contract ACTION-02) the **multi-vendor data model
+itself was retired** (migrations 0008 + 0010): the app is single-seller at every layer —
+schema, RPCs, RLS, and UI (Part D as amended, Part F for the overhaul deltas).
 
 ---
 
@@ -52,10 +53,13 @@ the GoRouter rebuilds and mounts the admin tab set (`ROUTE-07`).
 
 ## A.3 Demo data
 
-`supabase/seed.sql` seeds categories; a prototype business + products are seeded for the
-demo (Section 3). Catalog products require an owning business row (`products.business_id`);
-the prototype seeds one "Prototype Store" business rather than introducing admin product
-creation (Section 2b).
+`supabase/seed.sql` ships a complete demo catalog (no auth users required):
+8 categories in a 2-level taxonomy (Phones/Laptops under Electronics), 4 brands,
+**8 products** with 13 variants and 16 images (remote-URL imagery via the
+repository passthrough; curated states — two low-stock, one out-of-stock),
+and the `platform_settings` singleton row the checkout/QR flow reads.
+Banners and promotions/coupons are **not** seeded (`created_by` references
+auth users) — author them in-app as admin (PROTOTYPE_SETUP Phase 5).
 
 ## A.4 What "removed" means
 
@@ -248,38 +252,43 @@ INVOKER as a customer without unsafe policies); admin mutations audit via the
 definer-only `record_admin_audit` helper. Full lifecycle verified end-to-end by
 `supabase/testing/smoke_test_2role.sql`.
 
-## Kept — load-bearing in the current workflow (not legacy)
+## Kept — load-bearing in the current workflow (not legacy) *(as amended 2026-10-13)*
 
-* `businesses` + `products.business_id` — catalog ownership, pricing, checkout
-  splits, admin product management (a businesses row is still required; the
-  prototype store is created via the seed snippet, Part A.3).
-* The legacy `business` promotion scope and `payment_method='bank_transfer'`
-  values remain valid on the wire for historical rows; no creation path exists.
+* ~~`businesses` + `products.business_id`~~ **Retired** (migrations 0008 + 0010,
+  user decision — contract ACTION-02): the vendor data model is gone from
+  schema, RPCs, RLS, and UI. Product images upload under `{product_id}/…`.
+* The `payment_method='bank_transfer'` wire value remains valid for
+  historical rows; no creation path exists.
 * The `user_role` DB enum keeps its four values; unknown/legacy roles fall
   back to the customer surface.
+* The `promotion_scope` enum keeps its dormant `'business'` value (Postgres
+  cannot drop enum values) — `validate_coupon` no longer branches on it.
 
 ---
 
-# Part D — System Model Still in Force
+# Part D — System Model Still in Force *(as amended by the single-seller retirement, 2026-10-13)*
 
-Condensed from the previous as-built specification; these invariants are unchanged by the
-prototype simplification (full data-model reference: `supabase/migrations/`).
+Condensed from the previous as-built specification and amended by migrations
+0001–0010 (full data-model reference: `supabase/migrations/`; ledger:
+DESIGN.md §7.3).
 
 - **One Flutter app, Supabase-only backend** (Auth, PostgREST, RPCs, Storage, Realtime).
   Server authority for authorization, prices, discounts, coupon validity, state transitions,
   order creation. Client state is never trusted (§35/§50–53 of the old spec).
-- **Catalog ownership retained:** `products.business_id` → `businesses` (pricing,
-  availability, admin product management); cart lines embed variants→products→businesses.
-  Orders no longer split per business (Section 7A): one Order → OrderItems → one Payment.
-  Vendor discovery is absent from the customer UI (Section 9).
-- **Availability & stock (Section 2d):** purchase requires variant active + product
-  active + business active + product stock ≥ quantity. Stock is **product-wide**
-  (purchasing any variant deducts the product's counter; variants carry no stock).
-  Disabled (archived) products of active businesses remain **visible** to customers,
-  rendered "Unavailable" with purchase blocked client- and server-side.
-- **Coupon scopes (Section 2d/5b):** `platform` (cart-wide), `brand` (the brand's cart
-  lines; discount distributed across participating businesses proportionally), and
-  legacy `business` rows (still validate; creation path bypassed with the portal).
+- **No catalog ownership dimension:** `products` carries `category_id` +
+  optional `brand_id` only; cart lines embed variants→products. Orders no
+  longer split per business (Section 7A): one Order → OrderItems → one Payment.
+- **Availability & stock (Section 2d):** purchase requires variant active +
+  product active + product stock ≥ quantity. Stock is **product-wide**
+  (purchasing any variant deducts the product's counter; variants carry no
+  stock). Archived products remain **visible** to customers, rendered
+  "Unavailable" with purchase blocked client- and server-side. Admin adjusts
+  stock inline via `admin_adjust_product_stock` (migration 0004).
+- **Coupon scopes (Section 2d/5b):** `platform` (cart-wide) and `brand`
+  (`promotions.brand_id` set → that brand's cart lines). The legacy
+  `'business'` scope branch was removed with the vendor model (0008); the
+  enum value stays dormant. Cart voucher + checkout coupon both preview the
+  scope (`validate_coupon` returns it, migration 0002).
 - **Promotion/coupon/banner model (Section 5b):** promotion = discount rule
   (scope + mechanic + `active` kill switch); coupon = redemption instrument
   (code, min order amount, start/end window, status → assignment §5 set);
@@ -290,27 +299,34 @@ prototype simplification (full data-model reference: `supabase/migrations/`).
 - **Historical integrity:** order items, shipping address, applied coupon amounts, and
   purchased prices are snapshots; later catalog/profile/coupon edits never rewrite history
   (§17–19, §26, §55).
-- **Checkout atomicity:** `create_order_from_cart` commits order + business orders + items +
-  payment + delivery + pickup stops together or not at all (§51).
+- **Checkout atomicity:** `create_order_from_cart` commits order + items +
+  payment + coupon records together or not at all (§51).
 - **ONE order lifecycle (Section 7A):** `orders.status` uses the assignment's own
   vocabulary (`pending → confirmed → processing → packed → shipped → out_for_delivery
   → delivered`, plus `cancelled`/`returned`). No derivation — the admin transitions it,
   the timeline reads it, notifications fire on it, `state_history` records every step.
   The multi-business split (`business_orders`/`deliveries`/`pickup_stops`) was removed
-  with the marketplace design; `order_items` reference the order directly (with a
-  business-name snapshot for display). Payment remains its own flow (pending → paid →
-  refunded), which is standard e-commerce separation of progress vs money.
+  with the marketplace design; `order_items` reference the order directly. Payment
+  remains its own flow (pending → paid → refunded), which is standard e-commerce
+  separation of progress vs money.
 - **Payment vocabulary mapping:** `pending→Pending, transaction_verified→Paid,
   refund_required/refunded→Refunded/Refund Required`; QR confirmation is
   webhook/poller-driven (Section 6b), COD verifies on delivery.
-- **Status ownership (Section 6b):** the four state families stay on their four
-  entities — admin manages business-order (accept/reject → preparing → ready),
-  delivery (`admin_ship_order` → delivery_in_progress, then `admin_complete_order`
-  → delivered) and pickup-stop states; payment states are system/webhook-driven.
-  Ship-before-complete keeps the customer timeline's full progression.
-- **Realtime scope:** only `notifications`, `orders`, `deliveries`, `business_orders` are in
-  the `supabase_realtime` publication; every subscription's initial snapshot is skipped
+- **Status ownership:** the admin advances the single `orders.status` machine
+  (`admin_transition_order`); payment states are system/webhook-driven.
+- **Realtime scope:** `notifications`, `orders`, `payments` are in the
+  `supabase_realtime` publication; every subscription's initial snapshot is skipped
   (§31, §54).
+- **Money display (DESIGN.md §1.4):** USD primary + KHR secondary at the NBC
+  4,100 peg — integer-exact (`minorUnits × 41`), tabular figures, thousands
+  separators; rendered via the shared `PriceText` widget.
+- **Card ratings:** the `product_ratings` SQL view (migration 0005) feeds the
+  ProductCard via a plain FK embed — inline PostgREST aggregates are
+  unsupported on this backend (contract DATA-09).
+- **New Arrivals (DESIGN.md §5.1.1):** the Home shelf qualifies products by a
+  14-day recency window + active + in-stock, limit 8, deterministic
+  `created_at DESC, id DESC` tiebreak; the ProductCard NEW badge uses the
+  same rule (`Product.isNewArrival`).
 - **No local persistence** (CORE-05): the only client-side storage is the theme mode.
 
 ---
@@ -331,21 +347,29 @@ appended as sections land.)
   guards, audit-logged, mirroring the business-portal RPC shapes. `admin_create_product`
   auto-creates a 'Default' variant (null price → tracks base price) so carts stay
   strictly variant-based; the original owner-guarded RPCs were removed (Section 9).
+  The product form now authors variants inline at creation (Part F); the
+  update RPC does not touch variants.
 * `products_admin_read` lets the admin list see archived products;
   `product_images_admin_all` + storage `product_images_admin_write/delete` give admin
-  full image-row and binary management under the same `{business_id}/...` path
-  convention.
+  full image-row and binary management. Path convention amended by the
+  single-seller retirement (0008): images upload under `{product_id}/…`
+  (the `{business_id}/…` folders died with the businesses table).
 * Brand writes are direct PostgREST CRUD through the RLS policies (no RPC layer) —
   same pattern as platform settings.
 * Catalog read path: `fetchBrands()`, brand filter (`brand_id` eq), brand-name search
   (PostgREST or-filter with `,()` sanitized from user input), and `brands(name)` embed
   for the detail screen's brand line.
 
-## Section 2c — Discovery images + card navigation (`20261005000030`)
+## Section 2c — Discovery images + card navigation (`20261005000030`, amended 0001/0006/0009)
 
-* `brands.image_url` / `categories.image_url` — full public URLs (banner
-  convention, 0024); no new Storage plumbing. `create_category` /
-  `rename_category` re-created with an optional `p_image_url`.
+* ~~`brands.image_url` / `categories.image_url`~~ — superseded by the
+  `image_path` convention (migration 0001): bare `catalog_assets` paths or
+  full http(s) URLs, resolved at the repository boundary; the never-used
+  URL-style columns were dropped (0006).
+* **Subcategory authoring is built** (0009, supersedes the deferral):
+  `rename_category` sets `p_parent_id`, both category RPCs enforce the
+  2-level maximum, the admin form has a parent picker, and the Home grid
+  browses top-level only while parent queries aggregate children.
 * Home discovery navigation redesigned from chip strips to **category card
   grid + brand logo rail** (assignment §2 "intuitive navigation"), both
   tapping into a per-item `DiscoveryScreen` (`/home/discovery?kind=&id=`,
@@ -353,8 +377,8 @@ appended as sections land.)
   screen per PRES-06). Filter chips remain in the products screen's filter
   bar.
 * Parent categories aggregate their sub-category products server-side
-  (`category_id IN (id + children)`); no separate sub-category browsing
-  level (deferred, documented in Part B §2).
+  (`category_id IN (id + children)`); the Discover chips mirror the
+  hierarchy (parents lead, `↳` children indent).
 
 ## Section 2d — Stock, availability visibility, brand coupons (`20261005000031` + `0032`)
 
@@ -366,13 +390,14 @@ appended as sections land.)
   products of active businesses stay listable while archived ("Unavailable"
   badge, purchase blocked client- and server-side).
 * Coupon scope `brand`: `promotions.brand_id` + enum value; `validate_coupon`
-  previews brand-scope discounts; `create_order_from_cart` distributes the brand
-  discount across participating businesses proportionally (rounding remainder to
-  the largest share). `create_platform_promotion` gains `p_brand_id`
+  previews brand-scope discounts (the order discount applies to the order —
+  the multi-business proportional split died with the vendor model).
+  `create_platform_promotion` gains `p_brand_id`
   (null → platform scope); the admin promotions dialog gains a scope picker.
 * Admin product RPCs manage stock (`p_stock`); the product form gains a stock
-  field and **searchable pickers** (bottom-sheet search over fetched options)
-  for store/category/brand; the list shows stock.
+  field and **searchable pickers** for category/brand (the store picker was
+  removed with the vendor model); the list shows stock with filter chips and
+  inline `[- Stock +]` steppers (migration 0004).
 * Customer UI: product-wide stock line + Unavailable state on the detail screen,
   availability badges on cards, quantity capped to stock in the variant sheet,
   and a `RatingStars` visual aggregate (assignment §3).
@@ -559,3 +584,42 @@ Each prototype section (0–8) updates **its own** Part B subsection and any Par
 entries in the same change set, runs the Definition of Done (`architecture-contract.md`
 §12: analyze clean, codegen regenerated, import fences, error mapping, no scope creep),
 and only then does the next section begin. No simultaneous multi-section refactors.
+
+---
+
+# Part F — UI Overhaul Deltas (2026-10-13/15, branch `impl/mvp`)
+
+The DESIGN.md alignment overhaul. Migrations `20261013000001`–`…0010` (ledger:
+DESIGN.md §7.3; remote push bundle: `supabase/APPLY-UI-OVERHAUL-MIGRATIONS.sql`).
+
+* **Design tokens & theme (THEME-03):** `app_colors` (palette + §2.2
+  wire-name-keyed status-badge table), `app_typography` (Plus Jakarta Sans,
+  bundled static TTFs 400–800), `app_dimensions` (8dp rhythm, radii, E1–E3
+  shadows); `app_theme` builds explicit light/dark ColorSchemes with global
+  component themes. Shared widgets: EncueButton, EncueCard, StatusBadge,
+  AsyncValueWidget (+ skeleton/empty vocabulary), KhqrCard (NBC red header),
+  PriceText (dual currency), MonogramImage (skeleton → deterministic
+  monogram fallback).
+* **Shells:** customer 5-tab (Home · **Discover** · Cart · Orders · Profile —
+  Discover hosts the search/filter/sort experience; the products screen was
+  absorbed); admin 4-tab (Dashboard · Products · Orders · Reports);
+  Categories/Promotions/Account live under Dashboard quick actions; the Cart
+  tab carries a live bag-count badge.
+* **Imagery pipeline:** brands/categories `image_path` + public
+  `catalog_assets` bucket (admin-write RLS); admin forms upload via
+  `file_picker`; every consumer renders through `MonogramImage`
+  (skeleton → monogram fallback — no blank tiles).
+* **Customer surfaces:** §6.1 ProductCard rebuild (1:1 image, brand chip,
+  NEW badge, wishlist heart, Unavailable pill, rating via `product_ratings`,
+  dual-currency price); autoplaying hero carousel with indicators; cart
+  Floating Action Dock + voucher input with scope recognition; NBC KHQR card
+  on order-placed; vertical §6.2 tracking timeline; per-card order actions;
+  profile spending hero.
+* **Admin surfaces:** inventory filter chips (All/Low Stock/Out of Stock) +
+  inline `[- Stock +]` steppers (`admin_adjust_product_stock`); Reports tab
+  with 7D/15D/30D/MTD presets, gateway split, brand revenue (extended
+  `get_sales_report`); dashboard KPI/stock-alert/trend reskin; create-time
+  variant authoring in the product form.
+* **Engineering constraint (DATA-09):** no inline PostgREST aggregates —
+  card ratings come from the `product_ratings` view; report extras from the
+  extended `get_sales_report` RPC.
