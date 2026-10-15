@@ -1,18 +1,23 @@
 # EncueYPay — DESIGN.md (Comprehensive Specification & UI Blueprint)
 
 **Platform:** Flutter (Dart) · Mobile-First Responsive  
-**Architecture:** 2-Role Academic Prototype (Customer & Admin Prototype)  
+**Architecture:** Single-Seller Prototype (Customer & Admin surfaces; the vendor data model was retired — see §7.1 and the migration ledger in §9)  
 **Backend:** Supabase-Only (Auth, PostgREST, RPCs, Storage, Realtime)  
-**System Invariants:** Exact `numeric` minor-unit currency, server-authoritative state, unified `ThemeData` token hierarchy, Material 3 design system, 8dp spatial rhythm, 48dp minimum touch targets.
+**System Invariants:** Exact `numeric` minor-unit currency, server-authoritative state, token-file-driven `ThemeData`, Material 3 design system, 8dp spatial rhythm, 48dp minimum touch targets.
+
+> **Implementation status (2026-10-15):** this document reflects the app as
+> built on branch `impl/mvp`. Sections marked **as-built** describe shipped
+> behavior; the schema section (§7) describes the post-retirement schema
+> (migrations 0001–0010, ledger in §9).
 
 ---
 
 ## 1. System Invariants & Architectural Directives
 
-1. **2-Role Prototype Simplification**:
+1. **Prototype Simplification** *(as-built: single-seller)*:
     - Strictly two roles: **Customer** (default end-user) and **Admin Prototype** (executive management).
-    - Multi-vendor store portals (`Business Owner`) and courier delivery portals (`Driver`) are completely bypassed/removed from Flutter routing and UI shells.
-    - Catalog ownership is retained under the hood (`products.business_id` pointing to a seeded prototype business), but the customer experiences a unified store without vendor fragmentation.
+    - Multi-vendor store portals (`Business Owner`) and courier delivery portals (`Driver`) are completely removed from Flutter routing and UI shells.
+    - **The vendor data model is retired** (migrations 0008/0010): no `businesses` table, no `business_id` on products/promotions/order coupons, no per-line business snapshots. The app is admin-centric single-seller at every layer; re-enabling multi-vendor later is a data-model addition, not a flip.
 2. **Server Authoritative State**:
     - Client UI state is never trusted for price calculation, stock reservation, or state changes.
     - Line prices are strictly resolved server-side: `coalesce(variant.price, product.base_price)`.
@@ -21,9 +26,9 @@
     - Stock is maintained at the product level (`products.stock`), not per variant. Purchasing any variant deducts the product-wide counter.
     - Low stock threshold: `stock <= 5`.
     - Out of stock / Archived items remain visible with an **"Unavailable"** badge; client purchase and checkout RPCs fail-closed.
-4. **Currency & Financial Math**:
-    - Exact `numeric` minor-unit precision without floating-point drift.
-    - **Dual Currency peg**: USD primary (`$XX.XX`), Cambodian Riel secondary (`≈ XX,XXX KHR` or `~XX,XXX ៛`) pegged at the NBC reference rate of **4,100 KHR / USD**.
+4. **Currency & Financial Math** *(as-built)*:
+    - Exact integer minor-unit precision without floating-point drift (`Money` in `core/domain`).
+    - **Dual Currency peg**: USD primary (`$1,234.50`, tabular figures + thousands separators), Cambodian Riel secondary (`≈ 43,050 KHR`) pegged at the NBC reference rate of **4,100 KHR / USD** — conversion is `minorUnits × 41` (integer-exact). Displayed through the shared `PriceText` widget / `Money.formatUsd()` + `formatKhr()`.
 5. **Mobile-First Touch Ergonomics**:
     - Layouts adhere strictly to iOS and Android touch target guidelines (minimum 48×48 dp interactive targets, comfortable bottom-sheet ergonomics, thumb-zone primary action placement).
     - Floating action docks use bottom clearance and safe area insets to prevent clipping above navigation bars.
@@ -32,10 +37,10 @@
 
 ## 2. Color Palette & Token Specification
 
-### 2.1 Core Material 3 Palette
+### 2.1 Core Material 3 Palette *(as-built: `lib/core/presentation/theme/app_colors.dart` — contract location THEME-03)*
 
 ```dart
-// lib/core/theme/app_colors.dart
+// lib/core/presentation/theme/app_colors.dart
 import 'package:flutter/material.dart';
 
 abstract class AppColors {
@@ -207,9 +212,9 @@ abstract class AppTypography {
 
 ---
 
-## 5. Navigation & Shell Architecture
+## 5. Navigation & Shell Architecture *(as-built)*
 
-### 5.1 Customer Navigation (5-Tab Persistent Shell)
+### 5.1 Customer Navigation (5-Tab Persistent Shell) — Home · Discover · Cart · Orders · Profile
 1. **Home (`/home`)**:
     - Hero promotion banner carousel (with validity windows).
     - Category card grid ("Shop by Category") navigating to Discovery.
@@ -236,7 +241,10 @@ abstract class AppTypography {
     - Personalized Wishlist rail (shared `ProductCard` items).
     - App settings, customer support, and sign-out.
 
-### 5.2 Admin Prototype Navigation (4-Tab Executive Shell)
+### 5.2 Admin Prototype Navigation (4-Tab Executive Shell) — Dashboard · Products · Orders · Reports
+
+> Categories/Promotions/Account live under Dashboard quick actions; the
+> Cart tab carries a live bag-count badge; Reports is a full tab.
 1. **Dashboard (`/admin/dashboard`)**:
     - Gross realized revenue KPI card with momentum trend percentage.
     - Order volume split (Done, Pending, Cancelled) & Verified customer accounts.
@@ -265,8 +273,10 @@ abstract class AppTypography {
 
 ### 6.1 `ProductCard` (Shared Catalog Component)
 - **Visuals**: 1:1 Aspect ratio image container with fallback skeleton.
-- **Badges**:
-    - Top-left: Brand chip or Discount percent badge (`-13%`, `NEW`).
+- **Badges** *(as-built)*:
+    - Top-left: **NEW** badge (coral) when the product is a new arrival
+      (created within 14 days — the same rule as the Home shelf), over the
+      brand chip.
     - Top-right: Wishlist heart toggle with micro-animation.
     - Bottom-center of image: "Unavailable" / "Sold Out" pill if stock is 0 or archived.
 - **Metadata**: Brand name in `textMuted`, product title (2 lines max with ellipsis), star rating with review count, price in bold currency format.
@@ -306,16 +316,18 @@ abstract class AppTypography {
 
 ## 7. Supabase Database Wiring & Server Authority
 
-### 7.1 Core Tables & Schema Invariants
-- `users`: Managed auth profile with `active_role` enum (`customer | business | driver | admin`). Self-promotion blocked by trigger.
-- `products`: Product catalog with `brand_id`, `business_id`, and product-wide `stock`.
-- `product_variants`: Variant options (color, size, model). Null price defaults to product base price.
-- `brands`: Brand catalog (`id`, `name`, `image_url`, `status`).
-- `categories`: Category taxonomy (`id`, `name`, `image_url`, `parent_id`).
+### 7.1 Core Tables & Schema Invariants *(as-built — post single-seller retirement, migrations 0001–0010)*
+- `users`: Managed auth profile with `active_role` enum (`customer | business | driver | admin` — only customer/admin are used; self-promotion blocked by trigger).
+- `products`: Product catalog with `brand_id` and product-wide `stock`; **no `business_id`**. Images upload under the `{product_id}/…` folder of the public `product_images` bucket; `storage_path` may also carry a full http(s) URL (passthrough).
+- `product_variants`: Variant options (color, size, model). Null price defaults to product base price (`coalesce(variant.price, base_price)`). The product form authors variants at creation; an empty list auto-creates one `Default` variant.
+- `brands`: Brand catalog (`id`, `name`, `image_path`, `status`) — imagery follows the path-or-URL convention, resolved at the repository boundary.
+- `categories`: 2-level taxonomy (`id`, `name`, `parent_id`, `image_path`) — a parent must be top-level; Discovery on a parent aggregates its children's products. Authored via the admin form's parent picker.
 - `orders`: Single lifecycle record (`status` = `order_status` enum, `note`, `cancelled_at`, `cancellation_reason`).
-- `order_items`: Historical immutable snapshots (`product_id`, `variant_id`, `quantity`, `unit_price`, `business_name`).
-- `payments`: Payment record (`order_id`, `amount`, `payment_method` = `qr | cod`, `qr_payload`, `qr_md5`, `status`).
-- `promotions` & `coupons`: Multi-tier promotional rules (scope `platform | brand`, `min_order_amount_minor`, `starts_at`, `ends_at`).
+- `order_items`: Historical immutable snapshots (`product_id`, `variant_id`, `quantity`, `unit_price_minor`, `line_total_minor`) — no business dimension.
+- `payments`: Payment record (`order_id`, `amount_minor`, `payment_method` = `qr | cod`, `status`).
+- `promotions` & `coupons`: promotional rules scoped **`platform | brand`** (`brand_id` set → brand-wide, NULL → platform-wide; the dormant `'business'` enum value is unreachable), `min_order_amount_minor`, `starts_at`, `ends_at`.
+- `product_ratings` **view**: `avg(rating)`/`count()` per product for card ratings — inline PostgREST aggregates are unsupported on this backend (DATA-09 in the architecture contract).
+- `businesses`: **dropped** (migration 0008) — the vendor model is retired.
 
 ### 7.2 Security Definer RPC Endpoints
 - `create_order_from_cart(p_note)`: Atomic checkout transaction with row-level locks on `products.stock`.

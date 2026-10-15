@@ -1,6 +1,7 @@
 # Architecture Contract
 
-**Version:** 2.1.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
+**Version:** 2.2.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
+**2.2.0 (2026-10-15):** DATA-09 added (PostgREST aggregate constraint); THEME-03 updated to the as-built token system; §3 CORE widget inventory; ACTION-02 recorded (single-seller schema retirement, migrations 0008–0010).
 **Audience:** Every AI agent and human contributor modifying this codebase.
 
 This document is the single source of truth for how code is structured in this project.
@@ -118,7 +119,7 @@ another feature; shared code duplicated into two features instead of promoted to
 |---|---|---|
 | `core/domain` | Shared domain primitives: `Failure` taxonomy (`failures.dart`), `StreamResult<T>` (`stream_result.dart`) | CORE-02 |
 | `core/network` | External service clients: `supabaseClientProvider` | CORE-03 |
-| `core/presentation` | Shared UI (`NotFoundScreen`), `theme/` (§8), `responsive/` (§9) | CORE-04 |
+| `core/presentation` | Shared UI: `NotFoundScreen`, `theme/` (§8), `responsive/` (§9), `widgets/` (EncueButton, EncueCard, StatusBadge, AsyncValueWidget, KhqrCard, PriceText, MonogramImage) | CORE-04 |
 | `core/router` | `AppRoutes`, `appRouterProvider`, `branches/`, shell scaffold in `presentation/` | ROUTE-* |
 | `core/data` | **Forbidden.** No local persistence exists in this app (§10, ACTION-01) | CORE-05 |
 
@@ -339,11 +340,21 @@ final celestialRepoProvider = Provider<ICelestialRepository>((ref) {
 method returning a DTO; catching `PostgrestException` in a controller; `_client.from(...)`
 outside `data/repository/`.
 
+- **DATA-09 (Backend PostgREST constraints).** This deployment's PostgREST does
+  not support inline aggregate functions in select parameters (≥ v12,
+  `db-aggregates` opt-in). Computed values come from plain SQL views exposed
+  through FK-detectable embeds (`product_ratings` is the precedent) or from
+  RPCs (`get_sales_report`). Every select must reference only columns that
+  exist in the current schema — when the schema retires a column, sweep the
+  SQL *strings* in repositories (not just Dart field names; both
+  snake_case column forms and Dart camelCase forms).
+
 **Checklist:**
 - [ ] DTO annotated with `FieldRename.snake`, `.g.dart` regenerated, not hand-edited.
 - [ ] Null-defaults applied in the mapper, not in widgets.
 - [ ] Interface and impl in separate files; provider exposes the interface.
 - [ ] Every method maps exceptions to `Failure` (futures throw, streams emit `StreamError`).
+- [ ] Selects reference only existing columns; aggregates via views/RPCs (DATA-09).
 
 ---
 
@@ -481,9 +492,17 @@ Single source of truth for theme state. Lives in `core/presentation/theme/`.
   `ThemeMode.name` string under exactly one key. No other preference may be persisted
   without user approval.
 
-- **THEME-03 (ThemeData).** If/when custom `ThemeData` (colors, typography) is needed,
-  it lives in `core/presentation/theme/app_theme.dart` as `AppTheme.light` /
-  `AppTheme.dark`. `MaterialApp` wires `theme:`/`darkTheme:` from there.
+- **THEME-03 (ThemeData & tokens).** Custom `ThemeData` lives in
+  `core/presentation/theme/app_theme.dart` as `AppTheme.light` / `AppTheme.dark`
+  — explicit `ColorScheme`s per brightness (no seed derivation) with global
+  component themes (48dp/r8 buttons, r12 inputs, r16 cards, r24 sheets).
+  It composes the DESIGN.md token files: `app_colors.dart` (palette + the
+  §2.2 wire-name-keyed status-badge table), `app_typography.dart`
+  (Plus Jakarta Sans, bundled in `pubspec.yaml` — 400–800 static TTFs), and
+  `app_dimensions.dart` (8dp spacing rhythm, radii, elevation shadows).
+  `MaterialApp` wires `theme:`/`darkTheme:` from there. Screens read colors
+  through the `ColorScheme`/`TextTheme`; direct token reads are reserved for
+  the theme builder and the badge/KHQR chrome.
 
 - **THEME-04 (Hydration before first frame).** Theme is hydrated in `main()` before
   `runApp` — no theme flash and no side effects inside `build()`.
@@ -647,6 +666,17 @@ constants per feature.
 - **ACTION-01 (Remove local persistence).** Delete `core/data/local/` (`app_database`,
   `connection`, `tables/`) and the `drift` / `sqlite3_flutter_libs` / `path_provider`
   / `drift_dev` dependencies. Repositories talk to Supabase only.
+- **ACTION-02 (Single-seller schema retirement — EXECUTED 2026-10-13, user decision).**
+  The prototype pivoted from a vendor-capable data model to an admin-centric
+  single-seller application. Executed via migrations 0008 (drop
+  `products.business_id`, `promotions.business_id`, `order_coupons.business_id`,
+  `order_items.business_name`, the `businesses` table; rework the vendor-era
+  RLS read policies to product-level visibility; checkout/coupon RPCs lose
+  the business dimension) and 0010 (drop stale RPC overloads — Postgres
+  overloads instead of replacing when a signature changes). Product images
+  upload under `{product_id}/…`; promotions are platform|brand scoped only
+  (the dormant `'business'` enum value remains — Postgres cannot drop enum
+  values).
 
 **Known deviations** — acknowledged debt. Do **not** fix unprompted (GLOBAL-02); fix on
 the next touch of the file or on request:

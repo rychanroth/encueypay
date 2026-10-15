@@ -16,16 +16,16 @@ the app degrades gracefully without them (each one says what you lose).
 
 | Thing | State | Where |
 |---|---|---|
-| Database schema (4-role baseline + 6 bridge migrations → 2-role) | ✅ committed | `supabase/migrations/` |
-| Demo seed: 6 categories, 4 brands, settings row | ✅ committed | `supabase/seed.sql` |
-| Server logic: checkout, stock, coupons, QR, lifecycle, reports | ✅ committed | migrations 000001–000006 |
+| Database schema (baseline + 2-role bridge + 10 overhaul migrations, single-seller) | ✅ committed | `supabase/migrations/` (0001–0010) |
+| Demo seed: 8 categories (2-level), 4 brands, 8 products, 13 variants, 16 images, settings row | ✅ committed | `supabase/seed.sql` |
+| Server logic: checkout, stock, coupons, QR, lifecycle, reports, ratings view | ✅ committed | migrations + `product_ratings` view |
 | Google OAuth client credentials (local dev) | ✅ already in root `.env` | `.env` (gitignored) |
 | Android deep link for OAuth | ✅ wired | `android/app/src/main/AndroidManifest.xml` |
 | Firebase Android config (`google-services.json`) | ✅ already in repo | `android/app/` |
 | Gradle google-services plugin | ⚠️ **not applied** — you add 2 lines (Phase 7) | `android/` |
 | FCM push bug fix (1 line) | ⚠️ **you apply it** (Phase 7, Step 1) | `supabase/functions/push-dispatch/index.ts` |
 | Bakong / PayWay API tokens | ❌ optional secrets | Phase 6 |
-| Demo users, store, admin role | ❌ you create them | Phases 3–4 |
+| Demo user (admin) + in-app coupons | ❌ you create them | Phases 3–4 |
 
 ---
 
@@ -51,10 +51,13 @@ supabase start        # first run downloads Docker images (a few minutes)
 supabase db reset     # applies ALL migrations in order + seed data
 ```
 
-`db reset` rebuilds the database from scratch: the frozen 4-role baseline
-(`20261007000000_frozen_baseline.sql`) plus the six bridge migrations
-(`20261008000001`–`…000006`) that turn it into the 2-role schema, then the
-seed. It is safe to run any time — it wipes local demo data on purpose.
+`db reset` rebuilds the database from scratch: the frozen baseline
+(`20261007000000_frozen_baseline.sql`), the six bridge migrations
+(`20261008000001`–`…000006`) that turn it into the 2-role schema, the ten
+overhaul migrations (`20261013000001`–`…0010` — imagery pipeline, coupon
+scope, report extras, stock RPC, ratings view, **single-seller retirement**,
+category hierarchy, overload cleanup), then the seed. It is safe to run any
+time — it wipes local demo data on purpose.
 
 Verify the stack and copy two values you'll need in Phase 2:
 
@@ -108,63 +111,60 @@ signup automatically gets a `public.users` row with the customer role.
 
 ---
 
-## Phase 3 — Create the two demo users [REQUIRED]
+## Phase 3 — Create the demo user [REQUIRED]
 
 Open **Studio** (`http://127.0.0.1:54323`) → **Authentication → Users →
 Add user → Create new user**. Fill email + password, tick **Auto Confirm
-User**, press Create. Do this twice:
+User**, press Create:
 
 | Email (suggestion) | Purpose |
 |---|---|
-| `store-owner@demo.local` | Owns the store row (has no portal in the 2-role app) |
 | `admin@demo.local` | Will be promoted to admin in Phase 4 |
 
-(Alternatively: sign up both in the app — email confirmation is disabled
-locally, so it just works.)
+(Alternatively: sign up in the app — email confirmation is disabled
+locally, so it just works. Add a second customer account only if you want
+to test multi-user order separation.)
 
 ---
 
-## Phase 4 — Create the store + promote the admin [REQUIRED]
+## Phase 4 — Promote the admin [REQUIRED]
 
-In Studio → **SQL Editor → New query**, run each snippet once, replacing the
-emails if you chose different ones.
+> The vendor model is retired — there is no store/business row anymore.
+> The product form, checkout, and reports run entirely without it. Only the
+> admin promotion is manual (the app has no self-service admin path — by
+> design; the SQL editor runs with no user identity, which the guard
+> trigger allows).
 
-**4.1 — The prototype store** (products must belong to a business row):
-
-```sql
-insert into public.businesses (owner_id, name, description, status)
-  select u.id, 'Prototype Store', '2-role prototype catalog', 'active'
-  from public.users u join auth.users a on a.id = u.id
-  where a.email = 'store-owner@demo.local';
-```
-
-**4.2 — Promote the admin** (the app has no self-service admin path — by
-design; the SQL editor runs with no user identity, which the guard trigger
-allows):
+In Studio → **SQL Editor → New query**, run once (replace the email if you
+chose a different one):
 
 ```sql
 update public.users set active_role = 'admin'
   where id in (select id from auth.users where email = 'admin@demo.local');
 ```
 
-**4.3 — See it take effect:** sign in as the admin in the app. The role is
-read on every auth event — if you were already signed in as that user,
-**sign out and sign back in** (or hot-restart) to get the admin tab set.
+**See it take effect:** sign in as the admin in the app. The role is read
+on every auth event — if you were already signed in, **sign out and sign
+back in** (or hot-restart) to get the admin tab set.
 
 ---
 
-## Phase 5 — Stock the catalog (in-app, as admin) [REQUIRED]
+## Phase 5 — Catalog & coupons (in-app, as admin) [OPTIONAL — the seed ships a full catalog]
+
+The seed already ships **8 products with variants, imagery and curated
+states** (two low-stock, one out-of-stock, two in subcategories of
+Electronics). Add more only if you want:
 
 1. **Products tab → `+`**: name, description, base price, **stock**
-   (product-wide), the store, a category, a brand, optional image. Create at
-   least:
-   - one normal product (stock ≥ 10),
-   - one that you'll drop to low stock (≤ 5) — the admin dashboard flags it,
-   - one you'll **archive** — demos the "Unavailable" badge on the customer
-     side.
-2. **Promotions tab → `+`**: create a **platform coupon** (e.g. fixed/percent,
-   a code like `DEMO10`, optional date window + min order) and a
-   **brand-scoped coupon** (pick a brand) — this exercises both coupon scopes.
+   (product-wide), a category (subcategories are picked as parents on the
+   category screen), a brand, optional image upload, **and inline variants**
+   (name + optional price each; leave empty → one auto-`Default` variant).
+2. **Coupons must be authored in-app** (they record `created_by`):
+   **Promotions tab → `+`** — create a **platform coupon** (e.g. `DEMO10`,
+   optional date window + min order) and a **brand-scoped coupon** (pick a
+   brand) — this exercises both coupon scopes. Banners are also in-app
+   (admin-created banners are approved on creation and appear on the
+   customer Home carousel).
 
 ---
 
@@ -319,18 +319,25 @@ To reproduce on a fresh machine:
 
 ## Phase 9 — Demo script
 
-1. **Customer**: Home (banner strip, category cards, brand rail) → product
-   detail (variants, stock) → cart (stock-capped stepper) → 7-step checkout
-   → QR → admin "Simulate payment" → screen flips to paid in real time.
-2. **Admin**: Dashboard (KPIs, stock alerts, trend) → Orders:
-   Confirmed → Processing → Packed → Ship → Out for delivery → Complete →
-   **Mark refunded** (on a cancelled/returned paid order) → **Complete
-   return**.
-3. **Edge cases**: archive a product ("Unavailable"), stock to 0 ("Out of
-   stock"), low-stock alerts, Reports date range, Audit logs (every admin
-   mutation lands there).
-4. **Profile tab**: spending hero (cancel an order — watch it drop out),
-   orders panel, wishlist rail, cart summary.
+1. **Customer**: Home (autoplaying banner carousel, category cards, brand
+   rail, **New Arrivals** with NEW badges) → **Discover tab** (search,
+   hierarchy-aware category chips — `↳` subcategories, sort, result count) →
+   product detail (variants, stock) → cart (floating checkout dock, voucher
+   input with scope chips, stock-capped steppers) → 7-step checkout →
+   NBC-styled KHQR card → admin "Simulate payment" → flips to paid in real
+   time. Prices render **dual currency** ($ + ≈ KHR) everywhere.
+2. **Admin**: Dashboard (KPIs, critical stock alert, 14-day trend) →
+   Orders: status badges per the §2.2 palette, Confirmed → Processing →
+   Packed → Ship → Out for delivery → Complete → **Mark refunded** →
+   **Complete return**; vertical tracking timeline on the customer side.
+3. **Edge cases**: archive a product ("Unavailable"), stock to 0 via the
+   inline `[- Stock +]` steppers, low-stock alerts, Reports (7D/15D/30D/MTD
+   presets, gateway split, brand revenue), Audit logs.
+4. **Profile tab**: spending hero (dual currency, cancel an order — watch it
+   drop out), orders panel with status badges, wishlist rail, cart summary.
+5. **Subcategories**: admin Categories → create *Phones* under
+   *Electronics* → assign a product → Discover on *Electronics* aggregates
+   it automatically.
 
 ---
 
@@ -340,7 +347,7 @@ To reproduce on a fresh machine:
 |---|---|
 | Tab set doesn't switch after promoting the admin | Profile is read per auth event → **sign out and back in** (or hot-restart) |
 | QR option missing at checkout | `qr_account_id` empty → Admin → Platform settings (Phase 6.1) |
-| "Some items in your cart are no longer available" | A cart line's variant/product/business is no longer active (server-side gate) — remove the line |
+| "Some items in your cart are no longer available" | A cart line's variant/product is no longer active (server-side gate) — remove the line |
 | `bakong-check` says `configured: false` | `BAKONG_TOKEN` not in `supabase/functions/.env`, or stack not restarted after adding it |
 | Push never arrives | In order: recipient_id fix applied (Step 1)? Gradle plugin applied (Step 2)? `FCM_SERVICE_ACCOUNT` set + stack restarted (Steps 3–4)? Webhook created with the `kong:8000` URL (Step 5)? Device has Play services? App backgrounded? |
 | OAuth: `redirect_uri_mismatch` | The Google client must allow exactly `http://127.0.0.1:54321/auth/v1/callback`, and `.env`'s `SUPABASE_REDIRECT_URI` must match; then the restart ritual |
@@ -353,7 +360,7 @@ To reproduce on a fresh machine:
 
 | Prerequisite | Unlocks | Phase |
 |---|---|---|
-| Two auth users + store INSERT + admin promotion | The demo itself | 3–4 |
+| One auth user + admin promotion | The demo itself | 3–4 |
 | `qr_account_id` in Platform settings | KHQR visible at checkout | 6.1 |
 | Bakong developer token (`BAKONG_TOKEN`) | Real payment confirmation polling | 6.3 |
 | ABA merchant account + `PAYWAY_API_KEY` + callback URL | Real webhook confirmation | 6.4 |
