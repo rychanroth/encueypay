@@ -68,7 +68,7 @@ abstract final class AppTheme {
           minimumSize: const Size(64, AppTargets.minimum),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           shape: const RoundedRectangleBorder(borderRadius: AppRadii.br8),
-          side: BorderSide(color: colorScheme.outline),
+          side: BorderSide(color: colorScheme.onSurfaceVariant),
           foregroundColor: colorScheme.onSurface,
           textStyle: AppTypography.labelLarge,
         ),
@@ -99,15 +99,15 @@ abstract final class AppTheme {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 14),
         hintStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.outline,
+          color: colorScheme.onSurfaceVariant,
         ),
         border: OutlineInputBorder(
           borderRadius: AppRadii.br12,
-          borderSide: BorderSide(color: colorScheme.outline),
+          borderSide: BorderSide(color: colorScheme.onSurfaceVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadii.br12,
-          borderSide: BorderSide(color: colorScheme.outline),
+          borderSide: BorderSide(color: colorScheme.onSurfaceVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppRadii.br12,
@@ -179,7 +179,7 @@ abstract final class AppTheme {
       ),
       chipTheme: ChipThemeData(
         shape: const RoundedRectangleBorder(borderRadius: AppRadii.br8),
-        side: BorderSide(color: colorScheme.outline),
+        side: BorderSide(color: colorScheme.onSurfaceVariant),
         backgroundColor: colorScheme.surfaceContainerLowest,
         labelStyle: textTheme.labelMedium?.copyWith(
           color: colorScheme.onSurface,
@@ -211,7 +211,7 @@ abstract final class AppTheme {
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colorScheme.onPrimary
-              : colorScheme.outline,
+              : colorScheme.onSurfaceVariant,
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)

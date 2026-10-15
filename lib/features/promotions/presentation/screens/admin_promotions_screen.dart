@@ -381,7 +381,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
                                     fontWeight: FontWeight.bold,
                                     color: promotion.active
                                         ? null
-                                        : theme.colorScheme.outline,
+                                        : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ),

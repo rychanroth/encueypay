@@ -127,7 +127,7 @@ class OrderDetailScreen extends ConsumerWidget {
               Text(
                 'Tracking #${order.id.substring(0, 8).toUpperCase()}',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               if (order.status != OrderStatus.delivered &&
@@ -137,13 +137,13 @@ class OrderDetailScreen extends ConsumerWidget {
                   'Estimated delivery: '
                   '${order.createdAt.toLocal().add(const Duration(days: 3)).toString().substring(0, 10)}',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.outline,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               Text(
                 'Delivery managed by EncueYPay',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),

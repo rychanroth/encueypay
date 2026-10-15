@@ -120,7 +120,7 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
                         ? ColoredBox(
                             color: theme.colorScheme.surfaceContainerHighest,
                             child: Icon(Icons.image_outlined,
-                                color: theme.colorScheme.outline),
+                                color: theme.colorScheme.onSurfaceVariant),
                           )
                         : Image.network(
                             headerImageUrl,
@@ -129,7 +129,7 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
                               color:
                                   theme.colorScheme.surfaceContainerHighest,
                               child: Icon(Icons.image_outlined,
-                                  color: theme.colorScheme.outline),
+                                  color: theme.colorScheme.onSurfaceVariant),
                             ),
                           ),
                   ),

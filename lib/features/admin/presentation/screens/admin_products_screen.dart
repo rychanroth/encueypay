@@ -195,7 +195,7 @@ class _AdminProductTile extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
                               color:
-                                  isArchived ? theme.colorScheme.outline : null,
+                                  isArchived ? theme.colorScheme.onSurfaceVariant : null,
                             ),
                           ),
                         ),

@@ -234,7 +234,7 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: theme.colorScheme.outline),
+                      border: Border.all(color: theme.colorScheme.onSurfaceVariant),
                       borderRadius: AppRadii.br8,
                     ),
                     child: Row(

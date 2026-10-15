@@ -150,7 +150,7 @@ class _StageRow extends StatelessWidget {
     final nodeColor = switch (state) {
       _StageState.done => AppColors.accentEmerald,
       _StageState.current => theme.colorScheme.primary,
-      _StageState.upcoming => theme.colorScheme.outline,
+      _StageState.upcoming => theme.colorScheme.onSurfaceVariant,
     };
 
     return IntrinsicHeight(
@@ -237,7 +237,7 @@ class _StageRow extends StatelessWidget {
                 label,
                 style: AppTypography.labelLarge.copyWith(
                   color: switch (state) {
-                    _StageState.upcoming => theme.colorScheme.outline,
+                    _StageState.upcoming => theme.colorScheme.onSurfaceVariant,
                     _ => theme.colorScheme.onSurface,
                   },
                 ),

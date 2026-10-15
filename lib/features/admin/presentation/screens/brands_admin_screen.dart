@@ -240,7 +240,7 @@ class BrandsAdminScreen extends ConsumerWidget {
                   brand.name,
                   style: isArchived
                       ? TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         )
                       : null,
                 ),

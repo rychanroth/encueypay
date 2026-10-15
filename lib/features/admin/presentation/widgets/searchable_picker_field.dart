@@ -78,7 +78,7 @@ class SearchablePickerField extends StatelessWidget {
           _selectedLabel ?? 'Search…',
           style: theme.textTheme.bodyLarge?.copyWith(
             color:
-                _selectedLabel == null ? theme.colorScheme.outline : null,
+                _selectedLabel == null ? theme.colorScheme.onSurfaceVariant : null,
           ),
         ),
       ),

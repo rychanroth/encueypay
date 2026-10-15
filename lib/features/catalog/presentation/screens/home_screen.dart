@@ -66,12 +66,12 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: theme.colorScheme.outline),
+                    Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
                     const SizedBox(width: 8),
                     Text(
                       'Search products',
                       style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: theme.colorScheme.outline),
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),

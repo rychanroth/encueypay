@@ -919,7 +919,7 @@ class _ImagePager extends StatelessWidget {
         height: 260,
         color: theme.colorScheme.surfaceContainerHighest,
         child: Icon(Icons.image_outlined,
-            size: 56, color: theme.colorScheme.outline),
+            size: 56, color: theme.colorScheme.onSurfaceVariant),
       );
     }
     return SizedBox(
@@ -943,7 +943,7 @@ class _ImagePager extends StatelessWidget {
                 errorBuilder: (_, _, _) => ColoredBox(
                   color: theme.colorScheme.surfaceContainerHighest,
                   child: Icon(Icons.image_outlined,
-                      size: 56, color: theme.colorScheme.outline),
+                      size: 56, color: theme.colorScheme.onSurfaceVariant),
                 ),
               ),
             ),

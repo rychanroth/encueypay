@@ -69,7 +69,7 @@ class AsyncErrorView extends StatelessWidget {
             Icon(
               Icons.cloud_off_outlined,
               size: 40,
-              color: theme.colorScheme.outline,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -125,7 +125,7 @@ class EmptyStateView extends StatelessWidget {
                 color: theme.colorScheme.surfaceContainer,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: theme.colorScheme.outline),
+              child: Icon(icon, size: 32, color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
