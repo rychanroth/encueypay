@@ -17,12 +17,12 @@ import '../widgets/searchable_picker_field.dart';
 /// lives in this StatefulWidget; mutations go through
 /// [AdminProductsController] (AsyncValue.guard + invalidate, PRES-03).
 ///
-/// Created products may author variants inline (name + optional price);
-/// leaving the list empty lets the server auto-create a 'Default' variant
-/// whose null price tracks the base price, keeping carts strictly
-/// variant-based (map §10.3). Existing images can be removed; new ones are
-/// uploaded on save. Variant authoring is create-time only — the update
-/// RPC does not touch variants.
+/// Variants are authored inline (name + optional price) in both modes.
+/// Creation with an empty list lets the server auto-create a 'Default'
+/// variant whose null price tracks the base price, keeping carts strictly
+/// variant-based (map §10.3). Editing syncs the full list: id rows update
+/// in place, new rows insert, and removed rows archive server-side.
+/// Existing images can be removed; new ones are uploaded on save.
 class AdminProductFormScreen extends ConsumerStatefulWidget {
   const AdminProductFormScreen({super.key, this.product});
 
@@ -62,9 +62,16 @@ class _AdminProductFormScreenState
   );
   final List<String> _imageDrafts = <String>[];
 
-  /// Create-time variant rows (name + optional price). Edit mode never
-  /// populates this — the update RPC does not touch variants.
-  final List<_VariantRow> _variantRows = <_VariantRow>[];
+  /// Desired variant rows. Seeded from the product's active variants in edit
+  /// mode; rows without an id insert server-side, id rows update in place.
+  late final List<_VariantRow> _variantRows = <_VariantRow>[
+    for (final variant
+        in widget.product?.variants ?? const <AdminProductVariantRef>[])
+      _VariantRow(id: variant.id)
+        ..name.text = variant.name
+        ..price.text =
+            variant.priceMinor == null ? '' : Money(variant.priceMinor!).format(),
+  ];
 
   void _addVariantRow() => setState(() => _variantRows.add(_VariantRow()));
 
@@ -126,6 +133,35 @@ class _AdminProductFormScreenState
       );
       return;
     }
+    // Variant rows: fully blank rows are ignored; a priced row needs a
+    // name; an empty price keeps tracking the base price (null on the wire).
+    final variants = <AdminProductVariantDraft>[];
+    for (final row in _variantRows) {
+      final name = row.name.text.trim();
+      final priceText = row.price.text.trim();
+      if (name.isEmpty && priceText.isEmpty) continue;
+      if (name.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Every priced variant needs a name'),
+          ),
+        );
+        return;
+      }
+      final variantPrice =
+          priceText.isEmpty ? null : _parseMoney(priceText);
+      if (variantPrice == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('"$name" has an invalid price')),
+        );
+        return;
+      }
+      variants.add(AdminProductVariantDraft(
+        id: row.id,
+        name: name,
+        priceMinor: variantPrice,
+      ));
+    }
     final draft = AdminProductDraft(
       id: widget.product?.id,
       // 2-role prototype (DESIGN.md §1.1): no store picker. Create passes
@@ -137,6 +173,7 @@ class _AdminProductFormScreenState
       description: _descriptionController.text.trim(),
       basePriceMinor: price,
       stock: stock,
+      variants: variants,
     );
     final controller = ref.read(adminProductsControllerProvider(null).notifier);
     if (widget.product == null) {
@@ -208,71 +245,62 @@ class _AdminProductFormScreenState
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
-          // Variant authoring (map §10.3, create-time only).
-          if (widget.product == null) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Variants', style: theme.textTheme.titleSmall),
-                TextButton.icon(
-                  onPressed: _addVariantRow,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add variant'),
-                ),
-              ],
-            ),
-            Text(
-              'Leave empty to auto-create a single Default variant. '
-              'A variant without a price tracks the base price.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+          // Variant authoring (map §10.3): name + optional price in both
+          // modes. Create: empty list → the server auto-creates a 'Default'
+          // variant. Edit: full-list sync — new rows insert, existing rows
+          // update, removed rows archive server-side.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Variants', style: theme.textTheme.titleSmall),
+              TextButton.icon(
+                onPressed: _addVariantRow,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add variant'),
               ),
+            ],
+          ),
+          Text(
+            'Leave the price empty to track the base price. Removing a '
+            'variant archives it.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-            for (final row in _variantRows)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: row.name,
-                        decoration: const InputDecoration(
-                          labelText: 'Variant name',
-                          isDense: true,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: row.price,
-                        decoration: const InputDecoration(
-                          labelText: 'Price (+ base optional)',
-                          prefixText: '\$ ',
-                          isDense: true,
-                          hintText: 'Base price',
-                        ),
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Remove variant',
-                      onPressed: () => _removeVariantRow(row),
-                      icon: const Icon(Icons.remove_circle_outline),
-                    ),
-                  ],
-                ),
-              ),
-          ] else
+          ),
+          for (final row in _variantRows)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Variants are authored at creation; editing existing '
-                'variants is not supported yet.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: row.name,
+                      decoration: const InputDecoration(
+                        labelText: 'Variant name',
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: row.price,
+                      decoration: const InputDecoration(
+                        labelText: 'Price (optional)',
+                        prefixText: '\$ ',
+                        isDense: true,
+                        hintText: 'Base price',
+                      ),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Remove variant',
+                    onPressed: () => _removeVariantRow(row),
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                ],
               ),
             ),
           const SizedBox(height: 12),
@@ -403,9 +431,12 @@ class _ImageTile extends StatelessWidget {
 }
 
 /// One editable variant row — owns its text controllers so removal can
-/// dispose them deterministically.
+/// dispose them deterministically. [id] is null for rows that insert
+/// server-side; non-null rows update the existing variant in place.
 class _VariantRow {
-  _VariantRow();
+  _VariantRow({this.id});
+
+  final String? id;
 
   final TextEditingController name = TextEditingController();
   final TextEditingController price = TextEditingController();
