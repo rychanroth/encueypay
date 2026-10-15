@@ -210,7 +210,8 @@ class AdminRepositoryImpl implements IAdminRepository {
     try {
       var request = _client.from('products').select(
             '*, brands(name), categories(name), '
-            'product_variants(id), product_images(id, storage_path, sort_order)',
+            'product_variants(id, name, price_minor, status), '
+            'product_images(id, storage_path, sort_order)',
           );
       final q = query?.trim() ?? '';
       if (q.isNotEmpty) {
@@ -240,6 +241,17 @@ class AdminRepositoryImpl implements IAdminRepository {
                     url: _productImageUrl(image.storagePath),
                   ))
               .toList(),
+          // Archived variants stay archived server-side; the form only
+          // authors actives.
+          variants: [
+            for (final variant in dto.productVariants)
+              if (variant.status != 'archived')
+                AdminProductVariantRef(
+                  id: variant.id ?? '',
+                  name: variant.name ?? '',
+                  priceMinor: variant.priceMinor,
+                ),
+          ],
         );
       }).toList();
     } on PostgrestException catch (e) {
@@ -325,8 +337,8 @@ class AdminRepositoryImpl implements IAdminRepository {
   @override
   Future<String> createProduct(AdminProductDraft draft) async {
     try {
-      // p_variants stays empty: admin_create_product auto-creates a 'Default'
-      // variant with a null price, which keeps tracking the base price.
+      // Empty p_variants → the server auto-creates a 'Default' variant with
+      // a null price, which keeps tracking the base price.
       final productId = await _client.rpc('admin_create_product', params: {
         'p_category_id': draft.categoryId,
         'p_name': draft.name,
@@ -334,7 +346,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
         'p_stock': draft.stock,
-        // Empty → the server auto-creates the 'Default' variant.
         'p_variants': [
           for (final variant in draft.variants)
             {'name': variant.name, 'price_minor': variant.priceMinor},
@@ -363,6 +374,16 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
         'p_stock': draft.stock,
+        // Full-list sync: id-less rows insert, id rows update in place,
+        // actives missing from the list archive server-side.
+        'p_variants': [
+          for (final variant in draft.variants)
+            {
+              if (variant.id != null) 'id': variant.id,
+              'name': variant.name,
+              'price_minor': variant.priceMinor,
+            },
+        ],
       });
     } on PostgrestException catch (e) {
       throw ServerFailure(e.message);
@@ -584,7 +605,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         orderCount: (map['order_count'] as int?) ?? 0,
         gmvMinor: (map['gmv_minor'] as int?) ?? 0,
         deliveryFeesMinor: (map['delivery_fees_minor'] as int?) ?? 0,
-        activeBusinesses: (map['active_businesses'] as int?) ?? 0,
         activeProducts: (map['active_products'] as int?) ?? 0,
       );
     } on PostgrestException catch (e) {

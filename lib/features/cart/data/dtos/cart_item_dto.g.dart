@@ -54,11 +54,6 @@ CartProductJoinDto _$CartProductJoinDtoFromJson(Map<String, dynamic> json) =>
               ?.map((e) => CartImageJoinDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      businesses: json['businesses'] == null
-          ? null
-          : CartBusinessJoinDto.fromJson(
-              json['businesses'] as Map<String, dynamic>,
-            ),
     );
 
 Map<String, dynamic> _$CartProductJoinDtoToJson(CartProductJoinDto instance) =>
@@ -68,7 +63,6 @@ Map<String, dynamic> _$CartProductJoinDtoToJson(CartProductJoinDto instance) =>
       'base_price_minor': instance.basePriceMinor,
       'stock': instance.stock,
       'product_images': instance.productImages,
-      'businesses': instance.businesses,
     };
 
 CartImageJoinDto _$CartImageJoinDtoFromJson(Map<String, dynamic> json) =>
@@ -82,13 +76,3 @@ Map<String, dynamic> _$CartImageJoinDtoToJson(CartImageJoinDto instance) =>
       'storage_path': instance.storagePath,
       'sort_order': instance.sortOrder,
     };
-
-CartBusinessJoinDto _$CartBusinessJoinDtoFromJson(Map<String, dynamic> json) =>
-    CartBusinessJoinDto(
-      id: json['id'] as String?,
-      name: json['name'] as String?,
-    );
-
-Map<String, dynamic> _$CartBusinessJoinDtoToJson(
-  CartBusinessJoinDto instance,
-) => <String, dynamic>{'id': instance.id, 'name': instance.name};

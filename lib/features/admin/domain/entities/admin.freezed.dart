@@ -564,7 +564,10 @@ as AdminCatalogStatus,
 /// @nodoc
 mixin _$AdminProductSummary {
 
- String get id; String get name; String get categoryId; String get categoryName; int get basePriceMinor; int get variantCount; int get stock; String get description; AdminCatalogStatus get status; String? get brandId; String? get brandName; List<AdminProductImageRef> get images;
+ String get id; String get name; String get categoryId; String get categoryName; int get basePriceMinor; int get variantCount; int get stock; String get description; AdminCatalogStatus get status; String? get brandId; String? get brandName; List<AdminProductImageRef> get images;/// Active variants for the edit form's variant editor (Section 2b).
+/// Archived variants stay server-side — they are unreachable for
+/// purchase and cannot be resurrected from the form.
+ List<AdminProductVariantRef> get variants;
 /// Create a copy of AdminProductSummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -575,16 +578,16 @@ $AdminProductSummaryCopyWith<AdminProductSummary> get copyWith => _$AdminProduct
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.variantCount, variantCount) || other.variantCount == variantCount)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other.images, images));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.variantCount, variantCount) || other.variantCount == variantCount)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other.images, images)&&const DeepCollectionEquality().equals(other.variants, variants));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,categoryId,categoryName,basePriceMinor,variantCount,stock,description,status,brandId,brandName,const DeepCollectionEquality().hash(images));
+int get hashCode => Object.hash(runtimeType,id,name,categoryId,categoryName,basePriceMinor,variantCount,stock,description,status,brandId,brandName,const DeepCollectionEquality().hash(images),const DeepCollectionEquality().hash(variants));
 
 @override
 String toString() {
-  return 'AdminProductSummary(id: $id, name: $name, categoryId: $categoryId, categoryName: $categoryName, basePriceMinor: $basePriceMinor, variantCount: $variantCount, stock: $stock, description: $description, status: $status, brandId: $brandId, brandName: $brandName, images: $images)';
+  return 'AdminProductSummary(id: $id, name: $name, categoryId: $categoryId, categoryName: $categoryName, basePriceMinor: $basePriceMinor, variantCount: $variantCount, stock: $stock, description: $description, status: $status, brandId: $brandId, brandName: $brandName, images: $images, variants: $variants)';
 }
 
 
@@ -595,7 +598,7 @@ abstract mixin class $AdminProductSummaryCopyWith<$Res>  {
   factory $AdminProductSummaryCopyWith(AdminProductSummary value, $Res Function(AdminProductSummary) _then) = _$AdminProductSummaryCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String categoryId, String categoryName, int basePriceMinor, int variantCount, int stock, String description, AdminCatalogStatus status, String? brandId, String? brandName, List<AdminProductImageRef> images
+ String id, String name, String categoryId, String categoryName, int basePriceMinor, int variantCount, int stock, String description, AdminCatalogStatus status, String? brandId, String? brandName, List<AdminProductImageRef> images, List<AdminProductVariantRef> variants
 });
 
 
@@ -612,7 +615,7 @@ class _$AdminProductSummaryCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? categoryId = null,Object? categoryName = null,Object? basePriceMinor = null,Object? variantCount = null,Object? stock = null,Object? description = null,Object? status = null,Object? brandId = freezed,Object? brandName = freezed,Object? images = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? categoryId = null,Object? categoryName = null,Object? basePriceMinor = null,Object? variantCount = null,Object? stock = null,Object? description = null,Object? status = null,Object? brandId = freezed,Object? brandName = freezed,Object? images = null,Object? variants = null,}) {
   return _then(AdminProductSummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -626,7 +629,8 @@ as String,status: null == status ? _self.status : status // ignore: cast_nullabl
 as AdminCatalogStatus,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
 as String?,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String?,images: null == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
-as List<AdminProductImageRef>,
+as List<AdminProductImageRef>,variants: null == variants ? _self.variants : variants // ignore: cast_nullable_to_non_nullable
+as List<AdminProductVariantRef>,
   ));
 }
 
@@ -711,10 +715,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String categoryId,  String categoryName,  int basePriceMinor,  int variantCount,  int stock,  String description,  AdminCatalogStatus status,  String? brandId,  String? brandName,  List<AdminProductImageRef> images)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String categoryId,  String categoryName,  int basePriceMinor,  int variantCount,  int stock,  String description,  AdminCatalogStatus status,  String? brandId,  String? brandName,  List<AdminProductImageRef> images,  List<AdminProductVariantRef> variants)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminProductSummary() when $default != null:
-return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.basePriceMinor,_that.variantCount,_that.stock,_that.description,_that.status,_that.brandId,_that.brandName,_that.images);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.basePriceMinor,_that.variantCount,_that.stock,_that.description,_that.status,_that.brandId,_that.brandName,_that.images,_that.variants);case _:
   return orElse();
 
 }
@@ -732,10 +736,10 @@ return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.ba
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String categoryId,  String categoryName,  int basePriceMinor,  int variantCount,  int stock,  String description,  AdminCatalogStatus status,  String? brandId,  String? brandName,  List<AdminProductImageRef> images)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String categoryId,  String categoryName,  int basePriceMinor,  int variantCount,  int stock,  String description,  AdminCatalogStatus status,  String? brandId,  String? brandName,  List<AdminProductImageRef> images,  List<AdminProductVariantRef> variants)  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductSummary():
-return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.basePriceMinor,_that.variantCount,_that.stock,_that.description,_that.status,_that.brandId,_that.brandName,_that.images);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.basePriceMinor,_that.variantCount,_that.stock,_that.description,_that.status,_that.brandId,_that.brandName,_that.images,_that.variants);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -752,10 +756,10 @@ return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.ba
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String categoryId,  String categoryName,  int basePriceMinor,  int variantCount,  int stock,  String description,  AdminCatalogStatus status,  String? brandId,  String? brandName,  List<AdminProductImageRef> images)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String categoryId,  String categoryName,  int basePriceMinor,  int variantCount,  int stock,  String description,  AdminCatalogStatus status,  String? brandId,  String? brandName,  List<AdminProductImageRef> images,  List<AdminProductVariantRef> variants)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductSummary() when $default != null:
-return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.basePriceMinor,_that.variantCount,_that.stock,_that.description,_that.status,_that.brandId,_that.brandName,_that.images);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.basePriceMinor,_that.variantCount,_that.stock,_that.description,_that.status,_that.brandId,_that.brandName,_that.images,_that.variants);case _:
   return null;
 
 }
@@ -767,7 +771,7 @@ return $default(_that.id,_that.name,_that.categoryId,_that.categoryName,_that.ba
 
 
 class _AdminProductSummary implements AdminProductSummary {
-  const _AdminProductSummary({required this.id, required this.name, required this.categoryId, required this.categoryName, required this.basePriceMinor, required this.variantCount, required this.stock, this.description = '', this.status = AdminCatalogStatus.active, this.brandId, this.brandName,  List<AdminProductImageRef> images = const []}): _images = images;
+  const _AdminProductSummary({required this.id, required this.name, required this.categoryId, required this.categoryName, required this.basePriceMinor, required this.variantCount, required this.stock, this.description = '', this.status = AdminCatalogStatus.active, this.brandId, this.brandName,  List<AdminProductImageRef> images = const [],  List<AdminProductVariantRef> variants = const []}): _images = images,_variants = variants;
   
 
 @override final  String id;
@@ -788,6 +792,19 @@ class _AdminProductSummary implements AdminProductSummary {
   return EqualUnmodifiableListView(_images);
 }
 
+/// Active variants for the edit form's variant editor (Section 2b).
+/// Archived variants stay server-side — they are unreachable for
+/// purchase and cannot be resurrected from the form.
+ final  List<AdminProductVariantRef> _variants;
+/// Active variants for the edit form's variant editor (Section 2b).
+/// Archived variants stay server-side — they are unreachable for
+/// purchase and cannot be resurrected from the form.
+@override@JsonKey() List<AdminProductVariantRef> get variants {
+  if (_variants is EqualUnmodifiableListView) return _variants;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_variants);
+}
+
 
 /// Create a copy of AdminProductSummary
 /// with the given fields replaced by the non-null parameter values.
@@ -799,16 +816,16 @@ _$AdminProductSummaryCopyWith<_AdminProductSummary> get copyWith => __$AdminProd
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.variantCount, variantCount) || other.variantCount == variantCount)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other._images, _images));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.basePriceMinor, basePriceMinor) || other.basePriceMinor == basePriceMinor)&&(identical(other.variantCount, variantCount) || other.variantCount == variantCount)&&(identical(other.stock, stock) || other.stock == stock)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other._images, _images)&&const DeepCollectionEquality().equals(other._variants, _variants));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,categoryId,categoryName,basePriceMinor,variantCount,stock,description,status,brandId,brandName,const DeepCollectionEquality().hash(_images));
+int get hashCode => Object.hash(runtimeType,id,name,categoryId,categoryName,basePriceMinor,variantCount,stock,description,status,brandId,brandName,const DeepCollectionEquality().hash(_images),const DeepCollectionEquality().hash(_variants));
 
 @override
 String toString() {
-  return 'AdminProductSummary(id: $id, name: $name, categoryId: $categoryId, categoryName: $categoryName, basePriceMinor: $basePriceMinor, variantCount: $variantCount, stock: $stock, description: $description, status: $status, brandId: $brandId, brandName: $brandName, images: $images)';
+  return 'AdminProductSummary(id: $id, name: $name, categoryId: $categoryId, categoryName: $categoryName, basePriceMinor: $basePriceMinor, variantCount: $variantCount, stock: $stock, description: $description, status: $status, brandId: $brandId, brandName: $brandName, images: $images, variants: $variants)';
 }
 
 
@@ -819,7 +836,7 @@ abstract mixin class _$AdminProductSummaryCopyWith<$Res> implements $AdminProduc
   factory _$AdminProductSummaryCopyWith(_AdminProductSummary value, $Res Function(_AdminProductSummary) _then) = __$AdminProductSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String categoryId, String categoryName, int basePriceMinor, int variantCount, int stock, String description, AdminCatalogStatus status, String? brandId, String? brandName, List<AdminProductImageRef> images
+ String id, String name, String categoryId, String categoryName, int basePriceMinor, int variantCount, int stock, String description, AdminCatalogStatus status, String? brandId, String? brandName, List<AdminProductImageRef> images, List<AdminProductVariantRef> variants
 });
 
 
@@ -836,7 +853,7 @@ class __$AdminProductSummaryCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? categoryId = null,Object? categoryName = null,Object? basePriceMinor = null,Object? variantCount = null,Object? stock = null,Object? description = null,Object? status = null,Object? brandId = freezed,Object? brandName = freezed,Object? images = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? categoryId = null,Object? categoryName = null,Object? basePriceMinor = null,Object? variantCount = null,Object? stock = null,Object? description = null,Object? status = null,Object? brandId = freezed,Object? brandName = freezed,Object? images = null,Object? variants = null,}) {
   return _then(_AdminProductSummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -850,7 +867,8 @@ as String,status: null == status ? _self.status : status // ignore: cast_nullabl
 as AdminCatalogStatus,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
 as String?,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String?,images: null == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
-as List<AdminProductImageRef>,
+as List<AdminProductImageRef>,variants: null == variants ? _self._variants : variants // ignore: cast_nullable_to_non_nullable
+as List<AdminProductVariantRef>,
   ));
 }
 
@@ -1121,14 +1139,281 @@ as String,
 }
 
 /// @nodoc
+mixin _$AdminProductVariantRef {
+
+ String get id; String get name;/// Null tracks the product's base price (server rule §1.2).
+ int? get priceMinor;
+/// Create a copy of AdminProductVariantRef
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminProductVariantRefCopyWith<AdminProductVariantRef> get copyWith => _$AdminProductVariantRefCopyWithImpl<AdminProductVariantRef>(this as AdminProductVariantRef, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductVariantRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor);
+
+@override
+String toString() {
+  return 'AdminProductVariantRef(id: $id, name: $name, priceMinor: $priceMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminProductVariantRefCopyWith<$Res>  {
+  factory $AdminProductVariantRefCopyWith(AdminProductVariantRef value, $Res Function(AdminProductVariantRef) _then) = _$AdminProductVariantRefCopyWithImpl;
+@useResult
+$Res call({
+ String id, String name, int? priceMinor
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminProductVariantRefCopyWithImpl<$Res>
+    implements $AdminProductVariantRefCopyWith<$Res> {
+  _$AdminProductVariantRefCopyWithImpl(this._self, this._then);
+
+  final AdminProductVariantRef _self;
+  final $Res Function(AdminProductVariantRef) _then;
+
+/// Create a copy of AdminProductVariantRef
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? priceMinor = freezed,}) {
+  return _then(AdminProductVariantRef(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminProductVariantRef].
+extension AdminProductVariantRefPatterns on AdminProductVariantRef {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminProductVariantRef value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminProductVariantRef() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminProductVariantRef value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductVariantRef():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminProductVariantRef value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductVariantRef() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int? priceMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminProductVariantRef() when $default != null:
+return $default(_that.id,_that.name,_that.priceMinor);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int? priceMinor)  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductVariantRef():
+return $default(_that.id,_that.name,_that.priceMinor);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int? priceMinor)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductVariantRef() when $default != null:
+return $default(_that.id,_that.name,_that.priceMinor);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminProductVariantRef implements AdminProductVariantRef {
+  const _AdminProductVariantRef({required this.id, required this.name, this.priceMinor});
+  
+
+@override final  String id;
+@override final  String name;
+/// Null tracks the product's base price (server rule §1.2).
+@override final  int? priceMinor;
+
+/// Create a copy of AdminProductVariantRef
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminProductVariantRefCopyWith<_AdminProductVariantRef> get copyWith => __$AdminProductVariantRefCopyWithImpl<_AdminProductVariantRef>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductVariantRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor);
+
+@override
+String toString() {
+  return 'AdminProductVariantRef(id: $id, name: $name, priceMinor: $priceMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminProductVariantRefCopyWith<$Res> implements $AdminProductVariantRefCopyWith<$Res> {
+  factory _$AdminProductVariantRefCopyWith(_AdminProductVariantRef value, $Res Function(_AdminProductVariantRef) _then) = __$AdminProductVariantRefCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String name, int? priceMinor
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminProductVariantRefCopyWithImpl<$Res>
+    implements _$AdminProductVariantRefCopyWith<$Res> {
+  __$AdminProductVariantRefCopyWithImpl(this._self, this._then);
+
+  final _AdminProductVariantRef _self;
+  final $Res Function(_AdminProductVariantRef) _then;
+
+/// Create a copy of AdminProductVariantRef
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? priceMinor = freezed,}) {
+  return _then(_AdminProductVariantRef(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
+as int?,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$AdminProductDraft {
 
  String? get id;/// Null on create — the server resolves (or provisions) the singleton
 /// prototype business (DESIGN.md §1.1); edits carry the product's
 /// existing business.
- String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;/// Create-time variant authoring (map §10.3): empty → the server
-/// auto-creates a 'Default' variant whose null price tracks the base
-/// price. The update RPC does not touch variants.
+ String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;/// Desired variant list. Create: empty → the server auto-creates a
+/// 'Default' variant whose null price tracks the base price. Update:
+/// rows with an [AdminProductVariantDraft.id] update in place, id-less
+/// rows are inserted, and active variants missing from the list are
+/// archived server-side (full-list sync).
  List<AdminProductVariantDraft> get variants;
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1341,13 +1626,17 @@ class _AdminProductDraft implements AdminProductDraft {
 @override@JsonKey() final  String description;
 @override final  int basePriceMinor;
 @override@JsonKey() final  int stock;
-/// Create-time variant authoring (map §10.3): empty → the server
-/// auto-creates a 'Default' variant whose null price tracks the base
-/// price. The update RPC does not touch variants.
+/// Desired variant list. Create: empty → the server auto-creates a
+/// 'Default' variant whose null price tracks the base price. Update:
+/// rows with an [AdminProductVariantDraft.id] update in place, id-less
+/// rows are inserted, and active variants missing from the list are
+/// archived server-side (full-list sync).
  final  List<AdminProductVariantDraft> _variants;
-/// Create-time variant authoring (map §10.3): empty → the server
-/// auto-creates a 'Default' variant whose null price tracks the base
-/// price. The update RPC does not touch variants.
+/// Desired variant list. Create: empty → the server auto-creates a
+/// 'Default' variant whose null price tracks the base price. Update:
+/// rows with an [AdminProductVariantDraft.id] update in place, id-less
+/// rows are inserted, and active variants missing from the list are
+/// archived server-side (full-list sync).
 @override@JsonKey() List<AdminProductVariantDraft> get variants {
   if (_variants is EqualUnmodifiableListView) return _variants;
   // ignore: implicit_dynamic_type
@@ -1422,7 +1711,7 @@ as List<AdminProductVariantDraft>,
 /// @nodoc
 mixin _$AdminProductVariantDraft {
 
- String get name;/// Null tracks the product's base price (server rule §1.2).
+ String? get id; String get name;/// Null tracks the product's base price (server rule §1.2).
  int? get priceMinor;
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1434,16 +1723,16 @@ $AdminProductVariantDraftCopyWith<AdminProductVariantDraft> get copyWith => _$Ad
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductVariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductVariantDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,priceMinor);
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor);
 
 @override
 String toString() {
-  return 'AdminProductVariantDraft(name: $name, priceMinor: $priceMinor)';
+  return 'AdminProductVariantDraft(id: $id, name: $name, priceMinor: $priceMinor)';
 }
 
 
@@ -1454,7 +1743,7 @@ abstract mixin class $AdminProductVariantDraftCopyWith<$Res>  {
   factory $AdminProductVariantDraftCopyWith(AdminProductVariantDraft value, $Res Function(AdminProductVariantDraft) _then) = _$AdminProductVariantDraftCopyWithImpl;
 @useResult
 $Res call({
- String name, int? priceMinor
+ String? id, String name, int? priceMinor
 });
 
 
@@ -1471,9 +1760,10 @@ class _$AdminProductVariantDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? priceMinor = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? priceMinor = freezed,}) {
   return _then(AdminProductVariantDraft(
-name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
@@ -1560,10 +1850,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int? priceMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  int? priceMinor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminProductVariantDraft() when $default != null:
-return $default(_that.name,_that.priceMinor);case _:
+return $default(_that.id,_that.name,_that.priceMinor);case _:
   return orElse();
 
 }
@@ -1581,10 +1871,10 @@ return $default(_that.name,_that.priceMinor);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int? priceMinor)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  int? priceMinor)  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductVariantDraft():
-return $default(_that.name,_that.priceMinor);case _:
+return $default(_that.id,_that.name,_that.priceMinor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1601,10 +1891,10 @@ return $default(_that.name,_that.priceMinor);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int? priceMinor)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  int? priceMinor)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductVariantDraft() when $default != null:
-return $default(_that.name,_that.priceMinor);case _:
+return $default(_that.id,_that.name,_that.priceMinor);case _:
   return null;
 
 }
@@ -1616,9 +1906,10 @@ return $default(_that.name,_that.priceMinor);case _:
 
 
 class _AdminProductVariantDraft implements AdminProductVariantDraft {
-  const _AdminProductVariantDraft({required this.name, this.priceMinor});
+  const _AdminProductVariantDraft({this.id, required this.name, this.priceMinor});
   
 
+@override final  String? id;
 @override final  String name;
 /// Null tracks the product's base price (server rule §1.2).
 @override final  int? priceMinor;
@@ -1633,16 +1924,16 @@ _$AdminProductVariantDraftCopyWith<_AdminProductVariantDraft> get copyWith => __
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductVariantDraft&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductVariantDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,priceMinor);
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor);
 
 @override
 String toString() {
-  return 'AdminProductVariantDraft(name: $name, priceMinor: $priceMinor)';
+  return 'AdminProductVariantDraft(id: $id, name: $name, priceMinor: $priceMinor)';
 }
 
 
@@ -1653,7 +1944,7 @@ abstract mixin class _$AdminProductVariantDraftCopyWith<$Res> implements $AdminP
   factory _$AdminProductVariantDraftCopyWith(_AdminProductVariantDraft value, $Res Function(_AdminProductVariantDraft) _then) = __$AdminProductVariantDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String name, int? priceMinor
+ String? id, String name, int? priceMinor
 });
 
 
@@ -1670,9 +1961,10 @@ class __$AdminProductVariantDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? priceMinor = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? priceMinor = freezed,}) {
   return _then(_AdminProductVariantDraft(
-name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
@@ -2790,7 +3082,7 @@ as String?,
 /// @nodoc
 mixin _$PlatformAnalyticsReport {
 
- int get orderCount; int get gmvMinor; int get deliveryFeesMinor; int get activeBusinesses; int get activeProducts;
+ int get orderCount; int get gmvMinor; int get deliveryFeesMinor; int get activeProducts;
 /// Create a copy of PlatformAnalyticsReport
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2801,16 +3093,16 @@ $PlatformAnalyticsReportCopyWith<PlatformAnalyticsReport> get copyWith => _$Plat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformAnalyticsReport&&(identical(other.orderCount, orderCount) || other.orderCount == orderCount)&&(identical(other.gmvMinor, gmvMinor) || other.gmvMinor == gmvMinor)&&(identical(other.deliveryFeesMinor, deliveryFeesMinor) || other.deliveryFeesMinor == deliveryFeesMinor)&&(identical(other.activeBusinesses, activeBusinesses) || other.activeBusinesses == activeBusinesses)&&(identical(other.activeProducts, activeProducts) || other.activeProducts == activeProducts));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformAnalyticsReport&&(identical(other.orderCount, orderCount) || other.orderCount == orderCount)&&(identical(other.gmvMinor, gmvMinor) || other.gmvMinor == gmvMinor)&&(identical(other.deliveryFeesMinor, deliveryFeesMinor) || other.deliveryFeesMinor == deliveryFeesMinor)&&(identical(other.activeProducts, activeProducts) || other.activeProducts == activeProducts));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,orderCount,gmvMinor,deliveryFeesMinor,activeBusinesses,activeProducts);
+int get hashCode => Object.hash(runtimeType,orderCount,gmvMinor,deliveryFeesMinor,activeProducts);
 
 @override
 String toString() {
-  return 'PlatformAnalyticsReport(orderCount: $orderCount, gmvMinor: $gmvMinor, deliveryFeesMinor: $deliveryFeesMinor, activeBusinesses: $activeBusinesses, activeProducts: $activeProducts)';
+  return 'PlatformAnalyticsReport(orderCount: $orderCount, gmvMinor: $gmvMinor, deliveryFeesMinor: $deliveryFeesMinor, activeProducts: $activeProducts)';
 }
 
 
@@ -2821,7 +3113,7 @@ abstract mixin class $PlatformAnalyticsReportCopyWith<$Res>  {
   factory $PlatformAnalyticsReportCopyWith(PlatformAnalyticsReport value, $Res Function(PlatformAnalyticsReport) _then) = _$PlatformAnalyticsReportCopyWithImpl;
 @useResult
 $Res call({
- int orderCount, int gmvMinor, int deliveryFeesMinor, int activeBusinesses, int activeProducts
+ int orderCount, int gmvMinor, int deliveryFeesMinor, int activeProducts
 });
 
 
@@ -2838,12 +3130,11 @@ class _$PlatformAnalyticsReportCopyWithImpl<$Res>
 
 /// Create a copy of PlatformAnalyticsReport
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? orderCount = null,Object? gmvMinor = null,Object? deliveryFeesMinor = null,Object? activeBusinesses = null,Object? activeProducts = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? orderCount = null,Object? gmvMinor = null,Object? deliveryFeesMinor = null,Object? activeProducts = null,}) {
   return _then(PlatformAnalyticsReport(
 orderCount: null == orderCount ? _self.orderCount : orderCount // ignore: cast_nullable_to_non_nullable
 as int,gmvMinor: null == gmvMinor ? _self.gmvMinor : gmvMinor // ignore: cast_nullable_to_non_nullable
 as int,deliveryFeesMinor: null == deliveryFeesMinor ? _self.deliveryFeesMinor : deliveryFeesMinor // ignore: cast_nullable_to_non_nullable
-as int,activeBusinesses: null == activeBusinesses ? _self.activeBusinesses : activeBusinesses // ignore: cast_nullable_to_non_nullable
 as int,activeProducts: null == activeProducts ? _self.activeProducts : activeProducts // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -2930,10 +3221,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int orderCount,  int gmvMinor,  int deliveryFeesMinor,  int activeBusinesses,  int activeProducts)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int orderCount,  int gmvMinor,  int deliveryFeesMinor,  int activeProducts)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlatformAnalyticsReport() when $default != null:
-return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.activeBusinesses,_that.activeProducts);case _:
+return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.activeProducts);case _:
   return orElse();
 
 }
@@ -2951,10 +3242,10 @@ return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.ac
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int orderCount,  int gmvMinor,  int deliveryFeesMinor,  int activeBusinesses,  int activeProducts)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int orderCount,  int gmvMinor,  int deliveryFeesMinor,  int activeProducts)  $default,) {final _that = this;
 switch (_that) {
 case _PlatformAnalyticsReport():
-return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.activeBusinesses,_that.activeProducts);case _:
+return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.activeProducts);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2971,10 +3262,10 @@ return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.ac
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int orderCount,  int gmvMinor,  int deliveryFeesMinor,  int activeBusinesses,  int activeProducts)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int orderCount,  int gmvMinor,  int deliveryFeesMinor,  int activeProducts)?  $default,) {final _that = this;
 switch (_that) {
 case _PlatformAnalyticsReport() when $default != null:
-return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.activeBusinesses,_that.activeProducts);case _:
+return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.activeProducts);case _:
   return null;
 
 }
@@ -2986,13 +3277,12 @@ return $default(_that.orderCount,_that.gmvMinor,_that.deliveryFeesMinor,_that.ac
 
 
 class _PlatformAnalyticsReport implements PlatformAnalyticsReport {
-  const _PlatformAnalyticsReport({required this.orderCount, required this.gmvMinor, required this.deliveryFeesMinor, required this.activeBusinesses, required this.activeProducts});
+  const _PlatformAnalyticsReport({required this.orderCount, required this.gmvMinor, required this.deliveryFeesMinor, required this.activeProducts});
   
 
 @override final  int orderCount;
 @override final  int gmvMinor;
 @override final  int deliveryFeesMinor;
-@override final  int activeBusinesses;
 @override final  int activeProducts;
 
 /// Create a copy of PlatformAnalyticsReport
@@ -3005,16 +3295,16 @@ _$PlatformAnalyticsReportCopyWith<_PlatformAnalyticsReport> get copyWith => __$P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformAnalyticsReport&&(identical(other.orderCount, orderCount) || other.orderCount == orderCount)&&(identical(other.gmvMinor, gmvMinor) || other.gmvMinor == gmvMinor)&&(identical(other.deliveryFeesMinor, deliveryFeesMinor) || other.deliveryFeesMinor == deliveryFeesMinor)&&(identical(other.activeBusinesses, activeBusinesses) || other.activeBusinesses == activeBusinesses)&&(identical(other.activeProducts, activeProducts) || other.activeProducts == activeProducts));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformAnalyticsReport&&(identical(other.orderCount, orderCount) || other.orderCount == orderCount)&&(identical(other.gmvMinor, gmvMinor) || other.gmvMinor == gmvMinor)&&(identical(other.deliveryFeesMinor, deliveryFeesMinor) || other.deliveryFeesMinor == deliveryFeesMinor)&&(identical(other.activeProducts, activeProducts) || other.activeProducts == activeProducts));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,orderCount,gmvMinor,deliveryFeesMinor,activeBusinesses,activeProducts);
+int get hashCode => Object.hash(runtimeType,orderCount,gmvMinor,deliveryFeesMinor,activeProducts);
 
 @override
 String toString() {
-  return 'PlatformAnalyticsReport(orderCount: $orderCount, gmvMinor: $gmvMinor, deliveryFeesMinor: $deliveryFeesMinor, activeBusinesses: $activeBusinesses, activeProducts: $activeProducts)';
+  return 'PlatformAnalyticsReport(orderCount: $orderCount, gmvMinor: $gmvMinor, deliveryFeesMinor: $deliveryFeesMinor, activeProducts: $activeProducts)';
 }
 
 
@@ -3025,7 +3315,7 @@ abstract mixin class _$PlatformAnalyticsReportCopyWith<$Res> implements $Platfor
   factory _$PlatformAnalyticsReportCopyWith(_PlatformAnalyticsReport value, $Res Function(_PlatformAnalyticsReport) _then) = __$PlatformAnalyticsReportCopyWithImpl;
 @override @useResult
 $Res call({
- int orderCount, int gmvMinor, int deliveryFeesMinor, int activeBusinesses, int activeProducts
+ int orderCount, int gmvMinor, int deliveryFeesMinor, int activeProducts
 });
 
 
@@ -3042,12 +3332,11 @@ class __$PlatformAnalyticsReportCopyWithImpl<$Res>
 
 /// Create a copy of PlatformAnalyticsReport
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? orderCount = null,Object? gmvMinor = null,Object? deliveryFeesMinor = null,Object? activeBusinesses = null,Object? activeProducts = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? orderCount = null,Object? gmvMinor = null,Object? deliveryFeesMinor = null,Object? activeProducts = null,}) {
   return _then(_PlatformAnalyticsReport(
 orderCount: null == orderCount ? _self.orderCount : orderCount // ignore: cast_nullable_to_non_nullable
 as int,gmvMinor: null == gmvMinor ? _self.gmvMinor : gmvMinor // ignore: cast_nullable_to_non_nullable
 as int,deliveryFeesMinor: null == deliveryFeesMinor ? _self.deliveryFeesMinor : deliveryFeesMinor // ignore: cast_nullable_to_non_nullable
-as int,activeBusinesses: null == activeBusinesses ? _self.activeBusinesses : activeBusinesses // ignore: cast_nullable_to_non_nullable
 as int,activeProducts: null == activeProducts ? _self.activeProducts : activeProducts // ignore: cast_nullable_to_non_nullable
 as int,
   ));

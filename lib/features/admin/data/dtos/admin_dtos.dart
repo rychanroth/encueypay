@@ -120,7 +120,7 @@ class AdminNamedJoinDto {
 }
 
 /// Wire shape of the `products` row for the admin catalog list (Section 2b,
-/// DATA-01): every status, with brand/category/business names embedded.
+/// DATA-01): every status, with brand/category names embedded.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AdminProductRowDto {
   const AdminProductRowDto({
@@ -135,7 +135,6 @@ class AdminProductRowDto {
     this.stock = 0,
     this.brands,
     this.categories,
-    this.businesses,
     this.productVariants = const [],
     this.productImages = const [],
   });
@@ -162,12 +161,10 @@ class AdminProductRowDto {
   @JsonKey(name: 'categories')
   final AdminNamedJoinDto? categories;
 
-  @JsonKey(name: 'businesses')
-  final AdminNamedJoinDto? businesses;
-
-  /// Price-only embed — used for the variant count.
+  /// Full variant embed (id/name/price/status) — drives the product form's
+  /// variant editor and the list's variant count.
   @JsonKey(name: 'product_variants', defaultValue: [])
-  final List<AdminVariantIdJoinDto> productVariants;
+  final List<AdminVariantJoinDto> productVariants;
 
   @JsonKey(name: 'product_images', defaultValue: [])
   final List<AdminProductImagePathDto> productImages;
@@ -176,15 +173,21 @@ class AdminProductRowDto {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AdminVariantIdJoinDto {
-  const AdminVariantIdJoinDto({this.id});
+class AdminVariantJoinDto {
+  const AdminVariantJoinDto({this.id, this.name, this.priceMinor, this.status});
 
-  factory AdminVariantIdJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminVariantIdJoinDtoFromJson(json);
+  factory AdminVariantJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminVariantJoinDtoFromJson(json);
 
   final String? id;
+  final String? name;
+  final int? priceMinor;
 
-  Map<String, dynamic> toJson() => _$AdminVariantIdJoinDtoToJson(this);
+  /// `product_status` on the wire — the repository surfaces actives only
+  /// (archived variants are unreachable for purchase and stay archived).
+  final String? status;
+
+  Map<String, dynamic> toJson() => _$AdminVariantJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

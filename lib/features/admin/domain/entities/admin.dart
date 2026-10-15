@@ -37,7 +37,7 @@ abstract class AdminBrand with _$AdminBrand {
 
 /// Product row for the admin catalog view (spec §8 "manages Products",
 /// Section 2b): all statuses, with display names resolved server-side.
-/// Category/business/brand ids ride along so the edit form can preselect
+/// Category/brand ids ride along so the edit form can preselect
 /// its dropdowns.
 @freezed
 abstract class AdminProductSummary with _$AdminProductSummary {
@@ -54,6 +54,11 @@ abstract class AdminProductSummary with _$AdminProductSummary {
     String? brandId,
     String? brandName,
     @Default([]) List<AdminProductImageRef> images,
+
+    /// Active variants for the edit form's variant editor (Section 2b).
+    /// Archived variants stay server-side — they are unreachable for
+    /// purchase and cannot be resurrected from the form.
+    @Default([]) List<AdminProductVariantRef> variants,
   }) = _AdminProductSummary;
 }
 
@@ -79,7 +84,18 @@ abstract class AdminProductImageRef with _$AdminProductImageRef {
   }) = _AdminProductImageRef;
 }
 
-/// Slim business reference for the product form's store picker (Section 2b).
+/// Existing active variant on a product, for the edit form (Section 2b).
+@freezed
+abstract class AdminProductVariantRef with _$AdminProductVariantRef {
+  const factory AdminProductVariantRef({
+    required String id,
+    required String name,
+
+    /// Null tracks the product's base price (server rule §1.2).
+    int? priceMinor,
+  }) = _AdminProductVariantRef;
+}
+
 /// Form input for creating/updating a product (Section 2b). [id] is null for
 /// creation; [brandId] is nullable — a product may be brand-less. [stock] is
 /// product-wide (Section 2d): purchasing any variant deducts it.
@@ -98,18 +114,24 @@ abstract class AdminProductDraft with _$AdminProductDraft {
     required int basePriceMinor,
     @Default(0) int stock,
 
-    /// Create-time variant authoring (map §10.3): empty → the server
-    /// auto-creates a 'Default' variant whose null price tracks the base
-    /// price. The update RPC does not touch variants.
+    /// Desired variant list. Create: empty → the server auto-creates a
+    /// 'Default' variant whose null price tracks the base price. Update:
+    /// rows with an [AdminProductVariantDraft.id] update in place, id-less
+    /// rows are inserted, and active variants missing from the list are
+    /// archived server-side (full-list sync).
     @Default([]) List<AdminProductVariantDraft> variants,
   }) = _AdminProductDraft;
 }
 
-/// One variant row authored in the product form.
+/// One variant row authored in the product form. [id] is null for new rows
+/// (fresh authoring on create or edit); non-null rows update the existing
+/// variant in place.
 @freezed
 abstract class AdminProductVariantDraft with _$AdminProductVariantDraft {
   const factory AdminProductVariantDraft({
+    String? id,
     required String name,
+
     /// Null tracks the product's base price (server rule §1.2).
     int? priceMinor,
   }) = _AdminProductVariantDraft;
@@ -218,7 +240,6 @@ abstract class PlatformAnalyticsReport with _$PlatformAnalyticsReport {
     required int orderCount,
     required int gmvMinor,
     required int deliveryFeesMinor,
-    required int activeBusinesses,
     required int activeProducts,
   }) = _PlatformAnalyticsReport;
 }

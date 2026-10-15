@@ -74,7 +74,6 @@ class CheckoutProductJoinDto {
   const CheckoutProductJoinDto({
     this.name,
     this.basePriceMinor,
-    this.businesses,
   });
 
   factory CheckoutProductJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -83,22 +82,7 @@ class CheckoutProductJoinDto {
   final String? name;
   final int? basePriceMinor;
 
-  @JsonKey(name: 'businesses')
-  final CheckoutBusinessJoinDto? businesses;
-
   Map<String, dynamic> toJson() => _$CheckoutProductJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CheckoutBusinessJoinDto {
-  const CheckoutBusinessJoinDto({this.name});
-
-  factory CheckoutBusinessJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CheckoutBusinessJoinDtoFromJson(json);
-
-  final String? name;
-
-  Map<String, dynamic> toJson() => _$CheckoutBusinessJoinDtoToJson(this);
 }
 
 /// Wire shape of the `platform_settings` singleton (DATA-01).

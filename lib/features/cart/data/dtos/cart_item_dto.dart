@@ -56,7 +56,6 @@ class CartProductJoinDto {
     this.basePriceMinor,
     this.stock = 0,
     this.productImages = const [],
-    this.businesses,
   });
 
   factory CartProductJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -72,9 +71,6 @@ class CartProductJoinDto {
 
   @JsonKey(name: 'product_images', defaultValue: [])
   final List<CartImageJoinDto> productImages;
-
-  @JsonKey(name: 'businesses')
-  final CartBusinessJoinDto? businesses;
 
   Map<String, dynamic> toJson() => _$CartProductJoinDtoToJson(this);
 }
@@ -92,17 +88,4 @@ class CartImageJoinDto {
   final int sortOrder;
 
   Map<String, dynamic> toJson() => _$CartImageJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CartBusinessJoinDto {
-  const CartBusinessJoinDto({this.id, this.name});
-
-  factory CartBusinessJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CartBusinessJoinDtoFromJson(json);
-
-  final String? id;
-  final String? name;
-
-  Map<String, dynamic> toJson() => _$CartBusinessJoinDtoToJson(this);
 }

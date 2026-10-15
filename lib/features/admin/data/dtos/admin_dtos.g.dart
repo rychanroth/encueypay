@@ -110,14 +110,9 @@ AdminProductRowDto _$AdminProductRowDtoFromJson(
   categories: json['categories'] == null
       ? null
       : AdminNamedJoinDto.fromJson(json['categories'] as Map<String, dynamic>),
-  businesses: json['businesses'] == null
-      ? null
-      : AdminNamedJoinDto.fromJson(json['businesses'] as Map<String, dynamic>),
   productVariants:
       (json['product_variants'] as List<dynamic>?)
-          ?.map(
-            (e) => AdminVariantIdJoinDto.fromJson(e as Map<String, dynamic>),
-          )
+          ?.map((e) => AdminVariantJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
   productImages:
@@ -142,18 +137,26 @@ Map<String, dynamic> _$AdminProductRowDtoToJson(AdminProductRowDto instance) =>
       'stock': instance.stock,
       'brands': instance.brands,
       'categories': instance.categories,
-      'businesses': instance.businesses,
       'product_variants': instance.productVariants,
       'product_images': instance.productImages,
     };
 
-AdminVariantIdJoinDto _$AdminVariantIdJoinDtoFromJson(
-  Map<String, dynamic> json,
-) => AdminVariantIdJoinDto(id: json['id'] as String?);
+AdminVariantJoinDto _$AdminVariantJoinDtoFromJson(Map<String, dynamic> json) =>
+    AdminVariantJoinDto(
+      id: json['id'] as String?,
+      name: json['name'] as String?,
+      priceMinor: (json['price_minor'] as num?)?.toInt(),
+      status: json['status'] as String?,
+    );
 
-Map<String, dynamic> _$AdminVariantIdJoinDtoToJson(
-  AdminVariantIdJoinDto instance,
-) => <String, dynamic>{'id': instance.id};
+Map<String, dynamic> _$AdminVariantJoinDtoToJson(
+  AdminVariantJoinDto instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'price_minor': instance.priceMinor,
+  'status': instance.status,
+};
 
 AdminProductImagePathDto _$AdminProductImagePathDtoFromJson(
   Map<String, dynamic> json,
