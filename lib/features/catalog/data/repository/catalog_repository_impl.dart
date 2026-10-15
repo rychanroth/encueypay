@@ -3,17 +3,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/supabase_client_provider.dart';
+import '../../domain/entities/active_promo.dart';
 import '../../domain/entities/banner.dart';
 import '../../domain/entities/brand.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_sort.dart';
+import '../dtos/active_promo_dto.dart';
 import '../dtos/brand_dto.dart';
 import '../dtos/category_dto.dart';
 import '../dtos/product_dto.dart';
 import '../dtos/product_review_join_dto.dart';
 import '../dtos/product_variant_dto.dart';
+import '../mappers/active_promo_mapper.dart';
 import '../mappers/brand_mapper.dart';
 import '../mappers/category_mapper.dart';
 import '../mappers/product_mapper.dart';
@@ -323,4 +326,51 @@ class CatalogRepositoryImpl implements ICatalogRepository {
     }
   }
 
+  @override
+  Future<List<ActivePromo>> fetchActivePromotions() async {
+    try {
+      // Chip-worthy promotions (Section 9): active promotion of platform or
+      // brand scope with at least one ACTIVE coupon (`coupons!inner` drops
+      // coupon-less rows). The coupon window lives on the coupon — checked
+      // here in the data layer, same as the banner window above.
+      final now = DateTime.now().toUtc();
+      final rows = await _client
+          .from('promotions')
+          .select('scope, discount_type, discount_value, brand_id, '
+              'coupons!inner(active, starts_at, ends_at)')
+          .eq('active', true)
+          .inFilter('scope', ['platform', 'brand'])
+          .eq('coupons.active', true);
+
+      final seen = <String>{};
+      final promos = <ActivePromo>[];
+      for (final row in rows) {
+        final map = Map<String, dynamic>.from(row as Map);
+        final coupons = [
+          for (final coupon in (map['coupons'] as List? ?? const []))
+            Map<String, dynamic>.from(coupon as Map),
+        ];
+        final inWindow = coupons.any((coupon) {
+          final startsAt =
+              DateTime.tryParse(coupon['starts_at'] as String? ?? '');
+          final endsAt = DateTime.tryParse(coupon['ends_at'] as String? ?? '');
+          if (startsAt != null && startsAt.isAfter(now)) return false;
+          if (endsAt != null && endsAt.isBefore(now)) return false;
+          return true;
+        });
+        if (!inWindow) continue;
+        final promo = ActivePromoDto.fromJson(map).toDomain();
+        if (promo == null) continue;
+        // One chip per scope+brand even when several coupons qualify.
+        if (seen.add('${promo.scope.name}:${promo.brandId ?? ''}')) {
+          promos.add(promo);
+        }
+      }
+      return promos;
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
 }

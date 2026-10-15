@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
@@ -7,6 +8,7 @@ import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/presentation/widgets/price_text.dart';
 import '../../domain/entities/product.dart';
+import '../controllers/promo_chip_providers.dart';
 import 'rating_stars.dart';
 import 'product_card_actions.dart';
 
@@ -27,7 +29,7 @@ import 'product_card_actions.dart';
 /// Tap always navigates to the product detail; long-press (Section 6) opens
 /// the quick-actions sheet when [actions] is injected by the composition
 /// root (wishlist/cart toggles reflecting current state).
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   const ProductCard({
     super.key,
     required this.product,
@@ -40,10 +42,14 @@ class ProductCard extends StatelessWidget {
   final ProductCardActions? actions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isLight = theme.brightness == Brightness.light;
     final hasBrand = product.brandName.isNotEmpty;
+    // Coupon chip (Section 9): one shared fetch across all cards; absent
+    // data or a failed fetch renders nothing.
+    final promos = ref.watch(activePromotionsProvider).value;
+    final promo = promos == null ? null : promoForProduct(promos, product);
 
     return Material(
       color: isLight
@@ -178,6 +184,18 @@ class ProductCard extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  // Coupon chip (Section 9): real coupon-backed promotion
+                  // under the coupons-only pricing model.
+                  if (promo != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: _Pill(
+                        background: AppColors.promotionCoral,
+                        foreground: Colors.white,
+                        label: promo.chipLabel,
+                        icon: Icons.local_offer_outlined,
                       ),
                     ),
                   PriceText(

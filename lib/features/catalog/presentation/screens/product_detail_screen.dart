@@ -12,6 +12,7 @@ import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_variant.dart';
 import '../controllers/product_detail_controller.dart';
+import '../controllers/promo_chip_providers.dart';
 import '../widgets/product_card.dart';
 import '../widgets/product_image_gallery.dart';
 import '../widgets/rating_stars.dart';
@@ -127,6 +128,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               .where((variant) => variant.id == _selectedVariantId)
               .firstOrNull;
           final carouselImages = _carouselImages(product, selected);
+          // Coupon chip (Section 9): coupon-backed promotion for this
+          // product — brand scope beats platform.
+          final promos = ref.watch(activePromotionsProvider).value;
+          final promo =
+              promos == null ? null : promoForProduct(promos, product);
 
           return Column(
             children: [
@@ -214,14 +220,48 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ),
                             ],
                           ),
-                          // TODO(prototype): hardcoded per the reference.
+                          // Coupon chip + VAT caption (Section 9): the chip
+                          // is real promotion data; the caption is mocked.
                           Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              'VAT included',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                if (promo != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.promotionCoral,
+                                      borderRadius: AppRadii.br8,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.local_offer_outlined,
+                                            size: 11, color: Colors.white),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          promo.chipLabel,
+                                          style: theme.textTheme.labelSmall
+                                              ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                // TODO(prototype): hardcoded per the
+                                // reference.
+                                Text(
+                                  'VAT included',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 16),
