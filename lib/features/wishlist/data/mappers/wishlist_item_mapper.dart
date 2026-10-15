@@ -13,6 +13,9 @@ extension WishlistItemDtoX on WishlistItemDto {
       status: product?.status,
       defaultVariantId: product?.productVariants.firstOrNull?.id,
       imageUrl: imageUrl,
+      brandName: product?.brands?.name ?? '',
+      ratingAvg: product?.productRatings?.ratingAvg,
+      reviewCount: product?.productRatings?.reviewCount ?? 0,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,6 +19,29 @@ import '../../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
+
+/// Wishlist row → the synthetic Product the shared ProductCard renders.
+/// Brand + rating aggregates ride along so wishlist/dashboard cards match
+/// catalog cards (the item → Product mapping stays here in the composition
+/// root — features never import each other, ARCH-04).
+Product _productFromWishlist(WishlistItem item) => Product(
+      id: item.productId,
+      categoryId: '',
+      name: item.productName,
+      basePriceMinor: item.priceMinor,
+      stock: item.stock,
+      fromPriceMinor: item.priceMinor,
+      defaultVariantId: item.defaultVariantId,
+      brandName: item.brandName,
+      ratingAvg: item.ratingAvg,
+      reviewCount: item.reviewCount,
+      status: item.status == 'archived'
+          ? ProductStatus.archived
+          : ProductStatus.active,
+      imageUrls: [
+        if (item.imageUrl != null) item.imageUrl!,
+      ],
+    );
 
 /// Shared tab — Profile (all roles). Nested routes of this tab are declared
 /// here (ROUTE-04).
@@ -42,32 +66,20 @@ final profileBranch = StatefulShellBranch(
           // (interactive ProductCards; ARCH-04).
           final wishlistItems =
               ref.watch(wishlistControllerProvider).value ?? const [];
-          Product productFromWishlist(WishlistItem item) => Product(
-                id: item.productId,
-                categoryId: '',
-                name: item.productName,
-                basePriceMinor: item.priceMinor,
-                stock: item.stock,
-                fromPriceMinor: item.priceMinor,
-                defaultVariantId: item.defaultVariantId,
-                status: item.status == 'archived'
-                    ? ProductStatus.archived
-                    : ProductStatus.active,
-                imageUrls: [
-                  if (item.imageUrl != null) item.imageUrl!,
-                ],
-              );
-          final wishlistCards = [
-            for (final item in wishlistItems.take(6))
-              ProductCard(
-                product: productFromWishlist(item),
-                onTap: () => context.pushNamed(
-                  AppRoutes.productDetail,
-                  pathParameters: {'id': item.productId},
-                ),
-                actions: productCardActions(
-                    context, ref, productFromWishlist(item)),
+          Widget wishlistCard(WishlistItem item) {
+            final product = _productFromWishlist(item);
+            return ProductCard(
+              product: product,
+              onTap: () => context.pushNamed(
+                AppRoutes.productDetail,
+                pathParameters: {'id': item.productId},
               ),
+              actions: productCardActions(context, ref, product),
+            );
+          }
+
+          final wishlistCards = [
+            for (final item in wishlistItems.take(6)) wishlistCard(item),
           ];
           return ProfileScreen(
             isCustomer: role == UserRole.customer,
@@ -98,36 +110,22 @@ final profileBranch = StatefulShellBranch(
           name: AppRoutes.wishlist,
           path: 'wishlist',
           builder: (context, state) => Consumer(
-            builder: (context, ref, _) => WishlistScreen(
-              // Section 6: the shared catalog ProductCard with long-press
-              // quick actions. The item → Product mapping happens here in
-              // the composition root — features stay isolated (ARCH-04).
-              cardBuilder: (item) {
-                final product = Product(
-                  id: item.productId,
-                  categoryId: '',
-                  name: item.productName,
-                  basePriceMinor: item.priceMinor,
-                  stock: item.stock,
-                  fromPriceMinor: item.priceMinor,
-                  defaultVariantId: item.defaultVariantId,
-                  status: item.status == 'archived'
-                      ? ProductStatus.archived
-                      : ProductStatus.active,
-                  imageUrls: [
-                    if (item.imageUrl != null) item.imageUrl!,
-                  ],
-                );
-                return ProductCard(
-                  product: product,
-                  onTap: () => context.pushNamed(
-                    AppRoutes.productDetail,
-                    pathParameters: {'id': item.productId},
-                  ),
-                  actions: productCardActions(context, ref, product),
-                );
-              },
-            ),
+          builder: (context, ref, _) => WishlistScreen(
+            // Section 6: the shared catalog ProductCard with long-press
+            // quick actions. The item → Product mapping happens here in
+            // the composition root — features stay isolated (ARCH-04).
+            cardBuilder: (item) {
+              final product = _productFromWishlist(item);
+              return ProductCard(
+                product: product,
+                onTap: () => context.pushNamed(
+                  AppRoutes.productDetail,
+                  pathParameters: {'id': item.productId},
+                ),
+                actions: productCardActions(context, ref, product),
+              );
+            },
+          ),
           ),
         ),
         GoRoute(

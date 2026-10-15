@@ -4,7 +4,8 @@ part 'wishlist_item.freezed.dart';
 
 /// A wishlisted product with display data joined server-side (spec §38).
 /// The product-wide stock/status/default-variant fields (Section 6) let the
-/// composition root rebuild a full ProductCard with quick actions.
+/// composition root rebuild a full ProductCard with quick actions; brand and
+/// rating aggregates feed the card's brand chip and star row.
 @freezed
 abstract class WishlistItem with _$WishlistItem {
   const factory WishlistItem({
@@ -16,5 +17,8 @@ abstract class WishlistItem with _$WishlistItem {
     String? status,
     String? defaultVariantId,
     String? imageUrl,
+    @Default('') String brandName,
+    double? ratingAvg,
+    @Default(0) int reviewCount,
   }) = _WishlistItem;
 }

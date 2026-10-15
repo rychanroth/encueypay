@@ -10,11 +10,16 @@ import '../../domain/entities/product.dart';
 import 'rating_stars.dart';
 import 'product_card_actions.dart';
 
-/// Reusable product grid card (DESIGN.md §6.1): 1:1 image with skeleton →
+/// Reusable product grid card (DESIGN.md §6.1): flex image with skeleton →
 /// monogram fallback, brand chip (top-left), wishlist heart (top-right),
 /// "Unavailable" pill (bottom-center), brand + title + rating + dual-
 /// currency price metadata. Price is exact minor-unit money formatted at
 /// the display edge (spec §22).
+///
+/// The image flex-fills the space left by the metadata column, so the card
+/// renders overflow-free in any container — 2-col grids and narrow rails
+/// alike (the rails' earlier "Bottom overflowed by N px" came from the old
+/// fixed-square image starving the metadata column).
 ///
 /// Disabled/out-of-stock products render the availability pill but stay
 /// tappable — the detail screen explains the state.
@@ -54,9 +59,11 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- 1:1 image with badge layering -----------------------------
-            AspectRatio(
-              aspectRatio: 1,
+            // --- Image with badge layering ---------------------------------
+            // Expanded (not a fixed 1:1 AspectRatio): the image absorbs the
+            // height the metadata column doesn't use, so narrow rails and
+            // grids of any geometry stay overflow-free.
+            Expanded(
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -148,14 +155,21 @@ class ProductCard extends StatelessWidget {
                     style: theme.textTheme.titleSmall,
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  // Star rating with review count when the catalog exposes
-                  // the aggregate; absent data renders nothing (§6.1).
+                  // Star rating with value + review count when the catalog
+                  // exposes the aggregate; absent data renders nothing (§6.1).
                   if (product.ratingAvg != null && product.reviewCount > 0)
                     Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                       child: Row(
                         children: [
                           RatingStars(rating: product.ratingAvg!, starSize: 12),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            product.ratingAvg!.toStringAsFixed(1),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
                             '(${product.reviewCount})',

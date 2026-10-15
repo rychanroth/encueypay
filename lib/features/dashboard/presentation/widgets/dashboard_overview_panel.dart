@@ -154,14 +154,17 @@ class DashboardOverviewPanel extends ConsumerWidget {
             )
           else
             SizedBox(
-              height: 150,
+              // Tall enough for a full ProductCard: the metadata column needs
+              // ~110dp and the image flexes into the remainder — the old
+              // 150dp rail starved it ("Bottom overflowed by 78px").
+              height: 210,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   for (final card in wishlistCards)
                     SizedBox(
-                      width: 108,
+                      width: 140,
                       child: card,
                     ),
                 ],

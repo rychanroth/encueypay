@@ -38,6 +38,7 @@ class WishlistRepositoryImpl implements IWishlistRepository {
           .from('wishlist_items')
           .select(
             'id, product_id, products(name, base_price_minor, stock, status, '
+            'brands(name), product_ratings(rating_avg, review_count), '
             'product_variants(id, price_minor), '
             'product_images(storage_path, sort_order))',
           )

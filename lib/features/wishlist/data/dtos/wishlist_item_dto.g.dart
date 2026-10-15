@@ -31,6 +31,14 @@ WishlistProductJoinDto _$WishlistProductJoinDtoFromJson(
   basePriceMinor: (json['base_price_minor'] as num?)?.toInt(),
   stock: (json['stock'] as num?)?.toInt() ?? 0,
   status: json['status'] as String?,
+  brands: json['brands'] == null
+      ? null
+      : WishlistBrandJoinDto.fromJson(json['brands'] as Map<String, dynamic>),
+  productRatings: json['product_ratings'] == null
+      ? null
+      : WishlistRatingJoinDto.fromJson(
+          json['product_ratings'] as Map<String, dynamic>,
+        ),
   productVariants:
       (json['product_variants'] as List<dynamic>?)
           ?.map(
@@ -52,8 +60,32 @@ Map<String, dynamic> _$WishlistProductJoinDtoToJson(
   'base_price_minor': instance.basePriceMinor,
   'stock': instance.stock,
   'status': instance.status,
+  'brands': instance.brands,
+  'product_ratings': instance.productRatings,
   'product_variants': instance.productVariants,
   'product_images': instance.productImages,
+};
+
+WishlistBrandJoinDto _$WishlistBrandJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => WishlistBrandJoinDto(name: json['name'] as String?);
+
+Map<String, dynamic> _$WishlistBrandJoinDtoToJson(
+  WishlistBrandJoinDto instance,
+) => <String, dynamic>{'name': instance.name};
+
+WishlistRatingJoinDto _$WishlistRatingJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => WishlistRatingJoinDto(
+  ratingAvg: (json['rating_avg'] as num?)?.toDouble(),
+  reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$WishlistRatingJoinDtoToJson(
+  WishlistRatingJoinDto instance,
+) => <String, dynamic>{
+  'rating_avg': instance.ratingAvg,
+  'review_count': instance.reviewCount,
 };
 
 WishlistVariantJoinDto _$WishlistVariantJoinDtoFromJson(

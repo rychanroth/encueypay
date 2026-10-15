@@ -31,6 +31,8 @@ class WishlistProductJoinDto {
     this.basePriceMinor,
     this.stock = 0,
     this.status,
+    this.brands,
+    this.productRatings,
     this.productVariants = const [],
     this.productImages = const [],
   });
@@ -46,6 +48,14 @@ class WishlistProductJoinDto {
   final int stock;
   final String? status;
 
+  @JsonKey(name: 'brands')
+  final WishlistBrandJoinDto? brands;
+
+  /// Rating aggregate from the `product_ratings` view — feeds the shared
+  /// ProductCard's star row.
+  @JsonKey(name: 'product_ratings')
+  final WishlistRatingJoinDto? productRatings;
+
   /// Price-only variant embed — the first id is the default variant for the
   /// card quick actions (Section 6).
   @JsonKey(name: 'product_variants', defaultValue: [])
@@ -55,6 +65,33 @@ class WishlistProductJoinDto {
   final List<WishlistImageJoinDto> productImages;
 
   Map<String, dynamic> toJson() => _$WishlistProductJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class WishlistBrandJoinDto {
+  const WishlistBrandJoinDto({this.name});
+
+  factory WishlistBrandJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$WishlistBrandJoinDtoFromJson(json);
+
+  final String? name;
+
+  Map<String, dynamic> toJson() => _$WishlistBrandJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class WishlistRatingJoinDto {
+  const WishlistRatingJoinDto({this.ratingAvg, this.reviewCount = 0});
+
+  factory WishlistRatingJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$WishlistRatingJoinDtoFromJson(json);
+
+  final double? ratingAvg;
+
+  @JsonKey(defaultValue: 0)
+  final int reviewCount;
+
+  Map<String, dynamic> toJson() => _$WishlistRatingJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
