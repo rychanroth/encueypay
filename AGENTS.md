@@ -1,6 +1,6 @@
 # AGENTS.md
 
-You are modifying a **feature-driven clean architecture** Flutter app. The full,
+You are modifying AGENTS.mda **feature-driven clean architecture** Flutter app. The full,
 authoritative contract is **`docs/architecture-contract.md`** — read the relevant
 section before touching a layer, and run its checklist before claiming done. This file
 is the always-loaded index.
@@ -55,3 +55,4 @@ flutter analyze                                            # must be clean befor
 
 Full checklist in §12 of the contract. Minimum: analyze clean, codegen regenerated,
 import fences hold, errors mapped at repo boundary, no dependency/scope creep.
+Use git for project tracking, commit each slices after DoD.

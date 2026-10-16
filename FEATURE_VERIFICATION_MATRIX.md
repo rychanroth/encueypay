@@ -2,7 +2,7 @@
 
 **Audit date:** 2026-10-07 · **Auditor:** Lead Flutter Architect & QA (automated trace)
 **Spec sources:** `docs/assignment_specification.md` (ASSIGN §) × `docs/app_implementation_specification.md` (SPEC B.x — living 2-role spec)
-**Codebase scope:** `lib/features/**`, `lib/core/**` @ branch `impl/mvp` (HEAD `731ad86`)
+**Codebase scope:** `alib/features/**`, `lib/core/**` @ branch `impl/mvp` (HEAD `731ad86`)
 
 **Trace procedure (Step 3):**
 1. Route registration = `GoRoute(name: AppRoutes.*)` in `core/router/branches/*` + `app_router.dart` (30 routes ↔ 30 screen files, 1:1).
