@@ -189,6 +189,22 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
   }
 
   @override
+  Future<Map<String, dynamic>?> fetchOrderPayment(String orderId) async {
+    try {
+      final row = await _client
+          .from('payments')
+          .select()
+          .eq('order_id', orderId)
+          .maybeSingle();
+      return row == null ? null : Map<String, dynamic>.from(row);
+    } on PostgrestException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (_) {
+      throw const NetworkFailure();
+    }
+  }
+
+  @override
   Future<bool?> checkBakongPayment(String orderId) async {
     try {
       final functions = _client.functions;

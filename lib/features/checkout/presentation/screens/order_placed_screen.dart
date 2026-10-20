@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/domain/bakong_account.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
@@ -46,6 +47,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
   bool _registrationAttempted = false;
 
   String? _qrAccountId;
+  bool _qrAccountIdInvalid = false;
 
   @override
   void initState() {
@@ -62,15 +64,20 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
   Future<void> _registerQrOnce() async {
     if (_registrationAttempted) return;
     _registrationAttempted = true;
-    final accountId = await ref
-        .read(checkoutRepositoryProvider)
-        .fetchQrAccountId();
+    final raw = await ref.read(checkoutRepositoryProvider).fetchQrAccountId();
     if (!mounted) return;
-    setState(() => _qrAccountId = accountId);
+    // Accept the bare ID or a pasted full KHQR payload (admin mistake);
+    // null → invalid and unusable.
+    final sanitized = sanitizeBakongAccountId(raw);
+    setState(() {
+      _qrAccountId = sanitized ?? '';
+      _qrAccountIdInvalid = raw.trim().isNotEmpty && sanitized == null;
+    });
+    if (sanitized == null) return;
     await ref
         .read(orderPaymentControllerProvider(widget.orderId).notifier)
         .ensureQrRegistered(
-          qrAccountId: accountId,
+          qrAccountId: sanitized,
           merchantName: 'EncueYPay Prototype',
         );
   }
@@ -211,7 +218,27 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    if (_qrAccountId != null && _qrAccountId!.isEmpty)
+                    if (_qrAccountIdInvalid)
+                      // The stored value cannot be a Bakong ID — say so
+                      // instead of spinning forever.
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.errorContainer,
+                          borderRadius: AppRadii.br16,
+                        ),
+                        child: Text(
+                          'The configured QR payment account is not a valid '
+                          'Bakong ID. The store must set it in Admin → '
+                          'Platform settings to just the ID shown under '
+                          'My KHQR in their banking app (e.g. khqr@aclb).',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
+                      )
+                    else if (_qrAccountId != null && _qrAccountId!.isEmpty)
                       // Admin has not configured a Bakong ID — the QR cannot
                       // exist; say so instead of spinning forever.
                       Container(

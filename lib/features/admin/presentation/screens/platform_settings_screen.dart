@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/domain/bakong_account.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/admin.dart';
@@ -47,12 +48,31 @@ class _PlatformSettingsScreenState
       );
       return;
     }
+    // The Bakong ID must be the bare `alias@bank` — pasting the whole KHQR
+    // payload a generic scanner shows is the common mistake; sanitize it
+    // here (and reject what cannot be recovered).
+    final rawQrAccount = _qrAccountController.text;
+    final qrAccountId = rawQrAccount.trim().isEmpty
+        ? ''
+        : sanitizeBakongAccountId(rawQrAccount);
+    if (rawQrAccount.trim().isNotEmpty && qrAccountId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'That does not look like a Bakong ID. Open your bank app → '
+            'My KHQR and copy the ID shown under your personal QR '
+            '(e.g. khqr@aclb) — not the whole QR string.',
+          ),
+        ),
+      );
+      return;
+    }
     await ref.read(adminSettingsControllerProvider.notifier).save(
           PlatformSettings(
             deliveryFeeMinor: feeMinor,
             platformCommissionPercent: platformCommission,
             paymentAccount: _paymentAccountController.text.trim(),
-            qrAccountId: _qrAccountController.text.trim(),
+            qrAccountId: qrAccountId ?? '',
           ),
         );
     final hasError = ref.read(adminSettingsControllerProvider).hasError;
@@ -125,8 +145,9 @@ class _PlatformSettingsScreenState
                 controller: _qrAccountController,
                 decoration: const InputDecoration(
                   labelText: 'QR payment account (Bakong ID)',
-                  helperText: 'KHQR payments are received here; empty = '
-                      'QR disabled at checkout',
+                  helperText: 'Just the ID, e.g. khqr@aclb — find it in '
+                      'your bank app under My KHQR. Empty = QR disabled '
+                      'at checkout.',
                 ),
               ),
               const SizedBox(height: 24),

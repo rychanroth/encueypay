@@ -38,6 +38,11 @@ abstract interface class ICheckoutRepository {
   /// `payments` is a publication member (0038).
   Stream<Map<String, dynamic>?> streamOrderPayment(String orderId);
 
+  /// One-shot ground-truth fetch of the order's payment row — the fallback
+  /// path the payment screen re-fetches on a timer so confirmation still
+  /// converges when Realtime is unavailable (e.g. websocket 401s).
+  Future<Map<String, dynamic>?> fetchOrderPayment(String orderId);
+
   /// Asks the `bakong-check` Edge Function to check the transaction (the
   /// Bakong confirmation path — polling, not push). Returns null when the
   /// function is unreachable.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/khqr_generator.dart';
@@ -6,17 +8,28 @@ import '../../domain/entities/order_payment.dart';
 
 part 'order_payment_controller.g.dart';
 
-/// The order's payment lifecycle on the order-success screen (Section 6b):
-/// realtime ground truth from the `payments` stream, KHQR registration on
-/// first build, and the Bakong confirmation poll. Confirmation paths
-/// (webhook / poller / admin simulation) all flip the row server-side;
-/// realtime pushes the change here — no optimistic UI.
+/// The order's payment lifecycle on the order-success screen (Section 6b).
+///
+/// Two delivery paths feed ONE deduplicated stream:
+///   * Supabase Realtime on the `payments` row (instant when healthy);
+///   * a 3-second ground-truth REST refetch.
+///
+/// The refetch exists because Realtime can be unavailable in practice
+/// (e.g. the websocket handshake 401s with a key the service rejects):
+/// the registration writes the QR payload server-side, and without a
+/// delivery path the screen would buffer forever. With the refetch merged
+/// in, the screen converges no matter what Realtime does. Identical
+/// consecutive states are dropped (freezed ==) so healthy-Realtime
+/// rebuilds stay event-driven, not timer-driven.
+///
+/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// row server-side — no optimistic UI.
 @riverpod
 class OrderPaymentController extends _$OrderPaymentController {
   @override
-  Stream<OrderPayment> build(String orderId) {
+  Stream<OrderPayment> build(String orderId) async* {
     final repository = ref.watch(checkoutRepositoryProvider);
-    return repository.streamOrderPayment(orderId).map((row) {
+    OrderPayment mapRow(Map<String, dynamic>? row) {
       if (row == null) {
         throw StateError('Payment not found');
       }
@@ -27,7 +40,43 @@ class OrderPaymentController extends _$OrderPaymentController {
         qrPayload: row['qr_payload'] as String?,
         transactionReference: row['transaction_reference'] as String?,
       );
+    }
+
+    // Immediate ground truth — covers the realtime-down case from the
+    // first frame.
+    yield mapRow(await repository.fetchOrderPayment(orderId));
+
+    final controller = StreamController<OrderPayment>();
+    OrderPayment? last;
+    void push(OrderPayment payment) {
+      // The registration refetch races the realtime event — dropping
+      // identical consecutive states keeps rebuilds meaningful.
+      if (payment == last) return;
+      last = payment;
+      controller.add(payment);
+    }
+
+    final subscription = repository
+        .streamOrderPayment(orderId)
+        .map(mapRow)
+        .listen(push, onError: controller.addError);
+    final refetchTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) async {
+        try {
+          push(mapRow(await repository.fetchOrderPayment(orderId)));
+        } on Exception {
+          // Transient refetch failures keep the last state on screen —
+          // the next tick retries.
+        }
+      },
+    );
+    ref.onDispose(() {
+      refetchTimer.cancel();
+      subscription.cancel();
+      controller.close();
     });
+    yield* controller.stream;
   }
 
   /// Generates the KHQR payload and registers it against the pending
