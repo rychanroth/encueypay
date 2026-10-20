@@ -110,8 +110,16 @@ enum OrderStatus {
   cancelled,
   returned;
 
-  static OrderStatus fromName(String? name) =>
-      OrderStatus.values.asNameMap()[name] ?? OrderStatus.pending;
+  static OrderStatus fromName(String? name) {
+    if (name == null) return OrderStatus.pending;
+    // Wire values are snake_case ('out_for_delivery') while enum `.name` is
+    // camelCase — match both, or multi-word statuses collapse to the
+    // fallback and the timeline shows the wrong stage.
+    for (final value in OrderStatus.values) {
+      if (value.name == name || value.wireName == name) return value;
+    }
+    return OrderStatus.pending;
+  }
 
   /// Wire value (snake_case on the wire).
   String get wireName => switch (this) {
@@ -125,8 +133,19 @@ enum PaymentMethodKind {
   bankTransfer,
   qr;
 
-  static PaymentMethodKind fromName(String? name) =>
-      PaymentMethodKind.values.asNameMap()[name] ?? PaymentMethodKind.cod;
+  /// Wire value (snake_case on the wire).
+  String get wireName => switch (this) {
+        PaymentMethodKind.bankTransfer => 'bank_transfer',
+        _ => name,
+      };
+
+  static PaymentMethodKind fromName(String? name) {
+    if (name == null) return PaymentMethodKind.cod;
+    for (final value in PaymentMethodKind.values) {
+      if (value.name == name || value.wireName == name) return value;
+    }
+    return PaymentMethodKind.cod;
+  }
 }
 
 enum PaymentStatusState {
@@ -136,7 +155,20 @@ enum PaymentStatusState {
   refundRequired,
   refunded;
 
-  static PaymentStatusState fromName(String? name) =>
-      PaymentStatusState.values.asNameMap()[name] ??
-      PaymentStatusState.pending;
+  /// Wire value (snake_case on the wire).
+  String get wireName => switch (this) {
+        PaymentStatusState.awaitingPaymentVerification =>
+          'awaiting_payment_verification',
+        PaymentStatusState.transactionVerified => 'transaction_verified',
+        PaymentStatusState.refundRequired => 'refund_required',
+        _ => name,
+      };
+
+  static PaymentStatusState fromName(String? name) {
+    if (name == null) return PaymentStatusState.pending;
+    for (final value in PaymentStatusState.values) {
+      if (value.name == name || value.wireName == name) return value;
+    }
+    return PaymentStatusState.pending;
+  }
 }

@@ -201,8 +201,16 @@ enum AdminOrderStatus {
   cancelled,
   returned;
 
-  static AdminOrderStatus fromName(String? name) =>
-      AdminOrderStatus.values.asNameMap()[name] ?? AdminOrderStatus.pending;
+  static AdminOrderStatus fromName(String? name) {
+    if (name == null) return AdminOrderStatus.pending;
+    // Wire values are snake_case ('out_for_delivery') while enum `.name` is
+    // camelCase — match both, or multi-word statuses collapse to the
+    // fallback and the admin UI offers illegal transitions.
+    for (final value in AdminOrderStatus.values) {
+      if (value.name == name || value.wireName == name) return value;
+    }
+    return AdminOrderStatus.pending;
+  }
 
   /// Wire value (snake_case on the wire).
   String get wireName => switch (this) {
