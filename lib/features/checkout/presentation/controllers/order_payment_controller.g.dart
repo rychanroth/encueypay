@@ -8,27 +8,60 @@ part of 'order_payment_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The order's payment lifecycle on the order-success screen (Section 6b):
-/// realtime ground truth from the `payments` stream, KHQR registration on
-/// first build, and the Bakong confirmation poll. Confirmation paths
-/// (webhook / poller / admin simulation) all flip the row server-side;
-/// realtime pushes the change here — no optimistic UI.
+/// The order's payment lifecycle on the order-success screen (Section 6b).
+///
+/// Two delivery paths feed ONE deduplicated stream:
+///   * Supabase Realtime on the `payments` row (instant when healthy);
+///   * a 3-second ground-truth REST refetch.
+///
+/// The refetch exists because Realtime can be unavailable in practice
+/// (e.g. the websocket handshake 401s with a key the service rejects):
+/// the registration writes the QR payload server-side, and without a
+/// delivery path the screen would buffer forever. With the refetch merged
+/// in, the screen converges no matter what Realtime does. Identical
+/// consecutive states are dropped (freezed ==) so healthy-Realtime
+/// rebuilds stay event-driven, not timer-driven.
+///
+/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// row server-side — no optimistic UI.
 
 @ProviderFor(OrderPaymentController)
 final orderPaymentControllerProvider = OrderPaymentControllerFamily._();
 
-/// The order's payment lifecycle on the order-success screen (Section 6b):
-/// realtime ground truth from the `payments` stream, KHQR registration on
-/// first build, and the Bakong confirmation poll. Confirmation paths
-/// (webhook / poller / admin simulation) all flip the row server-side;
-/// realtime pushes the change here — no optimistic UI.
+/// The order's payment lifecycle on the order-success screen (Section 6b).
+///
+/// Two delivery paths feed ONE deduplicated stream:
+///   * Supabase Realtime on the `payments` row (instant when healthy);
+///   * a 3-second ground-truth REST refetch.
+///
+/// The refetch exists because Realtime can be unavailable in practice
+/// (e.g. the websocket handshake 401s with a key the service rejects):
+/// the registration writes the QR payload server-side, and without a
+/// delivery path the screen would buffer forever. With the refetch merged
+/// in, the screen converges no matter what Realtime does. Identical
+/// consecutive states are dropped (freezed ==) so healthy-Realtime
+/// rebuilds stay event-driven, not timer-driven.
+///
+/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// row server-side — no optimistic UI.
 final class OrderPaymentControllerProvider
     extends $StreamNotifierProvider<OrderPaymentController, OrderPayment> {
-  /// The order's payment lifecycle on the order-success screen (Section 6b):
-  /// realtime ground truth from the `payments` stream, KHQR registration on
-  /// first build, and the Bakong confirmation poll. Confirmation paths
-  /// (webhook / poller / admin simulation) all flip the row server-side;
-  /// realtime pushes the change here — no optimistic UI.
+  /// The order's payment lifecycle on the order-success screen (Section 6b).
+  ///
+  /// Two delivery paths feed ONE deduplicated stream:
+  ///   * Supabase Realtime on the `payments` row (instant when healthy);
+  ///   * a 3-second ground-truth REST refetch.
+  ///
+  /// The refetch exists because Realtime can be unavailable in practice
+  /// (e.g. the websocket handshake 401s with a key the service rejects):
+  /// the registration writes the QR payload server-side, and without a
+  /// delivery path the screen would buffer forever. With the refetch merged
+  /// in, the screen converges no matter what Realtime does. Identical
+  /// consecutive states are dropped (freezed ==) so healthy-Realtime
+  /// rebuilds stay event-driven, not timer-driven.
+  ///
+  /// Confirmation paths (webhook / poller / admin simulation) all flip the
+  /// row server-side — no optimistic UI.
   OrderPaymentControllerProvider._({
     required OrderPaymentControllerFamily super.from,
     required String super.argument,
@@ -67,13 +100,24 @@ final class OrderPaymentControllerProvider
 }
 
 String _$orderPaymentControllerHash() =>
-    r'93ba84d396a2f43c4f90044d29e0f76fede53f96';
+    r'9177b95a43f64f8cc9c94bde451b9f8542e64c08';
 
-/// The order's payment lifecycle on the order-success screen (Section 6b):
-/// realtime ground truth from the `payments` stream, KHQR registration on
-/// first build, and the Bakong confirmation poll. Confirmation paths
-/// (webhook / poller / admin simulation) all flip the row server-side;
-/// realtime pushes the change here — no optimistic UI.
+/// The order's payment lifecycle on the order-success screen (Section 6b).
+///
+/// Two delivery paths feed ONE deduplicated stream:
+///   * Supabase Realtime on the `payments` row (instant when healthy);
+///   * a 3-second ground-truth REST refetch.
+///
+/// The refetch exists because Realtime can be unavailable in practice
+/// (e.g. the websocket handshake 401s with a key the service rejects):
+/// the registration writes the QR payload server-side, and without a
+/// delivery path the screen would buffer forever. With the refetch merged
+/// in, the screen converges no matter what Realtime does. Identical
+/// consecutive states are dropped (freezed ==) so healthy-Realtime
+/// rebuilds stay event-driven, not timer-driven.
+///
+/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// row server-side — no optimistic UI.
 
 final class OrderPaymentControllerFamily extends $Family
     with
@@ -93,11 +137,22 @@ final class OrderPaymentControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The order's payment lifecycle on the order-success screen (Section 6b):
-  /// realtime ground truth from the `payments` stream, KHQR registration on
-  /// first build, and the Bakong confirmation poll. Confirmation paths
-  /// (webhook / poller / admin simulation) all flip the row server-side;
-  /// realtime pushes the change here — no optimistic UI.
+  /// The order's payment lifecycle on the order-success screen (Section 6b).
+  ///
+  /// Two delivery paths feed ONE deduplicated stream:
+  ///   * Supabase Realtime on the `payments` row (instant when healthy);
+  ///   * a 3-second ground-truth REST refetch.
+  ///
+  /// The refetch exists because Realtime can be unavailable in practice
+  /// (e.g. the websocket handshake 401s with a key the service rejects):
+  /// the registration writes the QR payload server-side, and without a
+  /// delivery path the screen would buffer forever. With the refetch merged
+  /// in, the screen converges no matter what Realtime does. Identical
+  /// consecutive states are dropped (freezed ==) so healthy-Realtime
+  /// rebuilds stay event-driven, not timer-driven.
+  ///
+  /// Confirmation paths (webhook / poller / admin simulation) all flip the
+  /// row server-side — no optimistic UI.
 
   OrderPaymentControllerProvider call(String orderId) =>
       OrderPaymentControllerProvider._(argument: orderId, from: this);
@@ -106,11 +161,22 @@ final class OrderPaymentControllerFamily extends $Family
   String toString() => r'orderPaymentControllerProvider';
 }
 
-/// The order's payment lifecycle on the order-success screen (Section 6b):
-/// realtime ground truth from the `payments` stream, KHQR registration on
-/// first build, and the Bakong confirmation poll. Confirmation paths
-/// (webhook / poller / admin simulation) all flip the row server-side;
-/// realtime pushes the change here — no optimistic UI.
+/// The order's payment lifecycle on the order-success screen (Section 6b).
+///
+/// Two delivery paths feed ONE deduplicated stream:
+///   * Supabase Realtime on the `payments` row (instant when healthy);
+///   * a 3-second ground-truth REST refetch.
+///
+/// The refetch exists because Realtime can be unavailable in practice
+/// (e.g. the websocket handshake 401s with a key the service rejects):
+/// the registration writes the QR payload server-side, and without a
+/// delivery path the screen would buffer forever. With the refetch merged
+/// in, the screen converges no matter what Realtime does. Identical
+/// consecutive states are dropped (freezed ==) so healthy-Realtime
+/// rebuilds stay event-driven, not timer-driven.
+///
+/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// row server-side — no optimistic UI.
 
 abstract class _$OrderPaymentController extends $StreamNotifier<OrderPayment> {
   late final _$args = ref.$arg as String;

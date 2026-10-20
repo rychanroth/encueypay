@@ -19,33 +19,52 @@ library;
 class KhqrGenerator {
   KhqrGenerator._();
 
-  /// Builds a dynamic KHQR payload. [accountId] is the personal Bakong ID
-  /// (`name@bank`, e.g. `user@aclb`); [amountMinor] is USD cents — the app's
-  /// money model is USD, so the QR is always USD (`53` 840); [billNumber]
-  /// ties the QR to the order; [validity] sets the tag-99 expiration
-  /// (dynamic KHQRs require one).
+  /// Builds a dynamic KHQR payload. [accountId] is the receiver's Bakong
+  /// account field (`alias@bank` — note some banks, ACLEDA among them,
+  /// embed a GENERIC id in every consumer QR and route via
+  /// [accountInformation]); [accountInformation] (sub-tag 01, the bank
+  /// account number) and [acquiringBank] (sub-tag 02) are the official
+  /// SDK's optional `IndividualInfo` fields — a faithful QR carries the
+  /// same three pieces the receiver's own bank app encodes. [amountMinor]
+  /// is USD cents — the app's money model is USD, so the QR is always USD
+  /// (`53` 840); [billNumber] ties the QR to the order; [validity] sets
+  /// the tag-99 expiration (dynamic KHQRs require one).
   static String build({
     required String accountId,
     required String merchantName,
     required int amountMinor,
     String billNumber = '',
     String city = 'Phnom Penh',
+    String accountInformation = '',
+    String acquiringBank = '',
     Duration validity = const Duration(hours: 24),
   }) {
     assert(accountId.isNotEmpty && accountId.contains('@'),
         'accountId must be a Bakong ID like user@bank');
     assert(amountMinor >= 0);
     assert(billNumber.length <= 25);
+    assert(accountInformation.length <= 32);
+    assert(acquiringBank.length <= 32);
 
     final nowMs = DateTime.now().millisecondsSinceEpoch;
     final expirationMs = nowMs + validity.inMilliseconds;
 
+    // Merchant account information — individual template (29). Sub-tag 00
+    // carries the Bakong account field; 01/02 the optional account number
+    // and acquiring bank, exactly as the official SDK orders them (the SDK
+    // omits empty optionals — so do we).
+    final accountTemplate = StringBuffer(_tag('00', accountId));
+    if (accountInformation.isNotEmpty) {
+      accountTemplate.write(_tag('01', accountInformation));
+    }
+    if (acquiringBank.isNotEmpty) {
+      accountTemplate.write(_tag('02', acquiringBank));
+    }
+
     final buffer = StringBuffer()
       ..write(_tag('00', '01')) // payload format indicator
       ..write(_tag('01', '12')) // dynamic QR (amount present)
-      // Merchant account information — individual template (29). Sub-tag 00
-      // carries the Bakong account ID directly; there is no GUI sub-tag.
-      ..write(_tag('29', _tag('00', accountId)))
+      ..write(_tag('29', accountTemplate.toString()))
       ..write(_tag('52', '5999')) // MCC: retail
       ..write(_tag('53', '840')) // USD
       ..write(_tag('54', _formatUsdAmount(amountMinor)))

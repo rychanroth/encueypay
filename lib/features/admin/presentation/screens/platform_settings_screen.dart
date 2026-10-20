@@ -48,31 +48,42 @@ class _PlatformSettingsScreenState
       );
       return;
     }
-    // The Bakong ID must be the bare `alias@bank` — pasting the whole KHQR
-    // payload a generic scanner shows is the common mistake; sanitize it
-    // here (and reject what cannot be recovered).
+    // Accept EITHER the bare `alias@bank` OR the full KHQR payload a
+    // generic scanner shows for the receiver's own bank QR. Some banks
+    // (ACLEDA) embed a generic id and route via the embedded account
+    // number — the extractor recovers all three pieces the official SDK's
+    // IndividualInfo carries (id / accountInformation / acquiringBank).
     final rawQrAccount = _qrAccountController.text;
-    final qrAccountId = rawQrAccount.trim().isEmpty
-        ? ''
-        : sanitizeBakongAccountId(rawQrAccount);
-    if (rawQrAccount.trim().isNotEmpty && qrAccountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'That does not look like a Bakong ID. Open your bank app → '
-            'My KHQR and copy the ID shown under your personal QR '
-            '(e.g. khqr@aclb) — not the whole QR string.',
+    BakongAccountParts? parts;
+    if (rawQrAccount.trim().isNotEmpty) {
+      parts = extractBakongAccountParts(rawQrAccount);
+      if (parts == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'That does not look like a Bakong ID. Paste the ID shown under '
+              'My KHQR in your banking app (e.g. khqr@aclb) — or the full QR '
+              'string itself; both work.',
+            ),
           ),
-        ),
+        );
+        return;
+      }
+    } else {
+      parts = const (
+        accountId: '',
+        accountInformation: '',
+        acquiringBank: '',
       );
-      return;
     }
     await ref.read(adminSettingsControllerProvider.notifier).save(
           PlatformSettings(
             deliveryFeeMinor: feeMinor,
             platformCommissionPercent: platformCommission,
             paymentAccount: _paymentAccountController.text.trim(),
-            qrAccountId: qrAccountId ?? '',
+            qrAccountId: parts.accountId,
+            qrAccountInformation: parts.accountInformation,
+            qrAcquiringBank: parts.acquiringBank,
           ),
         );
     final hasError = ref.read(adminSettingsControllerProvider).hasError;
@@ -145,9 +156,9 @@ class _PlatformSettingsScreenState
                 controller: _qrAccountController,
                 decoration: const InputDecoration(
                   labelText: 'QR payment account (Bakong ID)',
-                  helperText: 'Just the ID, e.g. khqr@aclb — find it in '
-                      'your bank app under My KHQR. Empty = QR disabled '
-                      'at checkout.',
+                  helperText: 'The ID under My KHQR (e.g. khqr@aclb) — or '
+                      'paste your full bank QR string; both are decoded. '
+                      'Empty = QR disabled at checkout.',
                 ),
               ),
               const SizedBox(height: 24),

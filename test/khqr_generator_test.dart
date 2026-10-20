@@ -105,6 +105,30 @@ void main() {
       expect(timestampContent!, matches(RegExp(r'^0013\d{13}0113\d{13}$')));
     });
 
+    test('faithful ACLEDA reproduction — tag 29 mirrors the bank QR', () {
+      final qr = KhqrGenerator.build(
+        accountId: 'khqr@aclb',
+        merchantName: 'EncueYPay Prototype',
+        amountMinor: 500,
+        accountInformation: '85523911897',
+        acquiringBank: 'ACLEDA',
+      );
+      // Tag 29 content identical to the receiver's own bank QR template:
+      // 00 (09) khqr@aclb 01 (11) 85523911897 02 (06) ACLEDA
+      expect(qr, contains('29380009khqr@aclb0111855239118970206ACLEDA'));
+    });
+
+    test('empty optionals are omitted, SDK-style', () {
+      final qr = KhqrGenerator.build(
+        accountId: 'user@aclb',
+        merchantName: 'Shop',
+        amountMinor: 500,
+      );
+      expect(qr, contains('29130009user@aclb'));
+      expect(qr, isNot(contains('0100')));
+      expect(qr, isNot(contains('0200')));
+    });
+
     test('CRC-16/CCITT-FALSE recomputes over payload + 6304', () {
       final qr = KhqrGenerator.build(
         accountId: 'user@aclb',

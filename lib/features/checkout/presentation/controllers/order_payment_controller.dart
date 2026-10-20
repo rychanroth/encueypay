@@ -88,6 +88,8 @@ class OrderPaymentController extends _$OrderPaymentController {
   Future<void> ensureQrRegistered({
     required String qrAccountId,
     required String merchantName,
+    String accountInformation = '',
+    String acquiringBank = '',
   }) async {
     // Riverpod 3: AsyncValue.value is the nullable current value.
     final payment = state.value;
@@ -100,6 +102,8 @@ class OrderPaymentController extends _$OrderPaymentController {
       merchantName: merchantName,
       amountMinor: payment.amountMinor,
       billNumber: orderId.substring(0, 8).toUpperCase(),
+      accountInformation: accountInformation,
+      acquiringBank: acquiringBank,
     );
     await ref
         .read(checkoutRepositoryProvider)

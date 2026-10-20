@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/domain/bakong_account.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
@@ -47,7 +46,9 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
   bool _registrationAttempted = false;
 
   String? _qrAccountId;
-  bool _qrAccountIdInvalid = false;
+
+  /// Set when the stored value cannot be parsed as a Bakong ID at all.
+  bool? _qrAccountIdInvalid;
 
   @override
   void initState() {
@@ -64,21 +65,18 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
   Future<void> _registerQrOnce() async {
     if (_registrationAttempted) return;
     _registrationAttempted = true;
-    final raw = await ref.read(checkoutRepositoryProvider).fetchQrAccountId();
+    final account =
+        await ref.read(checkoutRepositoryProvider).fetchQrPaymentAccount();
     if (!mounted) return;
-    // Accept the bare ID or a pasted full KHQR payload (admin mistake);
-    // null → invalid and unusable.
-    final sanitized = sanitizeBakongAccountId(raw);
-    setState(() {
-      _qrAccountId = sanitized ?? '';
-      _qrAccountIdInvalid = raw.trim().isNotEmpty && sanitized == null;
-    });
-    if (sanitized == null) return;
+    setState(() => _qrAccountId = account.accountId);
+    if (!account.isConfigured) return;
     await ref
         .read(orderPaymentControllerProvider(widget.orderId).notifier)
         .ensureQrRegistered(
-          qrAccountId: sanitized,
+          qrAccountId: account.accountId,
           merchantName: 'EncueYPay Prototype',
+          accountInformation: account.accountInformation,
+          acquiringBank: account.acquiringBank,
         );
   }
 
@@ -218,7 +216,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    if (_qrAccountIdInvalid)
+                    if (_qrAccountIdInvalid ?? false)
                       // The stored value cannot be a Bakong ID — say so
                       // instead of spinning forever.
                       Container(
