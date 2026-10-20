@@ -8,6 +8,7 @@ import '../../../../core/domain/money.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
+import '../widgets/order_item_card.dart';
 import '../widgets/order_status_timeline.dart';
 
 /// Customer order detail (spec §12/§13/§20/§21): order parts, payment proof
@@ -162,29 +163,22 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
               const SizedBox(height: 16),
 
-              // Items (§19 historical snapshots).
+              // Items (§19 historical snapshots) — tappable OrderItemCards
+              // with the product's current thumbnail; tapping opens the
+              // product page (route-name navigation only, ARCH-04).
               Text('Items',
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               for (final item in order.items)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.variantName == null
-                              ? '${item.productName} × ${item.quantity}'
-                              : '${item.productName} '
-                                  '(${item.variantName}) × ${item.quantity}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(Money(item.lineTotalMinor).format()),
-                    ],
-                  ),
+                OrderItemCard(
+                  item: item,
+                  onTap: item.productId.isEmpty
+                      ? null
+                      : () => context.pushNamed(
+                            AppRoutes.productDetail,
+                            pathParameters: {'id': item.productId},
+                          ),
                 ),
               const SizedBox(height: 8),
 

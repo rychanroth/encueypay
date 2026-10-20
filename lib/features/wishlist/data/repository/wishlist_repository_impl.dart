@@ -71,8 +71,11 @@ class WishlistRepositoryImpl implements IWishlistRepository {
   }
 
   /// Wishlist get-or-create + insert in one RPC-free flow: the wishlist row
-  /// is created on demand; duplicate products are rejected by the unique
-  /// constraint and surfaced as a failure (DATA-05).
+  /// is created on demand. Duplicate adds are idempotent — the unique
+  /// (wishlist_id, product_id) constraint rejects the second insert with
+  /// 23505 and that is SUCCESS (the product is wishlisted), not a failure:
+  /// the heart can be tapped twice or from two surfaces before the
+  /// wishlist state refreshes.
   @override
   Future<void> addItem({required String productId}) async {
     try {
@@ -82,6 +85,7 @@ class WishlistRepositoryImpl implements IWishlistRepository {
         'product_id': productId,
       });
     } on PostgrestException catch (e) {
+      if (e.code == '23505') return;
       throw ServerFailure(e.message);
     } catch (_) {
       throw const NetworkFailure();

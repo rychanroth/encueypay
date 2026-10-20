@@ -59,24 +59,62 @@ Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
 OrderItemJoinDto _$OrderItemJoinDtoFromJson(Map<String, dynamic> json) =>
     OrderItemJoinDto(
       id: json['id'] as String,
+      productId: json['product_id'] as String,
       productName: json['product_name'] as String,
       unitPriceMinor: (json['unit_price_minor'] as num).toInt(),
       quantity: (json['quantity'] as num).toInt(),
       lineTotalMinor: (json['line_total_minor'] as num).toInt(),
       variantName: json['variant_name'] as String?,
       discountMinor: (json['discount_minor'] as num?)?.toInt(),
+      products: json['products'] == null
+          ? null
+          : OrderItemProductJoinDto.fromJson(
+              json['products'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$OrderItemJoinDtoToJson(OrderItemJoinDto instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'product_id': instance.productId,
       'product_name': instance.productName,
       'variant_name': instance.variantName,
       'unit_price_minor': instance.unitPriceMinor,
       'discount_minor': instance.discountMinor,
       'quantity': instance.quantity,
       'line_total_minor': instance.lineTotalMinor,
+      'products': instance.products,
     };
+
+OrderItemProductJoinDto _$OrderItemProductJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => OrderItemProductJoinDto(
+  productImages:
+      (json['product_images'] as List<dynamic>?)
+          ?.map(
+            (e) => OrderItemImageJoinDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
+);
+
+Map<String, dynamic> _$OrderItemProductJoinDtoToJson(
+  OrderItemProductJoinDto instance,
+) => <String, dynamic>{'product_images': instance.productImages};
+
+OrderItemImageJoinDto _$OrderItemImageJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => OrderItemImageJoinDto(
+  storagePath: json['storage_path'] as String?,
+  sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$OrderItemImageJoinDtoToJson(
+  OrderItemImageJoinDto instance,
+) => <String, dynamic>{
+  'storage_path': instance.storagePath,
+  'sort_order': instance.sortOrder,
+};
 
 ReturnRequestJoinDto _$ReturnRequestJoinDtoFromJson(
   Map<String, dynamic> json,

@@ -2,7 +2,7 @@ import '../../domain/entities/order.dart';
 import '../dtos/order_dtos.dart';
 
 extension OrderDtoX on OrderDto {
-  CustomerOrder toDomain() {
+  CustomerOrder toDomain({Map<String, String?> itemImageUrls = const {}}) {
     return CustomerOrder(
       id: id,
       createdAt: createdAt,
@@ -18,7 +18,9 @@ extension OrderDtoX on OrderDto {
       shippingCity: shippingCity,
       note: note ?? '',
       cancellationReason: cancellationReason ?? '',
-      items: items.map((item) => item.toDomain()).toList(),
+      items: items
+          .map((item) => item.toDomain(imageUrl: itemImageUrls[item.id]))
+          .toList(),
       returns: returnRequests
           .map((request) => ReturnRequestInfo(
                 id: request.id,
@@ -42,15 +44,17 @@ extension OrderDtoX on OrderDto {
 }
 
 extension OrderItemJoinDtoX on OrderItemJoinDto {
-  OrderItemSnapshot toDomain() {
+  OrderItemSnapshot toDomain({String? imageUrl}) {
     return OrderItemSnapshot(
       id: id,
+      productId: productId,
       productName: productName,
       variantName: variantName,
       unitPriceMinor: unitPriceMinor,
       discountMinor: discountMinor ?? 0,
       quantity: quantity,
       lineTotalMinor: lineTotalMinor,
+      imageUrl: imageUrl,
     );
   }
 }

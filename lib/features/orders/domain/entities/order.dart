@@ -40,16 +40,21 @@ abstract class CustomerOrder with _$CustomerOrder {
 }
 
 /// Historical purchase line (§19) — current catalog edits never rewrite it.
+/// [productId] + [imageUrl] ride along for the tappable OrderItemCard
+/// (the image is the product's CURRENT first photo, resolved from the
+/// live catalog — the historical snapshot only stores the id reference).
 @freezed
 abstract class OrderItemSnapshot with _$OrderItemSnapshot {
   const factory OrderItemSnapshot({
     required String id,
+    required String productId,
     required String productName,
     required int unitPriceMinor,
     required int quantity,
     required int lineTotalMinor,
     String? variantName,
     @Default(0) int discountMinor,
+    String? imageUrl,
   }) = _OrderItemSnapshot;
 }
 

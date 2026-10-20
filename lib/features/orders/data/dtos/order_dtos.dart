@@ -62,18 +62,24 @@ class OrderDto {
 class OrderItemJoinDto {
   const OrderItemJoinDto({
     required this.id,
+    required this.productId,
     required this.productName,
     required this.unitPriceMinor,
     required this.quantity,
     required this.lineTotalMinor,
     this.variantName,
     this.discountMinor,
+    this.products,
   });
 
   factory OrderItemJoinDto.fromJson(Map<String, dynamic> json) =>
       _$OrderItemJoinDtoFromJson(json);
 
   final String id;
+
+  /// Live catalog reference — the OrderItemCard taps through to the
+  /// product page (product_id is NOT NULL on order_items).
+  final String productId;
   final String productName;
   final String? variantName;
   final int unitPriceMinor;
@@ -81,7 +87,40 @@ class OrderItemJoinDto {
   final int quantity;
   final int lineTotalMinor;
 
+  /// Current product imagery for the card's thumbnail (the historical
+  /// snapshot carries no image of its own).
+  @JsonKey(name: 'products')
+  final OrderItemProductJoinDto? products;
+
   Map<String, dynamic> toJson() => _$OrderItemJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderItemProductJoinDto {
+  const OrderItemProductJoinDto({this.productImages = const []});
+
+  factory OrderItemProductJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$OrderItemProductJoinDtoFromJson(json);
+
+  @JsonKey(name: 'product_images', defaultValue: [])
+  final List<OrderItemImageJoinDto> productImages;
+
+  Map<String, dynamic> toJson() => _$OrderItemProductJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderItemImageJoinDto {
+  const OrderItemImageJoinDto({this.storagePath, this.sortOrder = 0});
+
+  factory OrderItemImageJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$OrderItemImageJoinDtoFromJson(json);
+
+  final String? storagePath;
+
+  @JsonKey(defaultValue: 0)
+  final int sortOrder;
+
+  Map<String, dynamic> toJson() => _$OrderItemImageJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

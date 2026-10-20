@@ -26,8 +26,9 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       'delivery_fee_minor, total_minor, note, cancellation_reason, '
       'shipping_recipient_name, shipping_phone, shipping_line1, '
       'shipping_line2, shipping_city, '
-      'order_items(id, product_name, variant_name, '
-      'unit_price_minor, discount_minor, quantity, line_total_minor), '
+      'order_items(id, product_id, product_name, variant_name, '
+      'unit_price_minor, discount_minor, quantity, line_total_minor, '
+      'products(product_images(storage_path, sort_order))), '
       // return reason lives on the return_items lines (per-item reason in
       // request_return), not on the return_requests header.
       'return_requests(id, status, return_items(reason, quantity)), '
@@ -55,8 +56,26 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     return const NetworkFailure();
   }
 
-  CustomerOrder _mapRow(Map<String, dynamic> row) =>
-      OrderDto.fromJson(row).toDomain();
+  CustomerOrder _mapRow(Map<String, dynamic> row) {
+    final dto = OrderDto.fromJson(row);
+    final itemImageUrls = <String, String?>{
+      for (final item in dto.items) item.id: _itemImageUrl(item),
+    };
+    return dto.toDomain(itemImageUrls: itemImageUrls);
+  }
+
+  /// Item thumbnails come from the live catalog (order_items → products →
+  /// product_images, first by sort_order). Full http(s) references pass
+  /// through — the seed imagery convention shared with cart/wishlist.
+  String? _itemImageUrl(OrderItemJoinDto item) {
+    final images = [
+      ...item.products?.productImages ?? const <OrderItemImageJoinDto>[],
+    ]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final storagePath = images.firstOrNull?.storagePath;
+    if (storagePath == null) return null;
+    if (storagePath.startsWith('http')) return storagePath;
+    return _client.storage.from('product_images').getPublicUrl(storagePath);
+  }
 
   @override
   Future<List<CustomerOrder>> fetchMyOrders({
