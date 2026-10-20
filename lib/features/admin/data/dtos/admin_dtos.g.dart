@@ -188,11 +188,9 @@ AdminOrderRowDto _$AdminOrderRowDtoFromJson(
   users: json['users'] == null
       ? null
       : AdminApplicantJoinDto.fromJson(json['users'] as Map<String, dynamic>),
-  payments:
-      (json['payments'] as List<dynamic>?)
-          ?.map((e) => AdminPaymentJoinDto.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      [],
+  payments: json['payments'] == null
+      ? null
+      : AdminPaymentJoinDto.fromJson(json['payments'] as Map<String, dynamic>),
   items:
       (json['order_items'] as List<dynamic>?)
           ?.map((e) => AdminItemJoinDto.fromJson(e as Map<String, dynamic>))

@@ -261,6 +261,13 @@ class AdminRepositoryImpl implements IAdminRepository {
     }
   }
 
+  /// Reads an int that may arrive as a JSON number of either flavor —
+  /// `average_order_value_minor` is a SQL division and PostgREST returns
+  /// it as a float whenever the average is fractional (`as int?` would
+  /// throw a TypeError, surfaced as NetworkFailure).
+  static int _intFrom(Map<String, dynamic> map, String key) =>
+      (map[key] as num?)?.toInt() ?? 0;
+
   @override
   Future<AdminSalesReport> fetchSalesReport({
     required DateTime from,
@@ -275,26 +282,25 @@ class AdminRepositoryImpl implements IAdminRepository {
       return AdminSalesReport(
         from: DateTime.parse(map['from'] as String),
         to: DateTime.parse(map['to'] as String),
-        totalOrders: (map['total_orders'] as int?) ?? 0,
-        completedOrders: (map['completed_orders'] as int?) ?? 0,
-        cancelledOrders: (map['cancelled_orders'] as int?) ?? 0,
-        totalSalesMinor: (map['total_sales_minor'] as int?) ?? 0,
-        averageOrderValueMinor:
-            (map['average_order_value_minor'] as int?) ?? 0,
-        lowStockProducts: (map['low_stock_products'] as int?) ?? 0,
-        outOfStockProducts: (map['out_of_stock_products'] as int?) ?? 0,
+        totalOrders: _intFrom(map, 'total_orders'),
+        completedOrders: _intFrom(map, 'completed_orders'),
+        cancelledOrders: _intFrom(map, 'cancelled_orders'),
+        totalSalesMinor: _intFrom(map, 'total_sales_minor'),
+        averageOrderValueMinor: _intFrom(map, 'average_order_value_minor'),
+        lowStockProducts: _intFrom(map, 'low_stock_products'),
+        outOfStockProducts: _intFrom(map, 'out_of_stock_products'),
         bestSellers: ((map['best_sellers'] as List? ?? const [])
                 .whereType<Map<String, dynamic>>())
             .map((row) => AdminBestSeller(
                   name: row['name'] as String? ?? '',
-                  units: (row['units'] as int?) ?? 0,
+                  units: (row['units'] as num?)?.toInt() ?? 0,
                 ))
             .toList(),
         topCategories: ((map['top_categories'] as List? ?? const [])
                 .whereType<Map<String, dynamic>>())
             .map((row) => AdminCategoryUnits(
                   name: row['name'] as String? ?? '',
-                  units: (row['units'] as int?) ?? 0,
+                  units: (row['units'] as num?)?.toInt() ?? 0,
                 ))
             .toList(),
         purchaseFrequency:
@@ -302,28 +308,29 @@ class AdminRepositoryImpl implements IAdminRepository {
                     .whereType<Map<String, dynamic>>())
                 .map((row) => AdminCustomerFrequency(
                       name: row['name'] as String? ?? '',
-                      orders: (row['orders'] as int?) ?? 0,
+                      orders: (row['orders'] as num?)?.toInt() ?? 0,
                     ))
                 .toList(),
         // DESIGN.md §5.2.4 executive extras (additive RPC keys).
-        netSettledMinor: (map['net_settled_minor'] as int?) ?? 0,
+        netSettledMinor: _intFrom(map, 'net_settled_minor'),
         inventoryValuationMinor:
-            (map['inventory_valuation_minor'] as int?) ?? 0,
+            _intFrom(map, 'inventory_valuation_minor'),
         paymentSplit: () {
           final split = map['payment_split'];
           if (split is! Map) return const AdminPaymentSplit();
           return AdminPaymentSplit(
-            qrCount: (split['qr_count'] as int?) ?? 0,
-            codCount: (split['cod_count'] as int?) ?? 0,
-            qrAmountMinor: (split['qr_amount_minor'] as int?) ?? 0,
-            codAmountMinor: (split['cod_amount_minor'] as int?) ?? 0,
+            qrCount: (split['qr_count'] as num?)?.toInt() ?? 0,
+            codCount: (split['cod_count'] as num?)?.toInt() ?? 0,
+            qrAmountMinor: (split['qr_amount_minor'] as num?)?.toInt() ?? 0,
+            codAmountMinor:
+                (split['cod_amount_minor'] as num?)?.toInt() ?? 0,
           );
         }(),
         brandRevenue: ((map['brand_revenue'] as List? ?? const [])
                 .whereType<Map<String, dynamic>>())
             .map((row) => AdminBrandRevenue(
                   name: row['name'] as String? ?? '',
-                  revenueMinor: (row['revenue_minor'] as int?) ?? 0,
+                  revenueMinor: (row['revenue_minor'] as num?)?.toInt() ?? 0,
                 ))
             .toList(),
       );
@@ -484,7 +491,8 @@ class AdminRepositoryImpl implements IAdminRepository {
           .order('created_at', ascending: false)
           .limit(50);
       return rows.map(AdminOrderRowDto.fromJson).map((dto) {
-        final payment = dto.payments.firstOrNull;
+        // One-to-one embed — a single payment per order (unique order_id).
+        final payment = dto.payments;
         return AdminOrderSummary(
           id: dto.id,
           customerName: dto.users?.fullName ?? 'Customer',

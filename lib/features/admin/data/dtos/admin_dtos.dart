@@ -222,7 +222,7 @@ class AdminOrderRowDto {
     required this.status,
     this.cancellationReason = '',
     this.users,
-    this.payments = const [],
+    this.payments,
     this.items = const [],
     this.returnRequests = const [],
   });
@@ -244,8 +244,11 @@ class AdminOrderRowDto {
   @JsonKey(name: 'users')
   final AdminApplicantJoinDto? users;
 
-  @JsonKey(name: 'payments', defaultValue: [])
-  final List<AdminPaymentJoinDto> payments;
+  /// One-to-one embed: `payments.order_id` is UNIQUE (baseline), so
+  /// PostgREST returns an OBJECT, not an array — a list field here throws
+  /// a TypeError inside fromJson (surfaced as NetworkFailure).
+  @JsonKey(name: 'payments')
+  final AdminPaymentJoinDto? payments;
 
   @JsonKey(name: 'order_items', defaultValue: [])
   final List<AdminItemJoinDto> items;
