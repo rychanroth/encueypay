@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/address.dart';
 import '../dtos/address_dto.dart';
@@ -36,10 +37,8 @@ class AddressRepositoryImpl implements IAddressRepository {
           .order('is_default', ascending: false)
           .order('created_at');
       return rows.map(AddressDto.fromJson).map((dto) => dto.toDomain()).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -49,10 +48,8 @@ class AddressRepositoryImpl implements IAddressRepository {
       await _client.rpc('set_default_address', params: {
         'p_address_id': addressId,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -68,10 +65,8 @@ class AddressRepositoryImpl implements IAddressRepository {
         'line2': draft.line2,
         'city': draft.city,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -86,10 +81,8 @@ class AddressRepositoryImpl implements IAddressRepository {
         'line2': draft.line2,
         'city': draft.city,
       }).eq('id', addressId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -97,10 +90,8 @@ class AddressRepositoryImpl implements IAddressRepository {
   Future<void> deleteAddress(String addressId) async {
     try {
       await _client.from('addresses').delete().eq('id', addressId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 }

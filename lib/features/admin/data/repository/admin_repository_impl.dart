@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/admin.dart';
 import '../dtos/admin_dtos.dart';
@@ -22,10 +23,8 @@ class AdminRepositoryImpl implements IAdminRepository {
   Future<void> _rpc(String function, Map<String, dynamic> params) async {
     try {
       await _client.rpc(function, params: params);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -43,10 +42,8 @@ class AdminRepositoryImpl implements IAdminRepository {
             imagePath: dto.imagePath,
             parentId: dto.parentId,
           )).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -66,12 +63,8 @@ class AdminRepositoryImpl implements IAdminRepository {
       final bytes = await File(filePath).readAsBytes();
       await _client.storage.from('catalog_assets').uploadBinary(path, bytes);
       return path;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } on StorageException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -124,10 +117,8 @@ class AdminRepositoryImpl implements IAdminRepository {
             imagePath: dto.imagePath,
             status: AdminCatalogStatus.fromName(dto.status),
           )).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -143,10 +134,8 @@ class AdminRepositoryImpl implements IAdminRepository {
         'description': description ?? '',
         'image_path': imagePath,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -163,10 +152,8 @@ class AdminRepositoryImpl implements IAdminRepository {
         'description': description ?? '',
         'image_path': imagePath,
       }).eq('id', brandId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -179,10 +166,8 @@ class AdminRepositoryImpl implements IAdminRepository {
       await _client.from('brands').update({
         'status': archived ? 'archived' : 'active',
       }).eq('id', brandId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -192,10 +177,8 @@ class AdminRepositoryImpl implements IAdminRepository {
       // products.brand_id is ON DELETE SET NULL — referenced products keep
       // existing, just brand-less.
       await _client.from('brands').delete().eq('id', brandId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -254,10 +237,8 @@ class AdminRepositoryImpl implements IAdminRepository {
           ],
         );
       }).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -334,10 +315,8 @@ class AdminRepositoryImpl implements IAdminRepository {
                 ))
             .toList(),
       );
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -359,10 +338,8 @@ class AdminRepositoryImpl implements IAdminRepository {
         ],
       }) as String;
       return productId;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -392,10 +369,8 @@ class AdminRepositoryImpl implements IAdminRepository {
             },
         ],
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -442,12 +417,8 @@ class AdminRepositoryImpl implements IAdminRepository {
       });
     } on ServerFailure {
       rethrow;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } on StorageException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -458,17 +429,17 @@ class AdminRepositoryImpl implements IAdminRepository {
   }) async {
     try {
       await _client.from('product_images').delete().eq('id', imageId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
     // The reference is gone — the binary is cleaned up best-effort. An
     // orphaned public object is harmless, so storage failures don't fail
     // the mutation (mirrors the business portal's removal path).
     try {
       await _client.storage.from('product_images').remove([storagePath]);
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      logSuppressedError(error, stackTrace);
+    }
   }
 
   // ---------------------------------------------------------- orders (§3)
@@ -526,10 +497,8 @@ class AdminRepositoryImpl implements IAdminRepository {
               .toList(),
         );
       }).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -597,10 +566,8 @@ class AdminRepositoryImpl implements IAdminRepository {
                 createdAt: dto.createdAt,
               ))
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -615,10 +582,8 @@ class AdminRepositoryImpl implements IAdminRepository {
         deliveryFeesMinor: (map['delivery_fees_minor'] as int?) ?? 0,
         activeProducts: (map['active_products'] as int?) ?? 0,
       );
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -651,10 +616,8 @@ class AdminRepositoryImpl implements IAdminRepository {
                 ))
             .toList(),
       );
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -681,10 +644,8 @@ class AdminRepositoryImpl implements IAdminRepository {
         paymentAccount: dto.paymentAccount,
         qrAccountId: dto.qrAccountId,
       );
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -697,10 +658,8 @@ class AdminRepositoryImpl implements IAdminRepository {
         'payment_account': settings.paymentAccount,
         'qr_account_id': settings.qrAccountId,
       }).eq('id', 1);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 }

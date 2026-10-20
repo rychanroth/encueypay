@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/cart_item.dart';
 import '../dtos/cart_item_dto.dart';
@@ -55,10 +56,8 @@ class CartRepositoryImpl implements ICartRepository {
             storagePath == null ? null : _publicUrl(storagePath);
         return dto.toDomain(imageUrl: imageUrl);
       }).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -81,10 +80,8 @@ class CartRepositoryImpl implements ICartRepository {
         'p_variant_id': variantId,
         'p_quantity': quantity,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -98,10 +95,8 @@ class CartRepositoryImpl implements ICartRepository {
         'p_item_id': itemId,
         'p_quantity': quantity,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -109,10 +104,8 @@ class CartRepositoryImpl implements ICartRepository {
   Future<void> removeItem({required String itemId}) async {
     try {
       await _client.rpc('remove_cart_item', params: {'p_item_id': itemId});
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -120,10 +113,8 @@ class CartRepositoryImpl implements ICartRepository {
   Future<void> clear() async {
     try {
       await _client.rpc('clear_cart');
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 }

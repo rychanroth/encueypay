@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/user_profile.dart';
 import '../dtos/profile_dto.dart';
@@ -36,10 +37,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
         return const UserProfile(id: '', fullName: '');
       }
       return ProfileDto.fromJson(row).toDomain();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -53,10 +52,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
         'full_name': fullName,
         'phone': phone,
       }).eq('id', _uid);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 }

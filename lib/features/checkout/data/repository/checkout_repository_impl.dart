@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/address_option.dart';
 import '../../domain/entities/checkout_summary.dart';
@@ -39,10 +40,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .map(CheckoutAddressDto.fromJson)
           .map((dto) => dto.toDomain())
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -96,10 +95,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         subtotalMinor: subtotal,
         deliveryFeeMinor: deliveryFeeMinor,
       );
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -115,10 +112,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         discountMinor: (map['discount_minor'] as int?) ?? 0,
         message: map['message'] as String?,
       );
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -137,10 +132,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         'p_note': note,
       });
       return orderId as String;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
   // -------------------------------------------------- QR payment (§6b)
@@ -153,10 +146,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .eq('id', 1)
           .maybeSingle();
       return (row?['qr_account_id'] as String?) ?? '';
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -170,10 +161,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         'p_order_id': orderId,
         'p_payload': payload,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -197,10 +186,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .eq('order_id', orderId)
           .maybeSingle();
       return row == null ? null : Map<String, dynamic>.from(row);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -217,10 +204,12 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         return data['configured'] == true && data['paid'] == true;
       }
       return null;
-    } on FunctionException {
+    } on FunctionException catch (error, stackTrace) {
       // Function not deployed/running — the simulation path covers demos.
+      logSuppressedError(error, stackTrace);
       return null;
-    } catch (_) {
+    } catch (error, stackTrace) {
+      logSuppressedError(error, stackTrace);
       return null;
     }
   }

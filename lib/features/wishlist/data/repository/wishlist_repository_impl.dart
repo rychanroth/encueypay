@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/wishlist_item.dart';
 import '../dtos/wishlist_item_dto.dart';
@@ -56,10 +57,8 @@ class WishlistRepositoryImpl implements IWishlistRepository {
               storagePath == null ? null : _publicUrl(storagePath),
         );
       }).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -87,8 +86,8 @@ class WishlistRepositoryImpl implements IWishlistRepository {
     } on PostgrestException catch (e) {
       if (e.code == '23505') return;
       throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -101,10 +100,8 @@ class WishlistRepositoryImpl implements IWishlistRepository {
           .delete()
           .eq('wishlist_id', wishlist)
           .eq('product_id', productId);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 

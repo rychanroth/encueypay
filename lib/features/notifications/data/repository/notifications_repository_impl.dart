@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/notification_item.dart';
@@ -45,10 +46,8 @@ class NotificationsRepositoryImpl implements INotificationsRepository {
     try {
       await _client.rpc('mark_notification_read',
           params: {'p_notification_id': notificationId});
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -56,10 +55,8 @@ class NotificationsRepositoryImpl implements INotificationsRepository {
   Future<void> markAllRead() async {
     try {
       await _client.rpc('mark_all_notifications_read');
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 

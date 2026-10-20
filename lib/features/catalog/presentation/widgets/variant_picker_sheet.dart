@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_variant.dart';
@@ -265,12 +266,12 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(failure.message)));
-    } catch (_) {
+    } catch (error, stackTrace) {
+      // DATA-05: presentation never sees raw exceptions — classify first.
+      final failure = mapRepositoryError(error, stackTrace);
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Something went wrong')),
-        );
+        ..showSnackBar(SnackBar(content: Text(failure.message)));
     }
   }
 }

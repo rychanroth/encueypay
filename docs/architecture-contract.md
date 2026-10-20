@@ -252,9 +252,14 @@ session updates flow through `ref.listen` only).
   injection, sourced from `supabaseClientProvider`.
 
 - **DATA-05 (Error mapping at the boundary).** The repository is the ONLY layer that may
-  catch raw exceptions. Mapping is fixed:
-  `PostgrestException` → `ServerFailure(e.message)`; anything else → `NetworkFailure()`.
-  No raw exception may cross into `domain/` or `presentation/`.
+  catch raw exceptions. Mapping is centralized in `mapRepositoryError`
+  (`core/network/failure_mapping.dart`): recognized backend exceptions
+  (`PostgrestException`/`StorageException`/`AuthException`/`FunctionException`) →
+  `ServerFailure`; socket-level errors → `NetworkFailure`; anything else is a client
+  bug — log it (error + stack, debug builds) and throw `UnexpectedFailure` carrying
+  the cause. Bare `catch (_)` that relabels without classifying is banned: catch sites
+  must capture `(error, stackTrace)` and pass both to the mapper. No raw exception may
+  cross into `domain/` or `presentation/`.
 
 - **DATA-06 (Streaming).** Repository streams surface failures as `StreamError(failure)`
   data events via `handleError` — so stream consumers switch on `StreamResult`, and
@@ -300,15 +305,13 @@ extension CelestialBodyDtoX on CelestialBodyDto {
 }
 ```
 
-**Canonical — error mapping (future):**
+**Canonical — error mapping:**
 
 ```dart
 try {
   // Supabase call
-} on PostgrestException catch (e) {
-  throw ServerFailure(e.message);
-} catch (_) {
-  throw const NetworkFailure();
+} catch (error, stackTrace) { // DATA-05: classify, don't guess
+  throw mapRepositoryError(error, stackTrace);
 }
 ```
 
@@ -320,11 +323,8 @@ _client
     .stream(primaryKey: ['id']) // Required by Supabase
     .map((rows) =>
         rows.map((j) => CelestialBodyDto.fromJson(j).toDomain()).toList())
-    .handleError((error) {
-      final failure = (error is PostgrestException)
-          ? ServerFailure(error.message)
-          : const NetworkFailure();
-      return StreamError(failure);
+    .handleError((error, stackTrace) {
+      return StreamError(mapRepositoryError(error, stackTrace));
     });
 ```
 
@@ -353,7 +353,7 @@ outside `data/repository/`.
 - [ ] DTO annotated with `FieldRename.snake`, `.g.dart` regenerated, not hand-edited.
 - [ ] Null-defaults applied in the mapper, not in widgets.
 - [ ] Interface and impl in separate files; provider exposes the interface.
-- [ ] Every method maps exceptions to `Failure` (futures throw, streams emit `StreamError`).
+- [ ] Every method maps exceptions to `Failure` via `mapRepositoryError` (futures throw, streams emit `StreamError`).
 - [ ] Selects reference only existing columns; aggregates via views/RPCs (DATA-09).
 
 ---
@@ -697,8 +697,9 @@ the next touch of the file or on request:
   (GLOBAL-05).
 - [ ] Import fences hold: no feature→feature, no core→feature outside `core/router`
   (ARCH-04/05).
-- [ ] Errors mapped at the repository boundary; no raw exceptions in domain/presentation
-  (DATA-05).
+- [ ] Errors mapped at the repository boundary via `mapRepositoryError`; no raw
+  exceptions in domain/presentation (DATA-05). Unexpected errors are logged and surface
+  as `UnexpectedFailure` — never silently relabeled as network errors.
 - [ ] The section checklists for every layer touched in this task pass.
 
 ---

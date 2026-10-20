@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/active_promo.dart';
 import '../../domain/entities/banner.dart';
@@ -83,10 +84,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .map(CategoryDto.fromJson)
           .map((d) => d.toDomain(imageUrl: _catalogImageUrl(d.imagePath)))
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -102,10 +101,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .map(BrandDto.fromJson)
           .map((d) => d.toDomain(imageUrl: _catalogImageUrl(d.imagePath)))
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -194,10 +191,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final rows =
           await ordered.range(offset, offset + limit - 1);
       return _mapProductRows(rows);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -246,10 +241,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       );
     } on ServerFailure {
       rethrow;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -267,10 +260,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .neq('id', excludeProductId)
           .limit(limit);
       return _mapProductRows(rows);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -332,10 +323,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
             );
           })
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -380,10 +369,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         }
       }
       return promos;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 }

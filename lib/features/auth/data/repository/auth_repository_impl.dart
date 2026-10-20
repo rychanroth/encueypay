@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/app_user.dart';
@@ -56,8 +57,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       await _client.auth.signInWithPassword(email: email, password: password);
-    } catch (error) {
-      throw _mapError(error);
+    } catch (error, stackTrace) {
+      throw _mapError(error, stackTrace);
     }
   }
 
@@ -73,8 +74,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         password: password,
         data: {'full_name': fullName},
       );
-    } catch (error) {
-      throw _mapError(error);
+    } catch (error, stackTrace) {
+      throw _mapError(error, stackTrace);
     }
   }
 
@@ -85,8 +86,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         OAuthProvider.google,
         redirectTo: _oauthRedirect,
       );
-    } catch (error) {
-      throw _mapError(error);
+    } catch (error, stackTrace) {
+      throw _mapError(error, stackTrace);
     }
   }
 
@@ -94,16 +95,13 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<void> signOut() async {
     try {
       await _client.auth.signOut();
-    } catch (error) {
-      throw _mapError(error);
+    } catch (error, stackTrace) {
+      throw _mapError(error, stackTrace);
     }
   }
 
-  /// Fixed boundary mapping (DATA-05). Auth rejections are server responses,
-  /// so they map to [ServerFailure] with the server's message.
-  Failure _mapError(Object error) {
-    if (error is PostgrestException) return ServerFailure(error.message);
-    if (error is AuthException) return ServerFailure(error.message);
-    return const NetworkFailure();
-  }
+  /// Fixed boundary mapping (DATA-05), centralized in the shared mapper —
+  /// auth rejections are server responses and classify as ServerFailure.
+  Failure _mapError(Object error, [StackTrace? stackTrace]) =>
+      mapRepositoryError(error, stackTrace);
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/order.dart';
@@ -50,11 +51,8 @@ class OrdersRepositoryImpl implements IOrdersRepository {
         .asStreamResult(_mapError);
   }
 
-  Failure _mapError(Object error) {
-    if (error is PostgrestException) return ServerFailure(error.message);
-    if (error is StorageException) return ServerFailure(error.message);
-    return const NetworkFailure();
-  }
+  Failure _mapError(Object error, [StackTrace? stackTrace]) =>
+      mapRepositoryError(error, stackTrace);
 
   CustomerOrder _mapRow(Map<String, dynamic> row) {
     final dto = OrderDto.fromJson(row);
@@ -112,10 +110,8 @@ class OrdersRepositoryImpl implements IOrdersRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       return rows.map(_mapRow).toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -131,10 +127,8 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       return _mapRow(row);
     } on ServerFailure {
       rethrow;
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -142,10 +136,8 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   Future<void> cancelOrder(String orderId) async {
     try {
       await _client.rpc('cancel_order', params: {'p_order_id': orderId});
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -164,12 +156,8 @@ class OrdersRepositoryImpl implements IOrdersRepository {
         'p_order_id': orderId,
         'p_path': path,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } on StorageException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 }

@@ -25,7 +25,9 @@ Silent invention is how architecture drifts.
   order (ROUTE-04/05).
 - **Data:** DTOs (`FieldRename.snake`) never leave `data/`; mapping via `<Dto>X.toDomain()`
   extensions; `I<Name>Repository` interface + `Impl` in separate files; exceptions map to
-  `Failure` at the repository boundary only; streams surface `StreamError` events
+  `Failure` at the repository boundary only — via `mapRepositoryError`
+  (backend → `ServerFailure`, sockets → `NetworkFailure`, anything else → logged
+  `UnexpectedFailure`; bare `catch (_)` is banned); streams surface `StreamError` events
   (DATA-01…08).
 - **Domain:** entities are immutable freezed classes (DTOs stay plain
   json_serializable); use cases = one class, `call()`, interface-injected, own

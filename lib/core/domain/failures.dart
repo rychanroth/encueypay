@@ -21,3 +21,12 @@ class ServerFailure extends Failure {
 class NetworkFailure extends Failure {
   const NetworkFailure([super.message = 'Network error']);
 }
+
+/// A client-side bug that no repository anticipated — a TypeError in DTO
+/// parsing, a StateError, a FormatException. The message carries the
+/// underlying cause verbatim so the real defect is visible where the
+/// failure lands (prototype trade-off: raw cause is user-facing; the
+/// original error and stack are also logged at the mapping site).
+class UnexpectedFailure extends Failure {
+  const UnexpectedFailure(Object cause) : super('Unexpected error: $cause');
+}

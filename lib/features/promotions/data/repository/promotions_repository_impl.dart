@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/promotion.dart';
 import '../dtos/promotion_dtos.dart';
@@ -50,10 +51,8 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   Future<void> _rpc(String function, Map<String, dynamic> params) async {
     try {
       await _client.rpc(function, params: params);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -65,10 +64,8 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .select(_promotionSelect)
           .order('created_at', ascending: false);
       return _mapRows(rows);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -80,10 +77,8 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .select()
           .order('created_at', ascending: false);
       return _mapBannerRows(rows);
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -124,10 +119,8 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .map(PromoBrandRefDto.fromJson)
           .map((dto) => PromoBrandRef(id: dto.id, name: dto.name))
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -139,10 +132,8 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .map(PromoCategoryRefDto.fromJson)
           .map((dto) => PromoCategoryRef(id: dto.id, name: dto.name))
           .toList();
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 
@@ -172,12 +163,8 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
         'p_target_id': targetId,
         'p_target_name': targetName,
       });
-    } on PostgrestException catch (e) {
-      throw ServerFailure(e.message);
-    } on StorageException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (_) {
-      throw const NetworkFailure();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
     }
   }
 

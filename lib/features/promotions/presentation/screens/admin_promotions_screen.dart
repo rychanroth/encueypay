@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/promotion.dart';
 import '../controllers/admin_promotions_controller.dart';
@@ -293,9 +294,10 @@ class AdminPromotionsScreen extends ConsumerWidget {
         ref.read(adminPromotionsControllerProvider.future),
         ref.read(adminBannersControllerProvider.future),
       ]);
-    } on Exception catch (_) {
+    } on Exception catch (error, stackTrace) {
       // Failure states render through the controllers' error branches and
       // the ref.listen snackbars below — nothing to rethrow here.
+      logSuppressedError(error, stackTrace);
     }
   }
 

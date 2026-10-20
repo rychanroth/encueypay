@@ -7,6 +7,7 @@ import '../../features/catalog/domain/entities/product.dart';
 import '../../features/catalog/presentation/widgets/product_card_actions.dart';
 import '../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../domain/failures.dart';
+import '../network/failure_mapping.dart';
 
 /// Builds the ProductCard quick-action wiring for one product (Section 6).
 /// Lives in the composition root (core/router, ROUTE-08): it watches the
@@ -33,12 +34,12 @@ ProductCardActions productCardActions(
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(failure.message)));
-    } catch (_) {
+    } catch (error, stackTrace) {
+      // DATA-05: presentation never sees raw exceptions — classify first.
+      final failure = mapRepositoryError(error, stackTrace);
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Something went wrong')),
-        );
+        ..showSnackBar(SnackBar(content: Text(failure.message)));
     }
   }
 

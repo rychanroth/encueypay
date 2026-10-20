@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/network/failure_mapping.dart';
 import '../../data/khqr_generator.dart';
 import '../../data/repository/checkout_repository_impl.dart';
 import '../../domain/entities/order_payment.dart';
@@ -65,9 +66,10 @@ class OrderPaymentController extends _$OrderPaymentController {
       (_) async {
         try {
           push(mapRow(await repository.fetchOrderPayment(orderId)));
-        } on Exception {
+        } on Exception catch (error, stackTrace) {
           // Transient refetch failures keep the last state on screen —
           // the next tick retries.
+          logSuppressedError(error, stackTrace);
         }
       },
     );
