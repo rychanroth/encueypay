@@ -45,7 +45,8 @@ app.*.map.json
 /android/app/release
 
 # .env
-.env
+config/
+supabase/functions/.env
 .zcode
 android/build
 
