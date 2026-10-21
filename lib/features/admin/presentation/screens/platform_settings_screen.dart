@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/domain/bakong_account.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/admin.dart';
@@ -22,7 +21,6 @@ class _PlatformSettingsScreenState
   final _feeController = TextEditingController();
   final _platformCommissionController = TextEditingController();
   final _paymentAccountController = TextEditingController();
-  final _qrAccountController = TextEditingController();
   bool _filled = false;
 
   @override
@@ -30,7 +28,6 @@ class _PlatformSettingsScreenState
     _feeController.dispose();
     _platformCommissionController.dispose();
     _paymentAccountController.dispose();
-    _qrAccountController.dispose();
     super.dispose();
   }
 
@@ -48,31 +45,11 @@ class _PlatformSettingsScreenState
       );
       return;
     }
-    // Stored VERBATIM: a bare `alias@bank` or the full KHQR payload a
-    // generic scanner shows for the receiver's own bank QR (some banks —
-    // ACLEDA — embed a generic id and route via the embedded account
-    // number, so the payload is decoded at payment time, not flattened
-    // here). Only unparseable garbage is rejected.
-    final rawQrAccount = _qrAccountController.text.trim();
-    if (rawQrAccount.isNotEmpty &&
-        extractBakongAccountParts(rawQrAccount) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'That does not look like a Bakong ID. Paste the ID shown under '
-            'My KHQR in your banking app (e.g. khqr@aclb) — or the full QR '
-            'string itself; both work.',
-          ),
-        ),
-      );
-      return;
-    }
     await ref.read(adminSettingsControllerProvider.notifier).save(
           PlatformSettings(
             deliveryFeeMinor: feeMinor,
             platformCommissionPercent: platformCommission,
             paymentAccount: _paymentAccountController.text.trim(),
-            qrAccountId: rawQrAccount,
           ),
         );
     final hasError = ref.read(adminSettingsControllerProvider).hasError;
@@ -111,7 +88,6 @@ class _PlatformSettingsScreenState
             _platformCommissionController.text =
                 '${settings.platformCommissionPercent}';
             _paymentAccountController.text = settings.paymentAccount;
-            _qrAccountController.text = settings.qrAccountId;
             _filled = true;
           }
           return ListView(
@@ -138,16 +114,6 @@ class _PlatformSettingsScreenState
                 controller: _paymentAccountController,
                 decoration: const InputDecoration(
                   labelText: 'Platform payment account (for transfers)',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _qrAccountController,
-                decoration: const InputDecoration(
-                  labelText: 'QR payment account (Bakong ID)',
-                  helperText: 'The ID under My KHQR (e.g. khqr@aclb) — or '
-                      'paste your full bank QR string; both are decoded. '
-                      'Empty = QR disabled at checkout.',
                 ),
               ),
               const SizedBox(height: 24),

@@ -353,10 +353,5 @@ abstract class PlatformSettings with _$PlatformSettings {
     required int deliveryFeeMinor,
     required int platformCommissionPercent,
     required String paymentAccount,
-
-    /// The Bakong account value receiving QR payments (Section 6b), stored
-    /// VERBATIM: a bare `alias@bank` or the full bank-QR payload (decoded
-    /// at use time). '' = unconfigured.
-    @Default('') String qrAccountId,
   }) = _PlatformSettings;
 }

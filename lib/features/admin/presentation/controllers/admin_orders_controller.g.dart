@@ -50,7 +50,7 @@ final class AdminOrdersControllerProvider
 }
 
 String _$adminOrdersControllerHash() =>
-    r'51f06a11941c553a888a7c0dcab8ecd8f114ada8';
+    r'85544899c67c72c44bc7e08dd7c9eef067af213f';
 
 /// Admin order oversight + fulfillment (Section 3, spec §8 "manages
 /// Orders"): the admin drives the per-business lifecycle and completes the
