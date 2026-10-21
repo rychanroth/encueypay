@@ -9,7 +9,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
 import '../widgets/order_item_card.dart';
-import '../widgets/order_status_timeline.dart';
+import '../widgets/order_tracking_card.dart';
 
 /// Customer order detail (spec §12/§13/§20/§21): order parts, payment proof
 /// upload, delivery progress view, cancel, return and review entry points.
@@ -121,37 +121,10 @@ class OrderDetailScreen extends ConsumerWidget {
                 order.createdAt.toLocal().toString().substring(0, 16),
                 style: theme.textTheme.bodySmall,
               ),
-              // Tracking header (assignment §7, Section 7C — prototype
-              // scope): mock tracking number, an ETA only while in transit,
-              // and the store standing in as its own courier.
-              const SizedBox(height: 4),
-              Text(
-                'Tracking #${order.id.substring(0, 8).toUpperCase()}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (order.status != OrderStatus.delivered &&
-                  order.status != OrderStatus.cancelled &&
-                  order.status != OrderStatus.returned)
-                Text(
-                  'Estimated delivery: '
-                  '${order.createdAt.toLocal().add(const Duration(days: 3)).toString().substring(0, 10)}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              Text(
-                'Delivery managed by EncueYPay',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Visual status timeline (assignment §7): the order's single
-              // lifecycle, read verbatim (Section 7A).
-              OrderStatusTimeline(status: order.status),
+              // §7C tracking presentation — mocked courier details, tracking
+              // number, status-aware ETA and the step indicator, one card
+              // (PRES-05 extracted widget).
+              OrderTrackingCard(order: order),
               if (order.cancellationReason.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
