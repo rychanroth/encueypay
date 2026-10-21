@@ -1,48 +1,25 @@
-# Handoff — QR payments: ABA PayWay (direct-Bakong path retired)
+# Handoff — QR payments: ABA PayWay
 
-Read this before touching the QR payment flow. It records why the Bakong
-polling path was retired, what the PayWay integration is pinned to, the
-current state, and what remains. Supersedes the Bakong-era notes
-(git history, ≤ `0ec1433`).
+Read this before touching the QR payment flow. It records the design
+decision, what is pinned to the official docs, the current state, and what
+remains.
 
-## 1. Why the Bakong path never confirmed — the full root-cause record
+## 1. Design decision (why PayWay)
 
-The symptom was always "scan → pay → the screen never flips". The QR
-payload itself was fine (SDK-vector-pinned). Every failure was server-side
-and invisible, because **every error was swallowed into `paid: false`**:
+QR settlement runs through **ABA PayWay** (merchant gateway, webhook push).
+The earlier direct-Bakong polling path never produced a confirmation in
+practice — unwired token, a DATA-09-breaking MD5 select, an impossible
+response gate, and service_role grants missing on `payments` (fixed in
+`20261021000001`) — and a merchant gateway is the correct production path
+anyway. Decision 2026-10-21: all Bakong-era artifacts are deleted or
+dropped — `bakong-check`, the client poll, `KhqrGenerator` +
+`bakong_account.dart` (+ their tests), the `register_qr_payment` RPC,
+`payments.qr_md5`, `platform_settings.qr_account_id`, and the admin
+simulate shortcut (`20261021000002`; `confirm_qr_payment` is
+EXECUTE-locked to service_role — the webhook is the sole settlement path).
+Do not revive direct Bakong without a new decision.
 
-1. `BAKONG_TOKEN` never reached the edge function (it sat in app
-   dart-defines) → `bakong-check` answered `configured: false` forever.
-2. Even with a token, its MD5 lookup used the inline PostgREST expression
-   `md5(qr_payload)` (forbidden by DATA-09) and ignored the response error.
-3. Its success gate required `result.data.paid === true` — a field real
-   Bakong responses do not carry (verified against three independent
-   integrations; paid is `responseCode: 0`).
-4. The kicker, found while wiring PayWay: **`service_role` had no
-   SELECT/UPDATE grants on `payments`** (baseline left it `Dxtm` only), so
-   every service-role read of the table failed with 42501 — silently.
-   Fixed in `20261021000001_grant_service_role_payments.sql`.
-
-Retirement is deliberate: PayWay is the production path (merchant account,
-webhooks, no personal-account compliance problem). `KhqrGenerator` and
-`bakong_account.dart` remain as test-covered units (admin settings still
-validates with the latter); `bakong-check` and the client poll are gone.
-
-## 2. Verification record (against AI-sourced advice)
-
-- The "Bakong Open API: no webhooks, poll `check_transaction_by_md5`"
-  write-up was **architecturally accurate** and matched what was built —
-  the failure was wiring, not design. Nuances it omitted: `errorCode`
-  semantics (1 not-found, 6 bad token) and out-of-Cambodia geo-blocking.
-- The "July 2026 policy update / 100-transaction cap / NBC killed polling"
-  write-up was **not verifiable** anywhere checkable (no NBC statement, no
-  GitHub chatter, no quota error code in any SDK). The cited TFDevs video
-  is real and says the free API was *restricted*, not removed. Its
-  production recommendation (bank gateway + webhooks) was sound regardless
-  — that is what this repo now does. Moral: verify specifics before
-  architecting around them.
-
-## 3. The PayWay flow (current design)
+## 2. The flow
 
 Pinned to the official Developer Suite: **developer.payway.com.kh**
 (Apidog site — public; pages also serve `.md` versions).
@@ -66,40 +43,37 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
             └─ realtime + 3s refetch → screen: "Payment received"
 ```
 
-Update 2026-10-21: the admin "Simulate QR payment" path was removed
-(migration `20261021000002` drops the RPC); `confirm_qr_payment` is now
-service-role-only and the webhook is the sole settlement path.
-
-## 4. Current state (verified against the local stack)
+## 3. Current state (verified against the local stack)
 
 - Commits `091f0c4` (gitignore), `9b8e46b` (payway-create),
-  `3f80889` (webhook rewrite + app rewiring + bakong-check deleted).
-- `flutter analyze` clean; 35 tests pass (KHQR generator + TLV units
-  untouched); `deno check` clean on both functions.
-- Migration `20261021000001` applied locally (service_role grants).
-- `supabase/config.toml` `[edge_runtime.secrets]` maps the four
-  `PAYWAY_*` names to host env vars — **`supabase start` does not read
+  `3f80889` (webhook rewrite + app rewiring), `2f851a0` (grants + secrets
+  wiring + docs), `c8d5185` (full Bakong-era removal).
+- `flutter analyze` clean; 23 tests pass; `deno check` clean on both
+  functions; migrations applied locally through `20261021000003`.
+- `supabase/config.toml` `[edge_runtime.secrets]` maps the four `PAYWAY_*`
+  names to host env vars — **`supabase start` does not read
   `supabase/functions/.env` on its own**; start with:
-  `set -a; source supabase/functions/.env; set +a; supabase start`.
-  (Verified: with this, secrets DO reach the function container.)
-- `supabase/functions/.env`: `PAYWAY_BASE_URL` correct
-  (`https://checkout-sandbox.payway.com.kh`), `PAYWAY_MERCHANT_ID` set,
-  **`PAYWAY_API_KEY` still empty — the one missing credential**.
-- Smoke-test row seeded in the local DB: order
-  `6c07040e-b093-4b07-8789-7036579cca5b` ($1.00, pending QR payment,
-  throwaway user `payway-smoke@test.local`) — reuse it for the first
+  `set -a; source config/.env; source supabase/functions/.env; set +a; supabase start`
+  (BOTH files: `config/.env` also feeds the OAuth providers — starting
+  without it silently breaks Google sign-in with a Google-side 400.)
+- `supabase/functions/.env`: `PAYWAY_BASE_URL` and `PAYWAY_MERCHANT_ID`
+  set; **`PAYWAY_API_KEY` still empty — the one missing credential**.
+- Smoke-test row seeded locally: order
+  `fea59069-092a-447a-9c9f-2ac43a09e3ee` ($1.00, pending QR payment,
+  throwaway user `payway-smoke2@test.local`) — reuse for the first
   invoke; delete the user/order afterwards.
 
-## 5. Remaining steps (in order)
+## 4. Remaining steps (in order)
 
-1. **Fill `PAYWAY_API_KEY`** in `supabase/functions/.env` — the portal
-   field is confusingly labelled; PayWay's own PHP samples say
+1. **Fill `PAYWAY_API_KEY`** in `supabase/functions/.env`. The portal
+   labels it confusingly: PayWay's own PHP samples say
    `$api_key = "API KEY PROVIDED BY ABA BANK"` under a
-   `// public key provided by ABA Bank` comment. The RSA keys are NOT it.
+   `// public key provided by ABA Bank` comment — it is the "Public Key"
+   field, NOT an RSA key.
 2. Restart as above → invoke locally:
    `curl -s -X POST http://127.0.0.1:54321/functions/v1/payway-create
    -H "Authorization: Bearer <anon>" -H 'Content-Type: application/json'
-   -d '{"orderId":"6c07040e-…"}'`
+   -d '{"orderId":"fea59069-…"}'`
    Expect `{configured:true, qrPayload:"000201…"}`. Failure reasons are
    explicit (`payway_error` + code): 1 wrong hash, 6/81 whitelist,
    23 option not enabled (→ profile lacks the QR API service; pivot to
@@ -110,15 +84,15 @@ service-role-only and the webhook is the sole settlement path.
    `transaction_verified`.
 4. Real-scan test: the QR from step 2 is a live sandbox KHQR — scan it
    with a banking app → PayWay must POST the callback (needs the hosted
-   deploy or a tunnel; sandbox callback_url is baked base64 into the
-   generate-qr request, so set `PAYWAY_CALLBACK_URL` for tunnels).
+   deploy or a tunnel; `PAYWAY_CALLBACK_URL` overrides the baked
+   callback_url for tunnels).
 5. Production checklist: hosted deploy (`REMOTE_SETUP.md` Phase 6:
    `supabase functions deploy payway-create payway-webhook` +
    `supabase secrets set …`), callback URL in the ABA portal, callback
    domain whitelisted with PayWay, production base URL + credentials,
    one real low-value transaction.
 
-## 6. Gotchas
+## 5. Gotchas
 
 - **"Public Key" ≠ RSA public key** in PayWay-land — see step 1 above.
 - `tran_id` ≤ 20 chars; UUIDs must be derived, and the callback mapping
@@ -130,15 +104,14 @@ service-role-only and the webhook is the sole settlement path.
   both sides round-trip the same JSON text, which is why amounts are sent
   as JSON numbers.
 - Errors 6/81/102 = whitelisting; contact the PayWay integration team.
-- Sandbox registration: sandbox.payway.com.kh → Merchant ID + API key by
-  email. `check-transaction-2` (reconciliation, 600 req/s) is documented
-  but intentionally not wired — the webhook is the confirmation path.
-- KHQR display guidelines: the existing `KhqrCard` header already follows
-  the red KHQR/BAKONG branding; PayWay also ships Figma templates if the
-  store ever wants their `qrImage` (up to 0.5 MB — render `qrString`
-  locally instead).
+- `check-transaction-2` (reconciliation, 600 req/s, 7-day window) is
+  documented but intentionally not wired — the webhook is the
+  confirmation path.
+- KHQR display guidelines: `KhqrCard` already follows the red KHQR/BAKONG
+  branding; PayWay also ships Figma templates if the store ever wants
+  their `qrImage` (up to 0.5 MB — render `qrString` locally instead).
 
-## 7. Key files
+## 6. Key files
 
 | Purpose | Path |
 |---|---|
@@ -148,6 +121,5 @@ service-role-only and the webhook is the sole settlement path.
 | One-shot creation + stream (realtime + 3s refetch) | `lib/features/checkout/presentation/controllers/order_payment_controller.dart` |
 | Payment screen (states, creation-failure notice, retry) | `lib/features/checkout/presentation/screens/order_placed_screen.dart` |
 | Local secrets wiring | `supabase/config.toml` `[edge_runtime.secrets]` + `supabase/functions/.env` (gitignored) |
-| service_role grants fix | `supabase/migrations/20261021000001_grant_service_role_payments.sql` |
-| Retired-but-kept units | `lib/features/checkout/data/khqr_generator.dart`, `lib/core/domain/bakong_account.dart` (+ their tests) |
+| Retired-path record | git history ≤ `c8d5185` (migrations `20261021000002`/`_03` drop the RPCs and columns) |
 | PayWay docs (official, public) | https://developer.payway.com.kh — QR API, Purchase, Check transaction, Ecommerce Checkout |

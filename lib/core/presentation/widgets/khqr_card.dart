@@ -105,7 +105,7 @@ class KhqrCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Scan with any Bakong-connected banking app',
+                  'Scan with any KHQR-supported banking app',
                   style: AppTypography.labelSmall.copyWith(
                     color: AppColors.textSecondaryLight,
                     letterSpacing: 0.3,

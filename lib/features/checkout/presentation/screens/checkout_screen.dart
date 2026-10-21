@@ -285,7 +285,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           value: PaymentMethod.qr,
                           title: const Text('QR payment (KHQR)'),
                           subtitle: const Text(
-                            'Scan with any Bakong-connected banking app',
+                            'Scan with any KHQR-supported banking app',
                           ),
                         ),
                       ),

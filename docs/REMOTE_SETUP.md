@@ -196,10 +196,9 @@ https://<ref>.supabase.co/functions/v1/push-dispatch
      where id in (select id from auth.users where email = 'admin@demo.local');
    ```
 
-3. Sign in in the app; set **Dashboard → Platform settings → QR payment
-   account (Bakong ID)** — empty hides the KHQR option at checkout.
-   Coupons and banners are authored in-app on this database (they record
-   `created_by`).
+3. Sign in in the app and set **Dashboard → Platform settings** (delivery
+   fee, payment account). Coupons and banners are authored in-app on this
+   database (they record `created_by`).
 
 ## Phase 9 — Verify (smoke pass)
 

@@ -24,7 +24,7 @@ the app degrades gracefully without them (each one says what you lose).
 | Firebase Android config (`google-services.json`) | ✅ already in repo | `android/app/` |
 | Gradle google-services plugin | ⚠️ **not applied** — you add 2 lines (Phase 7) | `android/` |
 | FCM push bug fix (1 line) | ⚠️ **you apply it** (Phase 7, Step 1) | `supabase/functions/push-dispatch/index.ts` |
-| Bakong / PayWay API tokens | ❌ optional secrets | Phase 6 |
+| PayWay sandbox secrets | ❌ you add them (`supabase/functions/.env`) | Phase 6 |
 | Demo user (admin) + in-app coupons | ❌ you create them | Phases 3–4 |
 
 ---
@@ -370,9 +370,8 @@ To reproduce on a fresh machine:
 | Symptom | Cause → fix |
 |---|---|
 | Tab set doesn't switch after promoting the admin | Profile is read per auth event → **sign out and back in** (or hot-restart) |
-| QR option missing at checkout | `qr_account_id` empty → Admin → Platform settings (Phase 6.1) |
+| QR screen: "Could not start the QR payment" | PayWay secrets missing / rejected — the exact stage is shown on screen (Phase 6) |
 | "Some items in your cart are no longer available" | A cart line's variant/product is no longer active (server-side gate) — remove the line |
-| `bakong-check` says `configured: false` | `BAKONG_TOKEN` not in `supabase/functions/.env`, or stack not restarted after adding it |
 | Push never arrives | In order: recipient_id fix applied (Step 1)? Gradle plugin applied (Step 2)? `FCM_SERVICE_ACCOUNT` set + stack restarted (Steps 3–4)? Webhook created with the `kong:8000` URL (Step 5)? Device has Play services? App backgrounded? |
 | OAuth: `redirect_uri_mismatch` | The Google client must allow exactly `http://127.0.0.1:54321/auth/v1/callback`, and `.env`'s `SUPABASE_REDIRECT_URI` must match; then the restart ritual |
 | OAuth on device: browser can't open callback | `adb reverse tcp:54321 tcp:54321` (ephemeral — re-run) |
@@ -386,7 +385,6 @@ To reproduce on a fresh machine:
 |---|---|---|
 | One auth user + admin promotion | The demo itself | 3–4 |
 | `qr_account_id` in Platform settings | KHQR visible at checkout | 6.1 |
-| Bakong developer token (`BAKONG_TOKEN`) | Real payment confirmation polling | 6.3 |
-| ABA merchant account + `PAYWAY_API_KEY` + callback URL | Real webhook confirmation | 6.4 |
+| PayWay sandbox secrets (`PAYWAY_MERCHANT_ID`, `PAYWAY_API_KEY`) + portal callback URL | Real webhook confirmation | 6.4 |
 | push-dispatch 1-line fix + Gradle plugin + `FCM_SERVICE_ACCOUNT` + notifications webhook | Real push notifications | 7 |
 | Google OAuth client (already in `.env` here) | Google sign-in; email/password is the fallback | 8 |

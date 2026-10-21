@@ -840,7 +840,7 @@ class _SpecificationsHighlights extends StatelessWidget {
         const _HighlightTile(
           title: 'Supported Payments',
           body:
-              'KHQR through any Bakong-member banking app, cash on '
+              'KHQR through any KHQR-supported banking app, cash on '
               'delivery, and platform coupons stack at checkout.',
           initiallyExpanded: true,
         ),
