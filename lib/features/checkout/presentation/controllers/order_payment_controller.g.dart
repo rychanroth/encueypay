@@ -16,13 +16,13 @@ part of 'order_payment_controller.dart';
 ///
 /// The refetch exists because Realtime can be unavailable in practice
 /// (e.g. the websocket handshake 401s with a key the service rejects):
-/// the registration writes the QR payload server-side, and without a
-/// delivery path the screen would buffer forever. With the refetch merged
-/// in, the screen converges no matter what Realtime does. Identical
-/// consecutive states are dropped (freezed ==) so healthy-Realtime
-/// rebuilds stay event-driven, not timer-driven.
+/// QR creation writes the payload server-side, and without a delivery
+/// path the screen would buffer forever. With the refetch merged in, the
+/// screen converges no matter what Realtime does. Identical consecutive
+/// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+/// event-driven, not timer-driven.
 ///
-/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// Confirmation paths (PayWay webhook / admin simulation) all flip the
 /// row server-side — no optimistic UI.
 
 @ProviderFor(OrderPaymentController)
@@ -36,13 +36,13 @@ final orderPaymentControllerProvider = OrderPaymentControllerFamily._();
 ///
 /// The refetch exists because Realtime can be unavailable in practice
 /// (e.g. the websocket handshake 401s with a key the service rejects):
-/// the registration writes the QR payload server-side, and without a
-/// delivery path the screen would buffer forever. With the refetch merged
-/// in, the screen converges no matter what Realtime does. Identical
-/// consecutive states are dropped (freezed ==) so healthy-Realtime
-/// rebuilds stay event-driven, not timer-driven.
+/// QR creation writes the payload server-side, and without a delivery
+/// path the screen would buffer forever. With the refetch merged in, the
+/// screen converges no matter what Realtime does. Identical consecutive
+/// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+/// event-driven, not timer-driven.
 ///
-/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// Confirmation paths (PayWay webhook / admin simulation) all flip the
 /// row server-side — no optimistic UI.
 final class OrderPaymentControllerProvider
     extends $StreamNotifierProvider<OrderPaymentController, OrderPayment> {
@@ -54,13 +54,13 @@ final class OrderPaymentControllerProvider
   ///
   /// The refetch exists because Realtime can be unavailable in practice
   /// (e.g. the websocket handshake 401s with a key the service rejects):
-  /// the registration writes the QR payload server-side, and without a
-  /// delivery path the screen would buffer forever. With the refetch merged
-  /// in, the screen converges no matter what Realtime does. Identical
-  /// consecutive states are dropped (freezed ==) so healthy-Realtime
-  /// rebuilds stay event-driven, not timer-driven.
+  /// QR creation writes the payload server-side, and without a delivery
+  /// path the screen would buffer forever. With the refetch merged in, the
+  /// screen converges no matter what Realtime does. Identical consecutive
+  /// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+  /// event-driven, not timer-driven.
   ///
-  /// Confirmation paths (webhook / poller / admin simulation) all flip the
+  /// Confirmation paths (PayWay webhook / admin simulation) all flip the
   /// row server-side — no optimistic UI.
   OrderPaymentControllerProvider._({
     required OrderPaymentControllerFamily super.from,
@@ -100,7 +100,7 @@ final class OrderPaymentControllerProvider
 }
 
 String _$orderPaymentControllerHash() =>
-    r'9177b95a43f64f8cc9c94bde451b9f8542e64c08';
+    r'61c41b1045611497314a314e5d09ef14dc3ba214';
 
 /// The order's payment lifecycle on the order-success screen (Section 6b).
 ///
@@ -110,13 +110,13 @@ String _$orderPaymentControllerHash() =>
 ///
 /// The refetch exists because Realtime can be unavailable in practice
 /// (e.g. the websocket handshake 401s with a key the service rejects):
-/// the registration writes the QR payload server-side, and without a
-/// delivery path the screen would buffer forever. With the refetch merged
-/// in, the screen converges no matter what Realtime does. Identical
-/// consecutive states are dropped (freezed ==) so healthy-Realtime
-/// rebuilds stay event-driven, not timer-driven.
+/// QR creation writes the payload server-side, and without a delivery
+/// path the screen would buffer forever. With the refetch merged in, the
+/// screen converges no matter what Realtime does. Identical consecutive
+/// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+/// event-driven, not timer-driven.
 ///
-/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// Confirmation paths (PayWay webhook / admin simulation) all flip the
 /// row server-side — no optimistic UI.
 
 final class OrderPaymentControllerFamily extends $Family
@@ -145,13 +145,13 @@ final class OrderPaymentControllerFamily extends $Family
   ///
   /// The refetch exists because Realtime can be unavailable in practice
   /// (e.g. the websocket handshake 401s with a key the service rejects):
-  /// the registration writes the QR payload server-side, and without a
-  /// delivery path the screen would buffer forever. With the refetch merged
-  /// in, the screen converges no matter what Realtime does. Identical
-  /// consecutive states are dropped (freezed ==) so healthy-Realtime
-  /// rebuilds stay event-driven, not timer-driven.
+  /// QR creation writes the payload server-side, and without a delivery
+  /// path the screen would buffer forever. With the refetch merged in, the
+  /// screen converges no matter what Realtime does. Identical consecutive
+  /// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+  /// event-driven, not timer-driven.
   ///
-  /// Confirmation paths (webhook / poller / admin simulation) all flip the
+  /// Confirmation paths (PayWay webhook / admin simulation) all flip the
   /// row server-side — no optimistic UI.
 
   OrderPaymentControllerProvider call(String orderId) =>
@@ -169,13 +169,13 @@ final class OrderPaymentControllerFamily extends $Family
 ///
 /// The refetch exists because Realtime can be unavailable in practice
 /// (e.g. the websocket handshake 401s with a key the service rejects):
-/// the registration writes the QR payload server-side, and without a
-/// delivery path the screen would buffer forever. With the refetch merged
-/// in, the screen converges no matter what Realtime does. Identical
-/// consecutive states are dropped (freezed ==) so healthy-Realtime
-/// rebuilds stay event-driven, not timer-driven.
+/// QR creation writes the payload server-side, and without a delivery
+/// path the screen would buffer forever. With the refetch merged in, the
+/// screen converges no matter what Realtime does. Identical consecutive
+/// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+/// event-driven, not timer-driven.
 ///
-/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// Confirmation paths (PayWay webhook / admin simulation) all flip the
 /// row server-side — no optimistic UI.
 
 abstract class _$OrderPaymentController extends $StreamNotifier<OrderPayment> {

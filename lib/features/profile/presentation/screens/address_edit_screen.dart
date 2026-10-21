@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/domain/failures.dart';
 import '../../domain/entities/address.dart';
 import '../controllers/addresses_controller.dart';
+import '../controllers/current_location_controller.dart';
 
 /// Create (address == null) or edit an existing address. The edited address
 /// is passed via the router's `extra` (ROUTE-02: navigation by name).
@@ -62,10 +63,67 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     if (!hasError && mounted) context.pop();
   }
 
+  /// One-tap locate (spec B.6): position → reverse geocode → prefill. Only
+  /// fills empty fields — typed values are never overwritten silently.
+  Future<void> _useCurrentLocation() async {
+    final notifier = ref.read(currentLocationControllerProvider.notifier);
+    await notifier.locate();
+    if (!mounted) return;
+    final located = ref.read(currentLocationControllerProvider);
+    if (located.hasError) {
+      final failure = located.error;
+      if (failure is! Failure) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text(failure.message),
+          action: failure is NetworkFailure
+              ? SnackBarAction(
+                  label: 'Open settings',
+                  onPressed: notifier.openSettings,
+                )
+              : null,
+        ));
+      return;
+    }
+    final result = located.value;
+    if (result == null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+          content: Text(
+            "Couldn't determine an address from your location — please enter it manually.",
+          ),
+        ));
+      return;
+    }
+    var filled = false;
+    if (result.line1.isNotEmpty && _line1Controller.text.trim().isEmpty) {
+      _line1Controller.text = result.line1;
+      filled = true;
+    }
+    final city = result.city;
+    if (city != null && _cityController.text.trim().isEmpty) {
+      _cityController.text = city;
+      filled = true;
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(filled
+            ? 'Filled from your current location — please review.'
+            : 'Address fields already have values — nothing changed.'),
+      ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSaving = ref.watch(
       addressesControllerProvider.select((async) => async.isLoading),
+    );
+    final isLocating = ref.watch(
+      currentLocationControllerProvider.select((async) => async.isLoading),
     );
 
     ref.listen(addressesControllerProvider, (previous, next) {
@@ -118,6 +176,18 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
               keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: isLocating ? null : _useCurrentLocation,
+              icon: isLocating
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location_outlined),
+              label: const Text('Use my current location'),
             ),
             const SizedBox(height: 12),
             TextFormField(
