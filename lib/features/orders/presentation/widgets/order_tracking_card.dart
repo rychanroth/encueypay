@@ -1,25 +1,37 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
 import 'order_status_timeline.dart';
 
 /// §7C tracking presentation for the order detail screen: the requirement's
 /// courier details / mock tracking number / ETA / step indicators
-/// consolidated into one card. Everything except the status itself is
+/// consolidated into one card. The customer default is the simplified
+/// four-stage progress (`OrderStatus.label` mapping); a toggle reveals the
+/// exact §7A lifecycle. Everything except the status itself is
 /// presentation-only mock — no courier entity exists server-side, and the
 /// UI never flips states on its own: the admin advances the order and the
 /// realtime stream re-renders this card.
-class OrderTrackingCard extends StatelessWidget {
+class OrderTrackingCard extends StatefulWidget {
   const OrderTrackingCard({super.key, required this.order});
 
   final CustomerOrder order;
 
+  @override
+  State<OrderTrackingCard> createState() => _OrderTrackingCardState();
+}
+
+class _OrderTrackingCardState extends State<OrderTrackingCard> {
   /// MOCK courier identity (§7C "courier details") — a fixed stand-in,
   /// deliberately non-interactive (no url_launcher dependency for a
   /// decorative link).
   static const _courierLine =
       'EncueYPay Express · Rider Sok Dara · +855 12 345 678';
+
+  bool _showExactStatus = false;
+
+  CustomerOrder get order => widget.order;
 
   /// Still able to move — headline/ETA/courier rows are hidden once the
   /// order is delivered/cancelled/returned (the timeline renders its own
@@ -87,12 +99,145 @@ class OrderTrackingCard extends StatelessWidget {
                   Expanded(child: Text(_courierLine, style: caption)),
                 ],
               ),
+              const SizedBox(height: AppSpacing.md),
+              _SimplifiedTimeline(
+                currentIndex: _stageIndex,
+                labels: const ['Placed', 'Preparing', 'On its way', 'Delivered'],
+              ),
             ],
-            const SizedBox(height: AppSpacing.md),
-            OrderStatusTimeline(status: order.status),
+            // The exact §7A lifecycle — the reveal target; also the direct
+            // presentation for cancelled/returned (its callout).
+            if (_showExactStatus || !_inFlight) ...[
+              const SizedBox(height: AppSpacing.md),
+              OrderStatusTimeline(status: order.status),
+            ],
+            if (_inFlight)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () =>
+                      setState(() => _showExactStatus = !_showExactStatus),
+                  icon: Icon(_showExactStatus
+                      ? Icons.unfold_less
+                      : Icons.unfold_more),
+                  label: Text(_showExactStatus
+                      ? 'Hide exact status'
+                      : 'Show exact status'),
+                ),
+              ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Index into the simplified stages; only rendered while in flight.
+  int get _stageIndex => switch (order.status) {
+        OrderStatus.pending => 0,
+        OrderStatus.confirmed ||
+        OrderStatus.processing ||
+        OrderStatus.packed => 1,
+        OrderStatus.shipped ||
+        OrderStatus.outForDelivery => 2,
+        _ => 3,
+      };
+}
+
+/// Horizontal coarse progress — the simplified customer default. Visual
+/// language matches [OrderStatusTimeline]: emerald fill for done stages,
+/// primary for the current one, hollow for upcoming.
+class _SimplifiedTimeline extends StatelessWidget {
+  const _SimplifiedTimeline({required this.labels, required this.currentIndex});
+
+  final List<String> labels;
+  final int currentIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < labels.length; i++)
+          Expanded(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    if (i > 0)
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: i <= currentIndex
+                              ? AppColors.accentEmerald
+                              : theme.colorScheme.outlineVariant,
+                        ),
+                      ),
+                    _dot(theme, i),
+                    if (i < labels.length - 1)
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: i < currentIndex
+                              ? AppColors.accentEmerald
+                              : theme.colorScheme.outlineVariant,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  labels[i],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: i <= currentIndex
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSurfaceVariant,
+                    fontWeight:
+                        i == currentIndex ? FontWeight.w600 : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _dot(ThemeData theme, int index) {
+    final done = index < currentIndex;
+    final current = index == currentIndex;
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: done
+            ? AppColors.accentEmerald
+            : current
+                ? theme.colorScheme.primary
+                : Colors.transparent,
+        border: Border.all(
+          width: 2,
+          color: done
+              ? AppColors.accentEmerald
+              : current
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+      child: done
+          ? const Icon(Icons.check, size: 10, color: Colors.white)
+          : current
+              ? Container(
+                  margin: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.colorScheme.onPrimary,
+                  ),
+                )
+              : null,
     );
   }
 }

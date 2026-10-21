@@ -111,7 +111,7 @@ class OrderDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    order.status.wireName,
+                    order.status.label,
                     style: theme.textTheme.titleSmall
                         ?.copyWith(color: theme.colorScheme.primary),
                   ),

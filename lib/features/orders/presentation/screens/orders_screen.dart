@@ -178,10 +178,6 @@ class _OrderCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final money = Money(order.totalMinor);
-    final statusLabel = switch (order.status) {
-      OrderStatus.outForDelivery => 'Out for delivery',
-      final status => status.wireName,
-    };
 
     return Card(
       margin: EdgeInsets.zero,
@@ -204,8 +200,12 @@ class _OrderCard extends ConsumerWidget {
                       style: theme.textTheme.titleMedium,
                     ),
                   ),
-                  // §2.2 lifecycle palette, keyed by the wire name.
-                  StatusBadge(wireName: order.status.wireName, label: statusLabel),
+                  // §2.2 lifecycle palette, keyed by the wire name; the
+                  // label is the simplified customer vocabulary.
+                  StatusBadge(
+                    wireName: order.status.wireName,
+                    label: order.status.label,
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),

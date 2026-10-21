@@ -196,12 +196,15 @@ set -a; source supabase/functions/.env; set +a; supabase start
 The RSA public/private keys the portal also shows belong to other services
 (cards/payout) — KHQR needs only the merchant id and the API key.
 
-**6.2 — No-credential demo (works with zero external accounts)**: place an
-order with QR at checkout → as admin, open the order → **"Simulate QR
-payment"** → the customer's payment screen flips to *paid* in real time
-(realtime stream on `payments`). Without PayWay secrets the QR screen
-shows an explicit "Could not start the QR payment" notice instead of
-spinning.
+**6.2 — QR settlement (requires the Phase 6 secrets)**: place an order
+with QR at checkout → the PayWay KHQR renders → settlement arrives via
+the `payway-webhook` callback (a real sandbox payment, or the signed
+dry-run in HANDOFF-KHQR.md step 3) → the customer's payment screen flips
+to *paid* in real time (realtime stream on `payments`). Without PayWay
+secrets the QR screen shows an explicit "Could not start the QR payment"
+notice instead of spinning — the former admin "Simulate QR payment"
+shortcut was removed on 2026-10-21 once the webhook became the sole
+settlement path.
 
 **6.3 — How a real QR payment works** (docs: developer.payway.com.kh —
 "ABA QR API", "Check transaction", "Verify Callback Signature"):
@@ -344,7 +347,8 @@ To reproduce on a fresh machine:
    hierarchy-aware category chips — `↳` subcategories, sort, result count) →
    product detail (variants, stock) → cart (floating checkout dock, voucher
    input with scope chips, stock-capped steppers) → 7-step checkout →
-   NBC-styled KHQR card → admin "Simulate payment" → flips to paid in real
+   NBC-styled KHQR card → webhook settles (real sandbox payment or signed
+   dry-run) → flips to paid in real
    time. Prices render **dual currency** ($ + ≈ KHR) everywhere.
 2. **Admin**: Dashboard (KPIs, critical stock alert, 14-day trend) →
    Orders: status badges per the §2.2 palette, Confirmed → Processing →

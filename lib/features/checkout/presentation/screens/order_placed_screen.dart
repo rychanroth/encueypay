@@ -20,8 +20,7 @@ import '../controllers/order_payment_controller.dart';
 ///   * QR pending    → the PayWay KHQR renders (created server-side via the
 ///     payway-create Edge Function) while Supabase Realtime watches the
 ///     `payments` row; PayWay's webhook settles the transaction
-///     server-side (admin simulation covers demos) — the UI never flips
-///     states on its own.
+///     server-side — the UI never flips states on its own.
 ///   * Verified      → the realtime stream (or a fresh snapshot) delivered
 ///     `transaction_verified` — the only state that claims payment success.
 class OrderPlacedScreen extends ConsumerStatefulWidget {

@@ -113,10 +113,6 @@ abstract interface class IAdminRepository {
   /// state) — an explicit admin action, not automatic.
   Future<void> completeReturn({required String returnId});
 
-  /// Section 6b: dev-only simulation of a confirmed gateway webhook
-  /// (admin authority) for the QR payment flow.
-  Future<void> simulateQrPayment({required String orderId});
-
   // -------------------------------------------------------- audit/report
   Future<List<AuditEntry>> fetchAuditLogs();
 

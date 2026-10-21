@@ -209,8 +209,9 @@ https://<ref>.supabase.co/functions/v1/push-dispatch
 - **Continue with Google** opens the browser and returns into the app via
   the deep link.
 - QR checkout: the payment screen renders the PayWay KHQR (needs the
-  Phase 6 secrets + callback URL) → a real sandbox payment — or admin
-  "Simulate QR payment" — flips the customer screen to *paid* in realtime.
+  Phase 6 secrets + callback URL) → a real sandbox payment — or the
+  signed webhook dry-run (HANDOFF-KHQR.md step 3) — flips the customer
+  screen to *paid* in realtime.
 - Push (if set up): trigger a notification as admin with the app
   backgrounded.
 

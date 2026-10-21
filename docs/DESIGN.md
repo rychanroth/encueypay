@@ -250,7 +250,7 @@ abstract class AppTypography {
     - Order volume split (Done, Pending, Cancelled) & Verified customer accounts.
     - **Critical Stock Alert Card**: Surfacing items where `stock <= 5` or `stock == 0` with quick Restock shortcuts.
     - **14-Day Sales Momentum Chart**: Native Flutter bar chart (`DEPS-03` compliant).
-    - Top-3 performing SKUs and quick actions (Add Product, Review Orders, Simulate KHQR, Audit Logs).
+    - Top-3 performing SKUs and quick actions (Add Product, Review Orders, Audit Logs).
 2. **Products (`/admin/products`)**:
     - Catalog inventory manager with product-wide stock counter (`products.stock`).
     - Filter chips: `All Products`, `Low Stock (≤5)`, `Out of Stock`.
@@ -305,8 +305,7 @@ abstract class AppTypography {
 
 ### 6.4 Bakong KHQR Payment Modal & Card (`OrderPlacedScreen`)
 - **Visuals**: Official NBC Bakong KHQR card with red header bar, EMV-compliant QR code generated client-side, merchant name "EncueYPay Prototype", and dynamic transaction amount ($USD and ~KHR).
-- **Status Observer**: Realtime listener on `payments` table. Instant transition to success celebration when webhook or poller confirms payment.
-- **Admin Simulation Trigger**: In-app button to trigger `simulate_qr_payment` for local testing without bank API keys.
+- **Status Observer**: Realtime listener on `payments` table. Instant transition to success celebration when the webhook confirms payment (poller and the admin simulation trigger retired 2026-10-21).
 
 ### 6.5 Floating Checkout Action Dock (`CartScreen`)
 - **Visuals**: Anchored dock floating above the 5-tab bottom navigation (`fixed bottom-16`).
@@ -333,7 +332,6 @@ abstract class AppTypography {
 - `create_order_from_cart(p_note)`: Atomic checkout transaction with row-level locks on `products.stock`.
 - `validate_coupon(p_code, p_cart_subtotal)`: Server validation of expiration window, minimum order threshold, and brand eligibility.
 - `admin_transition_order(p_order_id, p_new_status)`: Validated single-direction status machine with automated notifications.
-- `simulate_qr_payment(p_payment_id)`: Mock settlement trigger for prototype demonstration.
 - `get_admin_kpis()` & `get_sales_report(p_start_date, p_end_date)`: Security-definer aggregation queries excluding cancelled/returned orders.
 - `get_customer_dashboard()`: Aggregated user spending and recent orders.
 

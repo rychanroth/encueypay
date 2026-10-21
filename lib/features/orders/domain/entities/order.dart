@@ -126,6 +126,22 @@ enum OrderStatus {
         OrderStatus.outForDelivery => 'out_for_delivery',
         _ => name,
       };
+
+  /// Simplified customer-facing label: the nine wire statuses collapse to
+  /// four coarse stages plus the two terminal states. The exact §7A
+  /// vocabulary stays server truth and remains visible through the detail
+  /// screen's "Show exact status" reveal; admins always see wire values.
+  String get label => switch (this) {
+        OrderStatus.pending => 'Order placed',
+        OrderStatus.confirmed ||
+        OrderStatus.processing ||
+        OrderStatus.packed => 'Preparing',
+        OrderStatus.shipped ||
+        OrderStatus.outForDelivery => 'On its way',
+        OrderStatus.delivered => 'Delivered',
+        OrderStatus.cancelled => 'Cancelled',
+        OrderStatus.returned => 'Returned',
+      };
 }
 
 enum PaymentMethodKind {

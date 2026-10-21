@@ -543,11 +543,6 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<void> simulateQrPayment({required String orderId}) {
-    return _rpc('simulate_qr_payment', {'p_order_id': orderId});
-  }
-
-  @override
   Future<List<AuditEntry>> fetchAuditLogs() async {
     try {
       final rows = await _client

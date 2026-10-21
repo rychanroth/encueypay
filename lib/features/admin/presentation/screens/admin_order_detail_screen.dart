@@ -66,18 +66,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                     child: const Text('Cancel order'),
                   ),
                 ),
-              // Dev-only simulation of the gateway webhook (QR flow).
-              if (order.paymentMethod == 'qr' &&
-                  order.paymentStatus == 'pending')
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: FilledButton.tonal(
-                    onPressed: () => ref
-                        .read(adminOrdersControllerProvider.notifier)
-                        .simulateQrPayment(orderId: order.id),
-                    child: const Text('Simulate QR payment'),
-                  ),
-                ),
               // Section 7D: record the refund on a cancelled order whose
               // payment had already been verified.
               if (order.status == AdminOrderStatus.cancelled &&

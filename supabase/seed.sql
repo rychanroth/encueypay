@@ -152,7 +152,7 @@ where not exists (
 
 -- ------------------------------------------------------ platform settings
 -- The checkout reads the delivery fee here; the QR flow reads the demo
--- Bakong account id (any placeholder settles via simulate_qr_payment).
+-- Bakong account id (settlement goes through the payway-webhook callback).
 insert into public.platform_settings
   (id, delivery_fee_minor, platform_commission_percent, payment_account, qr_account_id)
 values (1, 250, 0, 'demo-payment-desk', '000216394701253')

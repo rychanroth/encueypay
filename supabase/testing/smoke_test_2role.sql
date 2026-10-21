@@ -119,20 +119,42 @@ select pg_temp.assert_eq((select count(*) from public.notifications)::text, '0',
 
 select (select id from public.order_items where order_id=:'order1'::uuid) as oi_id \gset
 
--- QR flow: register payload → admin simulates
+-- QR flow: register payload → webhook settles (service role)
 select public.register_qr_payment(:'order1'::uuid, '00020101021SmokePayload');
 select pg_temp.assert_eq((select qr_md5 from public.payments where order_id=:'order1'::uuid), md5('00020101021SmokePayload'), 'qr_md5 computed server-side');
 select pg_temp.assert_eq((select status::text from public.payments where order_id=:'order1'::uuid), 'pending', 'register keeps status pending');
+COMMIT;
+
+-- ============================================ webhook: payment settlement
+-- The payway-webhook Edge Function settles via confirm_qr_payment as
+-- service_role. simulate_qr_payment was removed (2026-10-21); confirming
+-- through any other role must fail.
+BEGIN;
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+DO $$
+begin
+  begin
+    perform public.confirm_qr_payment(:'order1'::uuid, 'unauthorized');
+    raise exception 'authenticated callers must not settle payments';
+  exception when insufficient_privilege then
+    null; -- expected: EXECUTE revoked from PUBLIC, service-role-only
+  end;
+end $$;
+COMMIT;
+
+BEGIN;
+SET LOCAL role service_role;
+select public.confirm_qr_payment(:'order1'::uuid, 'webhook-dry-run');
+select pg_temp.assert_eq((select status::text from public.payments where order_id=:'order1'::uuid), 'transaction_verified', 'webhook-settled payment verified');
+select pg_temp.assert_eq((select transaction_reference from public.payments where order_id=:'order1'::uuid), 'webhook-dry-run', 'webhook reference recorded');
 COMMIT;
 
 -- ==================================================== admin: fulfillment
 BEGIN;
 SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
-
-select public.simulate_qr_payment(:'order1'::uuid);
-select pg_temp.assert_eq((select status::text from public.payments where order_id=:'order1'::uuid), 'transaction_verified', 'simulated payment verified');
-select pg_temp.assert_eq((select transaction_reference from public.payments where order_id=:'order1'::uuid), 'simulated', 'simulation reference recorded');
 
 -- invalid transition rejected
 DO $outer$

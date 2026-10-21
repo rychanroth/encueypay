@@ -66,7 +66,9 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
             └─ realtime + 3s refetch → screen: "Payment received"
 ```
 
-Admin "Simulate QR payment" and the `confirm_qr_payment` RPC are unchanged.
+Update 2026-10-21: the admin "Simulate QR payment" path was removed
+(migration `20261021000002` drops the RPC); `confirm_qr_payment` is now
+service-role-only and the webhook is the sole settlement path.
 
 ## 4. Current state (verified against the local stack)
 
