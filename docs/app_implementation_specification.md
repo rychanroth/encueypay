@@ -77,10 +77,9 @@ simulation path demos the flow locally:
 
 | Prerequisite | Purpose | How obtained |
 |---|---|---|
-| `QR_ACCOUNT_ID` platform setting | The Bakong account encoded into the generated KHQR | Admin → Platform settings (a personal Bakong ID demos end-to-end) |
-| `BAKONG_TOKEN` secret | Bakong `check_transaction_by_md5` confirmation polling | Register at the NBC Bakong developer portal; `supabase secrets set BAKONG_TOKEN=…` |
+| `PAYWAY_MERCHANT_ID` / `PAYWAY_API_KEY` secrets | PayWay QR API signing (`payway-create`) and callback verification (`payway-webhook`) | ABA PayWay merchant account; hosted `supabase secrets set …`, local `[edge_runtime.secrets]` + env export (PROTOTYPE_SETUP 6.1) |
 | `PAYWAY_API_KEY` secret | ABA PayWay webhook HMAC validation (real push confirmation) | ABA merchant account with PayWay enabled; `supabase secrets set PAYWAY_API_KEY=…`; configure the callback URL to `https://<project>.supabase.co/functions/v1/payway-webhook` |
-| Deployed Edge Functions | `payway-webhook`, `bakong-check` | `supabase functions deploy` (or `supabase functions serve` locally) |
+| Deployed Edge Functions | `payway-create`, `payway-webhook` | `supabase functions deploy` (or `supabase functions serve` locally) |
 
 The KHQR tag layout mirrors the khqr-sdk convention — verify a generated code with a
 real banking app before pointing it at a production account.
@@ -161,7 +160,7 @@ are covered by the removal record (Part C).
 |---|---|---|---|
 | Address management: add, edit, delete, set default, select; fields incl. province/district/commune/street/house/postal/geo | ✅ (fields 🟡) | `features/profile`: `addresses_screen.dart` (star action + default badge), `address_edit_screen.dart`, `address_repository_impl.dart`; `addresses.is_default` + one-default-per-user partial unique index (`20261005000038`, `set_default_address` RPC); checkout preselects the default (repository ordering) | Field set 🟡 (coarser than assignment's; no postal/geo); map/geolocation ⛔ not needed per user decision |
 | Multi-step checkout: cart review → address → shipping method → payment → coupon → note → summary; validates items/stock/fields | ✅ | **Section 6b wizard**: `checkout_screen.dart` rebuilt as a 7-step Stepper (Cart review, Address, Shipping method — fixed fee from `platform_settings`, Payment, Coupon, Order note → `orders.note`, Summary); per-step continue gated; placement stays the atomic `create_order_from_cart` (now with `p_note`) | Stock validation ✅ (2d); shipping method is a single informational method (fixed fee) — no carrier choice |
-| Mock payments: COD, card prototype, QR prototype; statuses pending/paid/failed/refunded/cancelled | 🟡 | **QR (KHQR) replaces bank transfer in the UI (Section 6b)**: order-success screen renders a generated dynamic KHQR (dependency-free EMV builder + `qr_flutter` renderer, user-approved) and follows the payment via realtime; confirmation converges on `confirm_qr_payment` (service-role/admin): **PayWay webhook** (`payway-webhook` Edge Function, HMAC fail-closed) / **Bakong poller** (`bakong-check` + Postgres-computed MD5) / **admin simulate** (`simulate_qr_payment`). COD ✅ (verified on delivery). Legacy bank-transfer rows keep validating | ❌ card prototype (documented); real gateway confirmation needs external credentials (Part A.5); status vocabulary mapped in Part D |
+| Mock payments: COD, card prototype, QR prototype; statuses pending/paid/failed/refunded/cancelled | 🟡 | **QR (KHQR) replaces bank transfer in the UI (Section 6b)**: order-success screen renders the PayWay KHQR (fetched server-side by the `payway-create` Edge Function from the PayWay QR API, `qr_flutter` renderer) and follows the payment via realtime; confirmation converges on `confirm_qr_payment` (service-role/admin): **PayWay webhook** (`payway-webhook` Edge Function, JSON callback + `X-PayWay-HMAC-SHA512` header, fail-closed) / **admin simulate** (`simulate_qr_payment`). The direct-Bakong poller is retired (HANDOFF-KHQR.md). COD ✅ (verified on delivery). Legacy bank-transfer rows keep validating | ❌ card prototype (documented); real gateway confirmation needs external credentials (Part A.5); status vocabulary mapped in Part D |
 
 ## B.7 Assignment §7 — Order Lifecycle, Tracking & Returns
 
@@ -509,8 +508,8 @@ appended as sections land.)
   registered via `register_qr_payment` (MD5 computed server-side);
   `confirm_qr_payment` (service-role/admin) converges webhook + poller +
   `simulate_qr_payment` (admin); `payments` added to the realtime
-  publication. Edge Functions: `payway-webhook` (HMAC fail-closed),
-  `bakong-check` (Bakong check_transaction_by_md5). Bank transfer removed
+  publication. Edge Functions: `payway-create` (signed QR initiation),
+  `payway-webhook` (JSON callback + HMAC header, fail-closed). Bank transfer removed
   from the checkout UI; legacy rows still validate.
 
 ## Section 7A — single order lifecycle (`20261005000040`)

@@ -168,41 +168,57 @@ Electronics). Add more only if you want:
 
 ---
 
-## Phase 6 — QR payments
+## Phase 6 — QR payments (ABA PayWay)
 
-**6.1 — Turn QR on (required for any QR demo)**: as admin → **Dashboard →
-Platform settings → "QR payment account (Bakong ID)"**. Paste your personal
-Bakong ID (looks like `name@aclb`). **Empty = the QR option is hidden at
-checkout.** For a fake/simulation demo any non-empty value works.
+**6.1 — PayWay sandbox credentials (required for any real QR demo)**:
+create `supabase/functions/.env` (gitignored) with the sandbox values from
+the PayWay portal / sandbox registration email:
+
+```
+PAYWAY_BASE_URL=https://checkout-sandbox.payway.com.kh
+PAYWAY_MERCHANT_ID=<merchant id>
+PAYWAY_API_KEY=<the API key — labelled "Public Key" in PayWay's own
+                 samples; NOT an RSA key>
+```
+
+`supabase start` does NOT read that file itself — the CLI injects the
+`[edge_runtime.secrets]` block (declared in `supabase/config.toml`) from
+the host environment, so start the stack with the values exported:
+
+```bash
+set -a; source supabase/functions/.env; set +a; supabase start
+```
+
+The RSA public/private keys the portal also shows belong to other services
+(cards/payout) — KHQR needs only the merchant id and the API key.
 
 **6.2 — No-credential demo (works with zero external accounts)**: place an
 order with QR at checkout → as admin, open the order → **"Simulate QR
 payment"** → the customer's payment screen flips to *paid* in real time
-(realtime stream on `payments`).
+(realtime stream on `payments`). Without PayWay secrets the QR screen
+shows an explicit "Could not start the QR payment" notice instead of
+spinning.
 
-**6.3 — [OPTIONAL] Real Bakong confirmation.** The app polls Bakong's
-`check_transaction_by_md5` API through the `bakong-check` edge function:
+**6.3 — How a real QR payment works** (docs: developer.payway.com.kh —
+"ABA QR API", "Check transaction", "Verify Callback Signature"):
 
-1. Register at the Bakong developer portal and obtain an API token.
-2. Local stack — put the token where local functions read secrets:
-   create `supabase/functions/.env` (gitignored — add it, see Step 3) with:
-   ```
-   BAKONG_TOKEN=<your-token>
-   ```
-3. Restart so the runtime picks it up: `supabase stop && supabase start`.
-4. Scan the checkout QR with a real banking app once **before** demoing.
-   Until paid, `bakong-check` returns `configured: true, paid: false` and the
-   UI keeps polling every ~5 s.
+1. The app invokes the `payway-create` Edge Function → it POSTs the signed
+   `generate-qr` request to PayWay → the returned KHQR string is stored on
+   the payments row and rendered on the customer's screen.
+2. The customer scans with any KHQR-supported banking app and pays.
+3. PayWay POSTs a JSON callback to `payway-webhook` (signature in the
+   `X-PayWay-HMAC-SHA512` header) → the function verifies the HMAC,
+   checks the paid amount against the order, and confirms via the
+   idempotent `confirm_qr_payment` RPC → realtime flips the screen.
+4. Reconciliation safety net: `check-transaction-2` (600 req/s, 7-day
+   window) — not wired; the webhook is the confirmation path.
 
-**6.4 — [OPTIONAL] Real PayWay webhook (ABA merchant account).**
-`payway-webhook` is a fail-closed HMAC-verified server-to-server callback:
+**6.4 — Production**: deploy the functions to the hosted project
+(`REMOTE_SETUP.md` Phase 6), set the callback URL in the ABA merchant
+portal, have PayWay whitelist the callback domain (API errors 6/81 mean
+it isn't whitelisted yet), swap `PAYWAY_BASE_URL` + credentials to
+production values, and run one real low-value transaction before launch.
 
-1. Get an ABA merchant account + `PAYWAY_API_KEY`.
-2. Local: add `PAYWAY_API_KEY=<key>` to `supabase/functions/.env` and restart.
-3. In the ABA merchant portal, set the payment callback URL to
-   `https://<project>.supabase.co/functions/v1/payway-webhook` — this
-   realistically requires the **hosted** project (Phase 7 note explains
-   hosting), since ABA must reach your backend over the public internet.
 
 ---
 

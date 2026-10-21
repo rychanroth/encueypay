@@ -395,8 +395,14 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
-# [edge_runtime.secrets]
-# secret_key = "env(SECRET_VALUE)"
+# Edge-function secrets, resolved from the host environment at `supabase
+# start` (export them from supabase/functions/.env first — see
+# docs/REMOTE_SETUP.md). Values are never stored in this file.
+[edge_runtime.secrets]
+PAYWAY_BASE_URL = "env(PAYWAY_BASE_URL)"
+PAYWAY_MERCHANT_ID = "env(PAYWAY_MERCHANT_ID)"
+PAYWAY_API_KEY = "env(PAYWAY_API_KEY)"
+PAYWAY_CALLBACK_URL = "env(PAYWAY_CALLBACK_URL)"
 
 [analytics]
 enabled = true

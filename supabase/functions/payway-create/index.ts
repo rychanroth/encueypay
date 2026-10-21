@@ -21,8 +21,10 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const MERCHANT_ID = Deno.env.get('PAYWAY_MERCHANT_ID');
 const API_KEY = Deno.env.get('PAYWAY_API_KEY');
-const BASE_URL = (Deno.env.get('PAYWAY_BASE_URL') ??
-  'https://checkout-sandbox.payway.com.kh').replace(/\/+$/, '');
+// Treat unset and empty-string values alike — config.toml's env()
+// substitution yields "" for vars missing from the host environment.
+const BASE_URL = (Deno.env.get('PAYWAY_BASE_URL') || 'https://checkout-sandbox.payway.com.kh')
+  .replace(/\/+$/, '');
 
 // Canonical hash order from the generate-qr spec.
 const CANONICAL_ORDER = [
@@ -100,7 +102,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  const callbackUrl = (Deno.env.get('PAYWAY_CALLBACK_URL') ??
+  const callbackUrl = (Deno.env.get('PAYWAY_CALLBACK_URL') ||
     `${Deno.env.get('SUPABASE_URL')!.replace(/\/+$/, '')}/functions/v1/payway-webhook`);
 
   // Only non-empty params are posted; the hash covers exactly those, in
