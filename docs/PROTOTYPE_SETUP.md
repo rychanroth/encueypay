@@ -84,7 +84,11 @@ select (select count(*) from public.categories)  as categories,   -- expect 6
 > `SUPABASE_URL` to this machine's LAN IP for device testing, and
 > `android/app/src/main/res/xml/network_security_config.xml` allowlists that
 > IP. If your Wi-Fi/network changes, update the IP in **both** files, then
-> restart the stack: `set -a; source .env; set +a; supabase stop && supabase start`.
+> restart the stack: `set -a; source config/.env; source supabase/functions/.env; set +a; supabase stop && supabase start`.
+> BOTH files must be exported: `config/.env` feeds the OAuth providers in
+> `config.toml` (`env(GOOGLE_CLIENT_ID)` …), `supabase/functions/.env` the
+> edge-function secrets. Starting without them silently breaks Google
+> sign-in (Google answers 400) and PayWay.
 > Full gotcha list: `supabase/README.md`.
 
 ---
@@ -319,10 +323,10 @@ To reproduce on a fresh machine:
    `http://127.0.0.1:54321/auth/v1/callback`
    (loopback only — Google rejects plain-HTTP on any other host; this is why
    the device flow bridges through `adb reverse`).
-3. Copy client ID + secret into the root `.env` and restart the stack **with
+3. Copy client ID + secret into `config/.env` and restart the stack **with
    the vars in the shell** (containers freeze `env(...)` at creation):
    ```bash
-   set -a; source .env; set +a
+   set -a; source config/.env; source supabase/functions/.env; set +a
    supabase stop && supabase start
    ```
 4. Verify what the auth server actually advertises:
