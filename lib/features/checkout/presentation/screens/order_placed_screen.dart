@@ -1,17 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/domain/bakong_account.dart';
+import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/khqr_card.dart';
 import '../../../../core/router/app_routes.dart';
-import '../../data/repository/checkout_repository_impl.dart';
 import '../controllers/order_payment_controller.dart';
 
 /// Order confirmation (Section 6b). State semantics are explicit — they are
@@ -20,10 +17,11 @@ import '../controllers/order_payment_controller.dart';
 ///   * Order placed  → the `create_order_from_cart` RPC committed the order
 ///     and its `pending` payment row. That is all the initial screen shows;
 ///     it is NOT a paid state.
-///   * QR pending    → the KHQR renders and the screen polls the Bakong
-///     confirmation API every 5 s while Supabase Realtime watches the
-///     `payments` row (webhook / poller / admin simulation all settle
-///     server-side; the UI never flips states on its own).
+///   * QR pending    → the PayWay KHQR renders (created server-side via the
+///     payway-create Edge Function) while Supabase Realtime watches the
+///     `payments` row; PayWay's webhook settles the transaction
+///     server-side (admin simulation covers demos) — the UI never flips
+///     states on its own.
 ///   * Verified      → the realtime stream (or a fresh snapshot) delivered
 ///     `transaction_verified` — the only state that claims payment success.
 class OrderPlacedScreen extends ConsumerStatefulWidget {
@@ -36,71 +34,42 @@ class OrderPlacedScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
-  Timer? _pollTimer;
+  /// QR creation is one-shot per screen instance: a `build()`-driven
+  /// creation raced the realtime update (the client never saw its own
+  /// `qr_payload` when Realtime was down) and re-fired on every rebuild —
+  /// the server UPDATE re-triggered the stream and the loop fed itself
+  /// (~2 s cadence). Creation is initiated once, from the lifecycle,
+  /// never from build().
+  bool _creationAttempted = false;
 
-  /// Registration is one-shot per screen instance: a `build()`-driven
-  /// re-registration raced the realtime update (the client never saw its own
-  /// `qr_payload` when Realtime was down) and re-fired the RPC on every
-  /// rebuild — the server UPDATE re-triggered the stream and the loop fed
-  /// itself (~2 s cadence). Registration is initiated once, from the
-  /// lifecycle, never from build().
-  bool _registrationAttempted = false;
-
-  String? _qrAccountId;
-
-  /// Set when the stored value cannot be parsed as a Bakong ID at all.
-  bool? _qrAccountIdInvalid;
+  /// Set when payway-create reports a failure (secrets missing, PayWay
+  /// rejection, …) — surfaced instead of spinning forever.
+  String? _creationError;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _registerQrOnce());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _createQrOnce());
   }
 
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
+  Future<void> _createQrOnce() async {
+    if (_creationAttempted) return;
+    _creationAttempted = true;
+    try {
+      await ref
+          .read(orderPaymentControllerProvider(widget.orderId).notifier)
+          .ensureQrRegistered();
+    } on Failure catch (error) {
+      if (mounted) setState(() => _creationError = error.message);
+    }
   }
 
-  Future<void> _registerQrOnce() async {
-    if (_registrationAttempted) return;
-    _registrationAttempted = true;
-    final raw = await ref.read(checkoutRepositoryProvider).fetchQrAccountId();
-    if (!mounted) return;
-    // The stored value is verbatim (bare ID or full bank-QR payload) —
-    // decoded here; null on garbage → the invalid notice.
-    final parts = extractBakongAccountParts(raw);
-    setState(() => _qrAccountId = parts?.accountId ?? (raw.isEmpty ? '' : raw));
-    if (!mounted) return;
-    _qrAccountIdInvalid = parts == null && raw.isNotEmpty;
-    if (parts == null) return;
-    await ref
-        .read(orderPaymentControllerProvider(widget.orderId).notifier)
-        .ensureQrRegistered(
-          qrAccountId: parts.accountId,
-          merchantName: 'EncueYPay Prototype',
-          accountInformation: parts.accountInformation,
-          acquiringBank: parts.acquiringBank,
-        );
-  }
-
-  void _startPolling() {
-    _pollTimer ??= Timer.periodic(
-      const Duration(seconds: 5),
-      (_) {
-        // Only meaningful for a pending QR payment; skipped for COD and
-        // once verified (and the timer is cancelled on verification).
-        final payment =
-            ref.read(orderPaymentControllerProvider(widget.orderId)).value;
-        if (payment == null || payment.method != 'qr' || payment.isVerified) {
-          return;
-        }
-        ref
-            .read(orderPaymentControllerProvider(widget.orderId).notifier)
-            .pollBakong();
-      },
-    );
+  void _retryCreation() {
+    setState(() {
+      _creationAttempted = false;
+      _creationError = null;
+    });
+    _createQrOnce();
   }
 
   @override
@@ -131,7 +100,6 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
               data: (payment) {
                 // Verified is the ONLY paid state — celebrate here.
                 if (payment.isVerified) {
-                  _pollTimer?.cancel();
                   final money = Money(payment.amountMinor);
                   return Column(
                     children: [
@@ -195,12 +163,11 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                     ],
                   );
                 }
-                // Pending QR. Registration is one-shot; the account id (or
-                // its absence) decides between the QR and the unconfigured
-                // notice. Polling starts once the payload exists.
-                _startPolling();
+                // Pending QR. Creation is one-shot; a failure is surfaced
+                // instead of spinning forever.
                 final payload = payment.qrPayload;
                 final money = Money(payment.amountMinor);
+                final creationError = _creationError;
                 return Column(
                   children: [
                     // NOT a success state: the order exists, the payment
@@ -214,50 +181,45 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'Your order has been placed, but it is not paid yet. '
-                      'Scan the KHQR below with any Bakong-connected '
+                      'Scan the KHQR below with any KHQR-supported '
                       'banking app to complete the '
                       '${money.formatUsd()} payment.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    if (_qrAccountIdInvalid ?? false)
-                      // The stored value cannot be a Bakong ID — say so
-                      // instead of spinning forever.
+                    if (creationError != null)
+                      // QR creation failed (not configured, PayWay
+                      // rejection, …) — say so instead of spinning forever.
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.errorContainer,
                           borderRadius: AppRadii.br16,
                         ),
-                        child: Text(
-                          'The configured QR payment account is not a valid '
-                          'Bakong ID. The store must set it in Admin → '
-                          'Platform settings to just the ID shown under '
-                          'My KHQR in their banking app (e.g. khqr@aclb).',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onErrorContainer,
-                          ),
-                        ),
-                      )
-                    else if (_qrAccountId != null && _qrAccountId!.isEmpty)
-                      // Admin has not configured a Bakong ID — the QR cannot
-                      // exist; say so instead of spinning forever.
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.errorContainer,
-                          borderRadius: AppRadii.br16,
-                        ),
-                        child: Text(
-                          'QR payment is not configured for this store. '
-                          'Contact the store or choose Cash on Delivery at '
-                          'checkout.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onErrorContainer,
-                          ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Could not start the QR payment.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onErrorContainer,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              creationError,
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onErrorContainer,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            FilledButton.tonal(
+                              onPressed: _retryCreation,
+                              child: const Text('Retry'),
+                            ),
+                          ],
                         ),
                       )
                     else if (payload == null)

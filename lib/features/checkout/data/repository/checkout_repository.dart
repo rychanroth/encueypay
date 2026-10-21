@@ -23,17 +23,13 @@ abstract interface class ICheckoutRepository {
   });
 
   // -------------------------------------------------- QR payment (§6b)
-  /// The admin-configured Bakong account value, stored VERBATIM — either a
-  /// bare `alias@bank` or the full bank-QR payload (decoded at use time by
-  /// `extractBakongAccountParts`). '' when unconfigured.
-  Future<String> fetchQrAccountId();
-
-  /// Registers the generated KHQR payload against the order's pending QR
-  /// payment (the MD5 key is computed server-side from the payload).
-  Future<void> registerQrPayment({
-    required String orderId,
-    required String payload,
-  });
+  /// Creates the PayWay transaction for the order's pending QR payment via
+  /// the `payway-create` Edge Function and returns the KHQR string to
+  /// render. The function also stores the payload on the payments row, so
+  /// the stream delivers it even if this call's result is lost. Signing
+  /// and the PayWay credentials live entirely server-side. Throws
+  /// [Failure] only (DATA-05) — the message names the failing stage.
+  Future<String> createPaywayQr({required String orderId});
 
   /// Realtime stream of the order's payment row (status/QR payload) —
   /// `payments` is a publication member (0038).
@@ -43,9 +39,4 @@ abstract interface class ICheckoutRepository {
   /// path the payment screen re-fetches on a timer so confirmation still
   /// converges when Realtime is unavailable (e.g. websocket 401s).
   Future<Map<String, dynamic>?> fetchOrderPayment(String orderId);
-
-  /// Asks the `bakong-check` Edge Function to check the transaction (the
-  /// Bakong confirmation path — polling, not push). Returns null when the
-  /// function is unreachable.
-  Future<bool?> checkBakongPayment(String orderId);
 }

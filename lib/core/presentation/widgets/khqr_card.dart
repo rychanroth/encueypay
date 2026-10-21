@@ -19,7 +19,8 @@ class KhqrCard extends StatelessWidget {
     this.merchantName = 'EncueYPay Prototype',
   });
 
-  /// EMVCo payload built by the checkout data layer (`KhqrGenerator`).
+  /// EMVCo KHQR payload resolved by the checkout data layer (the PayWay
+  /// `qrString`).
   final String qrPayload;
   final String amountUsd;
   final String amountKhr;

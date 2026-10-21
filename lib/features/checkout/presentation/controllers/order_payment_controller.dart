@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/network/failure_mapping.dart';
-import '../../data/khqr_generator.dart';
 import '../../data/repository/checkout_repository_impl.dart';
 import '../../domain/entities/order_payment.dart';
 
@@ -17,13 +16,13 @@ part 'order_payment_controller.g.dart';
 ///
 /// The refetch exists because Realtime can be unavailable in practice
 /// (e.g. the websocket handshake 401s with a key the service rejects):
-/// the registration writes the QR payload server-side, and without a
-/// delivery path the screen would buffer forever. With the refetch merged
-/// in, the screen converges no matter what Realtime does. Identical
-/// consecutive states are dropped (freezed ==) so healthy-Realtime
-/// rebuilds stay event-driven, not timer-driven.
+/// QR creation writes the payload server-side, and without a delivery
+/// path the screen would buffer forever. With the refetch merged in, the
+/// screen converges no matter what Realtime does. Identical consecutive
+/// states are dropped (freezed ==) so healthy-Realtime rebuilds stay
+/// event-driven, not timer-driven.
 ///
-/// Confirmation paths (webhook / poller / admin simulation) all flip the
+/// Confirmation paths (PayWay webhook / admin simulation) all flip the
 /// row server-side — no optimistic UI.
 @riverpod
 class OrderPaymentController extends _$OrderPaymentController {
@@ -81,39 +80,20 @@ class OrderPaymentController extends _$OrderPaymentController {
     yield* controller.stream;
   }
 
-  /// Generates the KHQR payload and registers it against the pending
-  /// payment. Idempotent: registration only succeeds while the payment is
-  /// pending and unregistered (server guard). The MD5 transaction key is
-  /// computed server-side from the payload (never trusted from the client).
-  Future<void> ensureQrRegistered({
-    required String qrAccountId,
-    required String merchantName,
-    String accountInformation = '',
-    String acquiringBank = '',
-  }) async {
+  /// Asks the payway-create Edge Function to create the PayWay transaction
+  /// and register the returned KHQR on the pending payment. Idempotent at
+  /// the call site (only fires while pending and unregistered) and on the
+  /// server (stable tran_id, pending-guarded row update). Throws [Failure]
+  /// — the screen surfaces it; the payload also reaches the UI through the
+  /// stream because the function stores it server-side.
+  Future<void> ensureQrRegistered() async {
     // Riverpod 3: AsyncValue.value is the nullable current value.
     final payment = state.value;
     if (payment == null || !payment.isPendingQr || payment.qrPayload != null) {
       return;
     }
-    if (qrAccountId.isEmpty) return; // QR unconfigured — surfaced by UI.
-    final payload = KhqrGenerator.build(
-      accountId: qrAccountId,
-      merchantName: merchantName,
-      amountMinor: payment.amountMinor,
-      billNumber: orderId.substring(0, 8).toUpperCase(),
-      accountInformation: accountInformation,
-      acquiringBank: acquiringBank,
-    );
     await ref
         .read(checkoutRepositoryProvider)
-        .registerQrPayment(orderId: orderId, payload: payload);
-  }
-
-  /// Asks the bakong-check Edge Function to confirm the transaction (the
-  /// Bakong path — polling, not push). Returns null when the function is
-  /// not configured/running.
-  Future<bool?> pollBakong() {
-    return ref.read(checkoutRepositoryProvider).checkBakongPayment(orderId);
+        .createPaywayQr(orderId: orderId);
   }
 }

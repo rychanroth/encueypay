@@ -138,30 +138,26 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
   }
   // -------------------------------------------------- QR payment (§6b)
   @override
-  Future<String> fetchQrAccountId() async {
+  Future<String> createPaywayQr({required String orderId}) async {
     try {
-      final row = await _client
-          .from('platform_settings')
-          .select('qr_account_id')
-          .eq('id', 1)
-          .maybeSingle();
-      return (row?['qr_account_id'] as String?) ?? '';
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
-      throw mapRepositoryError(error, stackTrace);
-    }
-  }
-
-  @override
-  Future<void> registerQrPayment({
-    required String orderId,
-    required String payload,
-  }) async {
-    try {
-      await _client.rpc('register_qr_payment', params: {
-        'p_order_id': orderId,
-        'p_payload': payload,
-      });
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      final response = await _client.functions
+          .invoke('payway-create', body: {'orderId': orderId});
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final qr = data['qrPayload'];
+        if (qr is String && qr.isNotEmpty) return qr;
+        // Soft failure — the function's `reason` names the failing stage.
+        final reason = data['reason'] as String? ?? 'unavailable';
+        throw ServerFailure('PayWay QR unavailable ($reason)');
+      }
+      throw const ServerFailure('PayWay QR unavailable');
+    } on Failure {
+      rethrow; // Already classified above — DATA-05: no re-mapping.
+    } on FunctionException catch (error, stackTrace) {
+      // Function not deployed/running — the simulation path covers demos.
+      logSuppressedError(error, stackTrace);
+      throw const NetworkFailure('PayWay service unreachable');
+    } catch (error, stackTrace) {
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -188,29 +184,6 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
       return row == null ? null : Map<String, dynamic>.from(row);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
-    }
-  }
-
-  @override
-  Future<bool?> checkBakongPayment(String orderId) async {
-    try {
-      final functions = _client.functions;
-      final response = await functions.invoke(
-        'bakong-check',
-        body: {'orderId': orderId},
-      );
-      final data = response.data;
-      if (data is Map<String, dynamic>) {
-        return data['configured'] == true && data['paid'] == true;
-      }
-      return null;
-    } on FunctionException catch (error, stackTrace) {
-      // Function not deployed/running — the simulation path covers demos.
-      logSuppressedError(error, stackTrace);
-      return null;
-    } catch (error, stackTrace) {
-      logSuppressedError(error, stackTrace);
-      return null;
     }
   }
 }
