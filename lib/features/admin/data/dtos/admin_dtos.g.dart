@@ -33,8 +33,6 @@ PlatformSettingsAdminDto _$PlatformSettingsAdminDtoFromJson(
       .toInt(),
   paymentAccount: json['payment_account'] as String,
   qrAccountId: json['qr_account_id'] as String? ?? '',
-  qrAccountInformation: json['qr_account_information'] as String? ?? '',
-  qrAcquiringBank: json['qr_acquiring_bank'] as String? ?? '',
 );
 
 Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
@@ -44,8 +42,6 @@ Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
   'platform_commission_percent': instance.platformCommissionPercent,
   'payment_account': instance.paymentAccount,
   'qr_account_id': instance.qrAccountId,
-  'qr_account_information': instance.qrAccountInformation,
-  'qr_acquiring_bank': instance.qrAcquiringBank,
 };
 
 AdminApplicantJoinDto _$AdminApplicantJoinDtoFromJson(

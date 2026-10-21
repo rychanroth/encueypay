@@ -354,13 +354,9 @@ abstract class PlatformSettings with _$PlatformSettings {
     required int platformCommissionPercent,
     required String paymentAccount,
 
-    /// Bakong account receiving QR payments (Section 6b; '' = unconfigured).
+    /// The Bakong account value receiving QR payments (Section 6b), stored
+    /// VERBATIM: a bare `alias@bank` or the full bank-QR payload (decoded
+    /// at use time). '' = unconfigured.
     @Default('') String qrAccountId,
-
-    /// Optional IndividualInfo disambiguators (official KHQR SDK): some
-    /// banks (ACLEDA) embed a GENERIC id in consumer QRs and route via the
-    /// account number — a faithful QR carries the same three pieces.
-    @Default('') String qrAccountInformation,
-    @Default('') String qrAcquiringBank,
   }) = _PlatformSettings;
 }

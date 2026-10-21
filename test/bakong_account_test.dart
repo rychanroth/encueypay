@@ -5,31 +5,32 @@ import 'package:encueypay/core/domain/bakong_account.dart';
 void main() {
   group('sanitizeBakongAccountId', () {
     test('accepts a bare alias@bank ID', () {
-      expect(sanitizeBakongAccountId('khqr@aclb'), 'khqr@aclb');
+      expect(sanitizeBakongAccountId('janedoe@aclb'), 'janedoe@aclb');
       expect(sanitizeBakongAccountId('  user@aba '), 'user@aba');
-      expect(sanitizeBakongAccountId('077518564@wing'.toLowerCase()),
-          '077518564@wing');
+      expect(
+          sanitizeBakongAccountId('098765432@wing'.toLowerCase()),
+          '098765432@wing');
     });
 
     test('recovers the ID from a pasted full KHQR payload', () {
-      // The real payload the admin obtained by scanning their own bank-app
-      // QR with a generic scanner — the whole EMV string, not just the ID.
       const payload =
-          '00020101021129380009khqr@aclb0111855239118970206ACLEDA391300042CCY'
-          '01014520459995802KH53031165911RY CHANROTH6010Phnom Penh'
-          '621302090775185646304C6B4';
-      expect(sanitizeBakongAccountId(payload), 'khqr@aclb');
+          '00020101021129400012janedoe@aclb011009998887770206MYBANK'
+          '5204599953031165802KH5908Jane Doe6010Phnom Penh'
+          '6213020907700000006304ABCD';
+      expect(sanitizeBakongAccountId(payload), 'janedoe@aclb');
     });
 
-    test('extracts all three pieces from a pasted ACLEDA payload', () {
+    test('extracts all three pieces from a pasted bank-QR payload', () {
+      // Synthetic structural twin of a real consumer KHQR: generic bank id
+      // (tag 29 / sub-tag 00) + account number (01) + acquiring bank (02).
       const payload =
-          '00020101021129380009khqr@aclb0111855239118970206ACLEDA391300042CCY'
-          '01014520459995802KH53031165911RY CHANROTH6010Phnom Penh'
-          '621302090775185646304C6B4';
+          '00020101021129400012janedoe@aclb011009998887770206MYBANK'
+          '5204599953031165802KH5908Jane Doe6010Phnom Penh'
+          '6213020907700000006304ABCD';
       final parts = extractBakongAccountParts(payload)!;
-      expect(parts.accountId, 'khqr@aclb');
-      expect(parts.accountInformation, '85523911897');
-      expect(parts.acquiringBank, 'ACLEDA');
+      expect(parts.accountId, 'janedoe@aclb');
+      expect(parts.accountInformation, '0999888777');
+      expect(parts.acquiringBank, 'MYBANK');
     });
 
     test('returns null for garbage', () {

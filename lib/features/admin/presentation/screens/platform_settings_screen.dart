@@ -48,42 +48,31 @@ class _PlatformSettingsScreenState
       );
       return;
     }
-    // Accept EITHER the bare `alias@bank` OR the full KHQR payload a
-    // generic scanner shows for the receiver's own bank QR. Some banks
-    // (ACLEDA) embed a generic id and route via the embedded account
-    // number — the extractor recovers all three pieces the official SDK's
-    // IndividualInfo carries (id / accountInformation / acquiringBank).
-    final rawQrAccount = _qrAccountController.text;
-    BakongAccountParts? parts;
-    if (rawQrAccount.trim().isNotEmpty) {
-      parts = extractBakongAccountParts(rawQrAccount);
-      if (parts == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'That does not look like a Bakong ID. Paste the ID shown under '
-              'My KHQR in your banking app (e.g. khqr@aclb) — or the full QR '
-              'string itself; both work.',
-            ),
+    // Stored VERBATIM: a bare `alias@bank` or the full KHQR payload a
+    // generic scanner shows for the receiver's own bank QR (some banks —
+    // ACLEDA — embed a generic id and route via the embedded account
+    // number, so the payload is decoded at payment time, not flattened
+    // here). Only unparseable garbage is rejected.
+    final rawQrAccount = _qrAccountController.text.trim();
+    if (rawQrAccount.isNotEmpty &&
+        extractBakongAccountParts(rawQrAccount) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'That does not look like a Bakong ID. Paste the ID shown under '
+            'My KHQR in your banking app (e.g. khqr@aclb) — or the full QR '
+            'string itself; both work.',
           ),
-        );
-        return;
-      }
-    } else {
-      parts = const (
-        accountId: '',
-        accountInformation: '',
-        acquiringBank: '',
+        ),
       );
+      return;
     }
     await ref.read(adminSettingsControllerProvider.notifier).save(
           PlatformSettings(
             deliveryFeeMinor: feeMinor,
             platformCommissionPercent: platformCommission,
             paymentAccount: _paymentAccountController.text.trim(),
-            qrAccountId: parts.accountId,
-            qrAccountInformation: parts.accountInformation,
-            qrAcquiringBank: parts.acquiringBank,
+            qrAccountId: rawQrAccount,
           ),
         );
     final hasError = ref.read(adminSettingsControllerProvider).hasError;

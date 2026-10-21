@@ -35,8 +35,6 @@ class PlatformSettingsAdminDto {
     required this.platformCommissionPercent,
     required this.paymentAccount,
     this.qrAccountId = '',
-    this.qrAccountInformation = '',
-    this.qrAcquiringBank = '',
   });
 
   factory PlatformSettingsAdminDto.fromJson(Map<String, dynamic> json) =>
@@ -48,12 +46,6 @@ class PlatformSettingsAdminDto {
 
   @JsonKey(defaultValue: '')
   final String qrAccountId;
-
-  @JsonKey(defaultValue: '')
-  final String qrAccountInformation;
-
-  @JsonKey(defaultValue: '')
-  final String qrAcquiringBank;
 
   Map<String, dynamic> toJson() => _$PlatformSettingsAdminDtoToJson(this);
 }

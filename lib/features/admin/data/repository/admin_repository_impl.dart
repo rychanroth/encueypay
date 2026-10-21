@@ -635,8 +635,6 @@ class AdminRepositoryImpl implements IAdminRepository {
           platformCommissionPercent: 0,
           paymentAccount: '',
           qrAccountId: '',
-          qrAccountInformation: '',
-          qrAcquiringBank: '',
         );
       }
       final dto = PlatformSettingsAdminDto.fromJson(row);
@@ -645,8 +643,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         platformCommissionPercent: dto.platformCommissionPercent,
         paymentAccount: dto.paymentAccount,
         qrAccountId: dto.qrAccountId,
-        qrAccountInformation: dto.qrAccountInformation,
-        qrAcquiringBank: dto.qrAcquiringBank,
       );
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
@@ -661,8 +657,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         'platform_commission_percent': settings.platformCommissionPercent,
         'payment_account': settings.paymentAccount,
         'qr_account_id': settings.qrAccountId,
-        'qr_account_information': settings.qrAccountInformation,
-        'qr_acquiring_bank': settings.qrAcquiringBank,
       }).eq('id', 1);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);

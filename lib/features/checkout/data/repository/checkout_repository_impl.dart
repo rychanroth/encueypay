@@ -8,7 +8,6 @@ import '../../domain/entities/address_option.dart';
 import '../../domain/entities/checkout_summary.dart';
 import '../../domain/entities/coupon_preview.dart';
 import '../../domain/entities/payment_method.dart';
-import '../../domain/entities/qr_payment_account.dart';
 import '../dtos/checkout_dtos.dart';
 import '../mappers/checkout_mapper.dart';
 import 'checkout_repository.dart';
@@ -139,18 +138,14 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
   }
   // -------------------------------------------------- QR payment (§6b)
   @override
-  Future<QrPaymentAccount> fetchQrPaymentAccount() async {
+  Future<String> fetchQrAccountId() async {
     try {
       final row = await _client
           .from('platform_settings')
-          .select('qr_account_id, qr_account_information, qr_acquiring_bank')
+          .select('qr_account_id')
           .eq('id', 1)
           .maybeSingle();
-      return QrPaymentAccount(
-        accountId: (row?['qr_account_id'] as String?) ?? '',
-        accountInformation: (row?['qr_account_information'] as String?) ?? '',
-        acquiringBank: (row?['qr_acquiring_bank'] as String?) ?? '',
-      );
+      return (row?['qr_account_id'] as String?) ?? '';
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

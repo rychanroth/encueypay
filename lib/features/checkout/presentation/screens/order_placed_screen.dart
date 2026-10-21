@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/domain/bakong_account.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
@@ -65,18 +66,22 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
   Future<void> _registerQrOnce() async {
     if (_registrationAttempted) return;
     _registrationAttempted = true;
-    final account =
-        await ref.read(checkoutRepositoryProvider).fetchQrPaymentAccount();
+    final raw = await ref.read(checkoutRepositoryProvider).fetchQrAccountId();
     if (!mounted) return;
-    setState(() => _qrAccountId = account.accountId);
-    if (!account.isConfigured) return;
+    // The stored value is verbatim (bare ID or full bank-QR payload) —
+    // decoded here; null on garbage → the invalid notice.
+    final parts = extractBakongAccountParts(raw);
+    setState(() => _qrAccountId = parts?.accountId ?? (raw.isEmpty ? '' : raw));
+    if (!mounted) return;
+    _qrAccountIdInvalid = parts == null && raw.isNotEmpty;
+    if (parts == null) return;
     await ref
         .read(orderPaymentControllerProvider(widget.orderId).notifier)
         .ensureQrRegistered(
-          qrAccountId: account.accountId,
+          qrAccountId: parts.accountId,
           merchantName: 'EncueYPay Prototype',
-          accountInformation: account.accountInformation,
-          acquiringBank: account.acquiringBank,
+          accountInformation: parts.accountInformation,
+          acquiringBank: parts.acquiringBank,
         );
   }
 

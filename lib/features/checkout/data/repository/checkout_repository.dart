@@ -2,7 +2,6 @@ import '../../domain/entities/address_option.dart';
 import '../../domain/entities/checkout_summary.dart';
 import '../../domain/entities/coupon_preview.dart';
 import '../../domain/entities/payment_method.dart';
-import '../../domain/entities/qr_payment_account.dart';
 
 /// Checkout contract (spec §23, §58 Checkout/Coupons/Payment ops) (DATA-03).
 abstract interface class ICheckoutRepository {
@@ -24,9 +23,10 @@ abstract interface class ICheckoutRepository {
   });
 
   // -------------------------------------------------- QR payment (§6b)
-  /// The admin-configured KHQR account pieces (Section 6b) — empty
-  /// [QrPaymentAccount.accountId] when unconfigured (checkout hides QR).
-  Future<QrPaymentAccount> fetchQrPaymentAccount();
+  /// The admin-configured Bakong account value, stored VERBATIM — either a
+  /// bare `alias@bank` or the full bank-QR payload (decoded at use time by
+  /// `extractBakongAccountParts`). '' when unconfigured.
+  Future<String> fetchQrAccountId();
 
   /// Registers the generated KHQR payload against the order's pending QR
   /// payment (the MD5 key is computed server-side from the payload).
