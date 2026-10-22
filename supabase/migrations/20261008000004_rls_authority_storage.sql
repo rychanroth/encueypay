@@ -103,10 +103,14 @@ ON CONFLICT ("id") DO NOTHING;
 -- product_images: public read; admin writes under the {business_id}/...
 -- path convention (the admin client derives the folder from the product's
 -- business); admin delete.
+-- DROP guards: a stale remote (paused/kept from before the frozen
+-- baseline) keeps its storage policies — only `public` was wiped.
+DROP POLICY IF EXISTS "product_images_bucket_public_read" ON "storage"."objects";
 CREATE POLICY "product_images_bucket_public_read" ON "storage"."objects"
   FOR SELECT TO anon, authenticated
   USING ("bucket_id" = 'product_images');
 
+DROP POLICY IF EXISTS "product_images_bucket_admin_insert" ON "storage"."objects";
 CREATE POLICY "product_images_bucket_admin_insert" ON "storage"."objects"
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -118,30 +122,36 @@ CREATE POLICY "product_images_bucket_admin_insert" ON "storage"."objects"
     )
   );
 
+DROP POLICY IF EXISTS "product_images_bucket_admin_update" ON "storage"."objects";
 CREATE POLICY "product_images_bucket_admin_update" ON "storage"."objects"
   FOR UPDATE TO authenticated
   USING ("bucket_id" = 'product_images' AND "public"."is_admin"())
   WITH CHECK ("bucket_id" = 'product_images' AND "public"."is_admin"());
 
+DROP POLICY IF EXISTS "product_images_bucket_admin_delete" ON "storage"."objects";
 CREATE POLICY "product_images_bucket_admin_delete" ON "storage"."objects"
   FOR DELETE TO authenticated
   USING ("bucket_id" = 'product_images' AND "public"."is_admin"());
 
 -- promo_assets: public read; admin upload (client uses {uid}/... folders).
+DROP POLICY IF EXISTS "promo_assets_bucket_public_read" ON "storage"."objects";
 CREATE POLICY "promo_assets_bucket_public_read" ON "storage"."objects"
   FOR SELECT TO anon, authenticated
   USING ("bucket_id" = 'promo_assets');
 
+DROP POLICY IF EXISTS "promo_assets_bucket_admin_insert" ON "storage"."objects";
 CREATE POLICY "promo_assets_bucket_admin_insert" ON "storage"."objects"
   FOR INSERT TO authenticated
   WITH CHECK ("bucket_id" = 'promo_assets' AND "public"."is_admin"());
 
+DROP POLICY IF EXISTS "promo_assets_bucket_admin_delete" ON "storage"."objects";
 CREATE POLICY "promo_assets_bucket_admin_delete" ON "storage"."objects"
   FOR DELETE TO authenticated
   USING ("bucket_id" = 'promo_assets' AND "public"."is_admin"());
 
 -- payment_proofs: private; customer writes/reads own {uid}/... folder,
 -- admin reviews.
+DROP POLICY IF EXISTS "payment_proofs_bucket_insert_own" ON "storage"."objects";
 CREATE POLICY "payment_proofs_bucket_insert_own" ON "storage"."objects"
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -149,6 +159,7 @@ CREATE POLICY "payment_proofs_bucket_insert_own" ON "storage"."objects"
     AND ("storage"."foldername"("name"))[1] = "auth"."uid"()::"text"
   );
 
+DROP POLICY IF EXISTS "payment_proofs_bucket_select_own" ON "storage"."objects";
 CREATE POLICY "payment_proofs_bucket_select_own" ON "storage"."objects"
   FOR SELECT TO authenticated
   USING (
@@ -156,6 +167,7 @@ CREATE POLICY "payment_proofs_bucket_select_own" ON "storage"."objects"
     AND ("storage"."foldername"("name"))[1] = "auth"."uid"()::"text"
   );
 
+DROP POLICY IF EXISTS "payment_proofs_bucket_select_admin" ON "storage"."objects";
 CREATE POLICY "payment_proofs_bucket_select_admin" ON "storage"."objects"
   FOR SELECT TO authenticated
   USING ("bucket_id" = 'payment_proofs' AND "public"."is_admin"());
