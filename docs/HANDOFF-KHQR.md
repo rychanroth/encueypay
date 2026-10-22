@@ -43,54 +43,58 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
             └─ realtime + 3s refetch → screen: "Payment received"
 ```
 
-## 3. Current state (verified against the local stack)
+## 3. Current state (verified against the local stack — smoke test PASSED)
 
 - Commits `091f0c4` (gitignore), `9b8e46b` (payway-create),
   `3f80889` (webhook rewrite + app rewiring), `2f851a0` (grants + secrets
-  wiring + docs), `c8d5185` (full Bakong-era removal).
+  wiring + docs), `c8d5185` (full Bakong-era removal), plus the
+  create-hardening commit (global try/catch; tran_id unique per creation —
+  PayWay rejects duplicate tran_ids with 403, and QRs regenerate after
+  their 60-min lifetime).
 - `flutter analyze` clean; 23 tests pass; `deno check` clean on both
   functions; migrations applied locally through `20261021000003`.
+- **Verified live 2026-10-22**: `payway-create` against the real sandbox
+  returned a 241-char dynamic KHQR (stored on `payments.qr_payload`) —
+  merchant id, API key, and the hash implementation are all accepted.
+  A signed callback dry-run through `payway-webhook` flipped the row to
+  `transaction_verified` (HMAC verified, `return_params` mapping works,
+  amount check works). Remaining untested: PayWay's own HTTP callback
+  (needs the hosted deploy — the baked callback_url is the local stack's
+  address) and a real phone scan.
 - `supabase/config.toml` `[edge_runtime.secrets]` maps the four `PAYWAY_*`
   names to host env vars — **`supabase start` does not read
   `supabase/functions/.env` on its own**; start with:
   `set -a; source config/.env; source supabase/functions/.env; set +a; supabase start`
   (BOTH files: `config/.env` also feeds the OAuth providers — starting
   without it silently breaks Google sign-in with a Google-side 400.)
-- `supabase/functions/.env`: `PAYWAY_BASE_URL` and `PAYWAY_MERCHANT_ID`
-  set; **`PAYWAY_API_KEY` still empty — the one missing credential**.
-- Smoke-test row seeded locally: order
-  `fea59069-092a-447a-9c9f-2ac43a09e3ee` ($1.00, pending QR payment,
-  throwaway user `payway-smoke2@test.local`) — reuse for the first
-  invoke; delete the user/order afterwards.
+  Do NOT `docker restart` the edge runtime to reload code — it drops the
+  injected secrets; restart via the CLI with the env sourced.
+- `supabase/functions/.env`: all three values set (sandbox URL,
+  merchant `ec463018`, API key). The key's validity was extended by
+  PayWay on request (originally "valid until 17 January 2026").
+- Smoke-test rows seeded locally (throwaway user
+  `payway-smoke2@test.local`): order `8e1406fc-9589-4197-8cdf-b6748e5cb2a3`
+  ($1.00, pending, live QR payload attached) and a real app order the
+  smoke flow accidentally stamped and then cleaned (`ff8b0ecc-…`,
+  `qr_payload` re-cleared). Delete both when done testing.
 
 ## 4. Remaining steps (in order)
 
-1. **Fill `PAYWAY_API_KEY`** in `supabase/functions/.env`. The portal
-   labels it confusingly: PayWay's own PHP samples say
-   `$api_key = "API KEY PROVIDED BY ABA BANK"` under a
-   `// public key provided by ABA Bank` comment — it is the "Public Key"
-   field, NOT an RSA key.
-2. Restart as above → invoke locally:
-   `curl -s -X POST http://127.0.0.1:54321/functions/v1/payway-create
-   -H "Authorization: Bearer <anon>" -H 'Content-Type: application/json'
-   -d '{"orderId":"fea59069-…"}'`
-   Expect `{configured:true, qrPayload:"000201…"}`. Failure reasons are
-   explicit (`payway_error` + code): 1 wrong hash, 6/81 whitelist,
-   23 option not enabled (→ profile lacks the QR API service; pivot to
-   Purchase `abapay_khqr_deeplink`, same file), 403 duplicate tran_id.
-3. Webhook dry-run: sign a callback body with the API key (HMAC-SHA512
-   base64 over values sorted by key) and POST it with the
-   `x-payway-hmac-sha512` header → payments row must flip to
-   `transaction_verified`.
-4. Real-scan test: the QR from step 2 is a live sandbox KHQR — scan it
-   with a banking app → PayWay must POST the callback (needs the hosted
-   deploy or a tunnel; `PAYWAY_CALLBACK_URL` overrides the baked
-   callback_url for tunnels).
-5. Production checklist: hosted deploy (`REMOTE_SETUP.md` Phase 6:
+1. **Hosted deploy** (`REMOTE_SETUP.md` Phase 6):
    `supabase functions deploy payway-create payway-webhook` +
-   `supabase secrets set …`), callback URL in the ABA portal, callback
-   domain whitelisted with PayWay, production base URL + credentials,
-   one real low-value transaction.
+   `supabase secrets set PAYWAY_BASE_URL=… PAYWAY_MERCHANT_ID=… PAYWAY_API_KEY=…`.
+   This is what makes PayWay's own HTTP callback reachable (the sandbox
+   baked callback_url currently points at the local stack's address).
+2. In the ABA PayWay portal: set the callback URL to
+   `https://<ref>.supabase.co/functions/v1/payway-webhook` and have PayWay
+   whitelist the domain (errors 6/81 mean it isn't whitelisted yet).
+3. **Real end-to-end**: place a small order in the app (pointed at the
+   hosted project) → scan the KHQR with a banking app → pay → the screen
+   must flip to "Payment received" via PayWay's webhook. If the sandbox
+   profile lacks the QR API service (error 23), pivot `payway-create` to
+   Purchase `abapay_khqr_deeplink` (same file, documented response).
+4. Production checklist: production `PAYWAY_BASE_URL` + credentials,
+   one real low-value transaction, then normal launch.
 
 ## 5. Gotchas
 

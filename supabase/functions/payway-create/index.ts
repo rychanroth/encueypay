@@ -35,11 +35,13 @@ const CANONICAL_ORDER = [
   'qr_image_template',
 ];
 
-// PayWay caps tran_id at 20 chars; order ids are 36-char UUIDs. The
-// derivation is stable per order (idempotent retries reuse the same
-// transaction) and is NEVER parsed back — the webhook maps via
-// return_params.order_id instead.
-const tranIdFor = (orderId: string) => orderId.replaceAll('-', '').slice(0, 20);
+// PayWay caps tran_id at 20 chars and rejects duplicates (403) — so the
+// id is unique per creation attempt (12 chars of order id + 8 of
+// timestamp), while the webhook maps back via return_params.order_id and
+// never parses tran_id. Stale QRs (60-min lifetime) regenerate cleanly.
+const tranIdFor = (orderId: string) =>
+  orderId.replaceAll('-', '').slice(0, 12) +
+  Date.now().toString(36).slice(-8);
 
 // UTC YYYYMMDDHHmmss.
 const utcNow = () =>
@@ -62,6 +64,20 @@ async function hmacSha512Base64(key: string, payload: string): Promise<string> {
 }
 
 Deno.serve(async (req) => {
+  try {
+    return await handle(req);
+  } catch (error) {
+    // Never leak a raw 500: name the failing stage so the app (and we)
+    // can see it.
+    console.error('payway-create failed', error);
+    return Response.json(
+      { configured: true, reason: 'unexpected_error', detail: String(error) },
+      { status: 500 },
+    );
+  }
+});
+
+async function handle(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response('method not allowed', { status: 405 });
   }
@@ -180,4 +196,4 @@ Deno.serve(async (req) => {
     code,
     message: result?.status?.message ?? null,
   });
-});
+}
