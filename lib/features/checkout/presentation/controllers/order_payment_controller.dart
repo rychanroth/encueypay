@@ -80,20 +80,22 @@ class OrderPaymentController extends _$OrderPaymentController {
     yield* controller.stream;
   }
 
-  /// Asks the payway-create Edge Function to create the PayWay transaction
-  /// and register the returned KHQR on the pending payment. Idempotent at
-  /// the call site (only fires while pending and unregistered) and on the
-  /// server (stable tran_id, pending-guarded row update). Throws [Failure]
-  /// — the screen surfaces it; the payload also reaches the UI through the
-  /// stream because the function stores it server-side.
+  /// Creates the PayWay transaction for this order's pending QR payment.
+  ///
+  /// Reads the payment row directly instead of trusting [state]: the
+  /// screen fires this once from a post-frame callback, which lands while
+  /// the provider's initial fetch is still in flight — a state.value
+  /// guard would silently bail there, and with the one-shot call the QR
+  /// would never be created (endless buffering).
   Future<void> ensureQrRegistered() async {
-    // Riverpod 3: AsyncValue.value is the nullable current value.
-    final payment = state.value;
-    if (payment == null || !payment.isPendingQr || payment.qrPayload != null) {
+    final repository = ref.read(checkoutRepositoryProvider);
+    final row = await repository.fetchOrderPayment(orderId);
+    if (row == null) return;
+    final status = (row['status'] as String?) ?? 'pending';
+    final method = (row['method'] as String?) ?? 'cod';
+    if (method != 'qr' || status != 'pending' || row['qr_payload'] != null) {
       return;
     }
-    await ref
-        .read(checkoutRepositoryProvider)
-        .createPaywayQr(orderId: orderId);
+    await repository.createPaywayQr(orderId: orderId);
   }
 }
