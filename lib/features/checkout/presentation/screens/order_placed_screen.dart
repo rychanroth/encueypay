@@ -71,6 +71,45 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
     _createQrOnce();
   }
 
+  /// Compact order summary + entry into the full order details — the
+  /// success screen stays clean; items, delivery and live tracking live in
+  /// the Order Detail screen.
+  Widget _orderSummary(BuildContext context, ThemeData theme) {
+    final shortId = widget.orderId.substring(0, 8).toUpperCase();
+    return Column(
+      children: [
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: AppRadii.br16,
+          ),
+          child: Column(
+            children: [
+              Text('Order #$shortId', style: theme.textTheme.titleSmall),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Items, delivery and live tracking are in your order '
+                'details.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        FilledButton.tonal(
+          onPressed: () => context.pushNamed(
+            AppRoutes.orderDetail,
+            pathParameters: {'id': widget.orderId},
+          ),
+          child: const Text('View order details'),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final paymentAsync =
@@ -138,6 +177,8 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.md),
+                      _orderSummary(context, theme),
                     ],
                   );
                 }
@@ -159,6 +200,8 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium,
                       ),
+                      const SizedBox(height: AppSpacing.md),
+                      _orderSummary(context, theme),
                     ],
                   );
                 }
