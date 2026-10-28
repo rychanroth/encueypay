@@ -205,6 +205,15 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
                                   'image': banner.imageUrl,
                                 },
                               ),
+                    // Store-wide campaign: the full Discovery feed (every
+                    // card in scope carries the discount chip).
+                    CatalogBannerTarget.platform => () => context.goNamed(
+                          AppRoutes.discovery,
+                          queryParameters: {
+                            'name': banner.targetName ?? banner.name,
+                            'image': banner.imageUrl,
+                          },
+                        ),
                     CatalogBannerTarget.none => null,
                   };
                   return Padding(

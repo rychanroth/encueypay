@@ -7,6 +7,7 @@ import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/address_option.dart';
 import '../../domain/entities/checkout_summary.dart';
 import '../../domain/entities/coupon_preview.dart';
+import '../../domain/entities/discount_preview.dart';
 import '../../domain/entities/payment_method.dart';
 import '../dtos/checkout_dtos.dart';
 import '../mappers/checkout_mapper.dart';
@@ -111,6 +112,46 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         valid: map['valid'] == true,
         discountMinor: (map['discount_minor'] as int?) ?? 0,
         message: map['message'] as String?,
+        scope: map['scope'] as String?,
+      );
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<DiscountPreview> previewCartDiscounts({
+    required List<String> couponCodes,
+  }) async {
+    try {
+      final result = await _client.rpc('preview_cart_discounts',
+          params: {'p_codes': couponCodes});
+      final map = Map<String, dynamic>.from(result as Map);
+      CouponPreview? auto;
+      final autoMap = map['auto'];
+      if (autoMap is Map) {
+        final autoData = Map<String, dynamic>.from(autoMap);
+        auto = CouponPreview(
+          code: autoData['code'] as String? ?? '',
+          valid: true,
+          discountMinor: (autoData['discount_minor'] as int?) ?? 0,
+          // The campaign name rides in `message` for the summary row.
+          message: autoData['name'] as String?,
+          scope: autoData['scope'] as String?,
+        );
+      }
+      final manual = ((map['manual'] as List? ?? const [])
+              .whereType<Map<String, dynamic>>())
+          .map((row) => CouponPreview(
+                code: row['code'] as String? ?? '',
+                valid: true,
+                discountMinor: (row['discount_minor'] as int?) ?? 0,
+              ))
+          .toList();
+      return DiscountPreview(
+        manual: manual,
+        auto: auto,
+        totalDiscountMinor: (map['total_discount_minor'] as int?) ?? 0,
       );
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);

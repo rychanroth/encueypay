@@ -105,9 +105,6 @@ class BannerDto {
     this.status,
     this.startsAt,
     this.endsAt,
-    this.targetKind,
-    this.targetId,
-    this.targetName,
   });
 
   factory BannerDto.fromJson(Map<String, dynamic> json) =>
@@ -120,12 +117,6 @@ class BannerDto {
   final String? status;
   final DateTime? startsAt;
   final DateTime? endsAt;
-
-  /// Discovery deep-link destination (Section 9): 'none' | 'brand' |
-  /// 'category'; null on legacy rows maps to 'none' in the mapper.
-  final String? targetKind;
-  final String? targetId;
-  final String? targetName;
 
   Map<String, dynamic> toJson() => _$BannerDtoToJson(this);
 }

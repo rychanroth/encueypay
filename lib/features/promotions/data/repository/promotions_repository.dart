@@ -32,20 +32,37 @@ abstract interface class IPromotionsRepository {
     String? brandId,
   });
 
-  /// Section 9: with the business portal removed the admin creates home
-  /// banners directly (pending on creation, approved via moderation).
-  /// Uploads the image, then registers it via the admin RPC. [targetKind]
-  /// selects the Discovery deep-link destination ('none' = inert banner);
-  /// brand/category targets must carry a [targetId].
+  /// Section 9: display-only home banner (inert imagery — targeted banners
+  /// are campaigns). Uploads the image, then registers it via the admin RPC.
   Future<void> createBanner({
     required String name,
     required String description,
     required String filePath,
     required String fileName,
+  });
+
+  /// New campaign (2026-10-28, Option A): one atomic call creating the
+  /// promotion, an auto-applied coupon, and the approved Home banner whose
+  /// Discovery target derives from the promotion's scope. Uploads the
+  /// image, then registers the bundle. Returns the generated coupon code.
+  Future<String> createCampaign({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
     DateTime? endsAt,
-    BannerTargetKind targetKind = BannerTargetKind.none,
-    String? targetId,
-    String? targetName,
+    String? brandId,
+  });
+
+  /// Promotion-level kill switch (2026-10-28): deactivates the rule (chip
+  /// + auto-apply stop matching); per-coupon control remains separate.
+  Future<void> setPromotionActive({
+    required String promotionId,
+    required bool active,
   });
 
   Future<void> moderateBanner({

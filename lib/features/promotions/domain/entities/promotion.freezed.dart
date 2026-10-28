@@ -574,7 +574,7 @@ as DateTime?,
 /// @nodoc
 mixin _$ManagedBanner {
 
- String get id; String get name; String get imageUrl; BannerStatus get status; DateTime? get startsAt; DateTime? get endsAt; BannerTargetKind get targetKind; String? get targetId; String? get targetName;
+ String get id; String get name; String get imageUrl; BannerStatus get status; DateTime? get startsAt; DateTime? get endsAt;
 /// Create a copy of ManagedBanner
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -585,16 +585,16 @@ $ManagedBannerCopyWith<ManagedBanner> get copyWith => _$ManagedBannerCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedBanner&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.targetKind, targetKind) || other.targetKind == targetKind)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.targetName, targetName) || other.targetName == targetName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedBanner&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,imageUrl,status,startsAt,endsAt,targetKind,targetId,targetName);
+int get hashCode => Object.hash(runtimeType,id,name,imageUrl,status,startsAt,endsAt);
 
 @override
 String toString() {
-  return 'ManagedBanner(id: $id, name: $name, imageUrl: $imageUrl, status: $status, startsAt: $startsAt, endsAt: $endsAt, targetKind: $targetKind, targetId: $targetId, targetName: $targetName)';
+  return 'ManagedBanner(id: $id, name: $name, imageUrl: $imageUrl, status: $status, startsAt: $startsAt, endsAt: $endsAt)';
 }
 
 
@@ -605,7 +605,7 @@ abstract mixin class $ManagedBannerCopyWith<$Res>  {
   factory $ManagedBannerCopyWith(ManagedBanner value, $Res Function(ManagedBanner) _then) = _$ManagedBannerCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String imageUrl, BannerStatus status, DateTime? startsAt, DateTime? endsAt, BannerTargetKind targetKind, String? targetId, String? targetName
+ String id, String name, String imageUrl, BannerStatus status, DateTime? startsAt, DateTime? endsAt
 });
 
 
@@ -622,7 +622,7 @@ class _$ManagedBannerCopyWithImpl<$Res>
 
 /// Create a copy of ManagedBanner
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? imageUrl = null,Object? status = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? targetKind = null,Object? targetId = freezed,Object? targetName = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? imageUrl = null,Object? status = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
   return _then(ManagedBanner(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -630,10 +630,7 @@ as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as BannerStatus,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,targetKind: null == targetKind ? _self.targetKind : targetKind // ignore: cast_nullable_to_non_nullable
-as BannerTargetKind,targetId: freezed == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
-as String?,targetName: freezed == targetName ? _self.targetName : targetName // ignore: cast_nullable_to_non_nullable
-as String?,
+as DateTime?,
   ));
 }
 
@@ -718,10 +715,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String imageUrl,  BannerStatus status,  DateTime? startsAt,  DateTime? endsAt,  BannerTargetKind targetKind,  String? targetId,  String? targetName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String imageUrl,  BannerStatus status,  DateTime? startsAt,  DateTime? endsAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ManagedBanner() when $default != null:
-return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_that.endsAt,_that.targetKind,_that.targetId,_that.targetName);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_that.endsAt);case _:
   return orElse();
 
 }
@@ -739,10 +736,10 @@ return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String imageUrl,  BannerStatus status,  DateTime? startsAt,  DateTime? endsAt,  BannerTargetKind targetKind,  String? targetId,  String? targetName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String imageUrl,  BannerStatus status,  DateTime? startsAt,  DateTime? endsAt)  $default,) {final _that = this;
 switch (_that) {
 case _ManagedBanner():
-return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_that.endsAt,_that.targetKind,_that.targetId,_that.targetName);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_that.endsAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -759,10 +756,10 @@ return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String imageUrl,  BannerStatus status,  DateTime? startsAt,  DateTime? endsAt,  BannerTargetKind targetKind,  String? targetId,  String? targetName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String imageUrl,  BannerStatus status,  DateTime? startsAt,  DateTime? endsAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ManagedBanner() when $default != null:
-return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_that.endsAt,_that.targetKind,_that.targetId,_that.targetName);case _:
+return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_that.endsAt);case _:
   return null;
 
 }
@@ -774,7 +771,7 @@ return $default(_that.id,_that.name,_that.imageUrl,_that.status,_that.startsAt,_
 
 
 class _ManagedBanner implements ManagedBanner {
-  const _ManagedBanner({required this.id, required this.name, required this.imageUrl, required this.status, this.startsAt, this.endsAt, this.targetKind = BannerTargetKind.none, this.targetId, this.targetName});
+  const _ManagedBanner({required this.id, required this.name, required this.imageUrl, required this.status, this.startsAt, this.endsAt});
   
 
 @override final  String id;
@@ -783,9 +780,6 @@ class _ManagedBanner implements ManagedBanner {
 @override final  BannerStatus status;
 @override final  DateTime? startsAt;
 @override final  DateTime? endsAt;
-@override@JsonKey() final  BannerTargetKind targetKind;
-@override final  String? targetId;
-@override final  String? targetName;
 
 /// Create a copy of ManagedBanner
 /// with the given fields replaced by the non-null parameter values.
@@ -797,16 +791,16 @@ _$ManagedBannerCopyWith<_ManagedBanner> get copyWith => __$ManagedBannerCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedBanner&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.targetKind, targetKind) || other.targetKind == targetKind)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.targetName, targetName) || other.targetName == targetName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedBanner&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,imageUrl,status,startsAt,endsAt,targetKind,targetId,targetName);
+int get hashCode => Object.hash(runtimeType,id,name,imageUrl,status,startsAt,endsAt);
 
 @override
 String toString() {
-  return 'ManagedBanner(id: $id, name: $name, imageUrl: $imageUrl, status: $status, startsAt: $startsAt, endsAt: $endsAt, targetKind: $targetKind, targetId: $targetId, targetName: $targetName)';
+  return 'ManagedBanner(id: $id, name: $name, imageUrl: $imageUrl, status: $status, startsAt: $startsAt, endsAt: $endsAt)';
 }
 
 
@@ -817,7 +811,7 @@ abstract mixin class _$ManagedBannerCopyWith<$Res> implements $ManagedBannerCopy
   factory _$ManagedBannerCopyWith(_ManagedBanner value, $Res Function(_ManagedBanner) _then) = __$ManagedBannerCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String imageUrl, BannerStatus status, DateTime? startsAt, DateTime? endsAt, BannerTargetKind targetKind, String? targetId, String? targetName
+ String id, String name, String imageUrl, BannerStatus status, DateTime? startsAt, DateTime? endsAt
 });
 
 
@@ -834,7 +828,7 @@ class __$ManagedBannerCopyWithImpl<$Res>
 
 /// Create a copy of ManagedBanner
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? imageUrl = null,Object? status = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? targetKind = null,Object? targetId = freezed,Object? targetName = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? imageUrl = null,Object? status = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
   return _then(_ManagedBanner(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -842,10 +836,7 @@ as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as BannerStatus,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,targetKind: null == targetKind ? _self.targetKind : targetKind // ignore: cast_nullable_to_non_nullable
-as BannerTargetKind,targetId: freezed == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
-as String?,targetName: freezed == targetName ? _self.targetName : targetName // ignore: cast_nullable_to_non_nullable
-as String?,
+as DateTime?,
   ));
 }
 

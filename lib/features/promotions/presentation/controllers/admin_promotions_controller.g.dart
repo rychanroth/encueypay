@@ -35,7 +35,7 @@ final class AdminPromotionsControllerProvider
 }
 
 String _$adminPromotionsControllerHash() =>
-    r'2a3f66f963753bd946a0fa29c00a9a2f31fada91';
+    r'ce2ac44c54eddc73195c59a1a59223ea48a2377b';
 
 abstract class _$AdminPromotionsController
     extends $AsyncNotifier<List<MyPromotion>> {

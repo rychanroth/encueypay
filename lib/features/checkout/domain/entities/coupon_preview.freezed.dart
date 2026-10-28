@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CouponPreview {
 
- String get code; bool get valid; int get discountMinor; String? get message;
+ String get code; bool get valid; int get discountMinor; String? get message;/// Promotion scope on the wire ('platform' | 'brand') — drives the
+/// scope badge on the applied-coupon tile.
+ String? get scope;
 /// Create a copy of CouponPreview
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +28,16 @@ $CouponPreviewCopyWith<CouponPreview> get copyWith => _$CouponPreviewCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CouponPreview&&(identical(other.code, code) || other.code == code)&&(identical(other.valid, valid) || other.valid == valid)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CouponPreview&&(identical(other.code, code) || other.code == code)&&(identical(other.valid, valid) || other.valid == valid)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.message, message) || other.message == message)&&(identical(other.scope, scope) || other.scope == scope));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,code,valid,discountMinor,message);
+int get hashCode => Object.hash(runtimeType,code,valid,discountMinor,message,scope);
 
 @override
 String toString() {
-  return 'CouponPreview(code: $code, valid: $valid, discountMinor: $discountMinor, message: $message)';
+  return 'CouponPreview(code: $code, valid: $valid, discountMinor: $discountMinor, message: $message, scope: $scope)';
 }
 
 
@@ -46,7 +48,7 @@ abstract mixin class $CouponPreviewCopyWith<$Res>  {
   factory $CouponPreviewCopyWith(CouponPreview value, $Res Function(CouponPreview) _then) = _$CouponPreviewCopyWithImpl;
 @useResult
 $Res call({
- String code, bool valid, int discountMinor, String? message
+ String code, bool valid, int discountMinor, String? message, String? scope
 });
 
 
@@ -63,12 +65,13 @@ class _$CouponPreviewCopyWithImpl<$Res>
 
 /// Create a copy of CouponPreview
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? code = null,Object? valid = null,Object? discountMinor = null,Object? message = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? code = null,Object? valid = null,Object? discountMinor = null,Object? message = freezed,Object? scope = freezed,}) {
   return _then(CouponPreview(
 code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,valid: null == valid ? _self.valid : valid // ignore: cast_nullable_to_non_nullable
 as bool,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,scope: freezed == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -154,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String code,  bool valid,  int discountMinor,  String? message)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String code,  bool valid,  int discountMinor,  String? message,  String? scope)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CouponPreview() when $default != null:
-return $default(_that.code,_that.valid,_that.discountMinor,_that.message);case _:
+return $default(_that.code,_that.valid,_that.discountMinor,_that.message,_that.scope);case _:
   return orElse();
 
 }
@@ -175,10 +178,10 @@ return $default(_that.code,_that.valid,_that.discountMinor,_that.message);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String code,  bool valid,  int discountMinor,  String? message)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String code,  bool valid,  int discountMinor,  String? message,  String? scope)  $default,) {final _that = this;
 switch (_that) {
 case _CouponPreview():
-return $default(_that.code,_that.valid,_that.discountMinor,_that.message);case _:
+return $default(_that.code,_that.valid,_that.discountMinor,_that.message,_that.scope);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +198,10 @@ return $default(_that.code,_that.valid,_that.discountMinor,_that.message);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String code,  bool valid,  int discountMinor,  String? message)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String code,  bool valid,  int discountMinor,  String? message,  String? scope)?  $default,) {final _that = this;
 switch (_that) {
 case _CouponPreview() when $default != null:
-return $default(_that.code,_that.valid,_that.discountMinor,_that.message);case _:
+return $default(_that.code,_that.valid,_that.discountMinor,_that.message,_that.scope);case _:
   return null;
 
 }
@@ -210,13 +213,16 @@ return $default(_that.code,_that.valid,_that.discountMinor,_that.message);case _
 
 
 class _CouponPreview implements CouponPreview {
-  const _CouponPreview({required this.code, required this.valid, this.discountMinor = 0, this.message});
+  const _CouponPreview({required this.code, required this.valid, this.discountMinor = 0, this.message, this.scope});
   
 
 @override final  String code;
 @override final  bool valid;
 @override@JsonKey() final  int discountMinor;
 @override final  String? message;
+/// Promotion scope on the wire ('platform' | 'brand') — drives the
+/// scope badge on the applied-coupon tile.
+@override final  String? scope;
 
 /// Create a copy of CouponPreview
 /// with the given fields replaced by the non-null parameter values.
@@ -228,16 +234,16 @@ _$CouponPreviewCopyWith<_CouponPreview> get copyWith => __$CouponPreviewCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CouponPreview&&(identical(other.code, code) || other.code == code)&&(identical(other.valid, valid) || other.valid == valid)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CouponPreview&&(identical(other.code, code) || other.code == code)&&(identical(other.valid, valid) || other.valid == valid)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.message, message) || other.message == message)&&(identical(other.scope, scope) || other.scope == scope));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,code,valid,discountMinor,message);
+int get hashCode => Object.hash(runtimeType,code,valid,discountMinor,message,scope);
 
 @override
 String toString() {
-  return 'CouponPreview(code: $code, valid: $valid, discountMinor: $discountMinor, message: $message)';
+  return 'CouponPreview(code: $code, valid: $valid, discountMinor: $discountMinor, message: $message, scope: $scope)';
 }
 
 
@@ -248,7 +254,7 @@ abstract mixin class _$CouponPreviewCopyWith<$Res> implements $CouponPreviewCopy
   factory _$CouponPreviewCopyWith(_CouponPreview value, $Res Function(_CouponPreview) _then) = __$CouponPreviewCopyWithImpl;
 @override @useResult
 $Res call({
- String code, bool valid, int discountMinor, String? message
+ String code, bool valid, int discountMinor, String? message, String? scope
 });
 
 
@@ -265,12 +271,13 @@ class __$CouponPreviewCopyWithImpl<$Res>
 
 /// Create a copy of CouponPreview
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? code = null,Object? valid = null,Object? discountMinor = null,Object? message = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? code = null,Object? valid = null,Object? discountMinor = null,Object? message = freezed,Object? scope = freezed,}) {
   return _then(_CouponPreview(
 code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,valid: null == valid ? _self.valid : valid // ignore: cast_nullable_to_non_nullable
 as bool,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,message: freezed == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String?,scope: freezed == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

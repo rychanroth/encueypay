@@ -87,9 +87,6 @@ BannerDto _$BannerDtoFromJson(Map<String, dynamic> json) => BannerDto(
   endsAt: json['ends_at'] == null
       ? null
       : DateTime.parse(json['ends_at'] as String),
-  targetKind: json['target_kind'] as String?,
-  targetId: json['target_id'] as String?,
-  targetName: json['target_name'] as String?,
 );
 
 Map<String, dynamic> _$BannerDtoToJson(BannerDto instance) => <String, dynamic>{
@@ -100,7 +97,4 @@ Map<String, dynamic> _$BannerDtoToJson(BannerDto instance) => <String, dynamic>{
   'status': instance.status,
   'starts_at': instance.startsAt?.toIso8601String(),
   'ends_at': instance.endsAt?.toIso8601String(),
-  'target_kind': instance.targetKind,
-  'target_id': instance.targetId,
-  'target_name': instance.targetName,
 };

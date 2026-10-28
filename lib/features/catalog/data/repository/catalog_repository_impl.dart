@@ -289,7 +289,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .from('banners')
           .select(
             'id, name, image_path, starts_at, ends_at, '
-            'target_kind, target_id, target_name',
+            'promotions(scope, brand_id, brands(name))',
           )
           .eq('status', 'approved')
           .order('created_at', ascending: false)
@@ -306,11 +306,19 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           .take(limit)
           .map((row) {
             final path = row['image_path'] as String;
-            // Targeted banners deep-link into Discovery (Section 9); unknown
-            // wire kinds map to 'none' — an inert banner beats a dead CTA.
-            final target = switch (row['target_kind'] as String?) {
-              'brand' => CatalogBannerTarget.brand,
-              'category' => CatalogBannerTarget.category,
+            // Campaign banners (Option A): the Discovery target derives from
+            // the bound promotion's scope — brand → brand-filtered feed,
+            // platform → the full feed. Display-only rows (no promotion)
+            // stay inert.
+            final promo = row['promotions'] as Map<String, dynamic>?;
+            final scope = promo?['scope'] as String?;
+            final brandId = promo?['brand_id'] as String?;
+            final brandName =
+                ((promo?['brands'] as Map<String, dynamic>?)?['name'])
+                    as String?;
+            final target = switch (scope) {
+              'brand' when brandId != null => CatalogBannerTarget.brand,
+              'platform' => CatalogBannerTarget.platform,
               _ => CatalogBannerTarget.none,
             };
             return CatalogBanner(
@@ -321,8 +329,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
                   ? path
                   : _client.storage.from('promo_assets').getPublicUrl(path),
               target: target,
-              targetId: row['target_id'] as String?,
-              targetName: row['target_name'] as String?,
+              targetId: brandId,
+              targetName: brandName,
             );
           })
           .toList();

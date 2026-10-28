@@ -160,19 +160,26 @@ class AdminPromotionsScreen extends ConsumerWidget {
         );
   }
 
-  Future<void> _createBanner(BuildContext context, WidgetRef ref) async {
+  /// New campaign (Option A, user decision 2026-10-28): one atomic flow
+  /// creating the promotion, its auto-applied coupon code, and the Home
+  /// banner. The Discovery deep-link target is derived from the promotion's
+  /// scope server-side at read time.
+  Future<void> _createCampaign(BuildContext context, WidgetRef ref) async {
     final file = await FilePicker.pickFile(type: FileType.image);
     if (file == null || file.path == null || !context.mounted) return;
     final name = TextEditingController();
-    var targetKind = BannerTargetKind.none;
-    String? targetId;
-    // Await BOTH destination lists before opening the dialog — same
+    final value = TextEditingController();
+    final minOrder = TextEditingController();
+    var isPercent = true;
+    var scopeIsBrand = false;
+    String? brandId;
+    DateTime? startsAt;
+    DateTime? endsAt;
+    // Await the brand options before opening the dialog — same
     // frozen-snapshot reason as the coupon dialog above.
     List<PromoBrandRef> brands;
-    List<PromoCategoryRef> categories;
     try {
       brands = await ref.read(promoBrandsProvider.future);
-      categories = await ref.read(promoCategoriesProvider.future);
     } on Failure catch (failure) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
@@ -184,45 +191,44 @@ class AdminPromotionsScreen extends ConsumerWidget {
     final submitted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('New banner'),
+        builder: (dialogContext, setDialogState) {
+          final theme = Theme.of(dialogContext);
+          return AlertDialog(
+          title: const Text('New campaign'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: name,
-                  decoration: const InputDecoration(labelText: 'Banner name'),
+                  decoration: const InputDecoration(
+                      labelText: 'Campaign name'),
                 ),
                 const SizedBox(height: 8),
-                // Destination (Section 9): the tap-through target — Discovery
-                // pre-filtered to a brand or a category; 'none' stays inert.
-                DropdownButtonFormField<BannerTargetKind>(
-                  initialValue: targetKind,
-                  decoration:
-                      const InputDecoration(labelText: 'Opens (tap target)'),
+                // Scope: drives BOTH the discount base (checkout) and the
+                // banner's Discovery deep-link target.
+                DropdownButtonFormField<bool>(
+                  initialValue: scopeIsBrand,
+                  decoration: const InputDecoration(labelText: 'Scope'),
                   items: const [
                     DropdownMenuItem(
-                      value: BannerTargetKind.none,
-                      child: Text('Nothing (display only)'),
+                      value: false,
+                      child: Text('Platform-wide (all products)'),
                     ),
                     DropdownMenuItem(
-                      value: BannerTargetKind.brand,
-                      child: Text('Discovery — Brand'),
-                    ),
-                    DropdownMenuItem(
-                      value: BannerTargetKind.category,
-                      child: Text('Discovery — Category'),
+                      value: true,
+                      child: Text('Brand-wide'),
                     ),
                   ],
-                  onChanged: (kind) => setDialogState(() {
-                    targetKind = kind ?? BannerTargetKind.none;
-                    targetId = null;
+                  onChanged: (v) => setDialogState(() {
+                    scopeIsBrand = v ?? false;
+                    brandId = null;
                   }),
                 ),
-                if (targetKind == BannerTargetKind.brand)
+                if (scopeIsBrand)
                   DropdownButtonFormField<String>(
-                    initialValue: targetId,
+                    initialValue: brandId,
                     decoration: const InputDecoration(labelText: 'Brand'),
                     items: [
                       for (final brand in brands)
@@ -231,21 +237,66 @@ class AdminPromotionsScreen extends ConsumerWidget {
                           child: Text(brand.name),
                         ),
                     ],
-                    onChanged: (id) => setDialogState(() => targetId = id),
+                    onChanged: (id) => setDialogState(() => brandId = id),
                   ),
-                if (targetKind == BannerTargetKind.category)
-                  DropdownButtonFormField<String>(
-                    initialValue: targetId,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: [
-                      for (final category in categories)
-                        DropdownMenuItem(
-                          value: category.id,
-                          child: Text(category.name),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text('Percent off'),
+                    Switch(
+                      value: isPercent,
+                      onChanged: (v) => setDialogState(() => isPercent = v),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: value,
+                        decoration: InputDecoration(
+                          labelText: isPercent
+                              ? 'Discount percent (1-100)'
+                              : 'Discount amount',
                         ),
-                    ],
-                    onChanged: (id) => setDialogState(() => targetId = id),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
+                ),
+                TextField(
+                  controller: minOrder,
+                  decoration: const InputDecoration(
+                    labelText: 'Minimum order amount (optional)',
+                    prefixText: '\$ ',
                   ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DateField(
+                        label: 'Starts',
+                        value: startsAt,
+                        onChanged: (v) => setDialogState(() => startsAt = v),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _DateField(
+                        label: 'Ends',
+                        value: endsAt,
+                        onChanged: (v) => setDialogState(() => endsAt = v),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Creates the promotion, an auto-applied coupon code, and '
+                  'the Home banner in one step. The coupon applies '
+                  'automatically at checkout.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -255,45 +306,92 @@ class AdminPromotionsScreen extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Create'),
+              onPressed: () {
+                final discount = int.tryParse(value.text.trim());
+                if (name.text.trim().isEmpty ||
+                    discount == null ||
+                    discount <= 0 ||
+                    (isPercent && discount > 100) ||
+                    (scopeIsBrand && brandId == null)) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Name, a positive discount and a brand (for brand scope) are required'),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('Create campaign'),
             ),
           ],
+        ); // AlertDialog
+        }, // builder block — the theme and the early validation return
+      ), // StatefulBuilder
+    ); // showDialog
+    if (submitted != true) return;
+    if (!context.mounted) return;
+    final couponCode = await ref
+        .read(adminPromotionsControllerProvider.notifier)
+        .createCampaign(
+          name: name.text.trim(),
+          description: '',
+          filePath: file.path!,
+          fileName: file.name,
+          discountType:
+              isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
+          discountValue: int.parse(value.text.trim()),
+          minOrderAmountMinor: minOrder.text.trim().isEmpty
+              ? 0
+              : Money.parse(minOrder.text.trim()).minorUnits,
+          startsAt: startsAt,
+          endsAt: endsAt,
+          brandId: scopeIsBrand ? brandId : null,
+        );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(couponCode.isEmpty
+            ? 'Campaign created'
+            : 'Campaign created — coupon $couponCode applies automatically '
+                'at checkout'),
+      ));
+  }
+
+  /// Display-only banner (inert imagery — no campaign, no deep link).
+  Future<void> _createDisplayBanner(BuildContext context, WidgetRef ref) async {
+    final file = await FilePicker.pickFile(type: FileType.image);
+    if (file == null || file.path == null || !context.mounted) return;
+    final name = TextEditingController();
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('New display banner'),
+        content: TextField(
+          controller: name,
+          decoration: const InputDecoration(labelText: 'Banner name'),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Create'),
+          ),
+        ],
       ),
     );
     if (submitted != true) return;
     if (!context.mounted) return;
-    if (targetKind != BannerTargetKind.none && targetId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pick the brand or category the banner opens'),
-        ),
-      );
-      return;
-    }
-    // The Discovery context banner shows a name — snapshot it at creation
-    // so the CTA survives later renames/archivals of the target.
-    String? targetName;
-    if (targetKind == BannerTargetKind.brand) {
-      targetName = brands
-          .where((brand) => brand.id == targetId)
-          .firstOrNull
-          ?.name;
-    } else if (targetKind == BannerTargetKind.category) {
-      targetName = categories
-          .where((category) => category.id == targetId)
-          .firstOrNull
-          ?.name;
-    }
     await ref.read(adminPromotionsControllerProvider.notifier).createBanner(
           name: name.text.trim(),
           description: '',
           filePath: file.path!,
           fileName: file.name,
-          targetKind: targetKind,
-          targetId: targetId,
-          targetName: targetName,
         );
   }
 
@@ -352,9 +450,14 @@ class AdminPromotionsScreen extends ConsumerWidget {
             onPressed: () => _createCoupon(context, ref),
           ),
           IconButton(
-            tooltip: 'New banner',
+            tooltip: 'New campaign (banner + auto-applied coupon)',
             icon: const Icon(Icons.campaign_outlined),
-            onPressed: () => _createBanner(context, ref),
+            onPressed: () => _createCampaign(context, ref),
+          ),
+          IconButton(
+            tooltip: 'New display banner',
+            icon: const Icon(Icons.image_outlined),
+            onPressed: () => _createDisplayBanner(context, ref),
           ),
         ],
       ),
@@ -401,6 +504,18 @@ class AdminPromotionsScreen extends ConsumerWidget {
                                 ),
                               ),
                               AdminCouponScopeChip(promotion: promotion),
+                              // Promotion-level kill switch (the coupon
+                              // switch below is per-code).
+                              Switch(
+                                value: promotion.active,
+                                onChanged: (active) => ref
+                                    .read(adminPromotionsControllerProvider
+                                        .notifier)
+                                    .togglePromotion(
+                                      promotionId: promotion.id,
+                                      active: active,
+                                    ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -468,10 +583,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
                           leading: Image.network(banner.imageUrl,
                               width: 56, height: 40, fit: BoxFit.cover),
                           title: Text(banner.name),
-                          subtitle: Text(
-                            'Banner · ${banner.status.name}'
-                            '${banner.targetKind == BannerTargetKind.none ? '' : ' · opens ${banner.targetKind.name}: ${banner.targetName ?? banner.targetId}'}',
-                          ),
+                          subtitle: Text('Banner · ${banner.status.name}'),
                           trailing: PopupMenuButton<String>(
                             onSelected: (action) => ref
                                 .read(adminBannersControllerProvider.notifier)

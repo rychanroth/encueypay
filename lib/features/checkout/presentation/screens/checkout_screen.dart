@@ -8,6 +8,7 @@ import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/payment_method.dart';
 import '../controllers/checkout_controller.dart';
+import '../controllers/discount_preview_provider.dart';
 
 /// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
 /// Shipping address → Shipping method → Payment method → Coupon → Order
@@ -95,6 +96,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
         data: (state) {
           final summary = state.summary;
+          // Authoritative discount preview: manual codes + the best
+          // eligible campaign coupon (auto-applied at placement).
+          final discountPreview =
+              ref.watch(discountPreviewProvider).value;
+          final autoCoupon = discountPreview?.auto;
+          final totalDiscount = discountPreview?.totalDiscountMinor ??
+              state.discountPreviewMinor;
           return Stepper(
             currentStep: state.currentStep,
             onStepTapped: controller.goToStep,
@@ -346,7 +354,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                'Scope',
+                                coupon.scope == 'brand'
+                                    ? 'Brand'
+                                    : coupon.scope == 'platform'
+                                        ? 'Platform-wide'
+                                        : 'Coupon',
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.onPrimaryContainer,
                                   fontSize: 10,
@@ -387,9 +399,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     if (summary != null) ...[
                       _SummaryRow('Subtotal',
                           Money(summary.subtotalMinor).formatUsd()),
+                      if (autoCoupon != null)
+                        _SummaryRow(
+                          'Auto-applied (${autoCoupon.message ?? autoCoupon.code})',
+                          '-${Money(autoCoupon.discountMinor).formatUsd()}',
+                        ),
                       if (state.discountPreviewMinor > 0)
                         _SummaryRow(
-                          'Discount (preview)',
+                          'Discount (manual codes)',
                           '-${Money(state.discountPreviewMinor).formatUsd()}',
                         ),
                       _SummaryRow(
@@ -399,12 +416,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       const Divider(height: 24),
                       _SummaryRow(
                         'Total',
-                        Money(state.totalPreviewMinor).formatUsd(),
+                        Money(summary.totalMinor - totalDiscount).formatUsd(),
                         bold: true,
                       ),
                       _SummaryRow(
                         '',
-                        '≈ ${Money(state.totalPreviewMinor).formatKhr()}',
+                        '≈ ${Money(summary.totalMinor - totalDiscount).formatKhr()}',
                       ),
                       if (state.method == PaymentMethod.qr)
                         Padding(

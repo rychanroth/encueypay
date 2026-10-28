@@ -143,10 +143,6 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     required String description,
     required String filePath,
     required String fileName,
-    DateTime? endsAt,
-    BannerTargetKind targetKind = BannerTargetKind.none,
-    String? targetId,
-    String? targetName,
   }) async {
     try {
       final bytes = await File(filePath).readAsBytes();
@@ -158,14 +154,59 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
         'p_name': name,
         'p_description': description,
         'p_image_url': url,
-        'p_ends_at': endsAt?.toIso8601String(),
-        'p_target_kind': targetKind.wireName,
-        'p_target_id': targetId,
-        'p_target_name': targetName,
+        'p_ends_at': null,
       });
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
+  }
+
+  @override
+  Future<String> createCampaign({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
+    String? brandId,
+  }) async {
+    try {
+      final bytes = await File(filePath).readAsBytes();
+      final path = '$_uid/'
+          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      await _client.storage.from('promo_assets').uploadBinary(path, bytes);
+      final imageUrl = _client.storage.from('promo_assets').getPublicUrl(path);
+      final result = await _client.rpc('admin_create_campaign', params: {
+        'p_name': name,
+        'p_description': description,
+        'p_image_path': imageUrl,
+        'p_discount_type': discountType.wireName,
+        'p_discount_value': discountValue,
+        'p_min_order_amount_minor': minOrderAmountMinor,
+        'p_starts_at': startsAt?.toIso8601String(),
+        'p_ends_at': endsAt?.toIso8601String(),
+        'p_brand_id': brandId,
+      });
+      final map = Map<String, dynamic>.from(result as Map);
+      return map['coupon_code'] as String? ?? '';
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<void> setPromotionActive({
+    required String promotionId,
+    required bool active,
+  }) {
+    return _rpc('admin_set_promotion_active', {
+      'p_promotion_id': promotionId,
+      'p_active': active,
+    });
   }
 
   @override

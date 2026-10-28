@@ -41,17 +41,13 @@ class AdminPromotionsController extends _$AdminPromotionsController {
     });
   }
 
-  /// Section 9: admin-created home banners (pending on creation, approved
-  /// via moderation). The destination pickers ride along as the banner's
-  /// Discovery deep-link target.
+  /// Section 9: display-only home banner (inert imagery — no campaign, no
+  /// deep link). Targeted banners are campaigns (createCampaign).
   Future<void> createBanner({
     required String name,
     required String description,
     required String filePath,
     required String fileName,
-    BannerTargetKind targetKind = BannerTargetKind.none,
-    String? targetId,
-    String? targetName,
   }) async {
     final current = state.value ?? const <MyPromotion>[];
     state = await AsyncValue.guard(() async {
@@ -60,10 +56,60 @@ class AdminPromotionsController extends _$AdminPromotionsController {
             description: description,
             filePath: filePath,
             fileName: fileName,
-            targetKind: targetKind,
-            targetId: targetId,
-            targetName: targetName,
           );
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
+  /// New campaign (Option A, user decision 2026-10-28): one atomic call
+  /// creating the promotion, its auto-applied coupon, and the Home banner.
+  /// Returns the generated coupon code for the confirmation snackbar.
+  Future<String> createCampaign({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
+    String? brandId,
+  }) async {
+    final current = state.value ?? const <MyPromotion>[];
+    var couponCode = '';
+    state = await AsyncValue.guard(() async {
+      couponCode = await ref.read(promotionsRepositoryProvider).createCampaign(
+            name: name,
+            description: description,
+            filePath: filePath,
+            fileName: fileName,
+            discountType: discountType,
+            discountValue: discountValue,
+            minOrderAmountMinor: minOrderAmountMinor,
+            startsAt: startsAt,
+            endsAt: endsAt,
+            brandId: brandId,
+          );
+      ref.invalidateSelf();
+      return current;
+    });
+    return couponCode;
+  }
+
+  /// Promotion-level kill switch (2026-10-28): stops the whole rule (the
+  /// chip disappears from cards, the auto-apply stops matching) — the
+  /// per-coupon switch below remains for code-level control.
+  Future<void> togglePromotion({
+    required String promotionId,
+    required bool active,
+  }) async {
+    final current = state.value ?? const <MyPromotion>[];
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(promotionsRepositoryProvider)
+          .setPromotionActive(promotionId: promotionId, active: active);
       ref.invalidateSelf();
       return current;
     });

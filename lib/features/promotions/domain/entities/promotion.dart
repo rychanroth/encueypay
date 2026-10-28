@@ -49,9 +49,6 @@ abstract class ManagedBanner with _$ManagedBanner {
     required BannerStatus status,
     DateTime? startsAt,
     DateTime? endsAt,
-    @Default(BannerTargetKind.none) BannerTargetKind targetKind,
-    String? targetId,
-    String? targetName,
   }) = _ManagedBanner;
 }
 

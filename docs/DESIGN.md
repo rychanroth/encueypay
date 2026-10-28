@@ -324,7 +324,7 @@ abstract class AppTypography {
 - `orders`: Single lifecycle record (`status` = `order_status` enum, `note`, `cancelled_at`, `cancellation_reason`).
 - `order_items`: Historical immutable snapshots (`product_id`, `variant_id`, `quantity`, `unit_price_minor`, `line_total_minor`) — no business dimension.
 - `payments`: Payment record (`order_id`, `amount_minor`, `payment_method` = `qr | cod`, `status`).
-- `promotions` & `coupons`: promotional rules scoped **`platform | brand`** (`brand_id` set → brand-wide, NULL → platform-wide; the dormant `'business'` enum value is unreachable), `min_order_amount_minor`, `starts_at`, `ends_at`.
+- `promotions` & `coupons`: promotional rules scoped **`platform | brand`** (`brand_id` set → brand-wide, NULL → platform-wide; the dormant `'business'` enum value is unreachable), `min_order_amount_minor`, `starts_at`, `ends_at`. **Campaigns (2026-10-28, Option A):** a banner belongs to a promotion (`banners.promotion_id`, required for campaign banners) whose Discovery target derives from the promotion's scope; campaign coupons carry `auto_apply = true` and the single best eligible one is applied at order placement automatically (best auto + manual codes stack, capped at the subtotal). `promotions` reads are public (chips/banner derivation); writes stay admin-only. The never-read `attributes` column on variants was dropped.
 - `product_ratings` **view**: `avg(rating)`/`count()` per product for card ratings — inline PostgREST aggregates are unsupported on this backend (DATA-09 in the architecture contract).
 - `businesses`: **dropped** (migration 0008) — the vendor model is retired.
 

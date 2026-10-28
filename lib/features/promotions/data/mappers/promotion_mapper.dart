@@ -35,9 +35,6 @@ extension BannerDtoX on BannerDto {
       status: BannerStatus.fromName(status),
       startsAt: startsAt,
       endsAt: endsAt,
-      targetKind: BannerTargetKind.fromName(targetKind),
-      targetId: targetId,
-      targetName: targetName,
     );
   }
 }
