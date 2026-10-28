@@ -144,8 +144,12 @@ class _AdminProductFormScreenState
     // name; NEW rows also need a price and an image (hybrid pricing — the
     // seeded Default row keeps the blank-means-base-price convention, and
     // its price field is pre-filled so blank only happens deliberately).
+    // Rows archived in this draft are EXCLUDED from the payload — the
+    // server's full-list sync archives them (never deletes; historical
+    // orders keep their references).
     final variants = <AdminProductVariantDraft>[];
     for (final row in _variantRows) {
+      if (row.archived) continue;
       final name = row.name.text.trim();
       final priceText = row.price.text.trim();
       final hasImage = row.localPath != null || row.imagePath != null;
@@ -283,9 +287,9 @@ class _AdminProductFormScreenState
             ],
           ),
           Text(
-            'New variants need a name, price and image. The "Default" row '
-            '(blank price) tracks the product\'s base price. Removing a '
-            'variant archives it.',
+            'New variants need a name, price and image. Archiving keeps the '
+            'variant for historical orders (applied on save). The "Default" '
+            'row (blank price) tracks the product\'s base price.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -293,54 +297,74 @@ class _AdminProductFormScreenState
           for (final row in _variantRows)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: row.name,
-                          decoration: const InputDecoration(
-                            labelText: 'Variant name',
-                            isDense: true,
-                          ),
+              child: Opacity(
+                // Pending-archive rows stay visible until save — nothing is
+                // deleted, the sync flips their status server-side.
+                opacity: row.archived ? 0.5 : 1,
+                child: Row(
+                  children: [
+                    _VariantImageTile(
+                      localPath: row.localPath,
+                      existingUrl: row.existingUrl,
+                      enabled: !row.archived,
+                      onPicked: (path) => setState(() => row.localPath = path),
+                      onCleared: () => setState(() {
+                        row.localPath = null;
+                        row.imagePath = null;
+                      }),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: row.name,
+                        enabled: !row.archived,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                          isDense: true,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: row.price,
-                          decoration: InputDecoration(
-                            labelText: row.id == null
-                                ? 'Price (required)'
-                                : 'Price (blank = base price)',
-                            prefixText: '\$ ',
-                            isDense: true,
-                          ),
-                          keyboardType:
-                              const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: row.price,
+                        enabled: !row.archived,
+                        decoration: const InputDecoration(
+                          labelText: 'Price',
+                          prefixText: '\$ ',
+                          isDense: true,
                         ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                       ),
-                      IconButton(
-                        tooltip: 'Remove variant',
-                        onPressed: () => _removeVariantRow(row),
-                        icon: const Icon(Icons.remove_circle_outline),
+                    ),
+                    IconButton(
+                      tooltip: row.id == null
+                          ? 'Remove variant'
+                          : row.archived
+                              ? 'Restore variant'
+                              : 'Archive variant (applies on save)',
+                      onPressed: () {
+                        if (row.id == null) {
+                          _removeVariantRow(row);
+                        } else {
+                          // Existing variants are archived, never deleted —
+                          // historical orders reference their rows.
+                          setState(() => row.archived = !row.archived);
+                        }
+                      },
+                      icon: Icon(
+                        row.id == null
+                            ? Icons.remove_circle_outline
+                            : row.archived
+                                ? Icons.unarchive_outlined
+                                : Icons.archive_outlined,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _VariantImagePicker(
-                    localPath: row.localPath,
-                    existingUrl: row.existingUrl,
-                    isRequired: row.id == null,
-                    onPicked: (path) => setState(() => row.localPath = path),
-                    onCleared: () => setState(() {
-                      row.localPath = null;
-                      row.imagePath = null;
-                    }),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           const SizedBox(height: 12),
@@ -472,13 +496,16 @@ class _ImageTile extends StatelessWidget {
 
 /// One editable variant row — owns its text controllers so removal can
 /// dispose them deterministically. [id] is null for rows that insert
-/// server-side; non-null rows update the existing variant in place.
-/// [imagePath] is the existing storage path (sent back on save), and
-/// [localPath] a fresh pick that replaces it on save.
+/// server-side; non-null rows update the existing variant in place, and
+/// [archived] marks them for the server's archive-on-sync (never deletion —
+/// historical orders reference their rows). [imagePath] is the existing
+/// storage path (sent back on save), and [localPath] a fresh pick that
+/// replaces it on save.
 class _VariantRow {
   _VariantRow({this.id, this.imagePath, this.existingUrl});
 
   final String? id;
+  bool archived = false;
 
   /// Resolved URL of the existing image — preview only.
   final String? existingUrl;
@@ -495,20 +522,20 @@ class _VariantRow {
   }
 }
 
-/// One variant row's image picker: a 56×56 preview (fresh pick over the
-/// existing URL over a placeholder) — tap to pick, "Remove" clears both.
-class _VariantImagePicker extends StatelessWidget {
-  const _VariantImagePicker({
+/// One variant row's image tile: a 52×52 preview (fresh pick over the
+/// existing URL over a placeholder) — tap to pick, badge to clear.
+class _VariantImageTile extends StatelessWidget {
+  const _VariantImageTile({
     required this.localPath,
     required this.existingUrl,
-    required this.isRequired,
+    required this.enabled,
     required this.onPicked,
     required this.onCleared,
   });
 
   final String? localPath;
   final String? existingUrl;
-  final bool isRequired;
+  final bool enabled;
   final ValueChanged<String> onPicked;
   final VoidCallback onCleared;
 
@@ -516,17 +543,19 @@ class _VariantImagePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hasImage = localPath != null || existingUrl != null;
-    return Row(
+    return Stack(
       children: [
         InkWell(
           borderRadius: BorderRadius.circular(8),
-          onTap: () async {
-            final file = await FilePicker.pickFile(type: FileType.image);
-            if (file?.path != null) onPicked(file!.path!);
-          },
+          onTap: enabled
+              ? () async {
+                  final file = await FilePicker.pickFile(type: FileType.image);
+                  if (file?.path != null) onPicked(file!.path!);
+                }
+              : null,
           child: Container(
-            width: 56,
-            height: 56,
+            width: 52,
+            height: 52,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
@@ -538,20 +567,22 @@ class _VariantImagePicker extends StatelessWidget {
                 : existingUrl != null
                     ? Image.network(existingUrl!, fit: BoxFit.cover)
                     : Icon(Icons.add_photo_alternate_outlined,
-                        color: theme.colorScheme.onSurfaceVariant),
+                        size: 20, color: theme.colorScheme.onSurfaceVariant),
           ),
         ),
-        const SizedBox(width: 8),
-        Text(
-          hasImage ? 'Variant image' : 'Variant image (required)',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        if (hasImage)
-          TextButton(
-            onPressed: onCleared,
-            child: const Text('Remove'),
+        if (hasImage && enabled)
+          Positioned(
+            top: 0,
+            right: 0,
+            child: InkWell(
+              onTap: onCleared,
+              child: CircleAvatar(
+                radius: 9,
+                backgroundColor:
+                    theme.colorScheme.surface.withValues(alpha: 0.9),
+                child: const Icon(Icons.close, size: 12),
+              ),
+            ),
           ),
       ],
     );
