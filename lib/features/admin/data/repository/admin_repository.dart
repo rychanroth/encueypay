@@ -80,6 +80,12 @@ abstract interface class IAdminRepository {
     required String filePath,
   });
 
+  /// Uploads a variant image pick into `product_images` (variants/ folder)
+  /// and returns the storage path — the variant row references it directly
+  /// (no product_images row; the customer-facing embed resolves the public
+  /// URL).
+  Future<String> uploadVariantImage({required String filePath});
+
   Future<void> removeProductImage({
     required String imageId,
     required String storagePath,

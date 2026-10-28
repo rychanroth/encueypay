@@ -12,7 +12,6 @@ extension ProductVariantDtoX on ProductVariantDto {
       id: id,
       productId: productId,
       name: name,
-      attributes: attributes,
       priceMinor: priceMinor,
       imageUrl: imagePath == null ? null : resolveImageUrl?.call(imagePath!),
       status: ProductStatus.fromName(status),

@@ -93,6 +93,11 @@ abstract class AdminProductVariantRef with _$AdminProductVariantRef {
 
     /// Null tracks the product's base price (server rule §1.2).
     int? priceMinor,
+
+    /// Raw `product_variants.image_path` (sent back untouched on save) and
+    /// its resolved public URL for the row's image preview.
+    String? imagePath,
+    String? imageUrl,
   }) = _AdminProductVariantRef;
 }
 
@@ -125,15 +130,21 @@ abstract class AdminProductDraft with _$AdminProductDraft {
 
 /// One variant row authored in the product form. [id] is null for new rows
 /// (fresh authoring on create or edit); non-null rows update the existing
-/// variant in place.
+/// variant in place. [imagePath] is the variant's existing storage path
+/// (kept on save when no fresh pick replaces it); [imageLocalPath] is a
+/// fresh pick awaiting upload — the controller uploads it and resolves the
+/// final path before the RPC call.
 @freezed
 abstract class AdminProductVariantDraft with _$AdminProductVariantDraft {
   const factory AdminProductVariantDraft({
     String? id,
     required String name,
 
-    /// Null tracks the product's base price (server rule §1.2).
+    /// Null tracks the product's base price (server rule §1.2; the form
+    /// reserves null for the Default row — hybrid pricing, 2026-10-28).
     int? priceMinor,
+    String? imagePath,
+    String? imageLocalPath,
   }) = _AdminProductVariantDraft;
 }
 

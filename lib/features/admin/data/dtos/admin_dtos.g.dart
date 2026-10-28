@@ -144,6 +144,7 @@ AdminVariantJoinDto _$AdminVariantJoinDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String?,
       name: json['name'] as String?,
       priceMinor: (json['price_minor'] as num?)?.toInt(),
+      imagePath: json['image_path'] as String?,
       status: json['status'] as String?,
     );
 
@@ -153,6 +154,7 @@ Map<String, dynamic> _$AdminVariantJoinDtoToJson(
   'id': instance.id,
   'name': instance.name,
   'price_minor': instance.priceMinor,
+  'image_path': instance.imagePath,
   'status': instance.status,
 };
 

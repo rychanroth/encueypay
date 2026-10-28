@@ -201,7 +201,7 @@ class AdminRepositoryImpl implements IAdminRepository {
     try {
       var request = _client.from('products').select(
             '*, brands(name), categories(name), '
-            'product_variants(id, name, price_minor, status), '
+            'product_variants(id, name, price_minor, status, image_path), '
             'product_images(id, storage_path, sort_order)',
           );
       final q = query?.trim() ?? '';
@@ -241,6 +241,8 @@ class AdminRepositoryImpl implements IAdminRepository {
                   id: variant.id ?? '',
                   name: variant.name ?? '',
                   priceMinor: variant.priceMinor,
+                  imagePath: variant.imagePath,
+                  imageUrl: _productImageUrlOrNull(variant.imagePath),
                 ),
           ],
         );
@@ -350,7 +352,11 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_stock': draft.stock,
         'p_variants': [
           for (final variant in draft.variants)
-            {'name': variant.name, 'price_minor': variant.priceMinor},
+            {
+              'name': variant.name,
+              'price_minor': variant.priceMinor,
+              'image_path': variant.imagePath,
+            },
         ],
       }) as String;
       return productId;
@@ -382,6 +388,7 @@ class AdminRepositoryImpl implements IAdminRepository {
               if (variant.id != null) 'id': variant.id,
               'name': variant.name,
               'price_minor': variant.priceMinor,
+              'image_path': variant.imagePath,
             },
         ],
       });
@@ -433,6 +440,23 @@ class AdminRepositoryImpl implements IAdminRepository {
       });
     } on ServerFailure {
       rethrow;
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<String> uploadVariantImage({required String filePath}) async {
+    try {
+      final fileName = filePath.split(Platform.pathSeparator).last;
+      final bytes = await File(filePath).readAsBytes();
+      // Variant images live in their own folder of the public bucket — the
+      // variant row references the path directly (no product_images row;
+      // the customer embed resolves the public URL).
+      final path =
+          'variants/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      await _client.storage.from('product_images').uploadBinary(path, bytes);
+      return path;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

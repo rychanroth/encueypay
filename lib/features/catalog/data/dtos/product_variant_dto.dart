@@ -9,7 +9,6 @@ class ProductVariantDto {
     required this.id,
     required this.productId,
     required this.name,
-    this.attributes,
     this.priceMinor,
     this.imagePath,
     this.status,
@@ -21,7 +20,6 @@ class ProductVariantDto {
   final String id;
   final String productId;
   final String name;
-  final Map<String, dynamic>? attributes;
   final int? priceMinor;
   final String? imagePath;
   final String? status;

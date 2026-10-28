@@ -42,7 +42,7 @@
 | Feature / Requirement | Spec Source Clause | Physical File Paths (UI / State / Data) | Route Registered? | Navigation Trigger Exists? | Wiring Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Product detail: gallery, name, price, brand, availability, description, variants, related | ASSIGN §3 / SPEC B.3 | `features/catalog/presentation/screens/product_detail_screen.dart` / `controllers/product_detail_controller.dart` / `catalog_repository_impl.dart` (`fetchProductDetail`) | Yes (`/home/product/:id`) | Yes (5 triggers: grids, cart tile, wishlist, dashboard) | **[WIRED]** |
-| Variant picker sheet (dynamic price, stock-capped qty) | ASSIGN §3 / SPEC B.3 | `features/catalog/presentation/widgets/variant_picker_sheet.dart` / `domain/entities/product_variant.dart` | Embedded (bottom sheet) | Yes (Add to cart button) | **[WIRED]** |
+| Variant picker sheet (dynamic price, stock-capped qty) | ASSIGN §3 / SPEC B.3 | `features/catalog/presentation/widgets/variant_picker_sheet.dart` / `domain/entities/product_variant.dart` | Embedded (bottom sheet) | Yes (Add to cart button) | **[WIRED]** (preselects page selection → default variant; 2026-10-28) |
 | Full-screen image gallery | ASSIGN §3 / SPEC B.3 | `features/catalog/presentation/widgets/product_image_gallery.dart` | Embedded | Yes (tap image) | **[WIRED]** |
 | Review cards (avatar, name, stars, text, date) + aggregate | ASSIGN §3, §7 / SPEC B.7 (7F) | `features/catalog/presentation/widgets/review_card.dart` + `rating_stars.dart` / `product_detail_controller.dart` / `catalog_repository_impl.dart` (users embed w/ avatar) | Embedded | Yes (detail scroll) | **[WIRED]** |
 

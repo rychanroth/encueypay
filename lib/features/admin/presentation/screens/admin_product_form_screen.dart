@@ -17,12 +17,14 @@ import '../widgets/searchable_picker_field.dart';
 /// lives in this StatefulWidget; mutations go through
 /// [AdminProductsController] (AsyncValue.guard + invalidate, PRES-03).
 ///
-/// Variants are authored inline (name + optional price) in both modes.
-/// Creation with an empty list lets the server auto-create a 'Default'
-/// variant whose null price tracks the base price, keeping carts strictly
-/// variant-based (map §10.3). Editing syncs the full list: id rows update
-/// in place, new rows insert, and removed rows archive server-side.
-/// Existing images can be removed; new ones are uploaded on save.
+/// Variants are authored inline (name + price + image) in both modes —
+/// hybrid pricing (2026-10-28): authored rows require a price, while the
+/// auto-'Default' row keeps the blank-means-base-price convention. Creation
+/// with an empty list lets the server auto-create a 'Default' variant,
+/// keeping carts strictly variant-based (map §10.3). Editing syncs the full
+/// list: id rows update in place, new rows insert, and removed rows archive
+/// server-side. Existing images can be removed; new ones are uploaded on
+/// save.
 class AdminProductFormScreen extends ConsumerStatefulWidget {
   const AdminProductFormScreen({super.key, this.product});
 
@@ -63,11 +65,16 @@ class _AdminProductFormScreenState
   final List<String> _imageDrafts = <String>[];
 
   /// Desired variant rows. Seeded from the product's active variants in edit
-  /// mode; rows without an id insert server-side, id rows update in place.
+  /// mode (carrying their existing image paths for the preview and the
+  /// save); rows without an id insert server-side, id rows update in place.
   late final List<_VariantRow> _variantRows = <_VariantRow>[
     for (final variant
         in widget.product?.variants ?? const <AdminProductVariantRef>[])
-      _VariantRow(id: variant.id)
+      _VariantRow(
+        id: variant.id,
+        imagePath: variant.imagePath,
+        existingUrl: variant.imageUrl,
+      )
         ..name.text = variant.name
         ..price.text =
             variant.priceMinor == null ? '' : Money(variant.priceMinor!).format(),
@@ -133,26 +140,39 @@ class _AdminProductFormScreenState
       );
       return;
     }
-    // Variant rows: fully blank rows are ignored; a priced row needs a
-    // name; an empty price keeps tracking the base price (null on the wire).
+    // Variant rows: an untouched new row is ignored; every kept row needs a
+    // name; NEW rows also need a price and an image (hybrid pricing — the
+    // seeded Default row keeps the blank-means-base-price convention, and
+    // its price field is pre-filled so blank only happens deliberately).
     final variants = <AdminProductVariantDraft>[];
     for (final row in _variantRows) {
       final name = row.name.text.trim();
       final priceText = row.price.text.trim();
-      if (name.isEmpty && priceText.isEmpty) continue;
+      final hasImage = row.localPath != null || row.imagePath != null;
+      final isNew = row.id == null;
+      if (isNew && name.isEmpty && priceText.isEmpty && !hasImage) continue;
       if (name.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Every priced variant needs a name'),
-          ),
+          const SnackBar(content: Text('Every variant needs a name')),
         );
         return;
       }
-      final variantPrice =
-          priceText.isEmpty ? null : _parseMoney(priceText);
-      if (variantPrice == null) {
+      final variantPrice = priceText.isEmpty ? null : _parseMoney(priceText);
+      if (priceText.isNotEmpty && variantPrice == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('"$name" has an invalid price')),
+        );
+        return;
+      }
+      if (isNew && variantPrice == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Variant "$name" needs a price')),
+        );
+        return;
+      }
+      if (isNew && !hasImage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Variant "$name" needs an image')),
         );
         return;
       }
@@ -160,6 +180,8 @@ class _AdminProductFormScreenState
         id: row.id,
         name: name,
         priceMinor: variantPrice,
+        imagePath: row.imagePath,
+        imageLocalPath: row.localPath,
       ));
     }
     final draft = AdminProductDraft(
@@ -261,7 +283,8 @@ class _AdminProductFormScreenState
             ],
           ),
           Text(
-            'Leave the price empty to track the base price. Removing a '
+            'New variants need a name, price and image. The "Default" row '
+            '(blank price) tracks the product\'s base price. Removing a '
             'variant archives it.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
@@ -270,35 +293,52 @@ class _AdminProductFormScreenState
           for (final row in _variantRows)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: row.name,
-                      decoration: const InputDecoration(
-                        labelText: 'Variant name',
-                        isDense: true,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: row.name,
+                          decoration: const InputDecoration(
+                            labelText: 'Variant name',
+                            isDense: true,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: row.price,
-                      decoration: const InputDecoration(
-                        labelText: 'Price (optional)',
-                        prefixText: '\$ ',
-                        isDense: true,
-                        hintText: 'Base price',
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: row.price,
+                          decoration: InputDecoration(
+                            labelText: row.id == null
+                                ? 'Price (required)'
+                                : 'Price (blank = base price)',
+                            prefixText: '\$ ',
+                            isDense: true,
+                          ),
+                          keyboardType:
+                              const TextInputType.numberWithOptions(decimal: true),
+                        ),
                       ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                    ),
+                      IconButton(
+                        tooltip: 'Remove variant',
+                        onPressed: () => _removeVariantRow(row),
+                        icon: const Icon(Icons.remove_circle_outline),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    tooltip: 'Remove variant',
-                    onPressed: () => _removeVariantRow(row),
-                    icon: const Icon(Icons.remove_circle_outline),
+                  const SizedBox(height: 8),
+                  _VariantImagePicker(
+                    localPath: row.localPath,
+                    existingUrl: row.existingUrl,
+                    isRequired: row.id == null,
+                    onPicked: (path) => setState(() => row.localPath = path),
+                    onCleared: () => setState(() {
+                      row.localPath = null;
+                      row.imagePath = null;
+                    }),
                   ),
                 ],
               ),
@@ -433,10 +473,18 @@ class _ImageTile extends StatelessWidget {
 /// One editable variant row — owns its text controllers so removal can
 /// dispose them deterministically. [id] is null for rows that insert
 /// server-side; non-null rows update the existing variant in place.
+/// [imagePath] is the existing storage path (sent back on save), and
+/// [localPath] a fresh pick that replaces it on save.
 class _VariantRow {
-  _VariantRow({this.id});
+  _VariantRow({this.id, this.imagePath, this.existingUrl});
 
   final String? id;
+
+  /// Resolved URL of the existing image — preview only.
+  final String? existingUrl;
+
+  String? imagePath;
+  String? localPath;
 
   final TextEditingController name = TextEditingController();
   final TextEditingController price = TextEditingController();
@@ -444,5 +492,68 @@ class _VariantRow {
   void dispose() {
     name.dispose();
     price.dispose();
+  }
+}
+
+/// One variant row's image picker: a 56×56 preview (fresh pick over the
+/// existing URL over a placeholder) — tap to pick, "Remove" clears both.
+class _VariantImagePicker extends StatelessWidget {
+  const _VariantImagePicker({
+    required this.localPath,
+    required this.existingUrl,
+    required this.isRequired,
+    required this.onPicked,
+    required this.onCleared,
+  });
+
+  final String? localPath;
+  final String? existingUrl;
+  final bool isRequired;
+  final ValueChanged<String> onPicked;
+  final VoidCallback onCleared;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hasImage = localPath != null || existingUrl != null;
+    return Row(
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () async {
+            final file = await FilePicker.pickFile(type: FileType.image);
+            if (file?.path != null) onPicked(file!.path!);
+          },
+          child: Container(
+            width: 56,
+            height: 56,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: theme.colorScheme.outlineVariant),
+              color: theme.colorScheme.surfaceContainerLowest,
+            ),
+            child: localPath != null
+                ? Image.file(File(localPath!), fit: BoxFit.cover)
+                : existingUrl != null
+                    ? Image.network(existingUrl!, fit: BoxFit.cover)
+                    : Icon(Icons.add_photo_alternate_outlined,
+                        color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          hasImage ? 'Variant image' : 'Variant image (required)',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        if (hasImage)
+          TextButton(
+            onPressed: onCleared,
+            child: const Text('Remove'),
+          ),
+      ],
+    );
   }
 }

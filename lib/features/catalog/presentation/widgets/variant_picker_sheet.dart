@@ -54,10 +54,12 @@ class _VariantPickerSheet extends StatefulWidget {
 class _VariantPickerSheetState extends State<_VariantPickerSheet> {
   static const _maxQuantity = 99;
 
-  /// Preselected from the product page's variant rail when provided; a
-  /// single-option product is preselected regardless (products always have
-  /// at least one variant — 'Default' — so one-option sheets are direct).
+  /// Preselection order: the product page's variant rail choice, then the
+  /// product's default variant, then the sole variant of a one-option
+  /// product. A multi-variant sheet therefore never opens with a disabled
+  /// CTA (user feedback 2026-10-28).
   late String? _selectedVariantId = widget.initialVariantId ??
+      widget.product.defaultVariantId ??
       (widget.variants.length == 1 ? widget.variants.first.id : null);
   int _quantity = 1;
 
@@ -178,8 +180,10 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
                     ChoiceChip(
                       label: Text(variant.name),
                       selected: _selectedVariantId == variant.id,
-                      onSelected: (isSelected) => setState(() =>
-                          _selectedVariantId = isSelected ? variant.id : null),
+                      // Non-deselectable: a selection always exists (the
+                      // CTA and the displayed price depend on it).
+                      onSelected: (_) =>
+                          setState(() => _selectedVariantId = variant.id),
                     ),
                 ],
               ),

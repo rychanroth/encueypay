@@ -68,8 +68,9 @@ class AdminProductsController extends _$AdminProductsController {
     });
   }
 
-  /// Creates the product and then registers each picked image. Returns the
-  /// new product id (the caller navigates or resets).
+  /// Creates the product and then registers each picked image. Variant
+  /// image picks upload first — the create payload carries their storage
+  /// paths. Returns the new product id (the caller navigates or resets).
   Future<void> createWithImages({
     required AdminProductDraft draft,
     required List<String> imageFilePaths,
@@ -77,7 +78,19 @@ class AdminProductsController extends _$AdminProductsController {
     final current = state.value ?? const <AdminProductSummary>[];
     state = await AsyncValue.guard(() async {
       final repo = ref.read(adminRepositoryProvider);
-      final productId = await repo.createProduct(draft);
+      final resolvedVariants = <AdminProductVariantDraft>[];
+      for (final variant in draft.variants) {
+        final local = variant.imageLocalPath;
+        if (local == null) {
+          resolvedVariants.add(variant);
+          continue;
+        }
+        final imagePath = await repo.uploadVariantImage(filePath: local);
+        resolvedVariants.add(
+            variant.copyWith(imagePath: imagePath, imageLocalPath: null));
+      }
+      final productId = await repo
+          .createProduct(draft.copyWith(variants: resolvedVariants));
       for (final path in imageFilePaths) {
         await repo.addProductImage(productId: productId, filePath: path);
       }
@@ -93,7 +106,18 @@ class AdminProductsController extends _$AdminProductsController {
     final current = state.value ?? const <AdminProductSummary>[];
     state = await AsyncValue.guard(() async {
       final repo = ref.read(adminRepositoryProvider);
-      await repo.updateProduct(draft);
+      final resolvedVariants = <AdminProductVariantDraft>[];
+      for (final variant in draft.variants) {
+        final local = variant.imageLocalPath;
+        if (local == null) {
+          resolvedVariants.add(variant);
+          continue;
+        }
+        final imagePath = await repo.uploadVariantImage(filePath: local);
+        resolvedVariants.add(
+            variant.copyWith(imagePath: imagePath, imageLocalPath: null));
+      }
+      await repo.updateProduct(draft.copyWith(variants: resolvedVariants));
       for (final path in newImageFilePaths) {
         await repo.addProductImage(productId: draft.id!, filePath: path);
       }

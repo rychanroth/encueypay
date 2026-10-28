@@ -122,7 +122,7 @@ final class AdminProductsControllerProvider
 }
 
 String _$adminProductsControllerHash() =>
-    r'23d3485a54983231fe1cd01a5a580765c708790f';
+    r'bf969d74bd7d468c918d0c14f9031f59db74ad65';
 
 /// Admin product catalog (Section 2b, spec §8 "manages Products"): all
 /// statuses, name search, archive/activate, and the draft mutations backing

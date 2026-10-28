@@ -170,7 +170,13 @@ class AdminProductRowDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AdminVariantJoinDto {
-  const AdminVariantJoinDto({this.id, this.name, this.priceMinor, this.status});
+  const AdminVariantJoinDto({
+    this.id,
+    this.name,
+    this.priceMinor,
+    this.imagePath,
+    this.status,
+  });
 
   factory AdminVariantJoinDto.fromJson(Map<String, dynamic> json) =>
       _$AdminVariantJoinDtoFromJson(json);
@@ -178,6 +184,10 @@ class AdminVariantJoinDto {
   final String? id;
   final String? name;
   final int? priceMinor;
+
+  /// `product_variants.image_path` — resolved to a display URL by the
+  /// repository for the edit form's preview, sent back on save.
+  final String? imagePath;
 
   /// `product_status` on the wire — the repository surfaces actives only
   /// (archived variants are unreachable for purchase and stay archived).

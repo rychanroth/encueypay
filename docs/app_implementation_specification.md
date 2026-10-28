@@ -344,10 +344,14 @@ appended as sections land.)
 * Admin product authority: `admin_create_product` / `admin_update_product` /
   `admin_set_product_archived` / `admin_add_product_image` — explicit `is_admin()`
   guards, audit-logged, mirroring the business-portal RPC shapes. `admin_create_product`
-  auto-creates a 'Default' variant (null price → tracks base price) so carts stay
+  auto-creates a 'Default' variant (null price → tracks base price, §1.2) so carts stay
   strictly variant-based; the original owner-guarded RPCs were removed (Section 9).
-  The product form now authors variants inline at creation (Part F); the
-  update RPC does not touch variants.
+  The product form authors variants inline at creation (Part F); the update RPC
+  (20261015000002) syncs the full authored list — id rows update in place, new rows
+  insert, removed rows archive. **Hybrid pricing (2026-10-28):** authored rows require
+  name + price and carry an optional `image_path` (uploaded to the `product_images`
+  bucket before the RPC); the Default row's blank price keeps tracking the base.
+  The never-read `attributes` column was dropped (20261028000003).
 * `products_admin_read` lets the admin list see archived products;
   `product_images_admin_all` + storage `product_images_admin_write/delete` give admin
   full image-row and binary management. Path convention amended by the

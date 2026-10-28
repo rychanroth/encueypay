@@ -124,9 +124,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         data: (state) {
           final detail = state.detail;
           final product = detail.product;
+          // Selection falls back to the product's default variant — the
+          // page (price, CTA, carousel) always reflects a concrete variant
+          // (user feedback 2026-10-28).
           final selected = detail.variants
-              .where((variant) => variant.id == _selectedVariantId)
+              .where((variant) =>
+                  variant.id ==
+                  (_selectedVariantId ?? detail.product.defaultVariantId))
               .firstOrNull;
+          // The page price follows the selected variant (hybrid pricing:
+          // effectivePriceMinor falls back to the base price for the
+          // tracking Default variant).
+          final pagePriceMinor =
+              selected?.effectivePriceMinor(product) ?? detail.fromPriceMinor;
           final carouselImages = _carouselImages(product, selected);
           // Coupon chip (Section 9): coupon-backed promotion for this
           // product — brand scope beats platform.
@@ -201,19 +211,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 12),
                           // Dual-currency price (DESIGN.md §1.4): USD
-                          // primary, KHR approximation secondary.
+                          // primary, KHR approximation secondary — the
+                          // selected variant's price once one is selected.
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
                             children: [
                               Text(
-                                Money(detail.fromPriceMinor).formatUsd(),
+                                Money(pagePriceMinor).formatUsd(),
                                 style: AppTypography.priceHighlight
                                     .copyWith(fontSize: 24),
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '≈ ${Money(detail.fromPriceMinor).formatKhr()}',
+                                '≈ ${Money(pagePriceMinor).formatKhr()}',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
@@ -377,8 +388,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             children: [
                               const Text('Add to Cart'),
                               Text(
-                                '${Money(detail.fromPriceMinor).formatUsd()}'
-                                ' · ≈ ${Money(detail.fromPriceMinor).formatKhr()}',
+                                '${Money(pagePriceMinor).formatUsd()}'
+                                ' · ≈ ${Money(pagePriceMinor).formatKhr()}',
                                 style: theme.textTheme.labelSmall,
                               ),
                             ],

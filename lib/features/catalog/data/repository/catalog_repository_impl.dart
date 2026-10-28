@@ -220,6 +220,9 @@ class CatalogRepositoryImpl implements ICatalogRepository {
               .whereType<Map<String, dynamic>>())
           .map(ProductVariantDto.fromJson)
           .map((d) => d.toDomain(resolveImageUrl: _publicUrl))
+          // Archived variants are soft-deleted rows (order_items keeps
+          // referencing them) — customers never see them.
+          .where((variant) => variant.status != ProductStatus.archived)
           .toList();
       final reviews = ((data['reviews'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())

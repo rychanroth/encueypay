@@ -14,7 +14,6 @@ abstract class ProductVariant with _$ProductVariant {
     required String id,
     required String productId,
     required String name,
-    Map<String, dynamic>? attributes,
     required int? priceMinor,
     String? imageUrl,
     required ProductStatus status,
