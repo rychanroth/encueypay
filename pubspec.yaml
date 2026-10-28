@@ -57,9 +57,14 @@ dependencies:
 
   # One-tap current location → address autofill (Section 6b; user-approved
   # 2026-10-21 per GLOBAL-04). Device GPS via geolocator + platform reverse
-  # geocoders via geocoding — no API key, no Maps Platform billing.
+  # geocoders via geocoding.
   geolocator: ^14.0.1
   geocoding: ^5.0.0
+
+  # Verification map on the address form (Section 6b; user-approved
+  # 2026-10-21 per GLOBAL-04 — supersedes the earlier no-map-display
+  # decision). Restricted per-app key; mobile map display is unbilled.
+  google_maps_flutter: ^2.18.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -644,6 +644,7 @@ constants per feature.
   | `file_picker` ^13 | Proof/image picking (user-approved 2026-09-24) |
   | `geolocator` ^14 | Device location — one-tap locate for address autofill (user-approved 2026-10-21) |
   | `geocoding` ^5 | Platform reverse geocoding for address autofill (user-approved 2026-10-21) |
+  | `google_maps_flutter` ^2.18 | Verification map on the address form — Maps SDK display, restricted per-app key (user-approved 2026-10-21) |
   | `freezed` + `freezed_annotation` | Immutable entities & states (user-approved 2026-09-24 — DOMAIN-01/PRES-02) |
   | `dio` ^5.11.1 | *Role undefined in this contract — MUST NOT be used until the user defines it* |
   | `go_router_builder` ^4.5.0 | *Role undefined in this contract — MUST NOT be used; navigation is name-based (ROUTE-02)* |

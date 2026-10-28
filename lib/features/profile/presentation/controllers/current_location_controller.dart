@@ -14,22 +14,30 @@ class CurrentLocationController extends _$CurrentLocationController {
   @override
   Future<LocatedAddress?> build() async => null;
 
-  /// Resolves the position and reverse-geocodes it. Mirrors the outcome
-  /// into state for the busy indicator; failures stay observable in state
-  /// as [Failure] — the screen reads them and snackbars.
-  Future<LocatedAddress?> locate() async {
+  /// Resolves the position and reverse-geocodes it. Returns the located
+  /// coordinates + address (address null when the geocoder finds nothing)
+  /// so the verification map can render even without a resolvable address;
+  /// null on failure — failures stay observable in state as [Failure] (the
+  /// screen reads them and snackbars).
+  Future<({double latitude, double longitude, LocatedAddress? address})?>
+  locate() async {
     state = const AsyncLoading<LocatedAddress?>();
-    final result = await AsyncValue.guard(() async {
+    ({double latitude, double longitude, LocatedAddress? address})? located;
+    state = await AsyncValue.guard(() async {
       final repository = ref.read(locationRepositoryProvider);
       final coordinates = await repository.currentPosition();
-      return repository.reverseGeocode(
+      final address = await repository.reverseGeocode(
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
       );
+      located = (
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        address: address,
+      );
+      return address;
     });
-    state = result;
-    // Riverpod 3: `.value` is null on error/loading (the old valueOrNull).
-    return result.value;
+    return located;
   }
 
   /// Settings hand-off for the permission-denied snackbar action; the

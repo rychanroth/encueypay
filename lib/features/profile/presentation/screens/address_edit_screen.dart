@@ -6,6 +6,7 @@ import '../../../../core/domain/failures.dart';
 import '../../domain/entities/address.dart';
 import '../controllers/addresses_controller.dart';
 import '../controllers/current_location_controller.dart';
+import '../widgets/current_location_map.dart';
 
 /// Create (address == null) or edit an existing address. The edited address
 /// is passed via the router's `extra` (ROUTE-02: navigation by name).
@@ -32,6 +33,14 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       TextEditingController(text: widget.address?.line2);
   late final _cityController =
       TextEditingController(text: widget.address?.city);
+
+  /// The located fix once "Use my current location" succeeds — drives the
+  /// verification map.
+  ({double latitude, double longitude})? _locatedCoordinates;
+
+  /// Maps SDK key via dart-define (config/.env); empty → the map section
+  /// shows a setup notice instead of a blank gray map.
+  static const _mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   @override
   void dispose() {
@@ -63,15 +72,15 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     if (!hasError && mounted) context.pop();
   }
 
-  /// One-tap locate (spec B.6): position → reverse geocode → prefill. Only
-  /// fills empty fields — typed values are never overwritten silently.
+  /// One-tap locate (spec B.6): position → reverse geocode → verification
+  /// map + prefill. Only fills empty fields — typed values are never
+  /// overwritten silently.
   Future<void> _useCurrentLocation() async {
     final notifier = ref.read(currentLocationControllerProvider.notifier);
-    await notifier.locate();
+    final located = await notifier.locate();
     if (!mounted) return;
-    final located = ref.read(currentLocationControllerProvider);
-    if (located.hasError) {
-      final failure = located.error;
+    if (located == null) {
+      final failure = ref.read(currentLocationControllerProvider).error;
       if (failure is! Failure) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -86,34 +95,36 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         ));
       return;
     }
-    final result = located.value;
-    if (result == null) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text(
-            "Couldn't determine an address from your location — please enter it manually.",
-          ),
-        ));
-      return;
-    }
+    setState(() {
+      _locatedCoordinates = (
+        latitude: located.latitude,
+        longitude: located.longitude,
+      );
+    });
     var filled = false;
-    if (result.line1.isNotEmpty && _line1Controller.text.trim().isEmpty) {
-      _line1Controller.text = result.line1;
-      filled = true;
-    }
-    final city = result.city;
-    if (city != null && _cityController.text.trim().isEmpty) {
-      _cityController.text = city;
-      filled = true;
+    final address = located.address;
+    if (address != null) {
+      if (address.line1.isNotEmpty && _line1Controller.text.trim().isEmpty) {
+        _line1Controller.text = address.line1;
+        filled = true;
+      }
+      final city = address.city;
+      if (city != null && _cityController.text.trim().isEmpty) {
+        _cityController.text = city;
+        filled = true;
+      }
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(filled
-            ? 'Filled from your current location — please review.'
-            : 'Address fields already have values — nothing changed.'),
+        content: Text(switch ((filled, address)) {
+          (true, _) =>
+            'Filled from your current location — verify the pin and details.',
+          (false, null) =>
+            "Couldn't determine an address from your location — please enter it manually.",
+          (false, _) => 'Address fields already have values — nothing changed.',
+        }),
       ));
   }
 
@@ -125,6 +136,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     final isLocating = ref.watch(
       currentLocationControllerProvider.select((async) => async.isLoading),
     );
+    final theme = Theme.of(context);
 
     ref.listen(addressesControllerProvider, (previous, next) {
       final error = next.hasError ? next.error : null;
@@ -144,6 +156,54 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // ---- Location (spec B.6): one-tap fix + verification map ----
+            Text(
+              'Location',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: isLocating ? null : _useCurrentLocation,
+              icon: isLocating
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location_outlined),
+              label: const Text('Use my current location'),
+            ),
+            if (_locatedCoordinates != null) ...[
+              const SizedBox(height: 12),
+              if (_mapsApiKey.isNotEmpty)
+                CurrentLocationMap(
+                  latitude: _locatedCoordinates!.latitude,
+                  longitude: _locatedCoordinates!.longitude,
+                )
+              else
+                Text(
+                  'Map unavailable — add MAPS_API_KEY to config/.env and '
+                  'android/key.properties (see docs/REMOTE_SETUP.md).',
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              const SizedBox(height: 4),
+              Text(
+                'Verify the pin matches your location — then review the '
+                'fields below.',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
+            const Divider(height: 32),
+            // ---- Address form ----
+            Text(
+              'Address',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _labelController,
               decoration: const InputDecoration(
@@ -176,18 +236,6 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
               keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: isLocating ? null : _useCurrentLocation,
-              icon: isLocating
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.my_location_outlined),
-              label: const Text('Use my current location'),
             ),
             const SizedBox(height: 12),
             TextFormField(
