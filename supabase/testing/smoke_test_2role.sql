@@ -29,9 +29,6 @@ select pg_temp.assert_eq((select full_name from public.users where id='11111111-
 -- static promotion (SQL-editor path; auth.uid() is null here → allowed)
 update public.users set active_role = 'admin' where id = '22222222-2222-2222-2222-222222222222';
 
-insert into public.businesses (owner_id, name, status)
-values ('33333333-3333-3333-3333-333333333333', 'Smoke Store', 'active');
-
 -- ======================================================== admin: catalog
 BEGIN;
 SET LOCAL role authenticated;
@@ -45,7 +42,6 @@ select pg_temp.assert_eq((select count(*) from public.brands where name='Smoke B
 select public.create_category('Smoke Cat') as cat_id \gset
 
 select public.admin_create_product(
-  (select id from public.businesses limit 1),
   :'cat_id'::uuid,
   'Smoke Product', 'desc', 10000,
   (select id from public.brands limit 1),
@@ -57,8 +53,7 @@ select (select id from public.product_variants where product_id=:'product_id'::u
 select (select id from public.brands limit 1) as brand_id \gset
 
 select public.admin_create_product(
-  (select id from public.businesses limit 1), :'cat_id'::uuid,
-  'Cheap Product', 'desc', 5000, NULL, 100, '[]'::jsonb) as product2_id \gset
+  :'cat_id'::uuid, 'Cheap Product', 'desc', 5000, NULL, 100, '[]'::jsonb) as product2_id \gset
 
 select public.create_platform_promotion('Smoke Promo','d','percent',10,'SMOKE10',0,NULL,NULL,NULL) as promo_id \gset
 select pg_temp.assert_eq((select count(*) from public.coupons where code='SMOKE10')::text, '1', 'promotion+coupon atomic');
@@ -72,7 +67,7 @@ select pg_temp.assert_eq((select status::text from public.banners where id=:'ban
 select public.moderate_banner(:'banner_id'::uuid, 'approve');
 select pg_temp.assert_eq((select status::text from public.banners where id=:'banner_id'::uuid), 'approved', 'banner approved');
 
-update public.platform_settings set delivery_fee_minor = 2000, qr_account_id = 'smoke-qr@bank' where id = 1;
+update public.platform_settings set delivery_fee_minor = 2000 where id = 1;
 select pg_temp.assert_eq((select count(*) from public.audit_logs)::text, '8', 'admin mutations audited');
 COMMIT;
 
@@ -110,7 +105,6 @@ select pg_temp.assert_eq((select discount_minor::text from public.orders where i
 select pg_temp.assert_eq((select total_minor::text from public.orders where id=:'order1'::uuid), '29000', 'total = subtotal - discount + fee');
 select pg_temp.assert_eq((select method::text || ':' || status::text || ':' || amount_minor::text from public.payments where order_id=:'order1'::uuid), 'qr:pending:29000', 'qr payment pending');
 select pg_temp.assert_eq((select count(*) from public.order_items where order_id=:'order1'::uuid)::text, '1', 'order_items on order directly');
-select pg_temp.assert_eq((select business_name from public.order_items where order_id=:'order1'::uuid), 'Smoke Store', 'business_name snapshot');
 select pg_temp.assert_eq((select discount_minor::text from public.order_coupons where order_id=:'order1'::uuid), '3000', 'historical coupon record');
 select pg_temp.assert_eq((select stock::text from public.products where id=:'product_id'::uuid), '7', 'stock deducted 10→7');
 select pg_temp.assert_eq((select count(*) from public.cart_items)::text, '0', 'cart cleared');
@@ -120,8 +114,6 @@ select pg_temp.assert_eq((select count(*) from public.notifications)::text, '0',
 select (select id from public.order_items where order_id=:'order1'::uuid) as oi_id \gset
 
 -- QR flow: register payload → webhook settles (service role)
-select public.register_qr_payment(:'order1'::uuid, '00020101021SmokePayload');
-select pg_temp.assert_eq((select qr_md5 from public.payments where order_id=:'order1'::uuid), md5('00020101021SmokePayload'), 'qr_md5 computed server-side');
 select pg_temp.assert_eq((select status::text from public.payments where order_id=:'order1'::uuid), 'pending', 'register keeps status pending');
 COMMIT;
 
@@ -134,9 +126,20 @@ SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
 
 DO $$
+declare
+  v_order uuid;
 begin
+  -- psql does not interpolate :vars inside dollar quotes — the id is
+  -- looked up here instead.
+  select o.id into v_order
+    from public.orders o join public.payments p on p.order_id = o.id
+   where o.status = 'pending' and p.method = 'qr' and p.status = 'pending'
+   limit 1;
+  if v_order is null then
+    raise exception 'SMOKE FAIL: no pending QR order found';
+  end if;
   begin
-    perform public.confirm_qr_payment(:'order1'::uuid, 'unauthorized');
+    perform public.confirm_qr_payment(v_order, 'unauthorized');
     raise exception 'authenticated callers must not settle payments';
   exception when insufficient_privilege then
     null; -- expected: EXECUTE revoked from PUBLIC, service-role-only
@@ -195,48 +198,46 @@ SET LOCAL request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","r
 select pg_temp.assert_eq((select (public.get_customer_dashboard()->>'total_spending_minor')), '29000', 'dashboard spending counts delivered order');
 COMMIT;
 
--- ====================================================== customer: return
+-- ==================================================== customer: QR cancel
 BEGIN;
 SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
-select public.request_return(:'order1'::uuid,
-  jsonb_build_array(jsonb_build_object('order_item_id', :'oi_id'::uuid, 'quantity', 1, 'reason', 'broken'))) as ret_id \gset
+-- unpaid QR order: cancellable (nothing to refund)
+select public.add_cart_item(:'variant_id'::uuid, 1);
+select public.create_order_from_cart(:'addr_id'::uuid, 'qr', ARRAY[]::text[], '') as order3 \gset
+select public.cancel_order(:'order3'::uuid);
+select pg_temp.assert_eq((select status::text from public.orders where id=:'order3'::uuid), 'cancelled', 'unpaid QR order cancelled');
+select pg_temp.assert_eq((select stock::text from public.products where id=:'product_id'::uuid), '7', 'stock restored after unpaid QR cancel');
 
-DO $outer$
-declare v_new_request uuid; v_order uuid; v_oi uuid;
-begin
-  select id into v_order from public.orders where status = 'delivered' limit 1;
-  select id into v_oi from public.order_items where order_id = v_order limit 1;
-  begin
-    -- second return of the same item must fail (one return per item)
-    insert into public.return_requests (order_id, customer_id)
-    values (v_order, auth.uid()) returning id into v_new_request;
-    insert into public.return_items (return_request_id, order_item_id, quantity)
-    values (v_new_request, v_oi, 1);
-    raise exception 'NO-ERROR-SENTINEL';
-  exception when unique_violation then
-    raise notice 'ok - one return per order item enforced';
-  when others then
-    if sqlerrm = 'NO-ERROR-SENTINEL' then
-      raise exception 'SMOKE FAIL: duplicate return item allowed';
-    end if;
-  end;
-end $outer$;
-COMMIT;
-
--- ================================================= admin: return + refund
-BEGIN;
+-- paid QR order: NOT cancellable by the customer (refunds out of scope)
+select public.add_cart_item(:'variant_id'::uuid, 1);
+select public.create_order_from_cart(:'addr_id'::uuid, 'qr', ARRAY[]::text[], '') as order4 \gset
+SET LOCAL role service_role;
+select public.confirm_qr_payment(:'order4'::uuid, 'webhook-dry-run-4');
 SET LOCAL role authenticated;
-SET LOCAL request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
-
-select public.admin_process_return(:'ret_id'::uuid, true);
-select pg_temp.assert_eq((select status::text from public.payments where order_id=:'order1'::uuid), 'refund_required', 'verified payment routed to refund_required');
-select public.mark_refunded(:'order1'::uuid, 'REF123');
-select pg_temp.assert_eq((select status::text from public.payments where order_id=:'order1'::uuid), 'refunded', 'refund recorded');
-select public.admin_complete_return(:'ret_id'::uuid);
-select pg_temp.assert_eq((select status::text from public.return_requests where id=:'ret_id'::uuid), 'completed', 'return completed');
-select pg_temp.assert_eq((select status::text from public.orders where id=:'order1'::uuid), 'returned', 'order marked returned');
+SET LOCAL request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+DO $outer$
+declare
+  v_order uuid;
+begin
+  select o.id into v_order
+    from public.orders o join public.payments p on p.order_id = o.id
+   where o.status = 'pending' and p.method = 'qr' and p.status = 'transaction_verified'
+   limit 1;
+  if v_order is null then
+    raise exception 'SMOKE FAIL: no paid QR order found';
+  end if;
+  perform public.cancel_order(v_order);
+  raise exception 'NO-ERROR-SENTINEL';
+exception when others then
+  if sqlerrm = 'NO-ERROR-SENTINEL' then
+    raise exception 'SMOKE FAIL: paid QR order was cancellable';
+  end if;
+  raise notice 'ok - paid QR cancel rejected (%)', sqlerrm;
+end $outer$;
+select pg_temp.assert_eq((select status::text from public.orders where id=:'order4'::uuid), 'pending', 'order4 stays pending');
+select pg_temp.assert_eq((select stock::text from public.products where id=:'product_id'::uuid), '6', 'stock NOT restored for paid QR');
 COMMIT;
 
 -- ==================================================== customer: cancel path
