@@ -27,26 +27,38 @@ ProductCardActions productCardActions(
   final inWishlist = wishlistItems.any((item) => item.productId == product.id);
   final messenger = ScaffoldMessenger.of(context);
 
+  void showFailure(Failure failure) {
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(failure.message)));
+  }
+
   Future<void> run(Future<void> Function() action) async {
     try {
       await action();
     } on Failure catch (failure) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+      showFailure(failure);
     } catch (error, stackTrace) {
       // DATA-05: presentation never sees raw exceptions — classify first.
-      final failure = mapRepositoryError(error, stackTrace);
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+      showFailure(mapRepositoryError(error, stackTrace));
     }
+  }
+
+  /// Wishlist actions route through here. Controller mutations mirror
+  /// failures into their state instead of rethrowing (PRES-03), so a
+  /// rejected add/remove is surfaced from state — without this, a failing
+  /// write looks exactly like a no-op on every heart surface.
+  Future<void> runWishlist(Future<void> Function() action) async {
+    await run(action);
+    final wishlistState = ref.read(wishlistControllerProvider);
+    final failure = wishlistState.hasError ? wishlistState.error : null;
+    if (failure is Failure) showFailure(failure);
   }
 
   return ProductCardActions(
     inWishlist: inWishlist,
     inCart: inCart,
-    onToggleWishlist: () => run(
+    onToggleWishlist: () => runWishlist(
       () => inWishlist
           ? ref
               .read(wishlistControllerProvider.notifier)

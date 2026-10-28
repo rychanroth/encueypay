@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,7 @@ import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
+import '../../domain/failures.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
@@ -39,6 +41,9 @@ final homeBranch = StatefulShellBranch(
           builder: (context, state) => Consumer(
             builder: (context, ref, _) {
               final productId = state.pathParameters['id']!;
+              // Captured before the async gap — the toggle callback
+              // surfaces failures after awaiting the mutation.
+              final messenger = ScaffoldMessenger.of(context);
               // Wishlist state rides along with the cart callback — both
               // wired here in the composition root (ARCH-04, ROUTE-08).
               final inWishlist = ref.watch(
@@ -57,6 +62,14 @@ final homeBranch = StatefulShellBranch(
                     await wishlist.remove(productId: productId);
                   } else {
                     await wishlist.add(productId: productId);
+                  }
+                  // Mutations mirror failures into state (PRES-03) — surface
+                  // them, or a rejected write looks like a no-op here.
+                  final failure = ref.read(wishlistControllerProvider).error;
+                  if (failure is Failure) {
+                    messenger
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(SnackBar(content: Text(failure.message)));
                   }
                 },
                 onAddToCart: (variantId, quantity) async {
