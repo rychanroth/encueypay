@@ -6,6 +6,7 @@ import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_reports_controller.dart';
 
@@ -186,28 +187,48 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen> {
                     title: 'Best sellers',
                     entries: [
                       for (final item in report.bestSellers)
-                        (item.name, '${item.units} sold'),
+                        (
+                          name: item.name,
+                          metric: '${item.units} sold',
+                          imageUrl: item.imageUrl,
+                          fallbackIcon: Icons.inventory_2_outlined,
+                        ),
                     ],
                   ),
                   _RankedSection(
                     title: 'Top categories',
                     entries: [
                       for (final item in report.topCategories)
-                        (item.name, '${item.units} sold'),
+                        (
+                          name: item.name,
+                          metric: '${item.units} sold',
+                          imageUrl: item.imageUrl,
+                          fallbackIcon: Icons.category_outlined,
+                        ),
                     ],
                   ),
                   _RankedSection(
                     title: 'Brand revenue',
                     entries: [
                       for (final item in report.brandRevenue)
-                        (item.name, Money(item.revenueMinor).formatUsd()),
+                        (
+                          name: item.name,
+                          metric: Money(item.revenueMinor).formatUsd(),
+                          imageUrl: item.imageUrl,
+                          fallbackIcon: Icons.sell_outlined,
+                        ),
                     ],
                   ),
                   _RankedSection(
                     title: 'Customer purchase frequency',
                     entries: [
                       for (final item in report.purchaseFrequency)
-                        (item.name, '${item.orders} order(s)'),
+                        (
+                          name: item.name,
+                          metric: '${item.orders} order(s)',
+                          imageUrl: item.imageUrl,
+                          fallbackIcon: Icons.person_outline,
+                        ),
                     ],
                   ),
                   Text(
@@ -356,7 +377,11 @@ class _RankedSection extends StatelessWidget {
   const _RankedSection({required this.title, required this.entries});
 
   final String title;
-  final List<(String, String)> entries;
+
+  /// Image-aware ranking rows — the thumbnails make the rankings
+  /// recognizable at a glance (user feedback 2026-10-28).
+  final List<({String name, String metric, String? imageUrl, IconData? fallbackIcon})>
+      entries;
 
   @override
   Widget build(BuildContext context) {
@@ -371,16 +396,34 @@ class _RankedSection extends StatelessWidget {
           ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              radius: 12,
-              backgroundColor: theme.colorScheme.secondaryContainer,
-              child:
-                  Text('${index + 1}', style: theme.textTheme.labelSmall),
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 12,
+                  backgroundColor: theme.colorScheme.secondaryContainer,
+                  child:
+                      Text('${index + 1}', style: theme.textTheme.labelSmall),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: ClipRRect(
+                    borderRadius: AppRadii.br12,
+                    child: MonogramImage(
+                      imageUrl: entry.imageUrl,
+                      name: entry.name,
+                      icon: entry.fallbackIcon,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            title: Text(entry.$1,
+            title: Text(entry.name,
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             trailing: Text(
-              entry.$2,
+              entry.metric,
               style: AppTypography.labelMedium.copyWith(
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),

@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_audit_controller.dart';
@@ -70,17 +73,44 @@ class AdminDashboardScreen extends ConsumerWidget {
                   Text('Top sellers',
                       style: theme.textTheme.titleSmall
                           ?.copyWith(fontWeight: FontWeight.bold)),
-                  for (final bestSeller in kpis.bestSellers.take(3))
+                  for (final (index, bestSeller)
+                      in kpis.bestSellers.take(3).indexed)
                     ListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        radius: 12,
-                        backgroundColor: theme.colorScheme.primaryContainer,
-                        child: Text(
-                          '${kpis.bestSellers.indexOf(bestSeller) + 1}',
-                          style: theme.textTheme.labelSmall,
-                        ),
+                      // Deep-link into the product's detail page — the
+                      // thumbnail doubles as the affordance.
+                      onTap: bestSeller.productId == null
+                          ? null
+                          : () => context.pushNamed(
+                                AppRoutes.productDetail,
+                                pathParameters: {'id': bestSeller.productId!},
+                              ),
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            radius: 12,
+                            backgroundColor:
+                                theme.colorScheme.primaryContainer,
+                            child: Text(
+                              '${index + 1}',
+                              style: theme.textTheme.labelSmall,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: ClipRRect(
+                              borderRadius: AppRadii.br12,
+                              child: MonogramImage(
+                                imageUrl: bestSeller.imageUrl,
+                                name: bestSeller.name,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       title: Text(bestSeller.name,
                           maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -270,33 +300,59 @@ class _TrendBars extends StatelessWidget {
       (max, point) => point.salesMinor > max ? point.salesMinor : max,
     );
     return SizedBox(
-      height: 120,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      height: 140,
+      child: Column(
         children: [
-          for (final point in trend)
-            Expanded(
-              child: Tooltip(
-                message:
-                    '${point.day.month}/${point.day.day}: '
-                    '${Money(point.salesMinor).format()}',
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: FractionallySizedBox(
-                    heightFactor: point.salesMinor / maxSales,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(4),
-                        ),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (final point in trend)
+                  Expanded(
+                    child: Tooltip(
+                      message:
+                          '${point.day.month}/${point.day.day}: '
+                          '${Money(point.salesMinor).format()}',
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        // Zero-sales days render as a stub instead of
+                        // collapsing to nothing — "no sales" is data too.
+                        child: point.salesMinor == 0
+                            ? Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                  height: 3,
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.outlineVariant,
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : FractionallySizedBox(
+                                heightFactor: point.salesMinor / maxSales,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    // Brand navy — primaryContainer blended
+                                    // into the card surface behind it.
+                                    color: AppColors.primaryRoyal,
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(6),
+                                    ),
+                                  ),
+                                  alignment: Alignment.topCenter,
+                                ),
+                              ),
                       ),
-                      alignment: Alignment.topCenter,
                     ),
                   ),
-                ),
-              ),
+              ],
             ),
+          ),
+          const SizedBox(height: 4),
+          // Baseline — anchors the bars against the card surface.
+          Container(height: 1, color: theme.colorScheme.outlineVariant),
         ],
       ),
     );

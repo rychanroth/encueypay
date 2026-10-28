@@ -188,6 +188,14 @@ class AdminRepositoryImpl implements IAdminRepository {
     return _client.storage.from('product_images').getPublicUrl(storagePath);
   }
 
+  /// Nullable variant for optional image paths (RPC-added best-seller
+  /// thumbnails); http(s) passthrough as everywhere else.
+  String? _productImageUrlOrNull(String? storagePath) {
+    if (storagePath == null || storagePath.isEmpty) return null;
+    if (storagePath.startsWith('http')) return storagePath;
+    return _client.storage.from('product_images').getPublicUrl(storagePath);
+  }
+
   @override
   Future<List<AdminProductSummary>> fetchProducts({String? query}) async {
     try {
@@ -275,6 +283,9 @@ class AdminRepositoryImpl implements IAdminRepository {
             .map((row) => AdminBestSeller(
                   name: row['name'] as String? ?? '',
                   units: (row['units'] as num?)?.toInt() ?? 0,
+                  productId: row['product_id'] as String?,
+                  imageUrl:
+                      _productImageUrlOrNull(row['image_path'] as String?),
                 ))
             .toList(),
         topCategories: ((map['top_categories'] as List? ?? const [])
@@ -282,6 +293,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             .map((row) => AdminCategoryUnits(
                   name: row['name'] as String? ?? '',
                   units: (row['units'] as num?)?.toInt() ?? 0,
+                  imageUrl: _catalogImageUrl(row['image_path'] as String?),
                 ))
             .toList(),
         purchaseFrequency:
@@ -290,6 +302,9 @@ class AdminRepositoryImpl implements IAdminRepository {
                 .map((row) => AdminCustomerFrequency(
                       name: row['name'] as String? ?? '',
                       orders: (row['orders'] as num?)?.toInt() ?? 0,
+                      // Stored display-ready (the same convention the
+                      // profile screen renders with).
+                      imageUrl: row['avatar_url'] as String?,
                     ))
                 .toList(),
         // DESIGN.md §5.2.4 executive extras (additive RPC keys).
@@ -312,6 +327,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             .map((row) => AdminBrandRevenue(
                   name: row['name'] as String? ?? '',
                   revenueMinor: (row['revenue_minor'] as num?)?.toInt() ?? 0,
+                  imageUrl: _catalogImageUrl(row['image_path'] as String?),
                 ))
             .toList(),
       );
@@ -560,6 +576,9 @@ class AdminRepositoryImpl implements IAdminRepository {
             .map((row) => AdminBestSeller(
                   name: row['name'] as String? ?? '',
                   units: (row['units'] as int?) ?? 0,
+                  productId: row['product_id'] as String?,
+                  imageUrl:
+                      _productImageUrlOrNull(row['image_path'] as String?),
                 ))
             .toList(),
         salesTrend: ((map['sales_trend'] as List? ?? const [])

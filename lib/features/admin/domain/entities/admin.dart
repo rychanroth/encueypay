@@ -298,6 +298,7 @@ abstract class AdminBrandRevenue with _$AdminBrandRevenue {
   const factory AdminBrandRevenue({
     required String name,
     required int revenueMinor,
+    String? imageUrl,
   }) = _AdminBrandRevenue;
 }
 
@@ -306,6 +307,7 @@ abstract class AdminCategoryUnits with _$AdminCategoryUnits {
   const factory AdminCategoryUnits({
     required String name,
     required int units,
+    String? imageUrl,
   }) = _AdminCategoryUnits;
 }
 
@@ -314,6 +316,7 @@ abstract class AdminCustomerFrequency with _$AdminCustomerFrequency {
   const factory AdminCustomerFrequency({
     required String name,
     required int orders,
+    String? imageUrl,
   }) = _AdminCustomerFrequency;
 }
 
@@ -322,6 +325,9 @@ abstract class AdminBestSeller with _$AdminBestSeller {
   const factory AdminBestSeller({
     required String name,
     required int units,
+    // Product detail deep-link + thumbnail (dashboard Top Sellers).
+    String? productId,
+    String? imageUrl,
   }) = _AdminBestSeller;
 }
 
