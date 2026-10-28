@@ -45,30 +45,35 @@ class CategoriesAdminScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('New category'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            const SizedBox(height: 12),
-            CatalogImagePickField(
-              label: 'Category image (optional)',
-              onPicked: (path) => pickedLocalPath = path,
-            ),
-            const SizedBox(height: 12),
-            SearchablePickerField(
-              label: 'Parent category (optional)',
-              allowEmpty: true,
-              options: [
-                for (final category in topLevelCategories)
-                  SearchableOption(id: category.id, label: category.name),
-              ],
-              valueId: parentId,
-              onChanged: (value) => parentId = value,
-            ),
-          ],
+        // StatefulBuilder: the picker's onChanged mutates [parentId], and
+        // without a dialog-scoped setState the field keeps displaying the
+        // stale selection while Save still reads the updated value.
+        content: StatefulBuilder(
+          builder: (context, dialogSetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              const SizedBox(height: 12),
+              CatalogImagePickField(
+                label: 'Category image (optional)',
+                onPicked: (path) => pickedLocalPath = path,
+              ),
+              const SizedBox(height: 12),
+              SearchablePickerField(
+                label: 'Parent category (optional)',
+                allowEmpty: true,
+                options: [
+                  for (final category in topLevelCategories)
+                    SearchableOption(id: category.id, label: category.name),
+                ],
+                valueId: parentId,
+                onChanged: (value) => dialogSetState(() => parentId = value),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -122,32 +127,35 @@ class CategoriesAdminScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Edit category'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            const SizedBox(height: 12),
-            CatalogImagePickField(
-              label: 'Category image (optional)',
-              existingUrl: category.imageUrl,
-              existingPath: category.imagePath,
-              onPicked: (path) => pickedLocalPath = path,
-            ),
-            const SizedBox(height: 12),
-            SearchablePickerField(
-              label: 'Parent category (optional)',
-              allowEmpty: true,
-              options: [
-                for (final candidate in topLevelCategories)
-                  SearchableOption(id: candidate.id, label: candidate.name),
-              ],
-              valueId: parentId,
-              onChanged: (value) => parentId = value,
-            ),
-          ],
+        // StatefulBuilder — same reason as the create dialog above.
+        content: StatefulBuilder(
+          builder: (context, dialogSetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              const SizedBox(height: 12),
+              CatalogImagePickField(
+                label: 'Category image (optional)',
+                existingUrl: category.imageUrl,
+                existingPath: category.imagePath,
+                onPicked: (path) => pickedLocalPath = path,
+              ),
+              const SizedBox(height: 12),
+              SearchablePickerField(
+                label: 'Parent category (optional)',
+                allowEmpty: true,
+                options: [
+                  for (final candidate in topLevelCategories)
+                    SearchableOption(id: candidate.id, label: candidate.name),
+                ],
+                valueId: parentId,
+                onChanged: (value) => dialogSetState(() => parentId = value),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

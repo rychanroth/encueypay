@@ -120,8 +120,16 @@ class _SearchSheetState extends State<_SearchSheet> {
             .where((option) =>
                 option.label.toLowerCase().contains(normalized))
             .toList();
+    // viewInsets lift the sheet above the keyboard — the autofocused search
+    // field opens the keyboard immediately, and without this the list is
+    // covered the moment it appears.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
