@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../features/cart/domain/entities/cart_item.dart';
 import '../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../features/catalog/domain/entities/product.dart';
 import '../../features/catalog/presentation/widgets/product_card_actions.dart';
 import '../../features/wishlist/presentation/controllers/wishlist_controller.dart';
+import 'app_routes.dart';
 import '../domain/failures.dart';
 import '../network/failure_mapping.dart';
+import '../network/supabase_client_provider.dart';
 
 /// Builds the ProductCard quick-action wiring for one product (Section 6).
 /// Lives in the composition root (core/router, ROUTE-08): it watches the
@@ -28,9 +31,21 @@ ProductCardActions productCardActions(
   final messenger = ScaffoldMessenger.of(context);
 
   void showFailure(Failure failure) {
+    // A dead/exported session surfaces as 'Not authenticated' — offer the
+    // way back instead of a dead-end message.
+    final needsSignIn =
+        ref.read(supabaseClientProvider).auth.currentUser == null;
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(failure.message)));
+      ..showSnackBar(SnackBar(
+        content: Text(failure.message),
+        action: needsSignIn
+            ? SnackBarAction(
+                label: 'Sign in',
+                onPressed: () => context.goNamed(AppRoutes.login),
+              )
+            : null,
+      ));
   }
 
   Future<void> run(Future<void> Function() action) async {

@@ -8,6 +8,7 @@ import '../../../features/catalog/presentation/screens/product_detail_screen.dar
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../../domain/failures.dart';
+import '../../network/supabase_client_provider.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
@@ -67,9 +68,23 @@ final homeBranch = StatefulShellBranch(
                   // them, or a rejected write looks like a no-op here.
                   final failure = ref.read(wishlistControllerProvider).error;
                   if (failure is Failure) {
+                    final needsSignIn = ref
+                        .read(supabaseClientProvider)
+                        .auth
+                        .currentUser ==
+                        null;
                     messenger
                       ..hideCurrentSnackBar()
-                      ..showSnackBar(SnackBar(content: Text(failure.message)));
+                      ..showSnackBar(SnackBar(
+                        content: Text(failure.message),
+                        action: needsSignIn
+                            ? SnackBarAction(
+                                label: 'Sign in',
+                                onPressed: () =>
+                                    context.goNamed(AppRoutes.login),
+                              )
+                            : null,
+                      ));
                   }
                 },
                 onAddToCart: (variantId, quantity) async {
