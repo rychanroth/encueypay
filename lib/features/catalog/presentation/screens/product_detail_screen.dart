@@ -162,7 +162,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       const SizedBox(height: 8),
                       _VariantThumbnailRow(
                         variants: detail.variants,
-                        selectedId: _selectedVariantId,
+                        // The effective selection (default preselected) —
+                        // the rail highlights what the page already shows.
+                        selectedId:
+                            _selectedVariantId ?? product.defaultVariantId,
+                        defaultVariantId: product.defaultVariantId,
+                        defaultImageUrl: product.imageUrls.isEmpty
+                            ? null
+                            : product.imageUrls.first,
                         onSelect: _selectVariant,
                       ),
                     ],
@@ -549,16 +556,22 @@ class _StockLine extends StatelessWidget {
 }
 
 /// Variant thumbnail rail (Section 9): each variant's image (monogram
-/// fallback) over its name; the selected one is highlighted.
+/// fallback) over its name; the selected one is highlighted. The default
+/// variant's chip falls back to the base product image — selecting it
+/// displays exactly that image, so the chip shows it too.
 class _VariantThumbnailRow extends StatelessWidget {
   const _VariantThumbnailRow({
     required this.variants,
     required this.selectedId,
+    required this.defaultVariantId,
+    required this.defaultImageUrl,
     required this.onSelect,
   });
 
   final List<ProductVariant> variants;
   final String? selectedId;
+  final String? defaultVariantId;
+  final String? defaultImageUrl;
   final ValueChanged<ProductVariant> onSelect;
 
   @override
@@ -574,6 +587,11 @@ class _VariantThumbnailRow extends StatelessWidget {
         itemBuilder: (context, index) {
           final variant = variants[index];
           final isSelected = variant.id == selectedId;
+          // The default variant has no image of its own — its chip shows
+          // the base product image, matching what selecting it displays.
+          // Other image-less variants keep the monogram.
+          final chipImageUrl = variant.imageUrl ??
+              (variant.id == defaultVariantId ? defaultImageUrl : null);
           return InkWell(
             onTap: () => onSelect(variant),
             borderRadius: AppRadii.br12,
@@ -593,7 +611,7 @@ class _VariantThumbnailRow extends StatelessWidget {
                     ),
                   ),
                   child: MonogramImage(
-                    imageUrl: variant.imageUrl,
+                    imageUrl: chipImageUrl,
                     name: variant.name,
                   ),
                 ),
