@@ -34,11 +34,13 @@ WishlistProductJoinDto _$WishlistProductJoinDtoFromJson(
   brands: json['brands'] == null
       ? null
       : WishlistBrandJoinDto.fromJson(json['brands'] as Map<String, dynamic>),
-  productRatings: json['product_ratings'] == null
-      ? null
-      : WishlistRatingJoinDto.fromJson(
-          json['product_ratings'] as Map<String, dynamic>,
-        ),
+  productRatings:
+      (json['product_ratings'] as List<dynamic>?)
+          ?.map(
+            (e) => WishlistRatingJoinDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
   productVariants:
       (json['product_variants'] as List<dynamic>?)
           ?.map(

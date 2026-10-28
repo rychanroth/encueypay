@@ -32,7 +32,7 @@ class WishlistProductJoinDto {
     this.stock = 0,
     this.status,
     this.brands,
-    this.productRatings,
+    this.productRatings = const [],
     this.productVariants = const [],
     this.productImages = const [],
   });
@@ -52,9 +52,12 @@ class WishlistProductJoinDto {
   final WishlistBrandJoinDto? brands;
 
   /// Rating aggregate from the `product_ratings` view — feeds the shared
-  /// ProductCard's star row.
-  @JsonKey(name: 'product_ratings')
-  final WishlistRatingJoinDto? productRatings;
+  /// ProductCard's star row. PostgREST resolves products → the view as
+  /// one-to-many (a JSON array, `[]` when unrated) — the same shape
+  /// ProductDto already parses. This was a single-object field until the
+  /// first-ever wishlist row hit the cast and crashed the fetch.
+  @JsonKey(name: 'product_ratings', defaultValue: [])
+  final List<WishlistRatingJoinDto> productRatings;
 
   /// Price-only variant embed — the first id is the default variant for the
   /// card quick actions (Section 6).
