@@ -94,8 +94,8 @@ where not exists (
 -- --------------------------------------------------------------- variants
 -- Every product gets the auto-'Default' variant (null price tracks the
 -- base price — a variant-less product is un-buyable, map §10.3).
-insert into public.product_variants (product_id, name, attributes)
-select p.id, 'Default', '{}'::jsonb
+insert into public.product_variants (product_id, name)
+select p.id, 'Default'
 from public.products p
 where not exists (
   select 1 from public.product_variants pv
@@ -104,8 +104,8 @@ where not exists (
 
 -- A few priced variants to exercise the variant picker and the server rule
 -- coalesce(variant.price, product.base_price) (§1.2).
-insert into public.product_variants (product_id, name, price_minor, attributes)
-select p.id, v.name, v.price_minor, v.attributes::jsonb
+insert into public.product_variants (product_id, name, price_minor)
+select p.id, v.name, v.price_minor
 from (values
   ('Nordwind Trail Backpack 30L', 'Olive', 6499, '{"color": "Olive"}'),
   ('Nordwind Trail Backpack 30L', 'Sand', 5999, '{"color": "Sand"}'),
