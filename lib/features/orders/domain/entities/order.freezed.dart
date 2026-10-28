@@ -347,7 +347,9 @@ $OrderPaymentCopyWith<$Res>? get payment {
 /// @nodoc
 mixin _$OrderItemSnapshot {
 
- String get id; String get productId; String get productName; int get unitPriceMinor; int get quantity; int get lineTotalMinor; String? get variantName; int get discountMinor; String? get imageUrl;
+ String get id; String get productId; String get productName; int get unitPriceMinor; int get quantity; int get lineTotalMinor; String? get variantName; int get discountMinor; String? get imageUrl;/// One review per order item (DB unique constraint) — drives the
+/// order detail screen's Reviewed state.
+ bool get reviewed;
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -358,16 +360,16 @@ $OrderItemSnapshotCopyWith<OrderItemSnapshot> get copyWith => _$OrderItemSnapsho
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.reviewed, reviewed) || other.reviewed == reviewed));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,discountMinor,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,productId,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,discountMinor,imageUrl,reviewed);
 
 @override
 String toString() {
-  return 'OrderItemSnapshot(id: $id, productId: $productId, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, discountMinor: $discountMinor, imageUrl: $imageUrl)';
+  return 'OrderItemSnapshot(id: $id, productId: $productId, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, discountMinor: $discountMinor, imageUrl: $imageUrl, reviewed: $reviewed)';
 }
 
 
@@ -378,7 +380,7 @@ abstract mixin class $OrderItemSnapshotCopyWith<$Res>  {
   factory $OrderItemSnapshotCopyWith(OrderItemSnapshot value, $Res Function(OrderItemSnapshot) _then) = _$OrderItemSnapshotCopyWithImpl;
 @useResult
 $Res call({
- String id, String productId, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, int discountMinor, String? imageUrl
+ String id, String productId, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, int discountMinor, String? imageUrl, bool reviewed
 });
 
 
@@ -395,7 +397,7 @@ class _$OrderItemSnapshotCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? discountMinor = null,Object? imageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? discountMinor = null,Object? imageUrl = freezed,Object? reviewed = null,}) {
   return _then(OrderItemSnapshot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
@@ -406,7 +408,8 @@ as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotal
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
 as String?,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,reviewed: null == reviewed ? _self.reviewed : reviewed // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -491,10 +494,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor,  String? imageUrl,  bool reviewed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderItemSnapshot() when $default != null:
-return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor,_that.imageUrl);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor,_that.imageUrl,_that.reviewed);case _:
   return orElse();
 
 }
@@ -512,10 +515,10 @@ return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor,  String? imageUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor,  String? imageUrl,  bool reviewed)  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemSnapshot():
-return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor,_that.imageUrl);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor,_that.imageUrl,_that.reviewed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -532,10 +535,10 @@ return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor,  String? imageUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String productName,  int unitPriceMinor,  int quantity,  int lineTotalMinor,  String? variantName,  int discountMinor,  String? imageUrl,  bool reviewed)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemSnapshot() when $default != null:
-return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor,_that.imageUrl);case _:
+return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.discountMinor,_that.imageUrl,_that.reviewed);case _:
   return null;
 
 }
@@ -547,7 +550,7 @@ return $default(_that.id,_that.productId,_that.productName,_that.unitPriceMinor,
 
 
 class _OrderItemSnapshot implements OrderItemSnapshot {
-  const _OrderItemSnapshot({required this.id, required this.productId, required this.productName, required this.unitPriceMinor, required this.quantity, required this.lineTotalMinor, this.variantName, this.discountMinor = 0, this.imageUrl});
+  const _OrderItemSnapshot({required this.id, required this.productId, required this.productName, required this.unitPriceMinor, required this.quantity, required this.lineTotalMinor, this.variantName, this.discountMinor = 0, this.imageUrl, this.reviewed = false});
   
 
 @override final  String id;
@@ -559,6 +562,9 @@ class _OrderItemSnapshot implements OrderItemSnapshot {
 @override final  String? variantName;
 @override@JsonKey() final  int discountMinor;
 @override final  String? imageUrl;
+/// One review per order item (DB unique constraint) — drives the
+/// order detail screen's Reviewed state.
+@override@JsonKey() final  bool reviewed;
 
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
@@ -570,16 +576,16 @@ _$OrderItemSnapshotCopyWith<_OrderItemSnapshot> get copyWith => __$OrderItemSnap
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.reviewed, reviewed) || other.reviewed == reviewed));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,discountMinor,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,productId,productName,unitPriceMinor,quantity,lineTotalMinor,variantName,discountMinor,imageUrl,reviewed);
 
 @override
 String toString() {
-  return 'OrderItemSnapshot(id: $id, productId: $productId, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, discountMinor: $discountMinor, imageUrl: $imageUrl)';
+  return 'OrderItemSnapshot(id: $id, productId: $productId, productName: $productName, unitPriceMinor: $unitPriceMinor, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, discountMinor: $discountMinor, imageUrl: $imageUrl, reviewed: $reviewed)';
 }
 
 
@@ -590,7 +596,7 @@ abstract mixin class _$OrderItemSnapshotCopyWith<$Res> implements $OrderItemSnap
   factory _$OrderItemSnapshotCopyWith(_OrderItemSnapshot value, $Res Function(_OrderItemSnapshot) _then) = __$OrderItemSnapshotCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String productId, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, int discountMinor, String? imageUrl
+ String id, String productId, String productName, int unitPriceMinor, int quantity, int lineTotalMinor, String? variantName, int discountMinor, String? imageUrl, bool reviewed
 });
 
 
@@ -607,7 +613,7 @@ class __$OrderItemSnapshotCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemSnapshot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? discountMinor = null,Object? imageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? productName = null,Object? unitPriceMinor = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? discountMinor = null,Object? imageUrl = freezed,Object? reviewed = null,}) {
   return _then(_OrderItemSnapshot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
@@ -618,7 +624,8 @@ as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotal
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
 as String?,discountMinor: null == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
 as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,reviewed: null == reviewed ? _self.reviewed : reviewed // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

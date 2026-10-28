@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/domain/failures.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/domain/failures.dart';
+import '../../../../core/router/app_routes.dart';
 import '../controllers/review_compose_controller.dart';
 
 /// Compose the (single, read-only after submission) review for a purchased
 /// OrderItem (spec §29). Target passed via the router `extra` record —
-/// no cross-feature import (ARCH-04).
+/// no cross-feature import (ARCH-04). On success the customer is sent to
+/// the product page, where the review is immediately visible.
 class ReviewComposeScreen extends ConsumerStatefulWidget {
   const ReviewComposeScreen({
     super.key,
     required this.orderItemId,
+    required this.productId,
     required this.productName,
   });
 
   final String orderItemId;
+  final String productId;
   final String productName;
 
   @override
@@ -42,7 +46,18 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
           text: _textController.text.trim(),
         );
     final hasError = ref.read(reviewComposeControllerProvider).hasError;
-    if (!hasError && mounted) context.pop();
+    if (!hasError && mounted) {
+      if (widget.productId.isEmpty) {
+        context.pop();
+        return;
+      }
+      // The review lives on the product page — go there directly (replaces
+      // this screen, so back returns to the order).
+      context.pushReplacementNamed(
+        AppRoutes.productDetail,
+        pathParameters: {'id': widget.productId},
+      );
+    }
   }
 
   @override

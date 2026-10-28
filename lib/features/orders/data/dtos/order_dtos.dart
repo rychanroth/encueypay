@@ -66,6 +66,7 @@ class OrderItemJoinDto {
     this.variantName,
     this.discountMinor,
     this.products,
+    this.reviews = const [],
   });
 
   factory OrderItemJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -87,6 +88,11 @@ class OrderItemJoinDto {
   /// snapshot carries no image of its own).
   @JsonKey(name: 'products')
   final OrderItemProductJoinDto? products;
+
+  /// The item's review, if any — `reviews_order_item_id_key` enforces one
+  /// per order item, so a non-empty list marks the item as reviewed.
+  @JsonKey(name: 'reviews', defaultValue: <Map<String, dynamic>>[])
+  final List<Map<String, dynamic>> reviews;
 
   Map<String, dynamic> toJson() => _$OrderItemJoinDtoToJson(this);
 }

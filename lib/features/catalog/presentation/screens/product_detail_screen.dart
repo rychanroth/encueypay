@@ -282,7 +282,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
+                          const Divider(),
                           Text('Description', style: theme.textTheme.titleMedium),
                           const SizedBox(height: 4),
                           Text(
@@ -294,7 +295,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           // Reviews (Section 9): always rendered — the empty
                           // state was previously unreachable because the
                           // whole section was gated on a non-empty list.
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
+                          const Divider(),
                           Text(
                             'Reviews (${detail.reviews.length})'
                             '${detail.averageRating == null ? '' : ' · ${detail.averageRating!.toStringAsFixed(1)}★'}',
@@ -313,8 +315,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           else
                             for (final review in detail.reviews)
                               ReviewCard(review: review),
+                          const SizedBox(height: AppSpacing.lg),
+                          const Divider(),
                           // Mocked merchandising blocks (Section 9).
                           _PurchaseFacts(),
+                          const SizedBox(height: AppSpacing.lg),
                           _SpecificationsHighlights(),
                         ],
                       ),

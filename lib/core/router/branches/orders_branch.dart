@@ -22,10 +22,11 @@ final ordersBranch = StatefulShellBranch(
           name: AppRoutes.reviewCompose,
           path: 'review',
           builder: (context, state) {
-            final (orderItemId, productName) =
-                state.extra! as (String, String);
+            final (orderItemId, productId, productName) =
+                state.extra! as (String, String, String);
             return ReviewComposeScreen(
               orderItemId: orderItemId,
+              productId: productId,
               productName: productName,
             );
           },

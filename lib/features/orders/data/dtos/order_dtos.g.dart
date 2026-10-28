@@ -65,6 +65,11 @@ OrderItemJoinDto _$OrderItemJoinDtoFromJson(Map<String, dynamic> json) =>
           : OrderItemProductJoinDto.fromJson(
               json['products'] as Map<String, dynamic>,
             ),
+      reviews:
+          (json['reviews'] as List<dynamic>?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .toList() ??
+          [],
     );
 
 Map<String, dynamic> _$OrderItemJoinDtoToJson(OrderItemJoinDto instance) =>
@@ -78,6 +83,7 @@ Map<String, dynamic> _$OrderItemJoinDtoToJson(OrderItemJoinDto instance) =>
       'quantity': instance.quantity,
       'line_total_minor': instance.lineTotalMinor,
       'products': instance.products,
+      'reviews': instance.reviews,
     };
 
 OrderItemProductJoinDto _$OrderItemProductJoinDtoFromJson(

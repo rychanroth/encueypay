@@ -44,6 +44,7 @@ extension OrderItemJoinDtoX on OrderItemJoinDto {
       quantity: quantity,
       lineTotalMinor: lineTotalMinor,
       imageUrl: imageUrl,
+      reviewed: reviews.isNotEmpty,
     );
   }
 }

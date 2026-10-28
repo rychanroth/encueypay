@@ -62,6 +62,10 @@ abstract class OrderItemSnapshot with _$OrderItemSnapshot {
     String? variantName,
     @Default(0) int discountMinor,
     String? imageUrl,
+
+    /// One review per order item (DB unique constraint) — drives the
+    /// order detail screen's Reviewed state.
+    @Default(false) bool reviewed,
   }) = _OrderItemSnapshot;
 }
 

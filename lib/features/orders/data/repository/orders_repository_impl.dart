@@ -29,6 +29,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       'shipping_line2, shipping_city, '
       'order_items(id, product_id, product_name, variant_name, '
       'unit_price_minor, discount_minor, quantity, line_total_minor, '
+      'reviews(id), '
       'products(product_images(storage_path, sort_order))), '
       'payments(method, status, amount_minor)';
 

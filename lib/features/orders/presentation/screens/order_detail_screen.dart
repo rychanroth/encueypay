@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_colors.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
@@ -204,6 +207,25 @@ class OrderDetailScreen extends ConsumerWidget {
                   ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
+                    // Thumbnail + tap-through (same contract as the §19
+                    // items section above).
+                    leading: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: ClipRRect(
+                        borderRadius: AppRadii.br12,
+                        child: MonogramImage(
+                          imageUrl: item.imageUrl,
+                          name: item.productName,
+                        ),
+                      ),
+                    ),
+                    onTap: item.productId.isEmpty
+                        ? null
+                        : () => context.pushNamed(
+                              AppRoutes.productDetail,
+                              pathParameters: {'id': item.productId},
+                            ),
                     title: Text(
                       item.variantName == null
                           ? item.productName
@@ -211,13 +233,27 @@ class OrderDetailScreen extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: TextButton(
-                      onPressed: () => context.pushNamed(
-                        AppRoutes.reviewCompose,
-                        extra: (item.id, item.productName),
-                      ),
-                      child: const Text('Review'),
-                    ),
+                    trailing: item.reviewed
+                        ? const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline,
+                                  size: 16, color: AppColors.accentEmerald),
+                              SizedBox(width: 4),
+                              Text('Reviewed'),
+                            ],
+                          )
+                        : TextButton(
+                            onPressed: () => context.pushNamed(
+                              AppRoutes.reviewCompose,
+                              extra: (
+                                item.id,
+                                item.productId,
+                                item.productName
+                              ),
+                            ),
+                            child: const Text('Review'),
+                          ),
                   ),
               ],
               if (order.cancellable) ...[
