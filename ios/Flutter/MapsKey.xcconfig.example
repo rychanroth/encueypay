@@ -1,5 +1,0 @@
-// Template for the Google Maps SDK key. The real file (MapsKey.xcconfig) is
-// gitignored:
-//   cp MapsKey.xcconfig.example MapsKey.xcconfig
-//   then paste your key below. See docs/REMOTE_SETUP.md ("Google Maps SDK key").
-MAPS_API_KEY =

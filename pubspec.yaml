@@ -62,9 +62,12 @@ dependencies:
   geocoding: ^5.0.0
 
   # Verification map on the address form (Section 6b; user-approved
-  # 2026-10-21 per GLOBAL-04 — supersedes the earlier no-map-display
-  # decision). Restricted per-app key; mobile map display is unbilled.
-  google_maps_flutter: ^2.18.1
+  # 2026-10-21 per GLOBAL-04). OpenStreetMap raster tiles via flutter_map —
+  # no API key, no billing (google_maps_flutter was dropped the same day
+  # when GCP's Cambodia billing prepayment proved unacceptable). Tiles are
+  # cached in memory only — no local persistence (CORE-05).
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -9,10 +9,10 @@ are in order; **[OPTIONAL]** ones can be skipped (each says what you lose).
 
 ## What moves where
 
-The app itself reads exactly **three** variables (`lib/main.dart` reads
-`SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`; the address-form map reads
-`MAPS_API_KEY`). Everything else in `config/.env` belongs to the *local
-stack*, not the app — each row below says where it lives remotely.
+The app itself reads exactly **two** variables (`lib/main.dart`):
+`SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY`. Everything else in
+`config/.env` belongs to the *local stack*, not the app — each row below
+says where it lives remotely.
 
 | Piece | Local (today) | Remote | Where it goes |
 |---|---|---|---|
@@ -24,33 +24,9 @@ stack*, not the app — each row below says where it lives remotely.
 | `SUPABASE_REDIRECT_URI` | loopback callback for local auth | not needed — hosted callback is fixed | Google Cloud Console (Phase 5) |
 | OAuth deep link | already in manifests | also register in dashboard | Phase 5 |
 | `PAYWAY_BASE_URL` / `PAYWAY_MERCHANT_ID` / `PAYWAY_API_KEY` | `supabase/functions/.env` (via `[edge_runtime.secrets]`) | `supabase secrets set` | Phase 6 |
-| `MAPS_API_KEY` | `config/.env` + `android/key.properties` + `ios/Flutter/MapsKey.xcconfig` | same restricted key — Maps SDK display is unbilled | see "Google Maps SDK key" below |
 | push-dispatch DB webhook | `http://kong:8000/...` | `https://<ref>.supabase.co/functions/v1/push-dispatch` | Phase 7 [OPTIONAL] |
 | `network_security_config.xml`, `adb reverse` | needed for LAN http / device loopback | **not needed** — https over the internet | nothing to do |
 | `supabase/config.toml` | local-only config | **does not apply remotely** — the dashboard is the config | — |
-
-### Google Maps SDK key (address-form verification map)
-
-The map on the address form needs a **restricted** Maps SDK key. Map
-display on mobile is not billed, but the key comes from a billing-enabled
-GCP project:
-
-1. Google Cloud Console → **APIs & Services → Library** → enable
-   **Maps SDK for Android** and **Maps SDK for iOS**.
-2. **Credentials → Create credentials → API key**, then restrict it:
-   *Application restrictions* → Android app (package
-   `com.example.encueypay` + your SHA-1 — `cd android && ./gradlew
-   signingReport`) and/or iOS app (bundle id); *API restrictions* →
-   only the two Maps SDKs.
-3. Put the key in all three places (an empty `MAPS_API_KEY=` placeholder
-   already sits at the tail of `config/.env`):
-   - `config/.env` → `MAPS_API_KEY=…` — dart-define; an empty value makes
-     the app show the map-unavailable notice instead of a blank map,
-   - `android/key.properties` → `mapsApiKey=…` — fed to the manifest
-     placeholder by `android/app/build.gradle.kts` (missing file = empty
-     key, build still green),
-   - `ios/Flutter/MapsKey.xcconfig` → `MAPS_API_KEY = …` — copied from
-     `MapsKey.xcconfig.example` (the file is gitignored).
 
 ## Phase 0 — Prerequisites [REQUIRED]
 

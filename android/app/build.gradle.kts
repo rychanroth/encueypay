@@ -1,18 +1,7 @@
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-}
-
-// Google Maps SDK key (docs/REMOTE_SETUP.md): the gitignored key.properties
-// feeds the manifest placeholder; the empty fallback keeps builds green
-// without it (the app then shows the map-unavailable notice instead).
-val keyProperties = Properties().apply {
-    val file = rootProject.file("key.properties")
-    if (file.exists()) FileInputStream(file).use { load(it) }
 }
 
 android {
@@ -34,7 +23,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["mapsApiKey"] = keyProperties.getProperty("mapsApiKey", "")
     }
 
     buildTypes {
