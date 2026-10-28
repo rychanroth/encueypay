@@ -15,13 +15,9 @@ final ordersBranch = StatefulShellBranch(
       path: '/orders',
       builder: (context, state) => const OrdersScreen(),
       routes: [
-        GoRoute(
-          name: AppRoutes.orderDetail,
-          path: ':id',
-          builder: (context, state) => OrderDetailScreen(
-            orderId: state.pathParameters['id']!,
-          ),
-        ),
+        // Static sibling FIRST: `review` must not be shadowed by the `:id`
+        // detail route — `/orders/review` previously matched `:id` with
+        // id="review" and crashed the detail fetch (22P02).
         GoRoute(
           name: AppRoutes.reviewCompose,
           path: 'review',
@@ -33,6 +29,13 @@ final ordersBranch = StatefulShellBranch(
               productName: productName,
             );
           },
+        ),
+        GoRoute(
+          name: AppRoutes.orderDetail,
+          path: ':id',
+          builder: (context, state) => OrderDetailScreen(
+            orderId: state.pathParameters['id']!,
+          ),
         ),
       ],
     ),
