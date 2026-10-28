@@ -34,12 +34,10 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
   CustomerOrder get order => widget.order;
 
   /// Still able to move — headline/ETA/courier rows are hidden once the
-  /// order is delivered/cancelled/returned (the timeline renders its own
-  /// callout for the last two).
+  /// order is delivered/cancelled (the timeline renders its own callout).
   bool get _inFlight =>
       order.status != OrderStatus.delivered &&
-      order.status != OrderStatus.cancelled &&
-      order.status != OrderStatus.returned;
+      order.status != OrderStatus.cancelled;
 
   /// Friendly demo copy per in-flight status; null for terminal ones where
   /// the timeline (or the delivered all-checks state) speaks for itself.
@@ -106,7 +104,7 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
               ),
             ],
             // The exact §7A lifecycle — the reveal target; also the direct
-            // presentation for cancelled/returned (its callout).
+            // presentation for the cancelled callout.
             if (_showExactStatus || !_inFlight) ...[
               const SizedBox(height: AppSpacing.md),
               OrderStatusTimeline(status: order.status),

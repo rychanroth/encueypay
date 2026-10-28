@@ -26,11 +26,7 @@ import '../controllers/cart_controller.dart';
 /// Totals are display previews; the server recalculates authoritatively at
 /// checkout (spec §25/§53).
 ///
-/// 2-Role Academic Prototype: the per-business grouping (multi-vendor model,
-/// old spec §9) is flattened to a single list (living spec Part C L-06) —
-/// vendor identity is bypassed in the customer UI; items still carry their
-/// business through the data model and the server keeps pricing per business
-/// at checkout.
+/// Single-vendor model: one flat list — every item belongs to the store.
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 

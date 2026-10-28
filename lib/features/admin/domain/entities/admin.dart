@@ -155,7 +155,6 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
     String? paymentMethod,
     String? paymentStatus,
     @Default([]) List<AdminOrderItem> items,
-    @Default([]) List<AdminReturnRequest> returns,
   }) = _AdminOrderSummary;
 
   const AdminOrderSummary._();
@@ -198,8 +197,7 @@ enum AdminOrderStatus {
   shipped,
   outForDelivery,
   delivered,
-  cancelled,
-  returned;
+  cancelled;
 
   static AdminOrderStatus fromName(String? name) {
     if (name == null) return AdminOrderStatus.pending;
@@ -217,16 +215,6 @@ enum AdminOrderStatus {
         AdminOrderStatus.outForDelivery => 'out_for_delivery',
         _ => name,
       };
-}
-
-/// A customer return request on the order (pending → admin decision).
-@freezed
-abstract class AdminReturnRequest with _$AdminReturnRequest {
-  const factory AdminReturnRequest({
-    required String id,
-    required String status,
-    @Default('') String reason,
-  }) = _AdminReturnRequest;
 }
 
 @freezed

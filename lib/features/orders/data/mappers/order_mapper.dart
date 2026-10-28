@@ -21,17 +21,6 @@ extension OrderDtoX on OrderDto {
       items: items
           .map((item) => item.toDomain(imageUrl: itemImageUrls[item.id]))
           .toList(),
-      returns: returnRequests
-          .map((request) => ReturnRequestInfo(
-                id: request.id,
-                status: ReturnStatus.fromName(request.status),
-                // Aggregate the per-line reasons into one display string.
-                reason: request.returnItems
-                    .map((item) => item.reason)
-                    .where((reason) => reason.isNotEmpty)
-                    .join(' · '),
-              ))
-          .toList(),
       payment: payments == null
           ? null
           : OrderPayment(

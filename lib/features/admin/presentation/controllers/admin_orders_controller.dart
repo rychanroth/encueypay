@@ -6,10 +6,10 @@ import '../../domain/entities/admin.dart';
 part 'admin_orders_controller.g.dart';
 
 /// Admin order oversight + fulfillment (Section 3, spec §8 "manages
-/// Orders"): the admin drives the per-business lifecycle and completes the
-/// delivery administratively while the operator portals are bypassed
-/// (ledger L-07). Mutations persist-then-invalidate (PRES-03); the customer
-/// keeps receiving trigger-generated status notifications.
+/// Orders"): the admin drives the single lifecycle one step at a time
+/// (server-enforced) while the operator portals are bypassed. Mutations
+/// persist-then-invalidate (PRES-03); the customer keeps receiving
+/// trigger-generated status notifications.
 @riverpod
 class AdminOrdersController extends _$AdminOrdersController {
   @override
@@ -35,43 +35,4 @@ class AdminOrdersController extends _$AdminOrdersController {
     });
   }
 
-  /// Section 7D: records the refund on a cancelled order whose payment
-  /// was already verified.
-  Future<void> markRefunded({required String orderId}) async {
-    final current = state.value ?? const <AdminOrderSummary>[];
-    state = await AsyncValue.guard(() async {
-      await ref
-          .read(adminRepositoryProvider)
-          .markRefunded(orderId: orderId);
-      ref.invalidateSelf();
-      return current;
-    });
-  }
-
-  /// Section 7E: completes an approved return (explicit admin action).
-  Future<void> completeReturn({required String returnId}) async {
-    final current = state.value ?? const <AdminOrderSummary>[];
-    state = await AsyncValue.guard(() async {
-      await ref
-          .read(adminRepositoryProvider)
-          .completeReturn(returnId: returnId);
-      ref.invalidateSelf();
-      return current;
-    });
-  }
-
-  Future<void> decideReturn({
-    required String returnId,
-    required bool approve,
-  }) async {
-    final current = state.value ?? const <AdminOrderSummary>[];
-    state = await AsyncValue.guard(() async {
-      await ref.read(adminRepositoryProvider).processReturn(
-            returnId: returnId,
-            approve: approve,
-          );
-      ref.invalidateSelf();
-      return current;
-    });
-  }
 }

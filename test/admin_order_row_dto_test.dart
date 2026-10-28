@@ -28,7 +28,6 @@ void main() {
           'line_total_minor': 5999,
         },
       ],
-      'return_requests': [],
     };
 
     final dto = AdminOrderRowDto.fromJson(json);

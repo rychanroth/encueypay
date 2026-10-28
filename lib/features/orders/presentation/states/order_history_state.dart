@@ -11,8 +11,7 @@ enum OrderHistoryGroup {
   all,
   active,
   completed,
-  cancelled,
-  returned;
+  cancelled;
 
   /// Wire values for the server-side status filter; null = no filter.
   List<String>? get wireStatuses => switch (this) {
@@ -27,7 +26,6 @@ enum OrderHistoryGroup {
           ],
         OrderHistoryGroup.completed => const ['delivered'],
         OrderHistoryGroup.cancelled => const ['cancelled'],
-        OrderHistoryGroup.returned => const ['returned'],
       };
 }
 

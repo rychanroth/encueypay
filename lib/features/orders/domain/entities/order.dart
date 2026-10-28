@@ -24,18 +24,25 @@ abstract class CustomerOrder with _$CustomerOrder {
     @Default('') String note,
     @Default('') String cancellationReason,
     @Default([]) List<OrderItemSnapshot> items,
-    @Default([]) List<ReturnRequestInfo> returns,
     OrderPayment? payment,
   }) = _CustomerOrder;
 
   const CustomerOrder._();
 
-  /// Customer may cancel while the order is still pending/confirmed —
-  /// mirrored from the server rule in cancel_order (§7D refines paid-QR).
-  bool get cancellable =>
-      status == OrderStatus.pending || status == OrderStatus.confirmed;
+  /// Customer may cancel while the order is pending/confirmed — except a
+  /// QR order whose payment already went through (nothing refunds it; the
+  /// server rule in cancel_order enforces the same).
+  bool get cancellable {
+    if (status != OrderStatus.pending && status != OrderStatus.confirmed) {
+      return false;
+    }
+    final payment = this.payment;
+    if (payment == null) return true;
+    return !(payment.method == PaymentMethodKind.qr &&
+        payment.status != PaymentStatusState.pending);
+  }
 
-  /// Delivered orders unlock reviews and returns.
+  /// Delivered orders unlock reviews.
   bool get delivered => status == OrderStatus.delivered;
 }
 
@@ -58,37 +65,6 @@ abstract class OrderItemSnapshot with _$OrderItemSnapshot {
   }) = _OrderItemSnapshot;
 }
 
-/// The customer's return request on this order (Section 7E): its status is
-/// the customer's progress tracker. 'Requested' is the submission act; a
-/// pending request is under review.
-@freezed
-abstract class ReturnRequestInfo with _$ReturnRequestInfo {
-  const factory ReturnRequestInfo({
-    required String id,
-    required ReturnStatus status,
-    @Default('') String reason,
-  }) = _ReturnRequestInfo;
-}
-
-/// The return lifecycle (assignment §7 vocabulary; wire: pending = under
-/// review).
-enum ReturnStatus {
-  pending,
-  approved,
-  rejected,
-  completed;
-
-  static ReturnStatus fromName(String? name) =>
-      ReturnStatus.values.asNameMap()[name] ?? ReturnStatus.pending;
-
-  String get label => switch (this) {
-        ReturnStatus.pending => 'Under review',
-        ReturnStatus.approved => 'Approved — refund pending',
-        ReturnStatus.rejected => 'Rejected',
-        ReturnStatus.completed => 'Completed',
-      };
-}
-
 @freezed
 abstract class OrderPayment with _$OrderPayment {
   const factory OrderPayment({
@@ -107,8 +83,7 @@ enum OrderStatus {
   shipped,
   outForDelivery,
   delivered,
-  cancelled,
-  returned;
+  cancelled;
 
   static OrderStatus fromName(String? name) {
     if (name == null) return OrderStatus.pending;
@@ -128,7 +103,7 @@ enum OrderStatus {
       };
 
   /// Simplified customer-facing label: the nine wire statuses collapse to
-  /// four coarse stages plus the two terminal states. The exact §7A
+  /// four coarse stages plus the terminal state. The exact §7A
   /// vocabulary stays server truth and remains visible through the detail
   /// screen's "Show exact status" reveal; admins always see wire values.
   String get label => switch (this) {
@@ -140,7 +115,6 @@ enum OrderStatus {
         OrderStatus.outForDelivery => 'On its way',
         OrderStatus.delivered => 'Delivered',
         OrderStatus.cancelled => 'Cancelled',
-        OrderStatus.returned => 'Returned',
       };
 }
 
@@ -167,16 +141,13 @@ enum PaymentMethodKind {
 enum PaymentStatusState {
   pending,
   awaitingPaymentVerification,
-  transactionVerified,
-  refundRequired,
-  refunded;
+  transactionVerified;
 
   /// Wire value (snake_case on the wire).
   String get wireName => switch (this) {
         PaymentStatusState.awaitingPaymentVerification =>
           'awaiting_payment_verification',
         PaymentStatusState.transactionVerified => 'transaction_verified',
-        PaymentStatusState.refundRequired => 'refund_required',
         _ => name,
       };
 

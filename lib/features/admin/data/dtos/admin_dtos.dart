@@ -205,7 +205,7 @@ class AdminProductImagePathDto {
 }
 
 /// Wire shape of the `orders` row for admin oversight (Section 3, DATA-01):
-/// customer name, payment, per-business parts, and return requests embedded.
+/// customer name, payment, and order items embedded.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AdminOrderRowDto {
   const AdminOrderRowDto({
@@ -220,7 +220,6 @@ class AdminOrderRowDto {
     this.users,
     this.payments,
     this.items = const [],
-    this.returnRequests = const [],
   });
 
   factory AdminOrderRowDto.fromJson(Map<String, dynamic> json) =>
@@ -248,9 +247,6 @@ class AdminOrderRowDto {
 
   @JsonKey(name: 'order_items', defaultValue: [])
   final List<AdminItemJoinDto> items;
-
-  @JsonKey(name: 'return_requests', defaultValue: [])
-  final List<AdminReturnJoinDto> returnRequests;
 
   Map<String, dynamic> toJson() => _$AdminOrderRowDtoToJson(this);
 }
@@ -286,38 +282,4 @@ class AdminItemJoinDto {
   final String? variantName;
 
   Map<String, dynamic> toJson() => _$AdminItemJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AdminReturnJoinDto {
-  const AdminReturnJoinDto({required this.id, this.status, this.returnItems = const []});
-
-  factory AdminReturnJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminReturnJoinDtoFromJson(json);
-
-  final String id;
-  final String? status;
-
-  /// `return_items` lines — the per-item return reason (the header table
-  /// carries no reason column).
-  @JsonKey(name: 'return_items', defaultValue: [])
-  final List<AdminReturnItemJoinDto> returnItems;
-
-  Map<String, dynamic> toJson() => _$AdminReturnJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class AdminReturnItemJoinDto {
-  const AdminReturnItemJoinDto({this.quantity = 0, this.reason = ''});
-
-  factory AdminReturnItemJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$AdminReturnItemJoinDtoFromJson(json);
-
-  @JsonKey(defaultValue: 0)
-  final int quantity;
-
-  @JsonKey(defaultValue: '')
-  final String reason;
-
-  Map<String, dynamic> toJson() => _$AdminReturnItemJoinDtoToJson(this);
 }

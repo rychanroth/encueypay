@@ -82,7 +82,6 @@ class OrdersScreen extends ConsumerWidget {
                             OrderHistoryGroup.active => 'Active',
                             OrderHistoryGroup.completed => 'Completed',
                             OrderHistoryGroup.cancelled => 'Cancelled',
-                            OrderHistoryGroup.returned => 'Returned',
                           }),
                           selected: historyState.group == group,
                           onSelected: (_) =>
@@ -258,15 +257,6 @@ class _OrderCard extends ConsumerWidget {
                       ),
                       icon: const Icon(Icons.rate_review_outlined, size: 16),
                       label: const Text('Leave Review'),
-                    ),
-                    TextButton.icon(
-                      onPressed: () => context.pushNamed(
-                        AppRoutes.returnRequest,
-                        pathParameters: {'id': order.id},
-                      ),
-                      icon: const Icon(Icons.assignment_return_outlined,
-                          size: 16),
-                      label: const Text('Request Return'),
                     ),
                   ],
                 ],

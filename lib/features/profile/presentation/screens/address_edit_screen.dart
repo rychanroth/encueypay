@@ -6,6 +6,7 @@ import '../../../../core/domain/failures.dart';
 import '../../domain/entities/address.dart';
 import '../controllers/addresses_controller.dart';
 import '../controllers/current_location_controller.dart';
+import '../controllers/profile_controller.dart';
 import '../widgets/current_location_map.dart';
 
 /// Create (address == null) or edit an existing address. The edited address
@@ -37,10 +38,6 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
   /// The located fix once "Use my current location" succeeds — drives the
   /// verification map.
   ({double latitude, double longitude})? _locatedCoordinates;
-
-  /// Maps SDK key via dart-define (config/.env); empty → the map section
-  /// shows a setup notice instead of a blank gray map.
-  static const _mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   @override
   void dispose() {
@@ -146,6 +143,16 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
           ..showSnackBar(SnackBar(content: Text(error.message)));
       }
     });
+    // New addresses prefill the recipient with the customer's own name once
+    // the profile has loaded; the field stays fully editable.
+    if (widget.address == null) {
+      ref.listen(profileControllerProvider, (_, next) {
+        final name = next.value?.fullName ?? '';
+        if (name.isNotEmpty && _recipientController.text.isEmpty) {
+          _recipientController.text = name;
+        }
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -156,50 +163,10 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // ---- Location (spec B.6): one-tap fix + verification map ----
+            // ---- Contact: label, recipient (prefilled with the
+            // customer's name), phone ----
             Text(
-              'Location',
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: isLocating ? null : _useCurrentLocation,
-              icon: isLocating
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.my_location_outlined),
-              label: const Text('Use my current location'),
-            ),
-            if (_locatedCoordinates != null) ...[
-              const SizedBox(height: 12),
-              if (_mapsApiKey.isNotEmpty)
-                CurrentLocationMap(
-                  latitude: _locatedCoordinates!.latitude,
-                  longitude: _locatedCoordinates!.longitude,
-                )
-              else
-                Text(
-                  'Map unavailable — add MAPS_API_KEY to config/.env and '
-                  'android/key.properties (see docs/REMOTE_SETUP.md).',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-              const SizedBox(height: 4),
-              Text(
-                'Verify the pin matches your location — then review the '
-                'fields below.',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
-            const Divider(height: 32),
-            // ---- Address form ----
-            Text(
-              'Address',
+              'Contact',
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
@@ -237,6 +204,40 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
               ),
               keyboardType: TextInputType.phone,
             ),
+            const Divider(height: 32),
+            // ---- Location: one-tap fix + verification map + street
+            // details ----
+            Text(
+              'Location',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: isLocating ? null : _useCurrentLocation,
+              icon: isLocating
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location_outlined),
+              label: const Text('Use my current location'),
+            ),
+            if (_locatedCoordinates != null) ...[
+              const SizedBox(height: 12),
+              CurrentLocationMap(
+                latitude: _locatedCoordinates!.latitude,
+                longitude: _locatedCoordinates!.longitude,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Verify the pin matches your location — then review the '
+                'fields below.',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
             const SizedBox(height: 12),
             TextFormField(
               controller: _line1Controller,

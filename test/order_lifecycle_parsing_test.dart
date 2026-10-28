@@ -43,7 +43,6 @@ void main() {
     test('parses snake_case wire values', () {
       expect(OrderStatus.fromName('out_for_delivery'),
           OrderStatus.outForDelivery);
-      expect(OrderStatus.fromName('returned'), OrderStatus.returned);
     });
   });
 
@@ -62,10 +61,6 @@ void main() {
           PaymentStatusState.awaitingPaymentVerification);
       expect(PaymentStatusState.fromName('transaction_verified'),
           PaymentStatusState.transactionVerified);
-      expect(PaymentStatusState.fromName('refund_required'),
-          PaymentStatusState.refundRequired);
-      expect(
-          PaymentStatusState.fromName('refunded'), PaymentStatusState.refunded);
     });
   });
 }

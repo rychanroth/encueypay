@@ -22,7 +22,6 @@ class OrderDto {
     this.note,
     this.cancellationReason,
     this.items = const [],
-    this.returnRequests = const [],
     this.payments,
   });
 
@@ -48,9 +47,6 @@ class OrderDto {
 
   @JsonKey(name: 'order_items', defaultValue: [])
   final List<OrderItemJoinDto> items;
-
-  @JsonKey(name: 'return_requests', defaultValue: [])
-  final List<ReturnRequestJoinDto> returnRequests;
 
   @JsonKey(name: 'payments')
   final PaymentJoinDto? payments;
@@ -121,44 +117,6 @@ class OrderItemImageJoinDto {
   final int sortOrder;
 
   Map<String, dynamic> toJson() => _$OrderItemImageJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class ReturnRequestJoinDto {
-  const ReturnRequestJoinDto({
-    required this.id,
-    this.status,
-    this.returnItems = const [],
-  });
-
-  factory ReturnRequestJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$ReturnRequestJoinDtoFromJson(json);
-
-  final String id;
-  final String? status;
-
-  /// `return_items` lines — the per-item return reason (the header table
-  /// carries no reason column).
-  @JsonKey(name: 'return_items', defaultValue: [])
-  final List<ReturnItemJoinDto> returnItems;
-
-  Map<String, dynamic> toJson() => _$ReturnRequestJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class ReturnItemJoinDto {
-  const ReturnItemJoinDto({this.quantity = 0, this.reason = ''});
-
-  factory ReturnItemJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$ReturnItemJoinDtoFromJson(json);
-
-  @JsonKey(defaultValue: 0)
-  final int quantity;
-
-  @JsonKey(defaultValue: '')
-  final String reason;
-
-  Map<String, dynamic> toJson() => _$ReturnItemJoinDtoToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

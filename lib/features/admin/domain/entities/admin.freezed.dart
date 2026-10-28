@@ -1976,7 +1976,7 @@ as int?,
 /// @nodoc
 mixin _$AdminOrderSummary {
 
- String get id; String get customerName; int get subtotalMinor; int get discountMinor; int get deliveryFeeMinor; int get totalMinor; DateTime get createdAt; AdminOrderStatus get status; String get cancellationReason; String? get paymentMethod; String? get paymentStatus; List<AdminOrderItem> get items; List<AdminReturnRequest> get returns;
+ String get id; String get customerName; int get subtotalMinor; int get discountMinor; int get deliveryFeeMinor; int get totalMinor; DateTime get createdAt; AdminOrderStatus get status; String get cancellationReason; String? get paymentMethod; String? get paymentStatus; List<AdminOrderItem> get items;
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1987,16 +1987,16 @@ $AdminOrderSummaryCopyWith<AdminOrderSummary> get copyWith => _$AdminOrderSummar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.status, status) || other.status == status)&&(identical(other.cancellationReason, cancellationReason) || other.cancellationReason == cancellationReason)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.returns, returns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.status, status) || other.status == status)&&(identical(other.cancellationReason, cancellationReason) || other.cancellationReason == cancellationReason)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&const DeepCollectionEquality().equals(other.items, items));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,status,cancellationReason,paymentMethod,paymentStatus,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(returns));
+int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,status,cancellationReason,paymentMethod,paymentStatus,const DeepCollectionEquality().hash(items));
 
 @override
 String toString() {
-  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, status: $status, cancellationReason: $cancellationReason, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, items: $items, returns: $returns)';
+  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, status: $status, cancellationReason: $cancellationReason, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, items: $items)';
 }
 
 
@@ -2007,7 +2007,7 @@ abstract mixin class $AdminOrderSummaryCopyWith<$Res>  {
   factory $AdminOrderSummaryCopyWith(AdminOrderSummary value, $Res Function(AdminOrderSummary) _then) = _$AdminOrderSummaryCopyWithImpl;
 @useResult
 $Res call({
- String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, AdminOrderStatus status, String cancellationReason, String? paymentMethod, String? paymentStatus, List<AdminOrderItem> items, List<AdminReturnRequest> returns
+ String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, AdminOrderStatus status, String cancellationReason, String? paymentMethod, String? paymentStatus, List<AdminOrderItem> items
 });
 
 
@@ -2024,7 +2024,7 @@ class _$AdminOrderSummaryCopyWithImpl<$Res>
 
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? status = null,Object? cancellationReason = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? items = null,Object? returns = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? status = null,Object? cancellationReason = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? items = null,}) {
   return _then(AdminOrderSummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,customerName: null == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
@@ -2038,8 +2038,7 @@ as AdminOrderStatus,cancellationReason: null == cancellationReason ? _self.cance
 as String,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as List<AdminOrderItem>,returns: null == returns ? _self.returns : returns // ignore: cast_nullable_to_non_nullable
-as List<AdminReturnRequest>,
+as List<AdminOrderItem>,
   ));
 }
 
@@ -2124,10 +2123,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  AdminOrderStatus status,  String cancellationReason,  String? paymentMethod,  String? paymentStatus,  List<AdminOrderItem> items,  List<AdminReturnRequest> returns)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  AdminOrderStatus status,  String cancellationReason,  String? paymentMethod,  String? paymentStatus,  List<AdminOrderItem> items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminOrderSummary() when $default != null:
-return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.status,_that.cancellationReason,_that.paymentMethod,_that.paymentStatus,_that.items,_that.returns);case _:
+return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.status,_that.cancellationReason,_that.paymentMethod,_that.paymentStatus,_that.items);case _:
   return orElse();
 
 }
@@ -2145,10 +2144,10 @@ return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  AdminOrderStatus status,  String cancellationReason,  String? paymentMethod,  String? paymentStatus,  List<AdminOrderItem> items,  List<AdminReturnRequest> returns)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  AdminOrderStatus status,  String cancellationReason,  String? paymentMethod,  String? paymentStatus,  List<AdminOrderItem> items)  $default,) {final _that = this;
 switch (_that) {
 case _AdminOrderSummary():
-return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.status,_that.cancellationReason,_that.paymentMethod,_that.paymentStatus,_that.items,_that.returns);case _:
+return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.status,_that.cancellationReason,_that.paymentMethod,_that.paymentStatus,_that.items);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2165,10 +2164,10 @@ return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  AdminOrderStatus status,  String cancellationReason,  String? paymentMethod,  String? paymentStatus,  List<AdminOrderItem> items,  List<AdminReturnRequest> returns)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String customerName,  int subtotalMinor,  int discountMinor,  int deliveryFeeMinor,  int totalMinor,  DateTime createdAt,  AdminOrderStatus status,  String cancellationReason,  String? paymentMethod,  String? paymentStatus,  List<AdminOrderItem> items)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminOrderSummary() when $default != null:
-return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.status,_that.cancellationReason,_that.paymentMethod,_that.paymentStatus,_that.items,_that.returns);case _:
+return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMinor,_that.deliveryFeeMinor,_that.totalMinor,_that.createdAt,_that.status,_that.cancellationReason,_that.paymentMethod,_that.paymentStatus,_that.items);case _:
   return null;
 
 }
@@ -2180,7 +2179,7 @@ return $default(_that.id,_that.customerName,_that.subtotalMinor,_that.discountMi
 
 
 class _AdminOrderSummary extends AdminOrderSummary {
-  const _AdminOrderSummary({required this.id, required this.customerName, required this.subtotalMinor, required this.discountMinor, required this.deliveryFeeMinor, required this.totalMinor, required this.createdAt, required this.status, this.cancellationReason = '', this.paymentMethod, this.paymentStatus,  List<AdminOrderItem> items = const [],  List<AdminReturnRequest> returns = const []}): _items = items,_returns = returns,super._();
+  const _AdminOrderSummary({required this.id, required this.customerName, required this.subtotalMinor, required this.discountMinor, required this.deliveryFeeMinor, required this.totalMinor, required this.createdAt, required this.status, this.cancellationReason = '', this.paymentMethod, this.paymentStatus,  List<AdminOrderItem> items = const []}): _items = items,super._();
   
 
 @override final  String id;
@@ -2201,13 +2200,6 @@ class _AdminOrderSummary extends AdminOrderSummary {
   return EqualUnmodifiableListView(_items);
 }
 
- final  List<AdminReturnRequest> _returns;
-@override@JsonKey() List<AdminReturnRequest> get returns {
-  if (_returns is EqualUnmodifiableListView) return _returns;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_returns);
-}
-
 
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
@@ -2219,16 +2211,16 @@ _$AdminOrderSummaryCopyWith<_AdminOrderSummary> get copyWith => __$AdminOrderSum
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.status, status) || other.status == status)&&(identical(other.cancellationReason, cancellationReason) || other.cancellationReason == cancellationReason)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._returns, _returns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminOrderSummary&&(identical(other.id, id) || other.id == id)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.status, status) || other.status == status)&&(identical(other.cancellationReason, cancellationReason) || other.cancellationReason == cancellationReason)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&const DeepCollectionEquality().equals(other._items, _items));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,status,cancellationReason,paymentMethod,paymentStatus,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_returns));
+int get hashCode => Object.hash(runtimeType,id,customerName,subtotalMinor,discountMinor,deliveryFeeMinor,totalMinor,createdAt,status,cancellationReason,paymentMethod,paymentStatus,const DeepCollectionEquality().hash(_items));
 
 @override
 String toString() {
-  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, status: $status, cancellationReason: $cancellationReason, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, items: $items, returns: $returns)';
+  return 'AdminOrderSummary(id: $id, customerName: $customerName, subtotalMinor: $subtotalMinor, discountMinor: $discountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor, createdAt: $createdAt, status: $status, cancellationReason: $cancellationReason, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, items: $items)';
 }
 
 
@@ -2239,7 +2231,7 @@ abstract mixin class _$AdminOrderSummaryCopyWith<$Res> implements $AdminOrderSum
   factory _$AdminOrderSummaryCopyWith(_AdminOrderSummary value, $Res Function(_AdminOrderSummary) _then) = __$AdminOrderSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, AdminOrderStatus status, String cancellationReason, String? paymentMethod, String? paymentStatus, List<AdminOrderItem> items, List<AdminReturnRequest> returns
+ String id, String customerName, int subtotalMinor, int discountMinor, int deliveryFeeMinor, int totalMinor, DateTime createdAt, AdminOrderStatus status, String cancellationReason, String? paymentMethod, String? paymentStatus, List<AdminOrderItem> items
 });
 
 
@@ -2256,7 +2248,7 @@ class __$AdminOrderSummaryCopyWithImpl<$Res>
 
 /// Create a copy of AdminOrderSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? status = null,Object? cancellationReason = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? items = null,Object? returns = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? customerName = null,Object? subtotalMinor = null,Object? discountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,Object? createdAt = null,Object? status = null,Object? cancellationReason = null,Object? paymentMethod = freezed,Object? paymentStatus = freezed,Object? items = null,}) {
   return _then(_AdminOrderSummary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,customerName: null == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
@@ -2270,8 +2262,7 @@ as AdminOrderStatus,cancellationReason: null == cancellationReason ? _self.cance
 as String,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
-as List<AdminOrderItem>,returns: null == returns ? _self._returns : returns // ignore: cast_nullable_to_non_nullable
-as List<AdminReturnRequest>,
+as List<AdminOrderItem>,
   ));
 }
 
@@ -2538,269 +2529,6 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotalMinor // ignore: cast_nullable_to_non_nullable
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
 as String?,
-  ));
-}
-
-
-}
-
-/// @nodoc
-mixin _$AdminReturnRequest {
-
- String get id; String get status; String get reason;
-/// Create a copy of AdminReturnRequest
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$AdminReturnRequestCopyWith<AdminReturnRequest> get copyWith => _$AdminReturnRequestCopyWithImpl<AdminReturnRequest>(this as AdminReturnRequest, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminReturnRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.reason, reason) || other.reason == reason));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,id,status,reason);
-
-@override
-String toString() {
-  return 'AdminReturnRequest(id: $id, status: $status, reason: $reason)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $AdminReturnRequestCopyWith<$Res>  {
-  factory $AdminReturnRequestCopyWith(AdminReturnRequest value, $Res Function(AdminReturnRequest) _then) = _$AdminReturnRequestCopyWithImpl;
-@useResult
-$Res call({
- String id, String status, String reason
-});
-
-
-
-
-}
-/// @nodoc
-class _$AdminReturnRequestCopyWithImpl<$Res>
-    implements $AdminReturnRequestCopyWith<$Res> {
-  _$AdminReturnRequestCopyWithImpl(this._self, this._then);
-
-  final AdminReturnRequest _self;
-  final $Res Function(AdminReturnRequest) _then;
-
-/// Create a copy of AdminReturnRequest
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? status = null,Object? reason = null,}) {
-  return _then(AdminReturnRequest(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,reason: null == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-}
-
-
-/// Adds pattern-matching-related methods to [AdminReturnRequest].
-extension AdminReturnRequestPatterns on AdminReturnRequest {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminReturnRequest value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _AdminReturnRequest() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminReturnRequest value)  $default,){
-final _that = this;
-switch (_that) {
-case _AdminReturnRequest():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminReturnRequest value)?  $default,){
-final _that = this;
-switch (_that) {
-case _AdminReturnRequest() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String status,  String reason)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _AdminReturnRequest() when $default != null:
-return $default(_that.id,_that.status,_that.reason);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String status,  String reason)  $default,) {final _that = this;
-switch (_that) {
-case _AdminReturnRequest():
-return $default(_that.id,_that.status,_that.reason);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String status,  String reason)?  $default,) {final _that = this;
-switch (_that) {
-case _AdminReturnRequest() when $default != null:
-return $default(_that.id,_that.status,_that.reason);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-
-
-class _AdminReturnRequest implements AdminReturnRequest {
-  const _AdminReturnRequest({required this.id, required this.status, this.reason = ''});
-  
-
-@override final  String id;
-@override final  String status;
-@override@JsonKey() final  String reason;
-
-/// Create a copy of AdminReturnRequest
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$AdminReturnRequestCopyWith<_AdminReturnRequest> get copyWith => __$AdminReturnRequestCopyWithImpl<_AdminReturnRequest>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminReturnRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.reason, reason) || other.reason == reason));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,id,status,reason);
-
-@override
-String toString() {
-  return 'AdminReturnRequest(id: $id, status: $status, reason: $reason)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$AdminReturnRequestCopyWith<$Res> implements $AdminReturnRequestCopyWith<$Res> {
-  factory _$AdminReturnRequestCopyWith(_AdminReturnRequest value, $Res Function(_AdminReturnRequest) _then) = __$AdminReturnRequestCopyWithImpl;
-@override @useResult
-$Res call({
- String id, String status, String reason
-});
-
-
-
-
-}
-/// @nodoc
-class __$AdminReturnRequestCopyWithImpl<$Res>
-    implements _$AdminReturnRequestCopyWith<$Res> {
-  __$AdminReturnRequestCopyWithImpl(this._self, this._then);
-
-  final _AdminReturnRequest _self;
-  final $Res Function(_AdminReturnRequest) _then;
-
-/// Create a copy of AdminReturnRequest
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,Object? reason = null,}) {
-  return _then(_AdminReturnRequest(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,reason: null == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
-as String,
   ));
 }
 

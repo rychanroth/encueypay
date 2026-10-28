@@ -453,11 +453,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             'discount_minor, delivery_fee_minor, total_minor, created_at, '
             'users(full_name), payments(method, status), '
             'order_items(product_name, variant_name, '
-            'quantity, line_total_minor), '
-            // Return reason lives on the return_items lines (per-item
-            // reason in request_return), not on the return_requests header
-            // — same fix as the customer orders repository.
-            'return_requests(id, status, return_items(reason, quantity))',
+            'quantity, line_total_minor)',
           )
           .order('created_at', ascending: false)
           .limit(50);
@@ -484,17 +480,6 @@ class AdminRepositoryImpl implements IAdminRepository {
                     lineTotalMinor: item.lineTotalMinor,
                   ))
               .toList(),
-          returns: dto.returnRequests
-              .map((request) => AdminReturnRequest(
-                    id: request.id,
-                    status: request.status ?? 'pending',
-                    // Aggregate the per-line reasons into one display string.
-                    reason: request.returnItems
-                        .map((item) => item.reason)
-                        .where((reason) => reason.isNotEmpty)
-                        .join(' · '),
-                  ))
-              .toList(),
         );
       }).toList();
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
@@ -515,32 +500,7 @@ class AdminRepositoryImpl implements IAdminRepository {
     });
   }
 
-  @override
-  Future<void> processReturn({
-    required String returnId,
-    required bool approve,
-  }) {
-    return _rpc('admin_process_return', {
-      'p_return_id': returnId,
-      'p_approve': approve,
-    });
-  }
 
-  @override
-  Future<void> markRefunded({
-    required String orderId,
-    String? reference,
-  }) {
-    return _rpc('mark_refunded', {
-      'p_order_id': orderId,
-      'p_reference': reference,
-    });
-  }
-
-  @override
-  Future<void> completeReturn({required String returnId}) {
-    return _rpc('admin_complete_return', {'p_return_id': returnId});
-  }
 
   @override
   Future<List<AuditEntry>> fetchAuditLogs() async {

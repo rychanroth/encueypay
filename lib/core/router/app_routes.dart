@@ -21,7 +21,6 @@ abstract final class AppRoutes {
 
   // Orders (nested under Orders tab).
   static const orderDetail = 'orderDetail';
-  static const returnRequest = 'returnRequest';
   static const reviewCompose = 'reviewCompose';
 
   // Admin (nested under Admin dashboard).

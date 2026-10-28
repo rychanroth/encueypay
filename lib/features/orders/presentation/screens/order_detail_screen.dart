@@ -12,9 +12,8 @@ import '../widgets/order_item_card.dart';
 import '../widgets/order_tracking_card.dart';
 
 /// Customer order detail (spec §12/§13/§20/§21): order parts, payment proof
-/// upload, delivery progress view, cancel, return and review entry points.
-/// Customer-only by design — the business counterpart is
-/// ManagedOrderDetailScreen, driver flows live in the delivery feature.
+/// upload, delivery progress view, cancel and review entry points.
+/// Customer-only by design; admins use the admin orders screens.
 class OrderDetailScreen extends ConsumerWidget {
   const OrderDetailScreen({super.key, required this.orderId});
 
@@ -38,7 +37,7 @@ class OrderDetailScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Cancel order?'),
         content: const Text(
-          'Verified bank transfers are marked as refund-required.',
+          'The order will be cancelled and its reserved stock released.',
         ),
         actions: [
           TextButton(
@@ -162,9 +161,11 @@ class OrderDetailScreen extends ConsumerWidget {
                 ListTile(
                   dense: true,
                   leading: const Icon(Icons.payment_outlined),
-                  title: Text(payment.method == PaymentMethodKind.bankTransfer
-                      ? 'Bank transfer'
-                      : 'Cash on delivery'),
+                  title: Text(switch (payment.method) {
+                    PaymentMethodKind.qr => 'KHQR payment',
+                    PaymentMethodKind.bankTransfer => 'Bank transfer',
+                    _ => 'Cash on delivery',
+                  }),
                   subtitle: Text(
                     '${Money(payment.amountMinor).format()} · ${payment.status.name}',
                   ),
@@ -194,49 +195,11 @@ class OrderDetailScreen extends ConsumerWidget {
               _SummaryRow('Total', Money(order.totalMinor).format(), bold: true),
 
               const SizedBox(height: 24),
-              // Section 7E: the customer's return tracker.
-              if (order.returns.isNotEmpty) ...[
-                Text('Return request',
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                for (final request in order.returns)
-                  ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      switch (request.status) {
-                        ReturnStatus.completed => Icons.check_circle_outline,
-                        ReturnStatus.rejected => Icons.cancel_outlined,
-                        _ => Icons.schedule,
-                      },
-                      color: switch (request.status) {
-                        ReturnStatus.completed => theme.colorScheme.primary,
-                        ReturnStatus.rejected => theme.colorScheme.error,
-                        _ => theme.colorScheme.secondary,
-                      },
-                    ),
-                    title: Text(request.status.label),
-                    subtitle: request.reason.isEmpty
-                        ? null
-                        : Text(request.reason, maxLines: 2),
-                  ),
-              ],
               if (order.delivered) ...[
-                FilledButton.tonalIcon(
-                  onPressed: () => context.pushNamed(
-                    AppRoutes.returnRequest,
-                    pathParameters: {'id': order.id},
-                  ),
-                  icon: const Icon(Icons.assignment_return_outlined),
-                  label: const Text('Request return'),
-                ),
-                const SizedBox(height: 8),
                 Text(
                   'Review purchased items below.',
                   style: theme.textTheme.bodySmall,
                 ),
-              ],
-              if (order.delivered)
                 for (final item in order.items)
                   ListTile(
                     dense: true,
@@ -256,6 +219,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       child: const Text('Review'),
                     ),
                   ),
+              ],
               if (order.cancellable) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(

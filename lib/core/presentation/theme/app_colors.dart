@@ -121,7 +121,7 @@ typedef StatusBadgeColors = ({Color background, Color foreground});
 
 /// Status → badge palette (§2.2). Keyed by wire name so `core` stays free of
 /// feature enums (ARCH-05); unknown names fall back to the neutral slate
-/// entry. `pending`, `refund_required` and `refunded` are shared by the
+/// entry. `pending` is shared by the
 /// order and payment lifecycles per the spec table.
 Map<String, StatusBadgeColors> get statusBadgePalette => _statusBadgePalette;
 
@@ -136,9 +136,6 @@ const Map<String, StatusBadgeColors> _statusBadgePalette = {
   'delivered':
       (background: Color(0xFFECFDF5), foreground: Color(0xFF047857)), // emerald
   'cancelled': (background: Color(0xFFFFF1F2), foreground: Color(0xFFBE123C)), // rose
-  'returned': (background: Color(0xFFFAF5FF), foreground: Color(0xFF7E22CE)), // purple
-  'refund_required':
-      (background: Color(0xFFFFF1F2), foreground: Color(0xFFBE123C)), // rose
   'refunded': (background: Color(0xFFF1F5F9), foreground: Color(0xFF334155)), // slate
 };
 

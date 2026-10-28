@@ -30,9 +30,6 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       'order_items(id, product_id, product_name, variant_name, '
       'unit_price_minor, discount_minor, quantity, line_total_minor, '
       'products(product_images(storage_path, sort_order))), '
-      // return reason lives on the return_items lines (per-item reason in
-      // request_return), not on the return_requests header.
-      'return_requests(id, status, return_items(reason, quantity)), '
       'payments(method, status, amount_minor)';
 
   String get _uid {

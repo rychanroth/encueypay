@@ -10,7 +10,7 @@ import '../../domain/entities/order.dart';
 /// * completed nodes — solid emerald fill with a check icon;
 /// * the active node — pulsing royal dot;
 /// * future nodes — muted hollow outlines;
-/// * cancelled/returned lifecycles replace the track with a dedicated
+/// * the cancelled lifecycle replaces the track with a dedicated
 ///   status callout banner (no forward track exists for them).
 ///
 /// Presentation-only: it maps the customer's derived lifecycle onto the
@@ -60,43 +60,31 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline>
         _ => -1,
       };
 
-  bool get _hasNotice => switch (widget.status) {
-        OrderStatus.cancelled || OrderStatus.returned => true,
-        _ => false,
-      };
+  bool get _hasNotice => widget.status == OrderStatus.cancelled;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (_hasNotice) {
-      final isCancelled = widget.status == OrderStatus.cancelled;
       return Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isCancelled
-              ? theme.colorScheme.errorContainer
-              : theme.colorScheme.tertiaryContainer,
+          color: theme.colorScheme.errorContainer,
           borderRadius: AppRadii.br12,
         ),
         child: Row(
           children: [
             Icon(
-              isCancelled ? Icons.cancel_outlined : Icons.currency_exchange,
+              Icons.cancel_outlined,
               size: 18,
-              color: isCancelled
-                  ? theme.colorScheme.onErrorContainer
-                  : theme.colorScheme.onTertiaryContainer,
+              color: theme.colorScheme.onErrorContainer,
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                isCancelled
-                    ? 'This order was cancelled.'
-                    : 'This order was returned.',
+                'This order was cancelled.',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isCancelled
-                      ? theme.colorScheme.onErrorContainer
-                      : theme.colorScheme.onTertiaryContainer,
+                  color: theme.colorScheme.onErrorContainer,
                 ),
               ),
             ),

@@ -4,6 +4,22 @@ Read this before touching the QR payment flow. It records the design
 decision, what is pinned to the official docs, the current state, and what
 remains.
 
+## 0. Order model (2026-10-22 — user decision)
+
+Single-vendor, no returns/refunds, no sub-orders. The multi-vendor
+structure (business_orders/pickup_stops/businesses) was already dropped by
+the October migrations; this pass removed the returns/refunds feature
+end-to-end (tables, RPCs, triggers, the `lib/features/returns/` feature,
+admin return processing, refund payment states) and set the cancellation
+rule: **customers cancel COD orders while pending/confirmed; QR orders
+only while unpaid** (a paid QR order has no refund path — enforced in
+`cancel_order` and mirrored in `CustomerOrder.cancellable`). Admins keep
+cancel-with-reason for everything; a cancelled QR-paid order keeps its
+payment row as-is (production refunds happen out-of-band in PayWay's
+portal). Migration `20261022000001`; smoke test refreshed (39 assertions).
+Dormant enum values (`returned`, `refund_required`, `refunded`) stay in
+the PG types — Postgres cannot drop them; the app never produces them.
+
 ## 1. Design decision (why PayWay)
 
 QR settlement runs through **ABA PayWay** (merchant gateway, webhook push).

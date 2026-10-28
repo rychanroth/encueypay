@@ -100,7 +100,7 @@ final class OrderPaymentControllerProvider
 }
 
 String _$orderPaymentControllerHash() =>
-    r'61c41b1045611497314a314e5d09ef14dc3ba214';
+    r'119a5b48b338a9dcce1efc1df75b7738040b4f9c';
 
 /// The order's payment lifecycle on the order-success screen (Section 6b).
 ///

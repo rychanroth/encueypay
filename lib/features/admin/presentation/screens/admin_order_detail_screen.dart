@@ -6,10 +6,10 @@ import '../../../../core/domain/money.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_orders_controller.dart';
 
-/// Fulfillment view for one order (Section 3): per-business lifecycle
-/// transitions (accept/reject → preparing → ready), one-shot administrative
-/// delivery completion, and return decisions. The order is looked up from
-/// the shared controller state so mutations refresh the view in place.
+/// Fulfillment view for one order (Section 3): the one-step lifecycle
+/// transitions, cancellation with reason, and the payment summary. The
+/// order is looked up from the shared controller state so mutations
+/// refresh the view in place.
 class AdminOrderDetailScreen extends ConsumerWidget {
   const AdminOrderDetailScreen({super.key, required this.orderId});
 
@@ -66,19 +66,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                     child: const Text('Cancel order'),
                   ),
                 ),
-              // Section 7D: record the refund on a cancelled order whose
-              // payment had already been verified.
-              if (order.status == AdminOrderStatus.cancelled &&
-                  order.paymentStatus == 'refund_required')
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: FilledButton(
-                    onPressed: () => ref
-                        .read(adminOrdersControllerProvider.notifier)
-                        .markRefunded(orderId: order.id),
-                    child: const Text('Mark refunded'),
-                  ),
-                ),
               const SizedBox(height: 16),
               Text('Items',
                   style: theme.textTheme.titleSmall
@@ -96,18 +83,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                   ),
                   trailing: Text(Money(item.lineTotalMinor).format()),
                 ),
-              const SizedBox(height: 16),
-              Text('Return requests',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              if (order.returns.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text('No return requests.'),
-                )
-              else
-                for (final request in order.returns)
-                  _ReturnTile(returnRequest: request),
             ],
           );
         },
@@ -216,61 +191,5 @@ Future<void> _cancel(
       );
 }
 
-/// Section 7E labels: the wire status → assignment vocabulary. 'Requested'
-/// is the submission act itself; a pending request is under review.
-String returnStatusLabel(String wire) => switch (wire) {
-      'pending' => 'Under review',
-      'approved' => 'Approved',
-      'rejected' => 'Rejected',
-      'completed' => 'Completed',
-      _ => wire,
-    };
 
-class _ReturnTile extends ConsumerWidget {
-  const _ReturnTile({required this.returnRequest});
 
-  final AdminReturnRequest returnRequest;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isPending = returnRequest.status == 'pending';
-    final isApproved = returnRequest.status == 'approved';
-    return Card(
-      margin: const EdgeInsets.only(top: 8),
-      child: ListTile(
-        title: Text('Return · ${returnStatusLabel(returnRequest.status)}'),
-        subtitle: returnRequest.reason.isEmpty
-            ? null
-            : Text(returnRequest.reason, maxLines: 2),
-        trailing: isPending
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FilledButton.tonal(
-                    onPressed: () => ref
-                        .read(adminOrdersControllerProvider.notifier)
-                        .decideReturn(returnId: returnRequest.id, approve: true),
-                    child: const Text('Approve'),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.tonal(
-                    onPressed: () => ref
-                        .read(adminOrdersControllerProvider.notifier)
-                        .decideReturn(
-                            returnId: returnRequest.id, approve: false),
-                    child: const Text('Reject'),
-                  ),
-                ],
-              )
-            : isApproved
-                ? FilledButton.tonal(
-                    onPressed: () => ref
-                        .read(adminOrdersControllerProvider.notifier)
-                        .completeReturn(returnId: returnRequest.id),
-                    child: const Text('Complete return'),
-                  )
-                : null,
-      ),
-    );
-  }
-}
