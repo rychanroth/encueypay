@@ -27,7 +27,20 @@ class AdminPromotionsScreen extends ConsumerWidget {
     DateTime? startsAt;
     DateTime? endsAt;
     String? brandId;
-    final brandsAsync = ref.read(promoBrandsProvider);
+    // Await the scope options BEFORE opening the dialog — a ref.read
+    // snapshot freezes the AsyncValue, and a StatefulBuilder nothing
+    // notifies would buffer forever.
+    List<PromoBrandRef> brands;
+    try {
+      brands = await ref.read(promoBrandsProvider.future);
+    } on Failure catch (failure) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(failure.message)));
+      return;
+    }
+    if (!context.mounted) return;
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -75,24 +88,21 @@ class AdminPromotionsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 // Scope picker (Section 2d/5b): platform-wide or brand-wide.
-                brandsAsync.maybeWhen(
-                  data: (brands) => DropdownButtonFormField<String>(
-                    initialValue: brandId,
-                    decoration: const InputDecoration(labelText: 'Scope'),
-                    items: [
-                      const DropdownMenuItem(
-                        value: null,
-                        child: Text('Platform-wide'),
+                DropdownButtonFormField<String>(
+                  initialValue: brandId,
+                  decoration: const InputDecoration(labelText: 'Scope'),
+                  items: [
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text('Platform-wide'),
+                    ),
+                    for (final brand in brands)
+                      DropdownMenuItem(
+                        value: brand.id,
+                        child: Text('Brand: ${brand.name}'),
                       ),
-                      for (final brand in brands)
-                        DropdownMenuItem(
-                          value: brand.id,
-                          child: Text('Brand: ${brand.name}'),
-                        ),
-                    ],
-                    onChanged: (v) => setDialogState(() => brandId = v),
-                  ),
-                  orElse: () => const SizedBox.shrink(),
+                  ],
+                  onChanged: (v) => setDialogState(() => brandId = v),
                 ),
                 const SizedBox(height: 8),
                 // Date window (assignment §5) — derived at validation time.
@@ -156,8 +166,21 @@ class AdminPromotionsScreen extends ConsumerWidget {
     final name = TextEditingController();
     var targetKind = BannerTargetKind.none;
     String? targetId;
-    final brandsAsync = ref.read(promoBrandsProvider);
-    final categoriesAsync = ref.read(promoCategoriesProvider);
+    // Await BOTH destination lists before opening the dialog — same
+    // frozen-snapshot reason as the coupon dialog above.
+    List<PromoBrandRef> brands;
+    List<PromoCategoryRef> categories;
+    try {
+      brands = await ref.read(promoBrandsProvider.future);
+      categories = await ref.read(promoCategoriesProvider.future);
+    } on Failure catch (failure) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(failure.message)));
+      return;
+    }
+    if (!context.mounted) return;
     final submitted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -198,40 +221,30 @@ class AdminPromotionsScreen extends ConsumerWidget {
                   }),
                 ),
                 if (targetKind == BannerTargetKind.brand)
-                  brandsAsync.maybeWhen(
-                    data: (brands) =>
-                        DropdownButtonFormField<String>(
-                      initialValue: targetId,
-                      decoration:
-                          const InputDecoration(labelText: 'Brand'),
-                      items: [
-                        for (final brand in brands)
-                          DropdownMenuItem(
-                            value: brand.id,
-                            child: Text(brand.name),
-                          ),
-                      ],
-                      onChanged: (id) => setDialogState(() => targetId = id),
-                    ),
-                    orElse: () => const LinearProgressIndicator(),
+                  DropdownButtonFormField<String>(
+                    initialValue: targetId,
+                    decoration: const InputDecoration(labelText: 'Brand'),
+                    items: [
+                      for (final brand in brands)
+                        DropdownMenuItem(
+                          value: brand.id,
+                          child: Text(brand.name),
+                        ),
+                    ],
+                    onChanged: (id) => setDialogState(() => targetId = id),
                   ),
                 if (targetKind == BannerTargetKind.category)
-                  categoriesAsync.maybeWhen(
-                    data: (categories) =>
-                        DropdownButtonFormField<String>(
-                      initialValue: targetId,
-                      decoration:
-                          const InputDecoration(labelText: 'Category'),
-                      items: [
-                        for (final category in categories)
-                          DropdownMenuItem(
-                            value: category.id,
-                            child: Text(category.name),
-                          ),
-                      ],
-                      onChanged: (id) => setDialogState(() => targetId = id),
-                    ),
-                    orElse: () => const LinearProgressIndicator(),
+                  DropdownButtonFormField<String>(
+                    initialValue: targetId,
+                    decoration: const InputDecoration(labelText: 'Category'),
+                    items: [
+                      for (final category in categories)
+                        DropdownMenuItem(
+                          value: category.id,
+                          child: Text(category.name),
+                        ),
+                    ],
+                    onChanged: (id) => setDialogState(() => targetId = id),
                   ),
               ],
             ),
@@ -263,13 +276,13 @@ class AdminPromotionsScreen extends ConsumerWidget {
     // so the CTA survives later renames/archivals of the target.
     String? targetName;
     if (targetKind == BannerTargetKind.brand) {
-      targetName = brandsAsync.value
-          ?.where((brand) => brand.id == targetId)
+      targetName = brands
+          .where((brand) => brand.id == targetId)
           .firstOrNull
           ?.name;
     } else if (targetKind == BannerTargetKind.category) {
-      targetName = categoriesAsync.value
-          ?.where((category) => category.id == targetId)
+      targetName = categories
+          .where((category) => category.id == targetId)
           .firstOrNull
           ?.name;
     }
