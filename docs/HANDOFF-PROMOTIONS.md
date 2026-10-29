@@ -10,9 +10,15 @@
 
 - **Code**: everything below is committed through `ba87104`; `flutter analyze`
   is clean; local stack verified via SQL smoke tests.
-- **Pending user action**: `supabase db push` — TWO migrations are unpushed:
-  `20261028000003_variant_flow.sql` (variants) and
-  `20261028000004_campaign_banners.sql` (this feature). Both are
+- **Pending user action**: `supabase db push` — THREE migrations are unpushed:
+  `20261028000003_variant_flow.sql` (variants),
+  `20261028000004_campaign_banners.sql` (this feature), and
+  `20261029000001_drop_stale_rpc_overloads.sql` (drops the pre-variant
+  `admin_update_product` and the 6-target-arg `admin_create_banner`
+  overloads — CREATE OR REPLACE with a different signature added them
+  instead of replacing, and PostgREST then failed every
+  `admin_create_banner` call with "Could not choose the best candidate
+  function"). All three are
   CREATE-OR-REPLACE/ADD-COLUMN safe; re-running push is harmless. The user
   already pushed `20261028000001` (users backfill) and `20261028000002`
   (dashboard/report visuals) — their push output shows a scary but harmless
