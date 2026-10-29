@@ -66,7 +66,7 @@ class OrderItemJoinDto {
     this.variantName,
     this.discountMinor,
     this.products,
-    this.reviews = const [],
+    this.reviews,
   });
 
   factory OrderItemJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -89,10 +89,12 @@ class OrderItemJoinDto {
   @JsonKey(name: 'products')
   final OrderItemProductJoinDto? products;
 
-  /// The item's review, if any — `reviews_order_item_id_key` enforces one
-  /// per order item, so a non-empty list marks the item as reviewed.
-  @JsonKey(name: 'reviews', defaultValue: <Map<String, dynamic>>[])
-  final List<Map<String, dynamic>> reviews;
+  /// The item's review, if any — the UNIQUE constraint
+  /// `reviews_order_item_id_key` makes this a one-to-one embed, so PostgREST
+  /// returns an object or null, never a list. Non-null marks the item as
+  /// reviewed.
+  @JsonKey(name: 'reviews')
+  final Map<String, dynamic>? reviews;
 
   Map<String, dynamic> toJson() => _$OrderItemJoinDtoToJson(this);
 }
