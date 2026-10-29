@@ -62,4 +62,4 @@ final class DiscountPreviewProvider
   }
 }
 
-String _$discountPreviewHash() => r'eac807fcd2df5bb8680c9111e43ee2a6efca6db9';
+String _$discountPreviewHash() => r'1edcca2bda709d51a9838b0543f6a55363f0a1e0';
