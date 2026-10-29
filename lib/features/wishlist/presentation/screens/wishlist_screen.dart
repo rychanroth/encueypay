@@ -98,7 +98,7 @@ class WishlistScreen extends ConsumerWidget {
                     ),
                   ),
                   title: Text(item.productName, maxLines: 1),
-                  subtitle: Text(Money(item.priceMinor).format()),
+                  subtitle: Text(Money(item.fromPriceMinor).format()),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
                     onPressed: () => ref

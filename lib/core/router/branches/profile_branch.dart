@@ -30,7 +30,7 @@ Product _productFromWishlist(WishlistItem item) => Product(
       name: item.productName,
       basePriceMinor: item.priceMinor,
       stock: item.stock,
-      fromPriceMinor: item.priceMinor,
+      fromPriceMinor: item.fromPriceMinor,
       defaultVariantId: item.defaultVariantId,
       brandName: item.brandName,
       ratingAvg: item.ratingAvg,

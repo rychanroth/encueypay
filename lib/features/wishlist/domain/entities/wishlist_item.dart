@@ -13,6 +13,12 @@ abstract class WishlistItem with _$WishlistItem {
     required String productId,
     required String productName,
     required int priceMinor,
+
+    /// The card's "from" price — the same cheapest-selectable rule the
+    /// catalog cards use (min over variant prices, base as the null-price
+    /// fallback), so every surface shows the same number for a product.
+    /// [priceMinor] stays the raw base price.
+    required int fromPriceMinor,
     @Default(0) int stock,
     String? status,
     String? defaultVariantId,

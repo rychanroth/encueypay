@@ -99,12 +99,16 @@ class WishlistRatingJoinDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class WishlistVariantJoinDto {
-  const WishlistVariantJoinDto({this.id});
+  const WishlistVariantJoinDto({this.id, this.priceMinor});
 
   factory WishlistVariantJoinDto.fromJson(Map<String, dynamic> json) =>
       _$WishlistVariantJoinDtoFromJson(json);
 
   final String? id;
+
+  /// Null for the tracking Default variant (hybrid pricing — its price is
+  /// the product's base price).
+  final int? priceMinor;
 
   Map<String, dynamic> toJson() => _$WishlistVariantJoinDtoToJson(this);
 }
