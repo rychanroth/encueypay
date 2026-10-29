@@ -7,15 +7,24 @@ import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/payment_method.dart';
+import '../../domain/entities/checkout_summary.dart';
 import '../controllers/checkout_controller.dart';
-import '../controllers/discount_preview_provider.dart';
+import '../controllers/order_totals_provider.dart';
 
 /// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
 /// Shipping address → Shipping method → Payment method → Coupon → Order
 /// note → Order summary. Placement goes through the atomic RPC; per-step
 /// navigation is blocked while the current step is invalid.
 class CheckoutScreen extends ConsumerStatefulWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, this.salePricesByItemId = const {}});
+
+  /// Cart-item id → sale-adjusted unit price, resolved by the composition
+  /// root (features/checkout never imports features/catalog, ARCH-04).
+  /// Absent entries render the raw price.
+  final Map<String, int> salePricesByItemId;
+
+  int unitPriceOf(CheckoutItem item) =>
+      salePricesByItemId[item.id] ?? item.unitPriceMinor;
 
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -96,13 +105,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
         data: (state) {
           final summary = state.summary;
-          // Authoritative discount preview: manual codes + the best
-          // eligible campaign coupon (auto-applied at placement).
-          final discountPreview =
-              ref.watch(discountPreviewProvider).value;
-          final autoCoupon = discountPreview?.auto;
-          final totalDiscount = discountPreview?.totalDiscountMinor ??
-              state.discountPreviewMinor;
+          // Authoritative totals: the sale-applied subtotal + stacked code
+          // discounts (the same numbers placement produces). While the
+          // preview loads, fall back to the locally computed figures.
+          final totals = ref.watch(orderTotalsPreviewProvider).value;
+          final totalDiscount =
+              totals?.totalDiscountMinor ?? state.discountPreviewMinor;
+          final subtotalMinor =
+              totals?.subtotalMinor ?? summary?.subtotalMinor ?? 0;
+          final deliveryFeeMinor =
+              totals?.deliveryFeeMinor ?? summary?.deliveryFeeMinor ?? 0;
+          final totalMinor =
+              totals?.totalMinor ??
+              (summary?.totalMinor ?? 0) - state.discountPreviewMinor;
           return Stepper(
             currentStep: state.currentStep,
             onStepTapped: controller.goToStep,
@@ -188,19 +203,44 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     // Variant-aware unit price under the
-                                    // title (falls back to base server-side).
-                                    Text(
-                                      '${Money(item.unitPriceMinor).formatUsd()} each',
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                        color: theme
-                                            .colorScheme.onSurfaceVariant,
+                                    // title (falls back to base server-side);
+                                    // sale-priced lines strike the original
+                                    // through.
+                                    if (widget.salePricesByItemId[item.id] != null) ...[
+                                      Text(
+                                        '${Money(widget.unitPriceOf(item)).formatUsd()} each',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
-                                    ),
+                                      Text(
+                                        Money(item.unitPriceMinor).formatUsd(),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                        ),
+                                      ),
+                                    ] else
+                                      Text(
+                                        '${Money(item.unitPriceMinor).formatUsd()} each',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
-                              Text(Money(item.lineTotalMinor).format()),
+                              Text(
+                                Money(widget.unitPriceOf(item) * item.quantity)
+                                    .format(),
+                              ),
                             ],
                           ),
                         ),
@@ -342,30 +382,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               : theme.colorScheme.error,
                         ),
                         title: Row(
-                          children: [
-                            Text(coupon.code),
-                            const SizedBox(width: 8),
-                            // Scope recognition chip (DESIGN.md §6.3 step 5).
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Text(
-                                coupon.scope == 'brand'
-                                    ? 'Brand'
-                                    : coupon.scope == 'platform'
-                                        ? 'Platform-wide'
-                                        : 'Coupon',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onPrimaryContainer,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ],
+                          children: [Text(coupon.code)],
                         ),
                         subtitle: coupon.valid
                             ? Text(
@@ -397,31 +414,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (summary != null) ...[
-                      _SummaryRow('Subtotal',
-                          Money(summary.subtotalMinor).formatUsd()),
-                      if (autoCoupon != null)
+                      _SummaryRow('Subtotal', Money(subtotalMinor).formatUsd()),
+                      if (totalDiscount > 0)
                         _SummaryRow(
-                          'Auto-applied (${autoCoupon.message ?? autoCoupon.code})',
-                          '-${Money(autoCoupon.discountMinor).formatUsd()}',
-                        ),
-                      if (state.discountPreviewMinor > 0)
-                        _SummaryRow(
-                          'Discount (manual codes)',
-                          '-${Money(state.discountPreviewMinor).formatUsd()}',
+                          'Discount (codes)',
+                          '-${Money(totalDiscount).formatUsd()}',
                         ),
                       _SummaryRow(
                         'Delivery fee',
-                        Money(summary.deliveryFeeMinor).formatUsd(),
+                        Money(deliveryFeeMinor).formatUsd(),
                       ),
                       const Divider(height: 24),
                       _SummaryRow(
                         'Total',
-                        Money(summary.totalMinor - totalDiscount).formatUsd(),
+                        Money(totalMinor).formatUsd(),
                         bold: true,
                       ),
                       _SummaryRow(
                         '',
-                        '≈ ${Money(summary.totalMinor - totalDiscount).formatKhr()}',
+                        '≈ ${Money(totalMinor).formatKhr()}',
                       ),
                       if (state.method == PaymentMethod.qr)
                         Padding(

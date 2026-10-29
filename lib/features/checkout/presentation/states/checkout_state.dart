@@ -30,12 +30,6 @@ abstract class CheckoutState with _$CheckoutState {
       .where((coupon) => coupon.valid)
       .fold<int>(0, (sum, coupon) => sum + coupon.discountMinor);
 
-  int get totalPreviewMinor {
-    final summary = this.summary;
-    if (summary == null) return 0;
-    return summary.totalMinor - discountPreviewMinor;
-  }
-
   /// The first address is the default (repository ordering, Section 6b).
   AddressOption? get selectedAddress => addresses
       .where((address) => address.id == selectedAddressId)

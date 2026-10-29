@@ -1,7 +1,7 @@
 import '../../domain/entities/address_option.dart';
 import '../../domain/entities/checkout_summary.dart';
 import '../../domain/entities/coupon_preview.dart';
-import '../../domain/entities/discount_preview.dart';
+import '../../domain/entities/order_totals_preview.dart';
 import '../../domain/entities/payment_method.dart';
 
 /// Checkout contract (spec §23, §58 Checkout/Coupons/Payment ops) (DATA-03).
@@ -14,10 +14,10 @@ abstract interface class ICheckoutRepository {
   /// coupon; the result carries `valid`/`message` (§25).
   Future<CouponPreview> validateCoupon(String code);
 
-  /// Authoritative discount preview for the current cart: the manually
-  /// entered codes plus the single best eligible auto_apply campaign
-  /// coupon — the same selection create_order_from_cart applies (2026-10-28).
-  Future<DiscountPreview> previewCartDiscounts({
+  /// Authoritative totals for the current cart: the sale-applied subtotal,
+  /// the stacked code discounts, delivery fee and grand total — the same
+  /// numbers create_order_from_cart produces at placement.
+  Future<OrderTotalsPreview> previewOrderTotals({
     required List<String> couponCodes,
   });
 

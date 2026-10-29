@@ -11,9 +11,5 @@ abstract class CouponPreview with _$CouponPreview {
     required bool valid,
     @Default(0) int discountMinor,
     String? message,
-
-    /// Promotion scope on the wire ('platform' | 'brand') — drives the
-    /// scope badge on the applied-coupon tile.
-    String? scope,
   }) = _CouponPreview;
 }

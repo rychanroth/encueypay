@@ -40,7 +40,28 @@ final cartBranch = StatefulShellBranch(
         GoRoute(
           name: AppRoutes.checkout,
           path: 'checkout',
-          builder: (context, state) => const CheckoutScreen(),
+          builder: (context, state) => Consumer(
+            builder: (context, ref, _) {
+              // Same id → price map as the cart: cart-item ids are the
+              // checkout line ids, so one map serves both screens.
+              final sales = ref.watch(activeSalesProvider).value ?? const [];
+              final items =
+                  ref.watch(cartControllerProvider).value ?? const [];
+              final salePrices = {
+                for (final item in items)
+                  item.id: displayPriceMinor(
+                    saleForIds(
+                      sales,
+                      brandId: item.brandId,
+                      categoryId: item.categoryId,
+                      priceMinor: item.unitPriceMinor,
+                    ),
+                    item.unitPriceMinor,
+                  ),
+              };
+              return CheckoutScreen(salePricesByItemId: salePrices);
+            },
+          ),
           routes: [
             GoRoute(
               name: AppRoutes.orderPlaced,
