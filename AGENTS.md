@@ -58,3 +58,13 @@ flutter analyze                                            # must be clean befor
 Full checklist in §12 of the contract. Minimum: analyze clean, codegen regenerated,
 import fences hold, errors mapped at repo boundary, no dependency/scope creep.
 Use git for project tracking, commit each slices after DoD.
+
+## Feature State Index
+Active handoffs live in docs/HANDOFF-<FEATURE>.md — read a feature's handoff
+before resuming it. If a handoff contradicts this file, this file wins.
+- Checkout: mid-flight; no plan doc on disk (the referenced PLAN-CHECKOUT.md
+  was never written) — gauge state from git log until one exists.
+- Promotions: docs/HANDOFF-PROMOTIONS.md (code committed through ba87104;
+  awaiting `supabase db push` + its §6 verification)
+- KHQR: docs/HANDOFF-KHQR.md
+> Feature done → promote durable lessons into the contract, then delete the handoff.
