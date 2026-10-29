@@ -8,48 +8,106 @@ part of 'admin_promotions_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Admin sales management (Section 9): the group-pricing layer.
 
-@ProviderFor(AdminPromotionsController)
-final adminPromotionsControllerProvider = AdminPromotionsControllerProvider._();
+@ProviderFor(AdminSalesController)
+final adminSalesControllerProvider = AdminSalesControllerProvider._();
 
-final class AdminPromotionsControllerProvider
-    extends
-        $AsyncNotifierProvider<AdminPromotionsController, List<MyPromotion>> {
-  AdminPromotionsControllerProvider._()
+/// Admin sales management (Section 9): the group-pricing layer.
+final class AdminSalesControllerProvider
+    extends $AsyncNotifierProvider<AdminSalesController, List<ManagedSale>> {
+  /// Admin sales management (Section 9): the group-pricing layer.
+  AdminSalesControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'adminPromotionsControllerProvider',
+        name: r'adminSalesControllerProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$adminPromotionsControllerHash();
+  String debugGetCreateSourceHash() => _$adminSalesControllerHash();
 
   @$internal
   @override
-  AdminPromotionsController create() => AdminPromotionsController();
+  AdminSalesController create() => AdminSalesController();
 }
 
-String _$adminPromotionsControllerHash() =>
-    r'ce2ac44c54eddc73195c59a1a59223ea48a2377b';
+String _$adminSalesControllerHash() =>
+    r'5450201cec8e435fa4a132422cd769abb6e4e9f7';
 
-abstract class _$AdminPromotionsController
-    extends $AsyncNotifier<List<MyPromotion>> {
-  FutureOr<List<MyPromotion>> build();
+/// Admin sales management (Section 9): the group-pricing layer.
+
+abstract class _$AdminSalesController
+    extends $AsyncNotifier<List<ManagedSale>> {
+  FutureOr<List<ManagedSale>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<AsyncValue<List<MyPromotion>>, List<MyPromotion>>;
+        this.ref as $Ref<AsyncValue<List<ManagedSale>>, List<ManagedSale>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<MyPromotion>>, List<MyPromotion>>,
-              AsyncValue<List<MyPromotion>>,
+              AnyNotifier<AsyncValue<List<ManagedSale>>, List<ManagedSale>>,
+              AsyncValue<List<ManagedSale>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Admin standalone coupon codes — cart-wide, stacked on sale prices.
+
+@ProviderFor(AdminCouponsController)
+final adminCouponsControllerProvider = AdminCouponsControllerProvider._();
+
+/// Admin standalone coupon codes — cart-wide, stacked on sale prices.
+final class AdminCouponsControllerProvider
+    extends
+        $AsyncNotifierProvider<AdminCouponsController, List<ManagedCoupon>> {
+  /// Admin standalone coupon codes — cart-wide, stacked on sale prices.
+  AdminCouponsControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminCouponsControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminCouponsControllerHash();
+
+  @$internal
+  @override
+  AdminCouponsController create() => AdminCouponsController();
+}
+
+String _$adminCouponsControllerHash() =>
+    r'4f731015bbb0b16c1a7b5f029b2842d9434cbd36';
+
+/// Admin standalone coupon codes — cart-wide, stacked on sale prices.
+
+abstract class _$AdminCouponsController
+    extends $AsyncNotifier<List<ManagedCoupon>> {
+  FutureOr<List<ManagedCoupon>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ManagedCoupon>>, List<ManagedCoupon>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ManagedCoupon>>, List<ManagedCoupon>>,
+              AsyncValue<List<ManagedCoupon>>,
               Object?,
               Object?
             >;
@@ -87,7 +145,7 @@ final class AdminBannersControllerProvider
 }
 
 String _$adminBannersControllerHash() =>
-    r'05c7cc939e66c74d6e417e99ce0b271d0a476c05';
+    r'2bf24b75db6b3304c561391a5848a09b3542e119';
 
 /// Banner moderation list (Section 5b — banners are their own table).
 
@@ -111,14 +169,12 @@ abstract class _$AdminBannersController
   }
 }
 
-/// Active brands for the coupon-scope picker (Section 2d) and the banner
-/// destination picker (Section 9).
+/// Active brands for the sale-scope picker (Section 2d).
 
 @ProviderFor(promoBrands)
 final promoBrandsProvider = PromoBrandsProvider._();
 
-/// Active brands for the coupon-scope picker (Section 2d) and the banner
-/// destination picker (Section 9).
+/// Active brands for the sale-scope picker (Section 2d).
 
 final class PromoBrandsProvider
     extends
@@ -130,8 +186,7 @@ final class PromoBrandsProvider
     with
         $FutureModifier<List<PromoBrandRef>>,
         $FutureProvider<List<PromoBrandRef>> {
-  /// Active brands for the coupon-scope picker (Section 2d) and the banner
-  /// destination picker (Section 9).
+  /// Active brands for the sale-scope picker (Section 2d).
   PromoBrandsProvider._()
     : super(
         from: null,
@@ -160,12 +215,12 @@ final class PromoBrandsProvider
 
 String _$promoBrandsHash() => r'645ad40ece89843d63140388521c9ccdf138207c';
 
-/// All categories for the banner destination picker (Section 9).
+/// All categories for the sale-scope picker (Section 9).
 
 @ProviderFor(promoCategories)
 final promoCategoriesProvider = PromoCategoriesProvider._();
 
-/// All categories for the banner destination picker (Section 9).
+/// All categories for the sale-scope picker (Section 9).
 
 final class PromoCategoriesProvider
     extends
@@ -177,7 +232,7 @@ final class PromoCategoriesProvider
     with
         $FutureModifier<List<PromoCategoryRef>>,
         $FutureProvider<List<PromoCategoryRef>> {
-  /// All categories for the banner destination picker (Section 9).
+  /// All categories for the sale-scope picker (Section 9).
   PromoCategoriesProvider._()
     : super(
         from: null,

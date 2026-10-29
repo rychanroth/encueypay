@@ -2,44 +2,49 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'promotion.freezed.dart';
 
-/// The discount RULE (Section 5b convention): scope + mechanic. Coupons are
-/// the redemption instruments referencing it; banners are a separate
-/// advertising surface ([ManagedBanner]). [active] is the admin kill switch;
-/// the date window lives on the coupon (assignment §5 lists dates on the
-/// coupon) and is derived at validation time — no scheduled jobs.
+/// A group sale — the pricing layer (Section 9): scope-targeted
+/// (platform | brand | category), percent or fixed dollar amount, with its
+/// own window and kill switch. A sale is what products COST: it needs no
+/// code, no minimum order and no stacking; order lines are charged at the
+/// sale price server-side.
 @freezed
-abstract class MyPromotion with _$MyPromotion {
-  const factory MyPromotion({
+abstract class ManagedSale with _$ManagedSale {
+  const factory ManagedSale({
     required String id,
     required String name,
     @Default('') String description,
-    required PromotionScope scope,
+    required SaleScope scope,
     required PromoDiscountType discountType,
     required int discountValue,
     @Default(true) bool active,
-    String? brandName,
-    @Default([]) List<MyCoupon> coupons,
-  }) = _MyPromotion;
-}
-
-/// The redemption instrument (assignment §5 attribute set): code, minimum
-/// order amount, start/end window, status. Window violations are derived at
-/// validation time.
-@freezed
-abstract class MyCoupon with _$MyCoupon {
-  const factory MyCoupon({
-    required String id,
-    required String code,
-    required bool active,
-    @Default(0) int minOrderAmountMinor,
     DateTime? startsAt,
     DateTime? endsAt,
-  }) = _MyCoupon;
+    String? brandName,
+    String? categoryName,
+  }) = _ManagedSale;
 }
 
-/// A promotional banner (Section 5b/§9): the advertising surface, moderation
-/// status, display window, and — when targeted — the Discovery destination
-/// it deep-links to ([BannerTargetKind]). Carries no discount.
+/// A standalone coupon code (assignment §5 attribute set): cart-wide,
+/// stacks on top of sale prices at checkout. Carries its own value, window
+/// and minimum order — no promotion link.
+@freezed
+abstract class ManagedCoupon with _$ManagedCoupon {
+  const factory ManagedCoupon({
+    required String id,
+    @Default('') String name,
+    required String code,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    @Default(0) int minOrderAmountMinor,
+    @Default(true) bool active,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) = _ManagedCoupon;
+}
+
+/// A promotional banner (Section 5b/§9): the advertising surface and
+/// moderation status. A banner may be linked to a sale for its Discovery
+/// tap target, but carries no discount of its own.
 @freezed
 abstract class ManagedBanner with _$ManagedBanner {
   const factory ManagedBanner({
@@ -52,41 +57,29 @@ abstract class ManagedBanner with _$ManagedBanner {
   }) = _ManagedBanner;
 }
 
-/// Where a targeted banner sends the customer (Section 9): Discovery
-/// pre-filtered to a brand or a category; 'none' renders an inert banner.
-enum BannerTargetKind {
-  none,
-  brand,
-  category;
-
-  String get wireName => name;
-
-  static BannerTargetKind fromName(String? name) =>
-      BannerTargetKind.values.asNameMap()[name] ?? BannerTargetKind.none;
-}
-
-/// Slim category reference for the banner-destination picker (Section 9).
-@freezed
-abstract class PromoCategoryRef with _$PromoCategoryRef {
-  const factory PromoCategoryRef({required String id, required String name})
-      = _PromoCategoryRef;
-}
-
-/// Slim brand reference for the coupon-scope picker (Section 2d):
-/// platform-wide coupons carry no brand; brand-wide ones target one.
+/// Slim brand reference for the sale-scope picker (Section 2d).
 @freezed
 abstract class PromoBrandRef with _$PromoBrandRef {
   const factory PromoBrandRef({required String id, required String name})
       = _PromoBrandRef;
 }
 
-enum PromotionScope {
-  business,
-  platform,
-  brand;
+/// Slim category reference for the sale-scope picker (Section 9).
+@freezed
+abstract class PromoCategoryRef with _$PromoCategoryRef {
+  const factory PromoCategoryRef({required String id, required String name})
+      = _PromoCategoryRef;
+}
 
-  static PromotionScope fromName(String? name) =>
-      PromotionScope.values.asNameMap()[name] ?? PromotionScope.business;
+enum SaleScope {
+  platform,
+  brand,
+  category;
+
+  String get wireName => name;
+
+  static SaleScope fromName(String? name) =>
+      SaleScope.values.asNameMap()[name] ?? SaleScope.platform;
 }
 
 enum PromoDiscountType {

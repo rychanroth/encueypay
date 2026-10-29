@@ -1,27 +1,36 @@
 import '../../domain/entities/promotion.dart';
 import '../dtos/promotion_dtos.dart';
 
-extension PromotionDtoX on PromotionDto {
-  MyPromotion toDomain() {
-    return MyPromotion(
+extension SaleDtoX on SaleDto {
+  ManagedSale toDomain() {
+    return ManagedSale(
       id: id,
       name: name,
       description: description,
-      scope: PromotionScope.fromName(scope),
+      scope: SaleScope.fromName(scope),
       discountType: PromoDiscountType.fromName(discountType),
       discountValue: discountValue,
       active: active,
+      startsAt: startsAt,
+      endsAt: endsAt,
       brandName: brands?.name,
-      coupons: coupons
-          .map((coupon) => MyCoupon(
-                id: coupon.id,
-                code: coupon.code,
-                active: coupon.active,
-                minOrderAmountMinor: coupon.minOrderAmountMinor,
-                startsAt: coupon.startsAt,
-                endsAt: coupon.endsAt,
-              ))
-          .toList(),
+      categoryName: categories?.name,
+    );
+  }
+}
+
+extension CouponDtoX on CouponDto {
+  ManagedCoupon toDomain() {
+    return ManagedCoupon(
+      id: id,
+      name: name,
+      code: code,
+      discountType: PromoDiscountType.fromName(discountType),
+      discountValue: discountValue,
+      minOrderAmountMinor: minOrderAmountMinor,
+      active: active,
+      startsAt: startsAt,
+      endsAt: endsAt,
     );
   }
 }

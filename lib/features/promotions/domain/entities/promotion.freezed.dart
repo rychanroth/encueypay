@@ -13,40 +13,40 @@ part of 'promotion.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$MyPromotion {
+mixin _$ManagedSale {
 
- String get id; String get name; String get description; PromotionScope get scope; PromoDiscountType get discountType; int get discountValue; bool get active; String? get brandName; List<MyCoupon> get coupons;
-/// Create a copy of MyPromotion
+ String get id; String get name; String get description; SaleScope get scope; PromoDiscountType get discountType; int get discountValue; bool get active; DateTime? get startsAt; DateTime? get endsAt; String? get brandName; String? get categoryName;
+/// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$MyPromotionCopyWith<MyPromotion> get copyWith => _$MyPromotionCopyWithImpl<MyPromotion>(this as MyPromotion, _$identity);
+$ManagedSaleCopyWith<ManagedSale> get copyWith => _$ManagedSaleCopyWithImpl<ManagedSale>(this as ManagedSale, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MyPromotion&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other.coupons, coupons));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedSale&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,brandName,const DeepCollectionEquality().hash(coupons));
+int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,startsAt,endsAt,brandName,categoryName);
 
 @override
 String toString() {
-  return 'MyPromotion(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, brandName: $brandName, coupons: $coupons)';
+  return 'ManagedSale(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, startsAt: $startsAt, endsAt: $endsAt, brandName: $brandName, categoryName: $categoryName)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $MyPromotionCopyWith<$Res>  {
-  factory $MyPromotionCopyWith(MyPromotion value, $Res Function(MyPromotion) _then) = _$MyPromotionCopyWithImpl;
+abstract mixin class $ManagedSaleCopyWith<$Res>  {
+  factory $ManagedSaleCopyWith(ManagedSale value, $Res Function(ManagedSale) _then) = _$ManagedSaleCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String description, PromotionScope scope, PromoDiscountType discountType, int discountValue, bool active, String? brandName, List<MyCoupon> coupons
+ String id, String name, String description, SaleScope scope, PromoDiscountType discountType, int discountValue, bool active, DateTime? startsAt, DateTime? endsAt, String? brandName, String? categoryName
 });
 
 
@@ -54,35 +54,37 @@ $Res call({
 
 }
 /// @nodoc
-class _$MyPromotionCopyWithImpl<$Res>
-    implements $MyPromotionCopyWith<$Res> {
-  _$MyPromotionCopyWithImpl(this._self, this._then);
+class _$ManagedSaleCopyWithImpl<$Res>
+    implements $ManagedSaleCopyWith<$Res> {
+  _$ManagedSaleCopyWithImpl(this._self, this._then);
 
-  final MyPromotion _self;
-  final $Res Function(MyPromotion) _then;
+  final ManagedSale _self;
+  final $Res Function(ManagedSale) _then;
 
-/// Create a copy of MyPromotion
+/// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? brandName = freezed,Object? coupons = null,}) {
-  return _then(MyPromotion(
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandName = freezed,Object? categoryName = freezed,}) {
+  return _then(ManagedSale(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
-as PromotionScope,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
+as SaleScope,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
 as PromoDiscountType,discountValue: null == discountValue ? _self.discountValue : discountValue // ignore: cast_nullable_to_non_nullable
 as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
-as bool,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
-as String?,coupons: null == coupons ? _self.coupons : coupons // ignore: cast_nullable_to_non_nullable
-as List<MyCoupon>,
+as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
+as String?,categoryName: freezed == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
 }
 
 
-/// Adds pattern-matching-related methods to [MyPromotion].
-extension MyPromotionPatterns on MyPromotion {
+/// Adds pattern-matching-related methods to [ManagedSale].
+extension ManagedSalePatterns on ManagedSale {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -95,10 +97,10 @@ extension MyPromotionPatterns on MyPromotion {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MyPromotion value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ManagedSale value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _MyPromotion() when $default != null:
+case _ManagedSale() when $default != null:
 return $default(_that);case _:
   return orElse();
 
@@ -117,10 +119,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MyPromotion value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ManagedSale value)  $default,){
 final _that = this;
 switch (_that) {
-case _MyPromotion():
+case _ManagedSale():
 return $default(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -138,10 +140,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MyPromotion value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ManagedSale value)?  $default,){
 final _that = this;
 switch (_that) {
-case _MyPromotion() when $default != null:
+case _ManagedSale() when $default != null:
 return $default(_that);case _:
   return null;
 
@@ -159,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String description,  PromotionScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  String? brandName,  List<MyCoupon> coupons)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _MyPromotion() when $default != null:
-return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.brandName,_that.coupons);case _:
+case _ManagedSale() when $default != null:
+return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName);case _:
   return orElse();
 
 }
@@ -180,10 +182,10 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String description,  PromotionScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  String? brandName,  List<MyCoupon> coupons)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName)  $default,) {final _that = this;
 switch (_that) {
-case _MyPromotion():
-return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.brandName,_that.coupons);case _:
+case _ManagedSale():
+return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String description,  PromotionScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  String? brandName,  List<MyCoupon> coupons)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName)?  $default,) {final _that = this;
 switch (_that) {
-case _MyPromotion() when $default != null:
-return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.brandName,_that.coupons);case _:
+case _ManagedSale() when $default != null:
+return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName);case _:
   return null;
 
 }
@@ -214,57 +216,53 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 /// @nodoc
 
 
-class _MyPromotion implements MyPromotion {
-  const _MyPromotion({required this.id, required this.name, this.description = '', required this.scope, required this.discountType, required this.discountValue, this.active = true, this.brandName,  List<MyCoupon> coupons = const []}): _coupons = coupons;
+class _ManagedSale implements ManagedSale {
+  const _ManagedSale({required this.id, required this.name, this.description = '', required this.scope, required this.discountType, required this.discountValue, this.active = true, this.startsAt, this.endsAt, this.brandName, this.categoryName});
   
 
 @override final  String id;
 @override final  String name;
 @override@JsonKey() final  String description;
-@override final  PromotionScope scope;
+@override final  SaleScope scope;
 @override final  PromoDiscountType discountType;
 @override final  int discountValue;
 @override@JsonKey() final  bool active;
+@override final  DateTime? startsAt;
+@override final  DateTime? endsAt;
 @override final  String? brandName;
- final  List<MyCoupon> _coupons;
-@override@JsonKey() List<MyCoupon> get coupons {
-  if (_coupons is EqualUnmodifiableListView) return _coupons;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_coupons);
-}
+@override final  String? categoryName;
 
-
-/// Create a copy of MyPromotion
+/// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$MyPromotionCopyWith<_MyPromotion> get copyWith => __$MyPromotionCopyWithImpl<_MyPromotion>(this, _$identity);
+_$ManagedSaleCopyWith<_ManagedSale> get copyWith => __$ManagedSaleCopyWithImpl<_ManagedSale>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MyPromotion&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&const DeepCollectionEquality().equals(other._coupons, _coupons));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedSale&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,brandName,const DeepCollectionEquality().hash(_coupons));
+int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,startsAt,endsAt,brandName,categoryName);
 
 @override
 String toString() {
-  return 'MyPromotion(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, brandName: $brandName, coupons: $coupons)';
+  return 'ManagedSale(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, startsAt: $startsAt, endsAt: $endsAt, brandName: $brandName, categoryName: $categoryName)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$MyPromotionCopyWith<$Res> implements $MyPromotionCopyWith<$Res> {
-  factory _$MyPromotionCopyWith(_MyPromotion value, $Res Function(_MyPromotion) _then) = __$MyPromotionCopyWithImpl;
+abstract mixin class _$ManagedSaleCopyWith<$Res> implements $ManagedSaleCopyWith<$Res> {
+  factory _$ManagedSaleCopyWith(_ManagedSale value, $Res Function(_ManagedSale) _then) = __$ManagedSaleCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String description, PromotionScope scope, PromoDiscountType discountType, int discountValue, bool active, String? brandName, List<MyCoupon> coupons
+ String id, String name, String description, SaleScope scope, PromoDiscountType discountType, int discountValue, bool active, DateTime? startsAt, DateTime? endsAt, String? brandName, String? categoryName
 });
 
 
@@ -272,27 +270,29 @@ $Res call({
 
 }
 /// @nodoc
-class __$MyPromotionCopyWithImpl<$Res>
-    implements _$MyPromotionCopyWith<$Res> {
-  __$MyPromotionCopyWithImpl(this._self, this._then);
+class __$ManagedSaleCopyWithImpl<$Res>
+    implements _$ManagedSaleCopyWith<$Res> {
+  __$ManagedSaleCopyWithImpl(this._self, this._then);
 
-  final _MyPromotion _self;
-  final $Res Function(_MyPromotion) _then;
+  final _ManagedSale _self;
+  final $Res Function(_ManagedSale) _then;
 
-/// Create a copy of MyPromotion
+/// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? brandName = freezed,Object? coupons = null,}) {
-  return _then(_MyPromotion(
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandName = freezed,Object? categoryName = freezed,}) {
+  return _then(_ManagedSale(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
-as PromotionScope,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
+as SaleScope,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
 as PromoDiscountType,discountValue: null == discountValue ? _self.discountValue : discountValue // ignore: cast_nullable_to_non_nullable
 as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
-as bool,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
-as String?,coupons: null == coupons ? _self._coupons : coupons // ignore: cast_nullable_to_non_nullable
-as List<MyCoupon>,
+as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
+as String?,categoryName: freezed == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -300,40 +300,40 @@ as List<MyCoupon>,
 }
 
 /// @nodoc
-mixin _$MyCoupon {
+mixin _$ManagedCoupon {
 
- String get id; String get code; bool get active; int get minOrderAmountMinor; DateTime? get startsAt; DateTime? get endsAt;
-/// Create a copy of MyCoupon
+ String get id; String get name; String get code; PromoDiscountType get discountType; int get discountValue; int get minOrderAmountMinor; bool get active; DateTime? get startsAt; DateTime? get endsAt;
+/// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$MyCouponCopyWith<MyCoupon> get copyWith => _$MyCouponCopyWithImpl<MyCoupon>(this as MyCoupon, _$identity);
+$ManagedCouponCopyWith<ManagedCoupon> get copyWith => _$ManagedCouponCopyWithImpl<ManagedCoupon>(this as ManagedCoupon, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MyCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.code, code) || other.code == code)&&(identical(other.active, active) || other.active == active)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.code, code) || other.code == code)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,code,active,minOrderAmountMinor,startsAt,endsAt);
+int get hashCode => Object.hash(runtimeType,id,name,code,discountType,discountValue,minOrderAmountMinor,active,startsAt,endsAt);
 
 @override
 String toString() {
-  return 'MyCoupon(id: $id, code: $code, active: $active, minOrderAmountMinor: $minOrderAmountMinor, startsAt: $startsAt, endsAt: $endsAt)';
+  return 'ManagedCoupon(id: $id, name: $name, code: $code, discountType: $discountType, discountValue: $discountValue, minOrderAmountMinor: $minOrderAmountMinor, active: $active, startsAt: $startsAt, endsAt: $endsAt)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $MyCouponCopyWith<$Res>  {
-  factory $MyCouponCopyWith(MyCoupon value, $Res Function(MyCoupon) _then) = _$MyCouponCopyWithImpl;
+abstract mixin class $ManagedCouponCopyWith<$Res>  {
+  factory $ManagedCouponCopyWith(ManagedCoupon value, $Res Function(ManagedCoupon) _then) = _$ManagedCouponCopyWithImpl;
 @useResult
 $Res call({
- String id, String code, bool active, int minOrderAmountMinor, DateTime? startsAt, DateTime? endsAt
+ String id, String name, String code, PromoDiscountType discountType, int discountValue, int minOrderAmountMinor, bool active, DateTime? startsAt, DateTime? endsAt
 });
 
 
@@ -341,22 +341,25 @@ $Res call({
 
 }
 /// @nodoc
-class _$MyCouponCopyWithImpl<$Res>
-    implements $MyCouponCopyWith<$Res> {
-  _$MyCouponCopyWithImpl(this._self, this._then);
+class _$ManagedCouponCopyWithImpl<$Res>
+    implements $ManagedCouponCopyWith<$Res> {
+  _$ManagedCouponCopyWithImpl(this._self, this._then);
 
-  final MyCoupon _self;
-  final $Res Function(MyCoupon) _then;
+  final ManagedCoupon _self;
+  final $Res Function(ManagedCoupon) _then;
 
-/// Create a copy of MyCoupon
+/// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? code = null,Object? active = null,Object? minOrderAmountMinor = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
-  return _then(MyCoupon(
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? code = null,Object? discountType = null,Object? discountValue = null,Object? minOrderAmountMinor = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
+  return _then(ManagedCoupon(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
-as String,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
-as bool,minOrderAmountMinor: null == minOrderAmountMinor ? _self.minOrderAmountMinor : minOrderAmountMinor // ignore: cast_nullable_to_non_nullable
-as int,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
+as String,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
+as PromoDiscountType,discountValue: null == discountValue ? _self.discountValue : discountValue // ignore: cast_nullable_to_non_nullable
+as int,minOrderAmountMinor: null == minOrderAmountMinor ? _self.minOrderAmountMinor : minOrderAmountMinor // ignore: cast_nullable_to_non_nullable
+as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
+as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -365,8 +368,8 @@ as DateTime?,
 }
 
 
-/// Adds pattern-matching-related methods to [MyCoupon].
-extension MyCouponPatterns on MyCoupon {
+/// Adds pattern-matching-related methods to [ManagedCoupon].
+extension ManagedCouponPatterns on ManagedCoupon {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -379,10 +382,10 @@ extension MyCouponPatterns on MyCoupon {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MyCoupon value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ManagedCoupon value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _MyCoupon() when $default != null:
+case _ManagedCoupon() when $default != null:
 return $default(_that);case _:
   return orElse();
 
@@ -401,10 +404,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MyCoupon value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ManagedCoupon value)  $default,){
 final _that = this;
 switch (_that) {
-case _MyCoupon():
+case _ManagedCoupon():
 return $default(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -422,10 +425,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MyCoupon value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ManagedCoupon value)?  $default,){
 final _that = this;
 switch (_that) {
-case _MyCoupon() when $default != null:
+case _ManagedCoupon() when $default != null:
 return $default(_that);case _:
   return null;
 
@@ -443,10 +446,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String code,  bool active,  int minOrderAmountMinor,  DateTime? startsAt,  DateTime? endsAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _MyCoupon() when $default != null:
-return $default(_that.id,_that.code,_that.active,_that.minOrderAmountMinor,_that.startsAt,_that.endsAt);case _:
+case _ManagedCoupon() when $default != null:
+return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt);case _:
   return orElse();
 
 }
@@ -464,10 +467,10 @@ return $default(_that.id,_that.code,_that.active,_that.minOrderAmountMinor,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String code,  bool active,  int minOrderAmountMinor,  DateTime? startsAt,  DateTime? endsAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt)  $default,) {final _that = this;
 switch (_that) {
-case _MyCoupon():
-return $default(_that.id,_that.code,_that.active,_that.minOrderAmountMinor,_that.startsAt,_that.endsAt);case _:
+case _ManagedCoupon():
+return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -484,10 +487,10 @@ return $default(_that.id,_that.code,_that.active,_that.minOrderAmountMinor,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String code,  bool active,  int minOrderAmountMinor,  DateTime? startsAt,  DateTime? endsAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt)?  $default,) {final _that = this;
 switch (_that) {
-case _MyCoupon() when $default != null:
-return $default(_that.id,_that.code,_that.active,_that.minOrderAmountMinor,_that.startsAt,_that.endsAt);case _:
+case _ManagedCoupon() when $default != null:
+return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt);case _:
   return null;
 
 }
@@ -498,48 +501,51 @@ return $default(_that.id,_that.code,_that.active,_that.minOrderAmountMinor,_that
 /// @nodoc
 
 
-class _MyCoupon implements MyCoupon {
-  const _MyCoupon({required this.id, required this.code, required this.active, this.minOrderAmountMinor = 0, this.startsAt, this.endsAt});
+class _ManagedCoupon implements ManagedCoupon {
+  const _ManagedCoupon({required this.id, this.name = '', required this.code, required this.discountType, required this.discountValue, this.minOrderAmountMinor = 0, this.active = true, this.startsAt, this.endsAt});
   
 
 @override final  String id;
+@override@JsonKey() final  String name;
 @override final  String code;
-@override final  bool active;
+@override final  PromoDiscountType discountType;
+@override final  int discountValue;
 @override@JsonKey() final  int minOrderAmountMinor;
+@override@JsonKey() final  bool active;
 @override final  DateTime? startsAt;
 @override final  DateTime? endsAt;
 
-/// Create a copy of MyCoupon
+/// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$MyCouponCopyWith<_MyCoupon> get copyWith => __$MyCouponCopyWithImpl<_MyCoupon>(this, _$identity);
+_$ManagedCouponCopyWith<_ManagedCoupon> get copyWith => __$ManagedCouponCopyWithImpl<_ManagedCoupon>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MyCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.code, code) || other.code == code)&&(identical(other.active, active) || other.active == active)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.code, code) || other.code == code)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,code,active,minOrderAmountMinor,startsAt,endsAt);
+int get hashCode => Object.hash(runtimeType,id,name,code,discountType,discountValue,minOrderAmountMinor,active,startsAt,endsAt);
 
 @override
 String toString() {
-  return 'MyCoupon(id: $id, code: $code, active: $active, minOrderAmountMinor: $minOrderAmountMinor, startsAt: $startsAt, endsAt: $endsAt)';
+  return 'ManagedCoupon(id: $id, name: $name, code: $code, discountType: $discountType, discountValue: $discountValue, minOrderAmountMinor: $minOrderAmountMinor, active: $active, startsAt: $startsAt, endsAt: $endsAt)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$MyCouponCopyWith<$Res> implements $MyCouponCopyWith<$Res> {
-  factory _$MyCouponCopyWith(_MyCoupon value, $Res Function(_MyCoupon) _then) = __$MyCouponCopyWithImpl;
+abstract mixin class _$ManagedCouponCopyWith<$Res> implements $ManagedCouponCopyWith<$Res> {
+  factory _$ManagedCouponCopyWith(_ManagedCoupon value, $Res Function(_ManagedCoupon) _then) = __$ManagedCouponCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String code, bool active, int minOrderAmountMinor, DateTime? startsAt, DateTime? endsAt
+ String id, String name, String code, PromoDiscountType discountType, int discountValue, int minOrderAmountMinor, bool active, DateTime? startsAt, DateTime? endsAt
 });
 
 
@@ -547,22 +553,25 @@ $Res call({
 
 }
 /// @nodoc
-class __$MyCouponCopyWithImpl<$Res>
-    implements _$MyCouponCopyWith<$Res> {
-  __$MyCouponCopyWithImpl(this._self, this._then);
+class __$ManagedCouponCopyWithImpl<$Res>
+    implements _$ManagedCouponCopyWith<$Res> {
+  __$ManagedCouponCopyWithImpl(this._self, this._then);
 
-  final _MyCoupon _self;
-  final $Res Function(_MyCoupon) _then;
+  final _ManagedCoupon _self;
+  final $Res Function(_ManagedCoupon) _then;
 
-/// Create a copy of MyCoupon
+/// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? code = null,Object? active = null,Object? minOrderAmountMinor = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
-  return _then(_MyCoupon(
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? code = null,Object? discountType = null,Object? discountValue = null,Object? minOrderAmountMinor = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
+  return _then(_ManagedCoupon(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
-as String,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
-as bool,minOrderAmountMinor: null == minOrderAmountMinor ? _self.minOrderAmountMinor : minOrderAmountMinor // ignore: cast_nullable_to_non_nullable
-as int,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
+as String,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
+as PromoDiscountType,discountValue: null == discountValue ? _self.discountValue : discountValue // ignore: cast_nullable_to_non_nullable
+as int,minOrderAmountMinor: null == minOrderAmountMinor ? _self.minOrderAmountMinor : minOrderAmountMinor // ignore: cast_nullable_to_non_nullable
+as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
+as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -844,266 +853,6 @@ as DateTime?,
 }
 
 /// @nodoc
-mixin _$PromoCategoryRef {
-
- String get id; String get name;
-/// Create a copy of PromoCategoryRef
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$PromoCategoryRefCopyWith<PromoCategoryRef> get copyWith => _$PromoCategoryRefCopyWithImpl<PromoCategoryRef>(this as PromoCategoryRef, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PromoCategoryRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,id,name);
-
-@override
-String toString() {
-  return 'PromoCategoryRef(id: $id, name: $name)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $PromoCategoryRefCopyWith<$Res>  {
-  factory $PromoCategoryRefCopyWith(PromoCategoryRef value, $Res Function(PromoCategoryRef) _then) = _$PromoCategoryRefCopyWithImpl;
-@useResult
-$Res call({
- String id, String name
-});
-
-
-
-
-}
-/// @nodoc
-class _$PromoCategoryRefCopyWithImpl<$Res>
-    implements $PromoCategoryRefCopyWith<$Res> {
-  _$PromoCategoryRefCopyWithImpl(this._self, this._then);
-
-  final PromoCategoryRef _self;
-  final $Res Function(PromoCategoryRef) _then;
-
-/// Create a copy of PromoCategoryRef
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
-  return _then(PromoCategoryRef(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-}
-
-
-/// Adds pattern-matching-related methods to [PromoCategoryRef].
-extension PromoCategoryRefPatterns on PromoCategoryRef {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PromoCategoryRef value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _PromoCategoryRef() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PromoCategoryRef value)  $default,){
-final _that = this;
-switch (_that) {
-case _PromoCategoryRef():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PromoCategoryRef value)?  $default,){
-final _that = this;
-switch (_that) {
-case _PromoCategoryRef() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _PromoCategoryRef() when $default != null:
-return $default(_that.id,_that.name);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name)  $default,) {final _that = this;
-switch (_that) {
-case _PromoCategoryRef():
-return $default(_that.id,_that.name);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name)?  $default,) {final _that = this;
-switch (_that) {
-case _PromoCategoryRef() when $default != null:
-return $default(_that.id,_that.name);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-
-
-class _PromoCategoryRef implements PromoCategoryRef {
-  const _PromoCategoryRef({required this.id, required this.name});
-  
-
-@override final  String id;
-@override final  String name;
-
-/// Create a copy of PromoCategoryRef
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$PromoCategoryRefCopyWith<_PromoCategoryRef> get copyWith => __$PromoCategoryRefCopyWithImpl<_PromoCategoryRef>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PromoCategoryRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,id,name);
-
-@override
-String toString() {
-  return 'PromoCategoryRef(id: $id, name: $name)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$PromoCategoryRefCopyWith<$Res> implements $PromoCategoryRefCopyWith<$Res> {
-  factory _$PromoCategoryRefCopyWith(_PromoCategoryRef value, $Res Function(_PromoCategoryRef) _then) = __$PromoCategoryRefCopyWithImpl;
-@override @useResult
-$Res call({
- String id, String name
-});
-
-
-
-
-}
-/// @nodoc
-class __$PromoCategoryRefCopyWithImpl<$Res>
-    implements _$PromoCategoryRefCopyWith<$Res> {
-  __$PromoCategoryRefCopyWithImpl(this._self, this._then);
-
-  final _PromoCategoryRef _self;
-  final $Res Function(_PromoCategoryRef) _then;
-
-/// Create a copy of PromoCategoryRef
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
-  return _then(_PromoCategoryRef(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-
-}
-
-/// @nodoc
 mixin _$PromoBrandRef {
 
  String get id; String get name;
@@ -1354,6 +1103,266 @@ class __$PromoBrandRefCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
   return _then(_PromoBrandRef(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$PromoCategoryRef {
+
+ String get id; String get name;
+/// Create a copy of PromoCategoryRef
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PromoCategoryRefCopyWith<PromoCategoryRef> get copyWith => _$PromoCategoryRefCopyWithImpl<PromoCategoryRef>(this as PromoCategoryRef, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PromoCategoryRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'PromoCategoryRef(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PromoCategoryRefCopyWith<$Res>  {
+  factory $PromoCategoryRefCopyWith(PromoCategoryRef value, $Res Function(PromoCategoryRef) _then) = _$PromoCategoryRefCopyWithImpl;
+@useResult
+$Res call({
+ String id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class _$PromoCategoryRefCopyWithImpl<$Res>
+    implements $PromoCategoryRefCopyWith<$Res> {
+  _$PromoCategoryRefCopyWithImpl(this._self, this._then);
+
+  final PromoCategoryRef _self;
+  final $Res Function(PromoCategoryRef) _then;
+
+/// Create a copy of PromoCategoryRef
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
+  return _then(PromoCategoryRef(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [PromoCategoryRef].
+extension PromoCategoryRefPatterns on PromoCategoryRef {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PromoCategoryRef value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PromoCategoryRef() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PromoCategoryRef value)  $default,){
+final _that = this;
+switch (_that) {
+case _PromoCategoryRef():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PromoCategoryRef value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PromoCategoryRef() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PromoCategoryRef() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name)  $default,) {final _that = this;
+switch (_that) {
+case _PromoCategoryRef():
+return $default(_that.id,_that.name);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name)?  $default,) {final _that = this;
+switch (_that) {
+case _PromoCategoryRef() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _PromoCategoryRef implements PromoCategoryRef {
+  const _PromoCategoryRef({required this.id, required this.name});
+  
+
+@override final  String id;
+@override final  String name;
+
+/// Create a copy of PromoCategoryRef
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PromoCategoryRefCopyWith<_PromoCategoryRef> get copyWith => __$PromoCategoryRefCopyWithImpl<_PromoCategoryRef>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PromoCategoryRef&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'PromoCategoryRef(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PromoCategoryRefCopyWith<$Res> implements $PromoCategoryRefCopyWith<$Res> {
+  factory _$PromoCategoryRefCopyWith(_PromoCategoryRef value, $Res Function(_PromoCategoryRef) _then) = __$PromoCategoryRefCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class __$PromoCategoryRefCopyWithImpl<$Res>
+    implements _$PromoCategoryRefCopyWith<$Res> {
+  __$PromoCategoryRefCopyWithImpl(this._self, this._then);
+
+  final _PromoCategoryRef _self;
+  final $Res Function(_PromoCategoryRef) _then;
+
+/// Create a copy of PromoCategoryRef
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
+  return _then(_PromoCategoryRef(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,

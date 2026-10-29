@@ -27,26 +27,12 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     return user.id;
   }
 
-  List<MyPromotion> _mapRows(List<Map<String, dynamic>> rows) {
-    return rows.map(PromotionDto.fromJson).map((dto) => dto.toDomain()).toList();
-  }
-
-  List<ManagedBanner> _mapBannerRows(List<Map<String, dynamic>> rows) {
-    return rows.map(BannerDto.fromJson).map((dto) {
-      final path = dto.imagePath;
-      // submit_banner stores a FULL public URL; only re-wrap bare paths.
-      return dto.toDomain(
-        imageUrl: path.startsWith('http')
-            ? path
-            : _client.storage.from('promo_assets').getPublicUrl(path),
-      );
-    }).toList();
-  }
-
-  static const _promotionSelect =
+  static const _saleSelect =
       'id, name, description, scope, discount_type, discount_value, active, '
-      'brands(name), coupons(id, code, active, min_order_amount_minor, '
-      'starts_at, ends_at)';
+      'starts_at, ends_at, brands(name), categories(name)';
+  static const _couponSelect =
+      'id, name, code, discount_type, discount_value, '
+      'min_order_amount_minor, active, starts_at, ends_at';
 
   Future<void> _rpc(String function, Map<String, dynamic> params) async {
     try {
@@ -56,55 +42,69 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     }
   }
 
+  /// Uploads the image and returns its full public URL (the sale/banner
+  /// RPCs store URLs, not bare paths).
+  Future<String> _uploadPromoAsset({
+    required String filePath,
+    required String fileName,
+  }) async {
+    final bytes = await File(filePath).readAsBytes();
+    final path = '$_uid/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+    await _client.storage.from('promo_assets').uploadBinary(path, bytes);
+    return _client.storage.from('promo_assets').getPublicUrl(path);
+  }
+
   @override
-  Future<List<MyPromotion>> fetchAllPromotions() async {
+  Future<List<ManagedSale>> fetchSales() async {
     try {
       final rows = await _client
-          .from('promotions')
-          .select(_promotionSelect)
+          .from('sales')
+          .select(_saleSelect)
           .order('created_at', ascending: false);
-      return _mapRows(rows);
+      return rows
+          .map(SaleDto.fromJson)
+          .map((dto) => dto.toDomain())
+          .toList();
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
 
   @override
-  Future<List<ManagedBanner>> fetchAllBanners() async {
+  Future<List<ManagedCoupon>> fetchCoupons() async {
+    try {
+      final rows = await _client
+          .from('coupons')
+          .select(_couponSelect)
+          .order('created_at', ascending: false);
+      return rows
+          .map(CouponDto.fromJson)
+          .map((dto) => dto.toDomain())
+          .toList();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<List<ManagedBanner>> fetchBanners() async {
     try {
       final rows = await _client
           .from('banners')
           .select()
           .order('created_at', ascending: false);
-      return _mapBannerRows(rows);
+      return rows.map(BannerDto.fromJson).map((dto) {
+        final path = dto.imagePath;
+        // Full public URLs pass through; only re-wrap bare paths.
+        return dto.toDomain(
+          imageUrl: path.startsWith('http')
+              ? path
+              : _client.storage.from('promo_assets').getPublicUrl(path),
+        );
+      }).toList();
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
-  }
-
-  @override
-  Future<void> createPlatformPromotion({
-    required String name,
-    required String description,
-    required PromoDiscountType discountType,
-    required int discountValue,
-    required String code,
-    int minOrderAmountMinor = 0,
-    DateTime? startsAt,
-    DateTime? endsAt,
-    String? brandId,
-  }) {
-    return _rpc('create_platform_promotion', {
-      'p_name': name,
-      'p_description': description,
-      'p_discount_type': discountType.wireName,
-      'p_discount_value': discountValue,
-      'p_code': code,
-      'p_min_order_amount_minor': minOrderAmountMinor,
-      'p_starts_at': startsAt?.toIso8601String(),
-      'p_ends_at': endsAt?.toIso8601String(),
-      'p_brand_id': brandId,
-    });
   }
 
   @override
@@ -138,6 +138,70 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   }
 
   @override
+  Future<void> createSale({
+    required String name,
+    required String description,
+    required SaleScope scope,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    DateTime? startsAt,
+    DateTime? endsAt,
+    String? brandId,
+    String? categoryId,
+    String? filePath,
+    String? fileName,
+  }) async {
+    try {
+      final imageUrl = filePath == null || fileName == null
+          ? null
+          : await _uploadPromoAsset(filePath: filePath, fileName: fileName);
+      await _client.rpc('admin_create_sale', params: {
+        'p_name': name,
+        'p_description': description,
+        'p_discount_type': discountType.wireName,
+        'p_discount_value': discountValue,
+        'p_scope': scope.wireName,
+        'p_brand_id': brandId,
+        'p_category_id': categoryId,
+        'p_starts_at': startsAt?.toIso8601String(),
+        'p_ends_at': endsAt?.toIso8601String(),
+        'p_image_path': imageUrl,
+      });
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<void> setSaleActive({required String saleId, required bool active}) {
+    return _rpc('admin_set_sale_active', {
+      'p_sale_id': saleId,
+      'p_active': active,
+    });
+  }
+
+  @override
+  Future<void> createCoupon({
+    required String name,
+    required String code,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) {
+    return _rpc('admin_create_coupon', {
+      'p_name': name,
+      'p_code': code,
+      'p_discount_type': discountType.wireName,
+      'p_discount_value': discountValue,
+      'p_min_order_amount_minor': minOrderAmountMinor,
+      'p_starts_at': startsAt?.toIso8601String(),
+      'p_ends_at': endsAt?.toIso8601String(),
+    });
+  }
+
+  @override
   Future<void> createBanner({
     required String name,
     required String description,
@@ -162,60 +226,12 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   }
 
   @override
-  Future<String> createCampaign({
-    required String name,
-    required String description,
-    required String filePath,
-    required String fileName,
-    required PromoDiscountType discountType,
-    required int discountValue,
-    int minOrderAmountMinor = 0,
-    DateTime? startsAt,
-    DateTime? endsAt,
-    String? brandId,
-  }) async {
-    try {
-      final bytes = await File(filePath).readAsBytes();
-      final path = '$_uid/'
-          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      await _client.storage.from('promo_assets').uploadBinary(path, bytes);
-      final imageUrl = _client.storage.from('promo_assets').getPublicUrl(path);
-      final result = await _client.rpc('admin_create_campaign', params: {
-        'p_name': name,
-        'p_description': description,
-        'p_image_path': imageUrl,
-        'p_discount_type': discountType.wireName,
-        'p_discount_value': discountValue,
-        'p_min_order_amount_minor': minOrderAmountMinor,
-        'p_starts_at': startsAt?.toIso8601String(),
-        'p_ends_at': endsAt?.toIso8601String(),
-        'p_brand_id': brandId,
-      });
-      final map = Map<String, dynamic>.from(result as Map);
-      return map['coupon_code'] as String? ?? '';
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
-      throw mapRepositoryError(error, stackTrace);
-    }
-  }
-
-  @override
-  Future<void> setPromotionActive({
-    required String promotionId,
-    required bool active,
-  }) {
-    return _rpc('admin_set_promotion_active', {
-      'p_promotion_id': promotionId,
-      'p_active': active,
-    });
-  }
-
-  @override
   Future<void> moderateBanner({
-    required String promotionId,
+    required String bannerId,
     required String action,
   }) {
     return _rpc('moderate_banner', {
-      'p_banner_id': promotionId,
+      'p_banner_id': bannerId,
       'p_action': action,
     });
   }

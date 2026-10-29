@@ -5,55 +5,39 @@ import '../../domain/entities/promotion.dart';
 
 part 'admin_promotions_controller.g.dart';
 
+/// Admin sales management (Section 9): the group-pricing layer.
 @riverpod
-class AdminPromotionsController extends _$AdminPromotionsController {
+class AdminSalesController extends _$AdminSalesController {
   @override
-  Future<List<MyPromotion>> build() async {
-    return ref.watch(promotionsRepositoryProvider).fetchAllPromotions();
+  Future<List<ManagedSale>> build() async {
+    return ref.watch(promotionsRepositoryProvider).fetchSales();
   }
 
-  Future<void> createPlatformPromotion({
+  Future<void> createSale({
     required String name,
     required String description,
+    required SaleScope scope,
     required PromoDiscountType discountType,
     required int discountValue,
-    required String code,
-    int minOrderAmountMinor = 0,
     DateTime? startsAt,
     DateTime? endsAt,
     String? brandId,
+    String? categoryId,
+    String? filePath,
+    String? fileName,
   }) async {
-    final current = state.value ?? const <MyPromotion>[];
+    final current = state.value ?? const <ManagedSale>[];
     state = await AsyncValue.guard(() async {
-      await ref.read(promotionsRepositoryProvider).createPlatformPromotion(
+      await ref.read(promotionsRepositoryProvider).createSale(
             name: name,
             description: description,
+            scope: scope,
             discountType: discountType,
             discountValue: discountValue,
-            code: code,
-            minOrderAmountMinor: minOrderAmountMinor,
             startsAt: startsAt,
             endsAt: endsAt,
             brandId: brandId,
-          );
-      ref.invalidateSelf();
-      return current;
-    });
-  }
-
-  /// Section 9: display-only home banner (inert imagery — no campaign, no
-  /// deep link). Targeted banners are campaigns (createCampaign).
-  Future<void> createBanner({
-    required String name,
-    required String description,
-    required String filePath,
-    required String fileName,
-  }) async {
-    final current = state.value ?? const <MyPromotion>[];
-    state = await AsyncValue.guard(() async {
-      await ref.read(promotionsRepositoryProvider).createBanner(
-            name: name,
-            description: description,
+            categoryId: categoryId,
             filePath: filePath,
             fileName: fileName,
           );
@@ -62,66 +46,62 @@ class AdminPromotionsController extends _$AdminPromotionsController {
     });
   }
 
-  /// New campaign (Option A, user decision 2026-10-28): one atomic call
-  /// creating the promotion, its auto-applied coupon, and the Home banner.
-  /// Returns the generated coupon code for the confirmation snackbar.
-  Future<String> createCampaign({
-    required String name,
-    required String description,
-    required String filePath,
-    required String fileName,
-    required PromoDiscountType discountType,
-    required int discountValue,
-    int minOrderAmountMinor = 0,
-    DateTime? startsAt,
-    DateTime? endsAt,
-    String? brandId,
-  }) async {
-    final current = state.value ?? const <MyPromotion>[];
-    var couponCode = '';
-    state = await AsyncValue.guard(() async {
-      couponCode = await ref.read(promotionsRepositoryProvider).createCampaign(
-            name: name,
-            description: description,
-            filePath: filePath,
-            fileName: fileName,
-            discountType: discountType,
-            discountValue: discountValue,
-            minOrderAmountMinor: minOrderAmountMinor,
-            startsAt: startsAt,
-            endsAt: endsAt,
-            brandId: brandId,
-          );
-      ref.invalidateSelf();
-      return current;
-    });
-    return couponCode;
-  }
-
-  /// Promotion-level kill switch (2026-10-28): stops the whole rule (the
-  /// chip disappears from cards, the auto-apply stops matching) — the
-  /// per-coupon switch below remains for code-level control.
-  Future<void> togglePromotion({
-    required String promotionId,
+  /// Sale kill switch: chips, struck prices and the linked banner stop
+  /// rendering while inactive.
+  Future<void> toggleSale({
+    required String saleId,
     required bool active,
   }) async {
-    final current = state.value ?? const <MyPromotion>[];
+    final current = state.value ?? const <ManagedSale>[];
     state = await AsyncValue.guard(() async {
       await ref
           .read(promotionsRepositoryProvider)
-          .setPromotionActive(promotionId: promotionId, active: active);
+          .setSaleActive(saleId: saleId, active: active);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+}
+
+/// Admin standalone coupon codes — cart-wide, stacked on sale prices.
+@riverpod
+class AdminCouponsController extends _$AdminCouponsController {
+  @override
+  Future<List<ManagedCoupon>> build() async {
+    return ref.watch(promotionsRepositoryProvider).fetchCoupons();
+  }
+
+  Future<void> createCoupon({
+    required String name,
+    required String code,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) async {
+    final current = state.value ?? const <ManagedCoupon>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(promotionsRepositoryProvider).createCoupon(
+            name: name,
+            code: code,
+            discountType: discountType,
+            discountValue: discountValue,
+            minOrderAmountMinor: minOrderAmountMinor,
+            startsAt: startsAt,
+            endsAt: endsAt,
+          );
       ref.invalidateSelf();
       return current;
     });
   }
 
-  /// Coupon kill switch (Section 5b): the manual status toggle; date-window
-  /// expiry is derived server-side at validation time.
+  /// Code kill switch; date-window expiry is derived server-side.
   Future<void> toggleCoupon({
     required String couponId,
     required bool active,
   }) async {
-    final current = state.value ?? const <MyPromotion>[];
+    final current = state.value ?? const <ManagedCoupon>[];
     state = await AsyncValue.guard(() async {
       await ref
           .read(promotionsRepositoryProvider)
@@ -137,7 +117,26 @@ class AdminPromotionsController extends _$AdminPromotionsController {
 class AdminBannersController extends _$AdminBannersController {
   @override
   Future<List<ManagedBanner>> build() async {
-    return ref.watch(promotionsRepositoryProvider).fetchAllBanners();
+    return ref.watch(promotionsRepositoryProvider).fetchBanners();
+  }
+
+  Future<void> createBanner({
+    required String name,
+    required String description,
+    required String filePath,
+    required String fileName,
+  }) async {
+    final current = state.value ?? const <ManagedBanner>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(promotionsRepositoryProvider).createBanner(
+            name: name,
+            description: description,
+            filePath: filePath,
+            fileName: fileName,
+          );
+      ref.invalidateSelf();
+      return current;
+    });
   }
 
   Future<void> moderate({
@@ -147,7 +146,7 @@ class AdminBannersController extends _$AdminBannersController {
     final current = state.value ?? const <ManagedBanner>[];
     state = await AsyncValue.guard(() async {
       await ref.read(promotionsRepositoryProvider).moderateBanner(
-            promotionId: bannerId,
+            bannerId: bannerId,
             action: action,
           );
       ref.invalidateSelf();
@@ -156,14 +155,13 @@ class AdminBannersController extends _$AdminBannersController {
   }
 }
 
-/// Active brands for the coupon-scope picker (Section 2d) and the banner
-/// destination picker (Section 9).
+/// Active brands for the sale-scope picker (Section 2d).
 @riverpod
 Future<List<PromoBrandRef>> promoBrands(Ref ref) async {
   return ref.watch(promotionsRepositoryProvider).fetchActiveBrands();
 }
 
-/// All categories for the banner destination picker (Section 9).
+/// All categories for the sale-scope picker (Section 9).
 @riverpod
 Future<List<PromoCategoryRef>> promoCategories(Ref ref) async {
   return ref.watch(promotionsRepositoryProvider).fetchCategories();

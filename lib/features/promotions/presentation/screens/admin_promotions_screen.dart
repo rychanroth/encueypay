@@ -3,183 +3,63 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
-import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../domain/entities/promotion.dart';
 import '../controllers/admin_promotions_controller.dart';
 
-/// Admin Promotions tab (spec §2.4/§27; §5b redesign): the Coupons section
-/// manages discount rules + their codes (one atomic creation flow), the
-/// Banners section moderates the advertising surface. Banners carry no
-/// discount; coupons carry the assignment §5 attribute set.
+/// Admin Promotions tab (spec §2.4/§27): three independent sections —
+/// Sales (group pricing: platform/brand/category), Coupons (standalone
+/// codes that stack on sale prices at checkout) and Banners (cosmetic
+/// advertising, optionally linked to a sale for its tap target). Banners
+/// carry no discount; sales carry no code.
 class AdminPromotionsScreen extends ConsumerWidget {
   const AdminPromotionsScreen({super.key});
 
-  Future<void> _createCoupon(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final name = TextEditingController();
-    final value = TextEditingController();
-    final code = TextEditingController();
-    final minOrder = TextEditingController();
-    var isPercent = false;
-    DateTime? startsAt;
-    DateTime? endsAt;
-    String? brandId;
-    // Await the scope options BEFORE opening the dialog — a ref.read
-    // snapshot freezes the AsyncValue, and a StatefulBuilder nothing
-    // notifies would buffer forever.
-    List<PromoBrandRef> brands;
+  // ------------------------------------------------------------- helpers
+
+  /// Manual refresh across all three sections (PRES-03 allows screens to
+  /// invalidate providers). Awaited so the RefreshIndicator tracks it.
+  Future<void> _refresh(WidgetRef ref) async {
+    ref.invalidate(adminSalesControllerProvider);
+    ref.invalidate(adminCouponsControllerProvider);
+    ref.invalidate(adminBannersControllerProvider);
     try {
-      brands = await ref.read(promoBrandsProvider.future);
-    } on Failure catch (failure) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
-      return;
+      await Future.wait([
+        ref.read(adminSalesControllerProvider.future),
+        ref.read(adminCouponsControllerProvider.future),
+        ref.read(adminBannersControllerProvider.future),
+      ]);
+    } on Exception catch (error, stackTrace) {
+      // Failure states render through the controllers' error branches and
+      // the ref.listen snackbars below — nothing to rethrow here.
+      logSuppressedError(error, stackTrace);
     }
-    if (!context.mounted) return;
-    final created = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('New coupon'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: name,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                ),
-                TextField(
-                  controller: code,
-                  decoration: const InputDecoration(labelText: 'Coupon code'),
-                  textCapitalization: TextCapitalization.characters,
-                ),
-                Row(
-                  children: [
-                    const Text('Percent'),
-                    Switch(
-                      value: isPercent,
-                      onChanged: (v) => setDialogState(() => isPercent = v),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: value,
-                        decoration: InputDecoration(
-                          labelText: isPercent ? 'Percent (1-100)' : 'Amount',
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                  ],
-                ),
-                TextField(
-                  controller: minOrder,
-                  decoration: const InputDecoration(
-                    labelText: 'Minimum order amount (optional)',
-                    prefixText: '\$ ',
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true),
-                ),
-                const SizedBox(height: 8),
-                // Scope picker (Section 2d/5b): platform-wide or brand-wide.
-                DropdownButtonFormField<String>(
-                  initialValue: brandId,
-                  decoration: const InputDecoration(labelText: 'Scope'),
-                  items: [
-                    const DropdownMenuItem(
-                      value: null,
-                      child: Text('Platform-wide'),
-                    ),
-                    for (final brand in brands)
-                      DropdownMenuItem(
-                        value: brand.id,
-                        child: Text('Brand: ${brand.name}'),
-                      ),
-                  ],
-                  onChanged: (v) => setDialogState(() => brandId = v),
-                ),
-                const SizedBox(height: 8),
-                // Date window (assignment §5) — derived at validation time.
-                Row(
-                  children: [
-                    Expanded(
-                      child: _DateField(
-                        label: 'Starts',
-                        value: startsAt,
-                        onChanged: (v) => setDialogState(() => startsAt = v),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _DateField(
-                        label: 'Ends',
-                        value: endsAt,
-                        onChanged: (v) => setDialogState(() => endsAt = v),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Create'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (created != true) return;
-    var minOrderMinor = 0;
-    if (minOrder.text.trim().isNotEmpty) {
-      minOrderMinor = Money.parse(minOrder.text.trim()).minorUnits;
-    }
-    await ref.read(adminPromotionsControllerProvider.notifier).createPlatformPromotion(
-          name: name.text.trim(),
-          description: '',
-          discountType:
-              isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
-          discountValue: int.tryParse(value.text) ?? 0,
-          code: code.text.trim(),
-          minOrderAmountMinor: minOrderMinor,
-          startsAt: startsAt,
-          endsAt: endsAt,
-          brandId: brandId,
-        );
   }
 
-  /// New campaign (Option A, user decision 2026-10-28): one atomic flow
-  /// creating the promotion, its auto-applied coupon code, and the Home
-  /// banner. The Discovery deep-link target is derived from the promotion's
-  /// scope server-side at read time.
-  Future<void> _createCampaign(BuildContext context, WidgetRef ref) async {
-    final file = await FilePicker.pickFile(type: FileType.image);
-    if (file == null || file.path == null || !context.mounted) return;
+  // --------------------------------------------------------------- sale
+
+  /// New sale: scope (platform/brand/category), percent-or-fixed value,
+  /// window — and an optional banner image, which links an approved Home
+  /// banner to the sale in the same call (the one-step campaign UX).
+  Future<void> _createSale(BuildContext context, WidgetRef ref) async {
     final name = TextEditingController();
     final value = TextEditingController();
-    final minOrder = TextEditingController();
     var isPercent = true;
-    var scopeIsBrand = false;
+    var scope = SaleScope.platform;
     String? brandId;
+    String? categoryId;
+    PlatformFile? bannerFile;
     DateTime? startsAt;
     DateTime? endsAt;
-    // Await the brand options before opening the dialog — same
-    // frozen-snapshot reason as the coupon dialog above.
+    // Await the scope options BEFORE opening the dialog — a ref.read inside
+    // a dialog freezes an AsyncLoading snapshot (autoDispose providers with
+    // no listener never update it). Same pattern as the coupon dialog.
     List<PromoBrandRef> brands;
+    List<PromoCategoryRef> categories;
     try {
       brands = await ref.read(promoBrandsProvider.future);
+      categories = await ref.read(promoCategoriesProvider.future);
     } on Failure catch (failure) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
@@ -192,153 +72,341 @@ class AdminPromotionsScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) {
-          final theme = Theme.of(dialogContext);
           return AlertDialog(
-          title: const Text('New campaign'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: name,
-                  decoration: const InputDecoration(
-                      labelText: 'Campaign name'),
-                ),
-                const SizedBox(height: 8),
-                // Scope: drives BOTH the discount base (checkout) and the
-                // banner's Discovery deep-link target.
-                DropdownButtonFormField<bool>(
-                  initialValue: scopeIsBrand,
-                  decoration: const InputDecoration(labelText: 'Scope'),
-                  items: const [
-                    DropdownMenuItem(
-                      value: false,
-                      child: Text('Platform-wide (all products)'),
+            title: const Text('New sale'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: name,
+                    decoration:
+                        const InputDecoration(labelText: 'Sale name'),
+                  ),
+                  const SizedBox(height: 8),
+                  // Scope decides which products the sale prices apply to.
+                  DropdownButtonFormField<SaleScope>(
+                    initialValue: scope,
+                    decoration: const InputDecoration(labelText: 'Scope'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: SaleScope.platform,
+                        child: Text('Platform-wide (all products)'),
+                      ),
+                      DropdownMenuItem(
+                        value: SaleScope.brand,
+                        child: Text('Brand'),
+                      ),
+                      DropdownMenuItem(
+                        value: SaleScope.category,
+                        child: Text('Category'),
+                      ),
+                    ],
+                    onChanged: (v) => setDialogState(() {
+                      scope = v ?? SaleScope.platform;
+                      brandId = null;
+                      categoryId = null;
+                    }),
+                  ),
+                  if (scope == SaleScope.brand)
+                    DropdownButtonFormField<String>(
+                      initialValue: brandId,
+                      decoration: const InputDecoration(labelText: 'Brand'),
+                      items: [
+                        for (final brand in brands)
+                          DropdownMenuItem(
+                            value: brand.id,
+                            child: Text(brand.name),
+                          ),
+                      ],
+                      onChanged: (id) => setDialogState(() => brandId = id),
                     ),
-                    DropdownMenuItem(
-                      value: true,
-                      child: Text('Brand-wide'),
+                  if (scope == SaleScope.category)
+                    DropdownButtonFormField<String>(
+                      initialValue: categoryId,
+                      decoration:
+                          const InputDecoration(labelText: 'Category'),
+                      items: [
+                        for (final category in categories)
+                          DropdownMenuItem(
+                            value: category.id,
+                            child: Text(category.name),
+                          ),
+                      ],
+                      onChanged: (id) =>
+                          setDialogState(() => categoryId = id),
                     ),
-                  ],
-                  onChanged: (v) => setDialogState(() {
-                    scopeIsBrand = v ?? false;
-                    brandId = null;
-                  }),
-                ),
-                if (scopeIsBrand)
-                  DropdownButtonFormField<String>(
-                    initialValue: brandId,
-                    decoration: const InputDecoration(labelText: 'Brand'),
-                    items: [
-                      for (final brand in brands)
-                        DropdownMenuItem(
-                          value: brand.id,
-                          child: Text(brand.name),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text('Percent off'),
+                      Switch(
+                        value: isPercent,
+                        onChanged: (v) => setDialogState(() => isPercent = v),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: value,
+                          decoration: InputDecoration(
+                            labelText: isPercent
+                                ? 'Discount percent (1-100)'
+                                : 'Discount amount per item',
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DateField(
+                          label: 'Starts',
+                          value: startsAt,
+                          onChanged: (v) => setDialogState(() => startsAt = v),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _DateField(
+                          label: 'Ends',
+                          value: endsAt,
+                          onChanged: (v) => setDialogState(() => endsAt = v),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Optional banner: linked to the sale for its Home tap
+                  // target, live immediately. The banner hides itself when
+                  // the sale is off.
+                  Row(
+                    children: [
+                      FilledButton.tonalIcon(
+                        onPressed: () async {
+                          final file = await FilePicker.pickFile(
+                              type: FileType.image);
+                          if (file != null) {
+                            setDialogState(() => bannerFile = file);
+                          }
+                        },
+                        icon: const Icon(Icons.image_outlined, size: 18),
+                        label: Text(bannerFile == null
+                            ? 'Attach banner image'
+                            : bannerFile!.name),
+                      ),
+                      if (bannerFile != null)
+                        IconButton(
+                          tooltip: 'Remove banner image',
+                          icon: const Icon(Icons.close, size: 18),
+                          onPressed: () =>
+                              setDialogState(() => bannerFile = null),
                         ),
                     ],
-                    onChanged: (id) => setDialogState(() => brandId = id),
                   ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text('Percent off'),
-                    Switch(
-                      value: isPercent,
-                      onChanged: (v) => setDialogState(() => isPercent = v),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: value,
-                        decoration: InputDecoration(
-                          labelText: isPercent
-                              ? 'Discount percent (1-100)'
-                              : 'Discount amount',
+                  const SizedBox(height: 4),
+                  Text(
+                    'Prices tagged products directly — no code, no minimum '
+                    'order. With an image, a live Home banner links to the '
+                    'sale and hides itself when the sale ends.',
+                    style: Theme.of(dialogContext)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(
+                          color: Theme.of(dialogContext)
+                              .colorScheme
+                              .onSurfaceVariant,
                         ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                  ],
-                ),
-                TextField(
-                  controller: minOrder,
-                  decoration: const InputDecoration(
-                    labelText: 'Minimum order amount (optional)',
-                    prefixText: '\$ ',
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _DateField(
-                        label: 'Starts',
-                        value: startsAt,
-                        onChanged: (v) => setDialogState(() => startsAt = v),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final discount = int.tryParse(value.text.trim());
+                  final groupMissing =
+                      (scope == SaleScope.brand && brandId == null) ||
+                          (scope == SaleScope.category && categoryId == null);
+                  if (name.text.trim().isEmpty ||
+                      discount == null ||
+                      discount <= 0 ||
+                      (isPercent && discount > 100) ||
+                      groupMissing) {
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Name, a positive discount and the scope group '
+                            '(for brand/category) are required'),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _DateField(
-                        label: 'Ends',
-                        value: endsAt,
-                        onChanged: (v) => setDialogState(() => endsAt = v),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Creates the promotion, an auto-applied coupon code, and '
-                  'the Home banner in one step. The coupon applies '
-                  'automatically at checkout.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final discount = int.tryParse(value.text.trim());
-                if (name.text.trim().isEmpty ||
-                    discount == null ||
-                    discount <= 0 ||
-                    (isPercent && discount > 100) ||
-                    (scopeIsBrand && brandId == null)) {
-                  ScaffoldMessenger.of(dialogContext).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                          'Name, a positive discount and a brand (for brand scope) are required'),
-                    ),
-                  );
-                  return;
-                }
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('Create campaign'),
-            ),
-          ],
-        ); // AlertDialog
-        }, // builder block — the theme and the early validation return
-      ), // StatefulBuilder
-    ); // showDialog
+                    );
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(true);
+                },
+                child: const Text('Create sale'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
     if (submitted != true) return;
     if (!context.mounted) return;
-    final couponCode = await ref
-        .read(adminPromotionsControllerProvider.notifier)
-        .createCampaign(
+    await ref.read(adminSalesControllerProvider.notifier).createSale(
           name: name.text.trim(),
           description: '',
-          filePath: file.path!,
-          fileName: file.name,
+          scope: scope,
+          discountType:
+              isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
+          discountValue: int.parse(value.text.trim()),
+          startsAt: startsAt,
+          endsAt: endsAt,
+          brandId: scope == SaleScope.brand ? brandId : null,
+          categoryId: scope == SaleScope.category ? categoryId : null,
+          filePath: bannerFile?.path,
+          fileName: bannerFile?.name,
+        );
+  }
+
+  // -------------------------------------------------------------- coupon
+
+  /// New standalone coupon code: cart-wide, stacks on sale prices.
+  Future<void> _createCoupon(BuildContext context, WidgetRef ref) async {
+    final name = TextEditingController();
+    final value = TextEditingController();
+    final code = TextEditingController();
+    final minOrder = TextEditingController();
+    var isPercent = false;
+    DateTime? startsAt;
+    DateTime? endsAt;
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return AlertDialog(
+            title: const Text('New coupon'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: name,
+                    decoration: const InputDecoration(
+                        labelText: 'Coupon name (optional)'),
+                  ),
+                  TextField(
+                    controller: code,
+                    decoration: const InputDecoration(
+                      labelText: 'Coupon code',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text('Percent off'),
+                      Switch(
+                        value: isPercent,
+                        onChanged: (v) => setDialogState(() => isPercent = v),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: value,
+                          decoration: InputDecoration(
+                            labelText: isPercent
+                                ? 'Discount percent (1-100)'
+                                : 'Discount amount',
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextField(
+                    controller: minOrder,
+                    decoration: const InputDecoration(
+                      labelText: 'Minimum order amount (optional)',
+                      prefixText: '\$ ',
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DateField(
+                          label: 'Starts',
+                          value: startsAt,
+                          onChanged: (v) => setDialogState(() => startsAt = v),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _DateField(
+                          label: 'Ends',
+                          value: endsAt,
+                          onChanged: (v) => setDialogState(() => endsAt = v),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Customers type this code at checkout; it stacks on top '
+                    'of sale prices and applies to the whole cart.',
+                    style: Theme.of(dialogContext)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(
+                          color: Theme.of(dialogContext)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final discount = int.tryParse(value.text.trim());
+                  if (code.text.trim().isEmpty ||
+                      discount == null ||
+                      discount <= 0 ||
+                      (isPercent && discount > 100)) {
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'A code and a positive discount are required'),
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(true);
+                },
+                child: const Text('Create coupon'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (submitted != true) return;
+    if (!context.mounted) return;
+    await ref.read(adminCouponsControllerProvider.notifier).createCoupon(
+          name: name.text.trim(),
+          code: code.text.trim(),
           discountType:
               isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
           discountValue: int.parse(value.text.trim()),
@@ -347,20 +415,12 @@ class AdminPromotionsScreen extends ConsumerWidget {
               : Money.parse(minOrder.text.trim()).minorUnits,
           startsAt: startsAt,
           endsAt: endsAt,
-          brandId: scopeIsBrand ? brandId : null,
         );
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(couponCode.isEmpty
-            ? 'Campaign created'
-            : 'Campaign created — coupon $couponCode applies automatically '
-                'at checkout'),
-      ));
   }
 
-  /// Display-only banner (inert imagery — no campaign, no deep link).
+  // -------------------------------------------------------------- banner
+
+  /// Display-only banner: inert imagery with no sale behind it.
   Future<void> _createDisplayBanner(BuildContext context, WidgetRef ref) async {
     final file = await FilePicker.pickFile(type: FileType.image);
     if (file == null || file.path == null || !context.mounted) return;
@@ -387,7 +447,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
     );
     if (submitted != true) return;
     if (!context.mounted) return;
-    await ref.read(adminPromotionsControllerProvider.notifier).createBanner(
+    await ref.read(adminBannersControllerProvider.notifier).createBanner(
           name: name.text.trim(),
           description: '',
           filePath: file.path!,
@@ -395,49 +455,31 @@ class AdminPromotionsScreen extends ConsumerWidget {
         );
   }
 
-  /// Manual refresh: re-fetch coupons and banners (PRES-03 allows screens to
-  /// invalidate providers). Awaited so the RefreshIndicator tracks the fetch.
-  Future<void> _refresh(WidgetRef ref) async {
-    ref.invalidate(adminPromotionsControllerProvider);
-    ref.invalidate(adminBannersControllerProvider);
-    try {
-      await Future.wait([
-        ref.read(adminPromotionsControllerProvider.future),
-        ref.read(adminBannersControllerProvider.future),
-      ]);
-    } on Exception catch (error, stackTrace) {
-      // Failure states render through the controllers' error branches and
-      // the ref.listen snackbars below — nothing to rethrow here.
-      logSuppressedError(error, stackTrace);
-    }
-  }
+  // --------------------------------------------------------------- build
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final promotionsAsync = ref.watch(adminPromotionsControllerProvider);
+    final salesAsync = ref.watch(adminSalesControllerProvider);
+    final couponsAsync = ref.watch(adminCouponsControllerProvider);
     final bannersAsync = ref.watch(adminBannersControllerProvider);
     final theme = Theme.of(context);
 
-    ref.listen(adminPromotionsControllerProvider, (previous, next) {
+    void showError(AsyncValue<Object?> next) {
       final error = next.hasError ? next.error : null;
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(error.message)));
       }
-    });
-    ref.listen(adminBannersControllerProvider, (previous, next) {
-      final error = next.hasError ? next.error : null;
-      if (error is Failure) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
-      }
-    });
+    }
+
+    ref.listen(adminSalesControllerProvider, (_, next) => showError(next));
+    ref.listen(adminCouponsControllerProvider, (_, next) => showError(next));
+    ref.listen(adminBannersControllerProvider, (_, next) => showError(next));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Promotions'),
+        title: const Text('Sales & coupons'),
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -445,14 +487,14 @@ class AdminPromotionsScreen extends ConsumerWidget {
             onPressed: () => _refresh(ref),
           ),
           IconButton(
+            tooltip: 'New sale',
+            icon: const Icon(Icons.campaign_outlined),
+            onPressed: () => _createSale(context, ref),
+          ),
+          IconButton(
             tooltip: 'New coupon',
             icon: const Icon(Icons.add),
             onPressed: () => _createCoupon(context, ref),
-          ),
-          IconButton(
-            tooltip: 'New campaign (banner + auto-applied coupon)',
-            icon: const Icon(Icons.campaign_outlined),
-            onPressed: () => _createCampaign(context, ref),
           ),
           IconButton(
             tooltip: 'New display banner',
@@ -463,185 +505,178 @@ class AdminPromotionsScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () => _refresh(ref),
-        child: promotionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => ListView(
-          // Scrollable so the pull-to-refresh gesture works on errors too.
-          children: [Center(child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text('$error', textAlign: TextAlign.center),
-          ))],
-        ),
-        data: (promotions) {
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text('Coupons',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              if (promotions.isEmpty)
-                const Text('No coupons yet. Use + to create one.')
-              else
-                for (final promotion in promotions)
-                  Card(
-                    margin: const EdgeInsets.only(top: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  promotion.name,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: promotion.active
-                                        ? null
-                                        : theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                              AdminCouponScopeChip(promotion: promotion),
-                              // Promotion-level kill switch (the coupon
-                              // switch below is per-code).
-                              Switch(
-                                value: promotion.active,
-                                onChanged: (active) => ref
-                                    .read(adminPromotionsControllerProvider
-                                        .notifier)
-                                    .togglePromotion(
-                                      promotionId: promotion.id,
-                                      active: active,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          for (final coupon in promotion.coupons)
-                            ListTile(
-                              dense: true,
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(
-                                coupon.active
-                                    ? Icons.confirmation_number_outlined
-                                    : Icons.confirmation_number,
-                                size: 20,
-                              ),
-                              title: Text(
-                                '${coupon.code} · '
-                                '${promotion.discountType.name} '
-                                '${promotion.discountValue}'
-                                '${promotion.discountType == PromoDiscountType.percent ? '%' : ''}',
-                              ),
-                              subtitle: Text(
-                                '${Money(coupon.minOrderAmountMinor).format()} min'
-                                '${coupon.startsAt == null ? '' : ' · from ${_day(coupon.startsAt!)}'}'
-                                '${coupon.endsAt == null ? '' : ' · until ${_day(coupon.endsAt!)}'}',
-                              ),
-                              trailing: Switch(
-                                value: coupon.active,
-                                onChanged: (active) => ref
-                                    .read(adminPromotionsControllerProvider
-                                        .notifier)
-                                    .toggleCoupon(
-                                      couponId: coupon.id,
-                                      active: active,
-                                    ),
-                              ),
-                            ),
-                          if (promotion.coupons.isEmpty)
-                            const Text('No coupon code issued.'),
-                        ],
-                      ),
-                    ),
-                  ),
-              const SizedBox(height: 16),
-              Text('Banners',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              bannersAsync.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text('Sales',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            salesAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.all(8),
+                child: SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                error: (error, _) => Text('$error'),
-                data: (banners) {
-                  if (banners.isEmpty) {
-                    return const Text('No banners submitted.');
-                  }
-                  return Column(
-                    children: [
-                      for (final banner in banners)
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Image.network(banner.imageUrl,
-                              width: 56, height: 40, fit: BoxFit.cover),
-                          title: Text(banner.name),
-                          subtitle: Text('Banner · ${banner.status.name}'),
-                          trailing: PopupMenuButton<String>(
-                            onSelected: (action) => ref
-                                .read(adminBannersControllerProvider.notifier)
-                                .moderate(bannerId: banner.id, action: action),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                  value: 'approve', child: Text('Approve')),
-                              PopupMenuItem(
-                                  value: 'reject', child: Text('Reject')),
-                              PopupMenuItem(
-                                  value: 'disable', child: Text('Disable')),
-                            ],
+              ),
+              error: (error, _) => Text('$error'),
+              data: (sales) {
+                if (sales.isEmpty) {
+                  return const Text(
+                      'No sales yet. Use the campaign icon to create one.');
+                }
+                return Column(
+                  children: [
+                    for (final sale in sales)
+                      Card(
+                        margin: const EdgeInsets.only(top: 8),
+                        child: ListTile(
+                          title: Text(
+                            sale.name,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: sale.active
+                                  ? null
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${_discountLabel(sale.discountType, sale.discountValue)}'
+                            ' · ${_scopeLabel(sale)}'
+                            '${sale.startsAt == null ? '' : ' · from ${_day(sale.startsAt!)}'}'
+                            '${sale.endsAt == null ? '' : ' · until ${_day(sale.endsAt!)}'}',
+                          ),
+                          trailing: Switch(
+                            value: sale.active,
+                            onChanged: (active) => ref
+                                .read(adminSalesControllerProvider.notifier)
+                                .toggleSale(saleId: sale.id, active: active),
                           ),
                         ),
-                    ],
-                  );
-                },
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            Text('Coupons',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            couponsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.all(8),
+                child: SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
               ),
-            ],
-          );
-        },
+              error: (error, _) => Text('$error'),
+              data: (coupons) {
+                if (coupons.isEmpty) {
+                  return const Text('No coupons yet. Use + to create one.');
+                }
+                return Column(
+                  children: [
+                    for (final coupon in coupons)
+                      Card(
+                        margin: const EdgeInsets.only(top: 8),
+                        child: ListTile(
+                          title: Text(
+                            coupon.code,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: coupon.active
+                                  ? null
+                                  : theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${_discountLabel(coupon.discountType, coupon.discountValue)}'
+                            '${coupon.name.isEmpty ? '' : ' · ${coupon.name}'}'
+                            '${coupon.minOrderAmountMinor == 0 ? '' : ' · min ${Money(coupon.minOrderAmountMinor).format()}'}'
+                            '${coupon.startsAt == null ? '' : ' · from ${_day(coupon.startsAt!)}'}'
+                            '${coupon.endsAt == null ? '' : ' · until ${_day(coupon.endsAt!)}'}',
+                          ),
+                          trailing: Switch(
+                            value: coupon.active,
+                            onChanged: (active) => ref
+                                .read(adminCouponsControllerProvider.notifier)
+                                .toggleCoupon(
+                                    couponId: coupon.id, active: active),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            Text('Banners',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            bannersAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.all(8),
+                child: SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (error, _) => Text('$error'),
+              data: (banners) {
+                if (banners.isEmpty) {
+                  return const Text('No banners submitted.');
+                }
+                return Column(
+                  children: [
+                    for (final banner in banners)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Image.network(banner.imageUrl,
+                            width: 56, height: 40, fit: BoxFit.cover),
+                        title: Text(banner.name),
+                        subtitle: Text('Banner · ${banner.status.name}'),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (action) => ref
+                              .read(adminBannersControllerProvider.notifier)
+                              .moderate(bannerId: banner.id, action: action),
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                                value: 'approve', child: Text('Approve')),
+                            PopupMenuItem(
+                                value: 'reject', child: Text('Reject')),
+                            PopupMenuItem(
+                                value: 'disable', child: Text('Disable')),
+                          ],
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
+
+  static String _discountLabel(PromoDiscountType type, int value) =>
+      switch (type) {
+        PromoDiscountType.percent => '$value% off',
+        PromoDiscountType.fixed => '${Money(value).format()} off',
+      };
+
+  static String _scopeLabel(ManagedSale sale) => switch (sale.scope) {
+        SaleScope.platform => 'All products',
+        SaleScope.brand => 'Brand: ${sale.brandName ?? '—'}',
+        SaleScope.category => 'Category: ${sale.categoryName ?? '—'}',
+      };
 
   static String _day(DateTime value) =>
       value.toLocal().toString().substring(0, 10);
-}
-
-/// Scope label for a promotion row (Section 5b).
-class AdminCouponScopeChip extends StatelessWidget {
-  const AdminCouponScopeChip({super.key, required this.promotion});
-
-  final MyPromotion promotion;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final label = switch (promotion.scope) {
-      PromotionScope.platform => 'Platform',
-      PromotionScope.brand => 'Brand: ${promotion.brandName ?? '—'}',
-      PromotionScope.business => 'Business (legacy)',
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: theme.colorScheme.onSecondaryContainer,
-        ),
-      ),
-    );
-  }
 }
 
 class _DateField extends StatelessWidget {

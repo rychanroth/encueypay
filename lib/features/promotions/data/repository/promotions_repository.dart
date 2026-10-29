@@ -1,39 +1,59 @@
 import '../../domain/entities/promotion.dart';
 
-/// Promotions contract (spec §58 Promotions ops; §5b redesign) (DATA-03).
+/// Admin surface for sales, coupon codes and banners (spec §58 Promotions
+/// ops) (DATA-03).
 abstract interface class IPromotionsRepository {
-  /// All promotions — admin only, enforced server-side (§35.4).
-  Future<List<MyPromotion>> fetchAllPromotions();
+  /// All sales — admin only, enforced server-side (§35.4).
+  Future<List<ManagedSale>> fetchSales();
+
+  /// All standalone coupon codes — admin only.
+  Future<List<ManagedCoupon>> fetchCoupons();
 
   /// All banners — admin moderation view.
-  Future<List<ManagedBanner>> fetchAllBanners();
+  Future<List<ManagedBanner>> fetchBanners();
 
-  /// Active brands for the coupon-scope picker (Section 2d) and the banner
-  /// destination picker (Section 9).
+  /// Active brands for the sale-scope picker (Section 2d).
   Future<List<PromoBrandRef>> fetchActiveBrands();
 
-  /// All categories for the banner destination picker (Section 9). Categories
-  /// carry no status — the picker offers every row; targeting a parent
-  /// category includes its children in Discovery.
+  /// All categories for the sale-scope picker (Section 9). Categories carry
+  /// no status — the picker offers every row.
   Future<List<PromoCategoryRef>> fetchCategories();
 
-  /// Atomic admin creation (Section 5b): the promotion (rule + scope) and
-  /// its first coupon (code, min order, window) in one call. Platform-wide
-  /// when [brandId] is null, brand-wide otherwise.
-  Future<void> createPlatformPromotion({
+  /// Create a group sale via `admin_create_sale`. When an image is given,
+  /// the same call also registers an approved Home banner linked to the
+  /// sale (the one-step campaign UX); otherwise the sale ships bannerless.
+  Future<void> createSale({
     required String name,
     required String description,
+    required SaleScope scope,
     required PromoDiscountType discountType,
     required int discountValue,
-    required String code,
-    int minOrderAmountMinor = 0,
     DateTime? startsAt,
     DateTime? endsAt,
     String? brandId,
+    String? categoryId,
+    String? filePath,
+    String? fileName,
   });
 
-  /// Section 9: display-only home banner (inert imagery — targeted banners
-  /// are campaigns). Uploads the image, then registers it via the admin RPC.
+  /// Sale kill switch: deactivates the sale (chips, struck prices and
+  /// linked banners stop rendering).
+  Future<void> setSaleActive({required String saleId, required bool active});
+
+  /// Create a standalone coupon code via `admin_create_coupon` — cart-wide,
+  /// stacks on sale prices at checkout.
+  Future<void> createCoupon({
+    required String name,
+    required String code,
+    required PromoDiscountType discountType,
+    required int discountValue,
+    int minOrderAmountMinor = 0,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  });
+
+  /// Section 9: display-only home banner (no sale link — inert imagery).
+  /// Uploads the image, then registers it via the admin RPC.
   Future<void> createBanner({
     required String name,
     required String description,
@@ -41,32 +61,8 @@ abstract interface class IPromotionsRepository {
     required String fileName,
   });
 
-  /// New campaign (2026-10-28, Option A): one atomic call creating the
-  /// promotion, an auto-applied coupon, and the approved Home banner whose
-  /// Discovery target derives from the promotion's scope. Uploads the
-  /// image, then registers the bundle. Returns the generated coupon code.
-  Future<String> createCampaign({
-    required String name,
-    required String description,
-    required String filePath,
-    required String fileName,
-    required PromoDiscountType discountType,
-    required int discountValue,
-    int minOrderAmountMinor = 0,
-    DateTime? startsAt,
-    DateTime? endsAt,
-    String? brandId,
-  });
-
-  /// Promotion-level kill switch (2026-10-28): deactivates the rule (chip
-  /// + auto-apply stop matching); per-coupon control remains separate.
-  Future<void> setPromotionActive({
-    required String promotionId,
-    required bool active,
-  });
-
   Future<void> moderateBanner({
-    required String promotionId,
+    required String bannerId,
     required String action,
   });
 
