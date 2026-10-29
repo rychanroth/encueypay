@@ -681,6 +681,31 @@ constants per feature.
   (the dormant `'business'` enum value remains — Postgres cannot drop enum
   values).
 
+- **ACTION-03 (Sales + standalone codes — EXECUTED 2026-10-29, user decision).**
+  The promotions/coupons/banners campaign system is untangled into three
+  independent concepts (migrations 20261029000002/3; the old campaign data
+  was truncated, not migrated — user decision). **Sales** (the `sales`
+  table, renamed from `promotions`; enum `sale_scope`) are group-targeted
+  pricing: scope `platform|brand|category`, percent or fixed-per-unit, own
+  window and kill switch. The pricing rule lives in SQL — the
+  `active_sales` view (the single definition of "live") and
+  `best_sale_price_minor()` (lowest resulting price among applicable sales;
+  percent truncates, fixed floors at 0) — and order lines are charged at
+  the sale price, so sales need no ledger (`order_items.unit_price_minor`
+  is the historical truth). **Coupons** are standalone cart-wide codes
+  (own value/window/min-order; `promotion_id` and `auto_apply` dropped)
+  that stack on the sale-applied subtotal, recorded in `order_coupons`;
+  `preview_order_totals` returns the authoritative checkout numbers.
+  **Banners** are cosmetic: an optional `sale_id` used only for the tap
+  target; the client hides a banner whose sale is not live. Overlapping
+  sales resolve by lowest final price. Client surfaces read `active_sales`
+  and mirror the math display-only; composition roots inject sale prices
+  into cart/checkout as plain id→price maps (ARCH-04). Retired:
+  `auto_apply`, the order-function auto-apply block, `CAMP-` code
+  generation, the Auto-applied summary row, `admin_create_campaign`,
+  `admin_set_promotion_active`, `create_platform_promotion`,
+  `preview_cart_discounts`.
+
 **Known deviations** — acknowledged debt. Do **not** fix unprompted (GLOBAL-02); fix on
 the next touch of the file or on request:
 

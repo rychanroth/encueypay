@@ -64,7 +64,7 @@ Active handoffs live in docs/HANDOFF-<FEATURE>.md — read a feature's handoff
 before resuming it. If a handoff contradicts this file, this file wins.
 - Checkout: mid-flight; no plan doc on disk (the referenced PLAN-CHECKOUT.md
   was never written) — gauge state from git log until one exists.
-- Promotions: docs/HANDOFF-PROMOTIONS.md (code committed through ba87104;
-  awaiting `supabase db push` + its §6 verification)
+- Promotions: docs/HANDOFF-PROMOTIONS.md (rewritten as sales + standalone
+  codes; awaiting `supabase db push` + its §6 verification)
 - KHQR: docs/HANDOFF-KHQR.md
 > Feature done → promote durable lessons into the contract, then delete the handoff.
