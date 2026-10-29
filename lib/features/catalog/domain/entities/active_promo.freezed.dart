@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ActivePromo {
 
- CatalogPromoScope get scope; CatalogPromoType get discountType; int get discountValue; String? get brandId;
+ CatalogPromoScope get scope; CatalogPromoType get discountType; int get discountValue; String? get brandId;/// The bound coupon's minimum-order gate (0 = none). Display-only: the
+/// chip discloses it; it never gates the rendered price (see
+/// [rendersPerProduct]).
+ int get minOrderMinor;
 /// Create a copy of ActivePromo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +29,16 @@ $ActivePromoCopyWith<ActivePromo> get copyWith => _$ActivePromoCopyWithImpl<Acti
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActivePromo&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.brandId, brandId) || other.brandId == brandId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActivePromo&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.minOrderMinor, minOrderMinor) || other.minOrderMinor == minOrderMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,scope,discountType,discountValue,brandId);
+int get hashCode => Object.hash(runtimeType,scope,discountType,discountValue,brandId,minOrderMinor);
 
 @override
 String toString() {
-  return 'ActivePromo(scope: $scope, discountType: $discountType, discountValue: $discountValue, brandId: $brandId)';
+  return 'ActivePromo(scope: $scope, discountType: $discountType, discountValue: $discountValue, brandId: $brandId, minOrderMinor: $minOrderMinor)';
 }
 
 
@@ -46,7 +49,7 @@ abstract mixin class $ActivePromoCopyWith<$Res>  {
   factory $ActivePromoCopyWith(ActivePromo value, $Res Function(ActivePromo) _then) = _$ActivePromoCopyWithImpl;
 @useResult
 $Res call({
- CatalogPromoScope scope, CatalogPromoType discountType, int discountValue, String? brandId
+ CatalogPromoScope scope, CatalogPromoType discountType, int discountValue, String? brandId, int minOrderMinor
 });
 
 
@@ -63,13 +66,14 @@ class _$ActivePromoCopyWithImpl<$Res>
 
 /// Create a copy of ActivePromo
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? brandId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? brandId = freezed,Object? minOrderMinor = null,}) {
   return _then(ActivePromo(
 scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as CatalogPromoScope,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
 as CatalogPromoType,discountValue: null == discountValue ? _self.discountValue : discountValue // ignore: cast_nullable_to_non_nullable
 as int,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,minOrderMinor: null == minOrderMinor ? _self.minOrderMinor : minOrderMinor // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -154,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CatalogPromoScope scope,  CatalogPromoType discountType,  int discountValue,  String? brandId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CatalogPromoScope scope,  CatalogPromoType discountType,  int discountValue,  String? brandId,  int minOrderMinor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ActivePromo() when $default != null:
-return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId);case _:
+return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId,_that.minOrderMinor);case _:
   return orElse();
 
 }
@@ -175,10 +179,10 @@ return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CatalogPromoScope scope,  CatalogPromoType discountType,  int discountValue,  String? brandId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CatalogPromoScope scope,  CatalogPromoType discountType,  int discountValue,  String? brandId,  int minOrderMinor)  $default,) {final _that = this;
 switch (_that) {
 case _ActivePromo():
-return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId);case _:
+return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId,_that.minOrderMinor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +199,10 @@ return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CatalogPromoScope scope,  CatalogPromoType discountType,  int discountValue,  String? brandId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CatalogPromoScope scope,  CatalogPromoType discountType,  int discountValue,  String? brandId,  int minOrderMinor)?  $default,) {final _that = this;
 switch (_that) {
 case _ActivePromo() when $default != null:
-return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId);case _:
+return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId,_that.minOrderMinor);case _:
   return null;
 
 }
@@ -210,13 +214,17 @@ return $default(_that.scope,_that.discountType,_that.discountValue,_that.brandId
 
 
 class _ActivePromo extends ActivePromo {
-  const _ActivePromo({required this.scope, required this.discountType, required this.discountValue, this.brandId}): super._();
+  const _ActivePromo({required this.scope, required this.discountType, required this.discountValue, this.brandId, this.minOrderMinor = 0}): super._();
   
 
 @override final  CatalogPromoScope scope;
 @override final  CatalogPromoType discountType;
 @override final  int discountValue;
 @override final  String? brandId;
+/// The bound coupon's minimum-order gate (0 = none). Display-only: the
+/// chip discloses it; it never gates the rendered price (see
+/// [rendersPerProduct]).
+@override@JsonKey() final  int minOrderMinor;
 
 /// Create a copy of ActivePromo
 /// with the given fields replaced by the non-null parameter values.
@@ -228,16 +236,16 @@ _$ActivePromoCopyWith<_ActivePromo> get copyWith => __$ActivePromoCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActivePromo&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.brandId, brandId) || other.brandId == brandId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActivePromo&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.minOrderMinor, minOrderMinor) || other.minOrderMinor == minOrderMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,scope,discountType,discountValue,brandId);
+int get hashCode => Object.hash(runtimeType,scope,discountType,discountValue,brandId,minOrderMinor);
 
 @override
 String toString() {
-  return 'ActivePromo(scope: $scope, discountType: $discountType, discountValue: $discountValue, brandId: $brandId)';
+  return 'ActivePromo(scope: $scope, discountType: $discountType, discountValue: $discountValue, brandId: $brandId, minOrderMinor: $minOrderMinor)';
 }
 
 
@@ -248,7 +256,7 @@ abstract mixin class _$ActivePromoCopyWith<$Res> implements $ActivePromoCopyWith
   factory _$ActivePromoCopyWith(_ActivePromo value, $Res Function(_ActivePromo) _then) = __$ActivePromoCopyWithImpl;
 @override @useResult
 $Res call({
- CatalogPromoScope scope, CatalogPromoType discountType, int discountValue, String? brandId
+ CatalogPromoScope scope, CatalogPromoType discountType, int discountValue, String? brandId, int minOrderMinor
 });
 
 
@@ -265,13 +273,14 @@ class __$ActivePromoCopyWithImpl<$Res>
 
 /// Create a copy of ActivePromo
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? brandId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? brandId = freezed,Object? minOrderMinor = null,}) {
   return _then(_ActivePromo(
 scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as CatalogPromoScope,discountType: null == discountType ? _self.discountType : discountType // ignore: cast_nullable_to_non_nullable
 as CatalogPromoType,discountValue: null == discountValue ? _self.discountValue : discountValue // ignore: cast_nullable_to_non_nullable
 as int,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,minOrderMinor: null == minOrderMinor ? _self.minOrderMinor : minOrderMinor // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

@@ -30,3 +30,12 @@ ActivePromo? promoForProduct(List<ActivePromo> promos, Product product) {
   }
   return null;
 }
+
+/// The discounted display price for [priceMinor] under [promo], or null when
+/// the promo stays chip-only (fixed amounts can't be a per-product price).
+/// Every price surface goes through this one helper so the strikethrough
+/// rule can't drift between card, detail, and the purchase sheet.
+int? discountedDisplayMinor(ActivePromo? promo, int priceMinor) =>
+    promo != null && promo.rendersPerProduct
+        ? promo.discountedMinor(priceMinor)
+        : null;

@@ -8,6 +8,7 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/active_promo.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_variant.dart';
@@ -88,13 +89,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
   }
 
-  void _openVariantSheet(Product product, List<ProductVariant> variants) {
+  void _openVariantSheet(
+    Product product,
+    List<ProductVariant> variants,
+    ActivePromo? promo,
+  ) {
     showVariantPickerSheet(
       context,
       product: product,
       variants: variants,
       initialVariantId: _selectedVariantId,
       onAddToCart: widget.onAddToCart,
+      promo: promo,
     );
   }
 
@@ -143,6 +149,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           final promos = ref.watch(activePromotionsProvider).value;
           final promo =
               promos == null ? null : promoForProduct(promos, product);
+          // Percent campaigns price the page at the real discounted amount;
+          // fixed amounts stay chip-only (an order-level "$5 off" has no
+          // per-product price).
+          final discountedPagePrice =
+              discountedDisplayMinor(promo, pagePriceMinor);
 
           return Column(
             children: [
@@ -220,18 +231,30 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           // Dual-currency price (DESIGN.md §1.4): USD
                           // primary, KHR approximation secondary — the
                           // selected variant's price once one is selected.
+                          // Percent campaigns strike the original through.
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
                             children: [
                               Text(
-                                Money(pagePriceMinor).formatUsd(),
+                                Money(discountedPagePrice ?? pagePriceMinor)
+                                    .formatUsd(),
                                 style: AppTypography.priceHighlight
                                     .copyWith(fontSize: 24),
                               ),
+                              if (discountedPagePrice != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  Money(pagePriceMinor).formatUsd(),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
                               const SizedBox(width: 8),
                               Text(
-                                '≈ ${Money(pagePriceMinor).formatKhr()}',
+                                '≈ ${Money(discountedPagePrice ?? pagePriceMinor).formatKhr()}',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
@@ -391,7 +414,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           // both server-side (§53).
                           onPressed: product.isPurchasable
                               ? () => _openVariantSheet(
-                                  product, detail.variants)
+                                  product, detail.variants, promo)
                               : null,
                           icon: const Icon(Icons.shopping_cart_outlined),
                           label: Column(
@@ -400,8 +423,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             children: [
                               const Text('Add to Cart'),
                               Text(
-                                '${Money(pagePriceMinor).formatUsd()}'
-                                ' · ≈ ${Money(pagePriceMinor).formatKhr()}',
+                                '${Money(discountedPagePrice ?? pagePriceMinor).formatUsd()}'
+                                ' · ≈ ${Money(discountedPagePrice ?? pagePriceMinor).formatKhr()}',
                                 style: theme.textTheme.labelSmall,
                               ),
                             ],

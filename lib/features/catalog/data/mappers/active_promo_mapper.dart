@@ -3,7 +3,9 @@ import '../dtos/active_promo_dto.dart';
 
 extension ActivePromoDtoX on ActivePromoDto {
   /// Unknown wire values fall back to nothing — the caller skips them.
-  ActivePromo? toDomain() {
+  /// [minOrderMinor] comes from the bound coupon (checked in the repository
+  /// alongside the window); the promotion row itself carries no gate.
+  ActivePromo? toDomain({int minOrderMinor = 0}) {
     final scope = switch (this.scope) {
       'platform' => CatalogPromoScope.platform,
       'brand' => CatalogPromoScope.brand,
@@ -20,6 +22,7 @@ extension ActivePromoDtoX on ActivePromoDto {
       discountType: type,
       discountValue: discountValue,
       brandId: brandId,
+      minOrderMinor: minOrderMinor,
     );
   }
 }

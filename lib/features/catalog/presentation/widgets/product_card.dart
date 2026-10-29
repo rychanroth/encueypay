@@ -50,6 +50,7 @@ class ProductCard extends ConsumerWidget {
     // data or a failed fetch renders nothing.
     final promos = ref.watch(activePromotionsProvider).value;
     final promo = promos == null ? null : promoForProduct(promos, product);
+    final discounted = discountedDisplayMinor(promo, product.fromPriceMinor);
 
     return Material(
       color: isLight
@@ -198,20 +199,58 @@ class ProductCard extends ConsumerWidget {
                         icon: Icons.local_offer_outlined,
                       ),
                     ),
-                  PriceText(
-                    money: Money(product.fromPriceMinor),
-                    showKhr: false,
-                    mainStyle: theme.textTheme.titleSmall?.copyWith(
-                      fontSize: 15,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                  // Campaign pricing (Section 9): percent campaigns render
+                  // the real discounted price with the original struck
+                  // through; fixed amounts and absent promos stay chip-only.
+                  if (discounted != null) ...[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        PriceText(
+                          money: Money(discounted),
+                          showKhr: false,
+                          mainStyle: theme.textTheme.titleSmall?.copyWith(
+                            fontSize: 15,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            Money(product.fromPriceMinor).formatUsd(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    Money(product.fromPriceMinor).formatKhr(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    Text(
+                      Money(discounted).formatKhr(),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
+                  ] else ...[
+                    PriceText(
+                      money: Money(product.fromPriceMinor),
+                      showKhr: false,
+                      mainStyle: theme.textTheme.titleSmall?.copyWith(
+                        fontSize: 15,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    Text(
+                      Money(product.fromPriceMinor).formatKhr(),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

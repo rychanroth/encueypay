@@ -350,7 +350,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final rows = await _client
           .from('promotions')
           .select('scope, discount_type, discount_value, brand_id, '
-              'coupons!inner(active, starts_at, ends_at)')
+              'coupons!inner(active, starts_at, ends_at, '
+              'min_order_amount_minor)')
           .eq('active', true)
           .inFilter('scope', ['platform', 'brand'])
           .eq('coupons.active', true);
@@ -363,16 +364,19 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           for (final coupon in (map['coupons'] as List? ?? const []))
             Map<String, dynamic>.from(coupon as Map),
         ];
-        final inWindow = coupons.any((coupon) {
+        final inWindowCoupons = coupons.where((coupon) {
           final startsAt =
               DateTime.tryParse(coupon['starts_at'] as String? ?? '');
           final endsAt = DateTime.tryParse(coupon['ends_at'] as String? ?? '');
           if (startsAt != null && startsAt.isAfter(now)) return false;
           if (endsAt != null && endsAt.isBefore(now)) return false;
           return true;
-        });
-        if (!inWindow) continue;
-        final promo = ActivePromoDto.fromJson(map).toDomain();
+        }).toList();
+        if (inWindowCoupons.isEmpty) continue;
+        final promo = ActivePromoDto.fromJson(map).toDomain(
+          minOrderMinor:
+              inWindowCoupons.first['min_order_amount_minor'] as int? ?? 0,
+        );
         if (promo == null) continue;
         // One chip per scope+brand even when several coupons qualify.
         if (seen.add('${promo.scope.name}:${promo.brandId ?? ''}')) {
