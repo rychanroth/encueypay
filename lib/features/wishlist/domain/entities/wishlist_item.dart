@@ -23,6 +23,11 @@ abstract class WishlistItem with _$WishlistItem {
     String? status,
     String? defaultVariantId,
     String? imageUrl,
+    String? brandId,
+
+    /// Group ids ride along so brand- and category-scoped sales can match
+    /// wishlist cards (the composition root's synthetic Product needs them).
+    String? categoryId,
     @Default('') String brandName,
     double? ratingAvg,
     @Default(0) int reviewCount,

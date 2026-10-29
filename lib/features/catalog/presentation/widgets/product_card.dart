@@ -8,7 +8,7 @@ import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/presentation/widgets/price_text.dart';
 import '../../domain/entities/product.dart';
-import '../controllers/promo_chip_providers.dart';
+import '../controllers/sale_providers.dart';
 import 'rating_stars.dart';
 import 'product_card_actions.dart';
 
@@ -48,9 +48,9 @@ class ProductCard extends ConsumerWidget {
     final hasBrand = product.brandName.isNotEmpty;
     // Coupon chip (Section 9): one shared fetch across all cards; absent
     // data or a failed fetch renders nothing.
-    final promos = ref.watch(activePromotionsProvider).value;
-    final promo = promos == null ? null : promoForProduct(promos, product);
-    final discounted = discountedDisplayMinor(promo, product.fromPriceMinor);
+    final sales = ref.watch(activeSalesProvider).value;
+    final sale = sales == null ? null : saleForProduct(sales, product);
+    final salePrice = displayPriceMinor(sale, product.fromPriceMinor);
 
     return Material(
       color: isLight
@@ -187,28 +187,28 @@ class ProductCard extends ConsumerWidget {
                         ],
                       ),
                     ),
-                  // Coupon chip (Section 9): real coupon-backed promotion
-                  // under the coupons-only pricing model.
-                  if (promo != null)
+                  // Sale chip (Section 9): the live sale matching this
+                  // product, if any.
+                  if (sale != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                       child: _Pill(
                         background: AppColors.promotionCoral,
                         foreground: Colors.white,
-                        label: promo.chipLabel,
+                        label: sale.chipLabel,
                         icon: Icons.local_offer_outlined,
                       ),
                     ),
-                  // Campaign pricing (Section 9): percent campaigns render
-                  // the real discounted price with the original struck
-                  // through; fixed amounts and absent promos stay chip-only.
-                  if (discounted != null) ...[
+                  // Sale pricing (Section 9): the discounted price with the
+                  // original struck through — percent and dollar sales both
+                  // render (a sale is what the product costs).
+                  if (sale != null) ...[
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         PriceText(
-                          money: Money(discounted),
+                          money: Money(salePrice),
                           showKhr: false,
                           mainStyle: theme.textTheme.titleSmall?.copyWith(
                             fontSize: 15,
@@ -230,7 +230,7 @@ class ProductCard extends ConsumerWidget {
                       ],
                     ),
                     Text(
-                      Money(discounted).formatKhr(),
+                      Money(salePrice).formatKhr(),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),

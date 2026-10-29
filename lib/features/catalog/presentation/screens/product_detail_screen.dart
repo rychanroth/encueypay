@@ -8,12 +8,12 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
-import '../../domain/entities/active_promo.dart';
+import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_variant.dart';
 import '../controllers/product_detail_controller.dart';
-import '../controllers/promo_chip_providers.dart';
+import '../controllers/sale_providers.dart';
 import '../widgets/product_card.dart';
 import '../widgets/product_image_gallery.dart';
 import '../widgets/rating_stars.dart';
@@ -92,7 +92,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   void _openVariantSheet(
     Product product,
     List<ProductVariant> variants,
-    ActivePromo? promo,
+    ActiveSale? sale,
   ) {
     showVariantPickerSheet(
       context,
@@ -100,7 +100,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       variants: variants,
       initialVariantId: _selectedVariantId,
       onAddToCart: widget.onAddToCart,
-      promo: promo,
+      sale: sale,
     );
   }
 
@@ -144,16 +144,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           final pagePriceMinor =
               selected?.effectivePriceMinor(product) ?? detail.fromPriceMinor;
           final carouselImages = _carouselImages(product, selected);
-          // Coupon chip (Section 9): coupon-backed promotion for this
-          // product — brand scope beats platform.
-          final promos = ref.watch(activePromotionsProvider).value;
-          final promo =
-              promos == null ? null : promoForProduct(promos, product);
-          // Percent campaigns price the page at the real discounted amount;
-          // fixed amounts stay chip-only (an order-level "$5 off" has no
-          // per-product price).
-          final discountedPagePrice =
-              discountedDisplayMinor(promo, pagePriceMinor);
+          // Sale chip (Section 9): the live sale matching this product —
+          // the winner among platform, brand and category scopes.
+          final sales = ref.watch(activeSalesProvider).value;
+          final sale =
+              sales == null ? null : saleForProduct(sales, product);
+          // The sale prices the page at the real discounted amount — the
+          // same math placement charges (percent truncates, fixed floors).
+          final salePagePrice = displayPriceMinor(sale, pagePriceMinor);
 
           return Column(
             children: [
@@ -237,12 +235,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             textBaseline: TextBaseline.alphabetic,
                             children: [
                               Text(
-                                Money(discountedPagePrice ?? pagePriceMinor)
-                                    .formatUsd(),
+                                Money(salePagePrice).formatUsd(),
                                 style: AppTypography.priceHighlight
                                     .copyWith(fontSize: 24),
                               ),
-                              if (discountedPagePrice != null) ...[
+                              if (sale != null) ...[
                                 const SizedBox(width: 8),
                                 Text(
                                   Money(pagePriceMinor).formatUsd(),
@@ -254,20 +251,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ],
                               const SizedBox(width: 8),
                               Text(
-                                '≈ ${Money(discountedPagePrice ?? pagePriceMinor).formatKhr()}',
+                                '≈ ${Money(salePagePrice).formatKhr()}',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
                           ),
-                          // Coupon chip + VAT caption (Section 9): the chip
-                          // is real promotion data; the caption is mocked.
+                          // Sale chip + VAT caption (Section 9): the chip
+                          // is real sale data; the caption is mocked.
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
                               children: [
-                                if (promo != null) ...[
+                                if (sale != null) ...[
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 3),
@@ -282,7 +279,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                             size: 11, color: Colors.white),
                                         const SizedBox(width: 4),
                                         Text(
-                                          promo.chipLabel,
+                                          sale.chipLabel,
                                           style: theme.textTheme.labelSmall
                                               ?.copyWith(
                                             color: Colors.white,
@@ -414,7 +411,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           // both server-side (§53).
                           onPressed: product.isPurchasable
                               ? () => _openVariantSheet(
-                                  product, detail.variants, promo)
+                                  product, detail.variants, sale)
                               : null,
                           icon: const Icon(Icons.shopping_cart_outlined),
                           label: Column(
@@ -423,8 +420,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             children: [
                               const Text('Add to Cart'),
                               Text(
-                                '${Money(discountedPagePrice ?? pagePriceMinor).formatUsd()}'
-                                ' · ≈ ${Money(discountedPagePrice ?? pagePriceMinor).formatKhr()}',
+                                '${Money(salePagePrice).formatUsd()}'
+                                ' · ≈ ${Money(salePagePrice).formatKhr()}',
                                 style: theme.textTheme.labelSmall,
                               ),
                             ],

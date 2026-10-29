@@ -26,12 +26,13 @@ import '../product_card_actions.dart';
 /// root — features never import each other, ARCH-04).
 Product _productFromWishlist(WishlistItem item) => Product(
       id: item.productId,
-      categoryId: '',
+      categoryId: item.categoryId ?? '',
       name: item.productName,
       basePriceMinor: item.priceMinor,
       stock: item.stock,
       fromPriceMinor: item.fromPriceMinor,
       defaultVariantId: item.defaultVariantId,
+      brandId: item.brandId ?? '',
       brandName: item.brandName,
       ratingAvg: item.ratingAvg,
       reviewCount: item.reviewCount,

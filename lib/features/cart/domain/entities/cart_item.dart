@@ -21,6 +21,11 @@ abstract class CartItem with _$CartItem {
     /// authoritatively at checkout (§53).
     @Default(0) int stock,
     String? imageUrl,
+
+    /// Group ids for sale matching (set by the repository; the composition
+    /// root resolves them into display prices — ARCH-04).
+    String? brandId,
+    String? categoryId,
   }) = _CartItem;
 
   const CartItem._();

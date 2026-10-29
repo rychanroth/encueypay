@@ -25,6 +25,8 @@ extension WishlistItemDtoX on WishlistItemDto {
       status: product?.status,
       defaultVariantId: product?.productVariants.firstOrNull?.id,
       imageUrl: imageUrl,
+      brandId: product?.brandId,
+      categoryId: product?.categoryId,
       brandName: product?.brands?.name ?? '',
       ratingAvg: product?.productRatings.firstOrNull?.ratingAvg,
       reviewCount: product?.productRatings.firstOrNull?.reviewCount ?? 0,

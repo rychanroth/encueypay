@@ -19,16 +19,28 @@ import '../controllers/cart_controller.dart';
 /// blur, elevation shadow, total payable and the one-tap checkout entry
 /// floating above the navigation bar.
 ///
-/// Coupons live in checkout (step 5, the assignment §6 sequence) — the cart
-/// carries no voucher entry: checkout re-validates authoritatively at
-/// placement, so a cart-side entry was a redundant second gate.
+/// Sale prices arrive precomputed from the composition root (an item-id →
+/// unit-price map — features/cart never imports features/catalog,
+/// ARCH-04): a sale is what the product costs, so lines show it directly.
+/// Coupon codes live in checkout (step 5) — the cart carries no voucher
+/// entry: checkout re-validates authoritatively at placement, so a
+/// cart-side entry was a redundant second gate.
 ///
 /// Totals are display previews; the server recalculates authoritatively at
 /// checkout (spec §25/§53).
 ///
 /// Single-vendor model: one flat list — every item belongs to the store.
 class CartScreen extends ConsumerWidget {
-  const CartScreen({super.key});
+  const CartScreen({super.key, this.salePricesByItemId = const {}});
+
+  /// Cart-item id → sale-adjusted unit price. Absent entries render the
+  /// raw price (no applicable sale).
+  final Map<String, int> salePricesByItemId;
+
+  /// The displayed unit price for [item]: the sale price when the
+  /// composition root resolved one, else the raw price.
+  int unitPriceOf(CartItem item) =>
+      salePricesByItemId[item.id] ?? item.unitPriceMinor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,8 +116,8 @@ class CartScreen extends ConsumerWidget {
               description: 'Discover products and add them to your bag.',
             );
           }
-          final totalMinor =
-              items.fold<int>(0, (sum, i) => sum + i.lineTotalMinor);
+          final totalMinor = items.fold<int>(
+              0, (sum, i) => sum + unitPriceOf(i) * i.quantity);
 
           return Stack(
             children: [
@@ -117,7 +129,11 @@ class CartScreen extends ConsumerWidget {
                   148, // clearance above the floating dock (§1.5/§6.5)
                 ),
                 children: [
-                  for (final item in items) _CartItemTile(item: item),
+                  for (final item in items)
+                    _CartItemTile(
+                      item: item,
+                      saleUnitPriceMinor: salePricesByItemId[item.id],
+                    ),
                 ],
               ),
               // Floating Action Dock (§6.5): blurred glass, E2 shadow, docked
@@ -138,8 +154,8 @@ class CartScreen extends ConsumerWidget {
 
 /// Floating Action Dock (DESIGN.md §6.5): anchored above the 5-tab shell,
 /// backdrop blur + elevation shadow, cart total (dual currency) and the
-/// one-tap checkout entry. Coupon discounts apply at checkout (step 5) and
-/// are not previewed here.
+/// one-tap checkout entry. Sale prices are already inside the line totals;
+/// coupon discounts apply at checkout (step 5) and are not previewed here.
 class _FloatingCheckoutDock extends StatelessWidget {
   const _FloatingCheckoutDock({required this.payableMinor});
 
@@ -216,9 +232,13 @@ class _FloatingCheckoutDock extends StatelessWidget {
 }
 
 class _CartItemTile extends ConsumerWidget {
-  const _CartItemTile({required this.item});
+  const _CartItemTile({required this.item, this.saleUnitPriceMinor});
 
   final CartItem item;
+
+  /// The sale-adjusted unit price, when a sale applies to this line —
+  /// null renders the raw price.
+  final int? saleUnitPriceMinor;
 
   /// Product-wide stock cap (Section 6): every variant shares the product's
   /// stock; the stepper cannot exceed it. The server re-validates at
@@ -282,15 +302,34 @@ class _CartItemTile extends ConsumerWidget {
                       // Variant-aware unit price × quantity, with the line
                       // subtotal beneath (§1: unit price falls back
                       // variant → base server-side; the server re-prices
-                      // at checkout).
-                      Text(
-                        '${Money(item.unitPriceMinor).formatUsd()} × ${item.quantity}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                      // at checkout). Sale-priced lines strike the original
+                      // through.
+                      if (saleUnitPriceMinor != null) ...[
+                        Text(
+                          '${Money(saleUnitPriceMinor!).formatUsd()} × ${item.quantity}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
+                        Text(
+                          Money(item.unitPriceMinor).formatUsd(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ] else
+                        Text(
+                          '${Money(item.unitPriceMinor).formatUsd()} × ${item.quantity}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       Text(
-                        Money(item.lineTotalMinor).formatUsd(),
+                        Money(saleUnitPriceMinor == null
+                                ? item.lineTotalMinor
+                                : saleUnitPriceMinor! * item.quantity)
+                            .formatUsd(),
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

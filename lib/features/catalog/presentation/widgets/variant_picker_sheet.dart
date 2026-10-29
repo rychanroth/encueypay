@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/money.dart';
-import '../../domain/entities/active_promo.dart';
+import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_variant.dart';
-import '../controllers/promo_chip_providers.dart';
+import '../controllers/sale_providers.dart';
 import 'product_image_gallery.dart';
 
 /// Taobao-style variant picker sheet: product image on top, dynamic price,
@@ -20,7 +20,7 @@ Future<void> showVariantPickerSheet(
   required List<ProductVariant> variants,
   required Future<void> Function(String variantId, int quantity) onAddToCart,
   String? initialVariantId,
-  ActivePromo? promo,
+  ActiveSale? sale,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -33,7 +33,7 @@ Future<void> showVariantPickerSheet(
       variants: variants,
       initialVariantId: initialVariantId,
       onAddToCart: onAddToCart,
-      promo: promo,
+      sale: sale,
     ),
   );
 }
@@ -44,16 +44,16 @@ class _VariantPickerSheet extends StatefulWidget {
     required this.variants,
     required this.onAddToCart,
     this.initialVariantId,
-    this.promo,
+    this.sale,
   });
 
   final Product product;
   final List<ProductVariant> variants;
   final String? initialVariantId;
 
-  /// The product's matched promotion — percent campaigns price the sheet at
-  /// the real discounted amount, matching the page behind it.
-  final ActivePromo? promo;
+  /// The product's matched sale — prices the sheet at the real discounted
+  /// amount, matching the page behind it.
+  final ActiveSale? sale;
   final Future<void> Function(String variantId, int quantity) onAddToCart;
 
   @override
@@ -89,7 +89,7 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
     final priceMinor =
         selected?.effectivePriceMinor(widget.product) ??
             widget.product.basePriceMinor;
-    final discounted = discountedDisplayMinor(widget.promo, priceMinor);
+    final salePrice = displayPriceMinor(widget.sale, priceMinor);
     final headerImageUrl = selected?.imageUrl ??
         (widget.product.imageUrls.isEmpty
             ? null
@@ -160,13 +160,13 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            Money(discounted ?? priceMinor).format(),
+                            Money(salePrice).format(),
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
                             ),
                           ),
-                          if (discounted != null) ...[
+                          if (widget.sale != null) ...[
                             const SizedBox(width: 8),
                             Text(
                               Money(priceMinor).format(),

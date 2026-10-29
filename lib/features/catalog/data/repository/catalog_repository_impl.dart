@@ -4,20 +4,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
-import '../../domain/entities/active_promo.dart';
+import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/banner.dart';
 import '../../domain/entities/brand.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_sort.dart';
-import '../dtos/active_promo_dto.dart';
+import '../dtos/active_sale_dto.dart';
 import '../dtos/brand_dto.dart';
 import '../dtos/category_dto.dart';
 import '../dtos/product_dto.dart';
 import '../dtos/product_review_join_dto.dart';
 import '../dtos/product_variant_dto.dart';
-import '../mappers/active_promo_mapper.dart';
+import '../mappers/active_sale_mapper.dart';
 import '../mappers/brand_mapper.dart';
 import '../mappers/category_mapper.dart';
 import '../mappers/product_mapper.dart';
@@ -285,105 +285,96 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       // their display window (the window filter is applied here in the
       // data layer; PostgREST cannot call now() inside or-filters).
       final now = DateTime.now().toUtc();
+      final nowIso = now.toIso8601String();
       final rows = await _client
           .from('banners')
           .select(
             'id, name, image_path, starts_at, ends_at, '
-            'promotions(scope, brand_id, brands(name))',
+            'sales(scope, brand_id, category_id, active, starts_at, ends_at, '
+            'name, brands(name), categories(name))',
           )
           .eq('status', 'approved')
           .order('created_at', ascending: false)
           .limit(limit * 2);
-      final nowIso = now.toIso8601String();
-      return rows
-          .where((row) {
-            final startsAt = row['starts_at'] as String?;
-            final endsAt = row['ends_at'] as String?;
-            final started = startsAt == null || startsAt.compareTo(nowIso) <= 0;
-            final notEnded = endsAt == null || endsAt.compareTo(nowIso) > 0;
-            return started && notEnded;
-          })
-          .take(limit)
-          .map((row) {
-            final path = row['image_path'] as String;
-            // Campaign banners (Option A): the Discovery target derives from
-            // the bound promotion's scope — brand → brand-filtered feed,
-            // platform → the full feed. Display-only rows (no promotion)
-            // stay inert.
-            final promo = row['promotions'] as Map<String, dynamic>?;
-            final scope = promo?['scope'] as String?;
-            final brandId = promo?['brand_id'] as String?;
-            final brandName =
-                ((promo?['brands'] as Map<String, dynamic>?)?['name'])
-                    as String?;
-            final target = switch (scope) {
-              'brand' when brandId != null => CatalogBannerTarget.brand,
-              'platform' => CatalogBannerTarget.platform,
-              _ => CatalogBannerTarget.none,
-            };
-            return CatalogBanner(
-              id: row['id'] as String,
-              name: row['name'] as String? ?? '',
-              // submit_banner stores a FULL public URL; only re-wrap bare paths.
-              imageUrl: path.startsWith('http')
-                  ? path
-                  : _client.storage.from('promo_assets').getPublicUrl(path),
-              target: target,
-              targetId: brandId,
-              targetName: brandName,
-            );
-          })
-          .toList();
+      final banners = <CatalogBanner>[];
+      for (final row in rows) {
+        final startsAt = row['starts_at'] as String?;
+        final endsAt = row['ends_at'] as String?;
+        final started = startsAt == null || startsAt.compareTo(nowIso) <= 0;
+        final notEnded = endsAt == null || endsAt.compareTo(nowIso) > 0;
+        if (!started || !notEnded) continue;
+
+        // A sale-linked banner is an advertisement for a live discount: it
+        // hides itself when that sale ends or is switched off. Rows without
+        // a sale are display-only and render inert.
+        final sale = row['sales'] as Map<String, dynamic>?;
+        String? saleScope;
+        String? targetId;
+        String? targetName;
+        var target = CatalogBannerTarget.none;
+        if (sale != null) {
+          final saleActive = sale['active'] as bool? ?? false;
+          final saleStarts = sale['starts_at'] as String?;
+          final saleEnds = sale['ends_at'] as String?;
+          final saleStarted =
+              saleStarts == null || saleStarts.compareTo(nowIso) <= 0;
+          final saleNotEnded =
+              saleEnds == null || saleEnds.compareTo(nowIso) > 0;
+          if (!saleActive || !saleStarted || !saleNotEnded) continue;
+          saleScope = sale['scope'] as String?;
+          switch (saleScope) {
+            case 'brand' when sale['brand_id'] != null:
+              target = CatalogBannerTarget.brand;
+              targetId = sale['brand_id'] as String;
+              targetName = (sale['brands'] as Map<String, dynamic>?)?['name']
+                  as String?;
+            case 'category' when sale['category_id'] != null:
+              target = CatalogBannerTarget.category;
+              targetId = sale['category_id'] as String;
+              targetName =
+                  (sale['categories'] as Map<String, dynamic>?)?['name']
+                      as String?;
+            case 'platform':
+              target = CatalogBannerTarget.platform;
+              targetName = sale['name'] as String?;
+          }
+        }
+
+        final path = row['image_path'] as String;
+        banners.add(CatalogBanner(
+          id: row['id'] as String,
+          name: row['name'] as String? ?? '',
+          // Full public URLs pass through; only bare paths get re-wrapped.
+          imageUrl: path.startsWith('http')
+              ? path
+              : _client.storage.from('promo_assets').getPublicUrl(path),
+          target: target,
+          targetId: targetId,
+          targetName: targetName,
+        ));
+        if (banners.length >= limit) break;
+      }
+      return banners;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
 
   @override
-  Future<List<ActivePromo>> fetchActivePromotions() async {
+  Future<List<ActiveSale>> fetchActiveSales() async {
     try {
-      // Chip-worthy promotions (Section 9): active promotion of platform or
-      // brand scope with at least one ACTIVE coupon (`coupons!inner` drops
-      // coupon-less rows). The coupon window lives on the coupon — checked
-      // here in the data layer, same as the banner window above.
-      final now = DateTime.now().toUtc();
-      final rows = await _client
-          .from('promotions')
-          .select('scope, discount_type, discount_value, brand_id, '
-              'coupons!inner(active, starts_at, ends_at, '
-              'min_order_amount_minor)')
-          .eq('active', true)
-          .inFilter('scope', ['platform', 'brand'])
-          .eq('coupons.active', true);
-
-      final seen = <String>{};
-      final promos = <ActivePromo>[];
+      // The view already filters active + window — the pricing rule lives
+      // in SQL only; the client never re-derives eligibility.
+      final rows = await _client.from('active_sales').select(
+          'scope, discount_type, discount_value, brand_id, category_id');
+      final sales = <ActiveSale>[];
       for (final row in rows) {
-        final map = Map<String, dynamic>.from(row as Map);
-        final coupons = [
-          for (final coupon in (map['coupons'] as List? ?? const []))
-            Map<String, dynamic>.from(coupon as Map),
-        ];
-        final inWindowCoupons = coupons.where((coupon) {
-          final startsAt =
-              DateTime.tryParse(coupon['starts_at'] as String? ?? '');
-          final endsAt = DateTime.tryParse(coupon['ends_at'] as String? ?? '');
-          if (startsAt != null && startsAt.isAfter(now)) return false;
-          if (endsAt != null && endsAt.isBefore(now)) return false;
-          return true;
-        }).toList();
-        if (inWindowCoupons.isEmpty) continue;
-        final promo = ActivePromoDto.fromJson(map).toDomain(
-          minOrderMinor:
-              inWindowCoupons.first['min_order_amount_minor'] as int? ?? 0,
-        );
-        if (promo == null) continue;
-        // One chip per scope+brand even when several coupons qualify.
-        if (seen.add('${promo.scope.name}:${promo.brandId ?? ''}')) {
-          promos.add(promo);
-        }
+        final sale = ActiveSaleDto.fromJson(
+          Map<String, dynamic>.from(row as Map),
+        ).toDomain();
+        if (sale != null) sales.add(sale);
       }
-      return promos;
+      return sales;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

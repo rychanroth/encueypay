@@ -1,4 +1,4 @@
-import '../../domain/entities/active_promo.dart';
+import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/banner.dart';
 import '../../domain/entities/brand.dart';
 import '../../domain/entities/category.dart';
@@ -48,8 +48,8 @@ abstract interface class ICatalogRepository {
   /// Approved banner feed for the home screen (§27).
   Future<List<CatalogBanner>> fetchApprovedBanners({int limit = 5});
 
-  /// Active, coupon-backed promotions for merchandising chips (Section 9):
-  /// platform- and brand-scoped only, window-valid. Display-only — the
-  /// order RPCs remain the discount authority (coupons-only pricing).
-  Future<List<ActivePromo>> fetchActivePromotions();
+  /// Live sales from the `active_sales` view — active and in-window by
+  /// definition (the pricing rule lives in SQL). Display mirrors the
+  /// server's math; placement re-prices authoritatively.
+  Future<List<ActiveSale>> fetchActiveSales();
 }

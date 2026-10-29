@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../features/catalog/presentation/controllers/sale_providers.dart';
 import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/cart/presentation/screens/cart_screen.dart';
 import '../../../features/checkout/presentation/screens/checkout_screen.dart';
@@ -13,7 +14,28 @@ final cartBranch = StatefulShellBranch(
     GoRoute(
       name: AppRoutes.cart,
       path: '/cart',
-      builder: (context, state) => const CartScreen(),
+      builder: (context, state) => Consumer(
+        builder: (context, ref, _) {
+          // Sale prices resolve here in the composition root — features/cart
+          // never imports features/catalog (ARCH-04); the screen receives a
+          // plain item-id → unit-price map.
+          final sales = ref.watch(activeSalesProvider).value ?? const [];
+          final items = ref.watch(cartControllerProvider).value ?? const [];
+          final salePrices = {
+            for (final item in items)
+              item.id: displayPriceMinor(
+                saleForIds(
+                  sales,
+                  brandId: item.brandId,
+                  categoryId: item.categoryId,
+                  priceMinor: item.unitPriceMinor,
+                ),
+                item.unitPriceMinor,
+              ),
+          };
+          return CartScreen(salePricesByItemId: salePrices);
+        },
+      ),
       routes: [
         GoRoute(
           name: AppRoutes.checkout,

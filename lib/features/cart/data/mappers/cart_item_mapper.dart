@@ -17,6 +17,8 @@ extension CartItemDtoX on CartItemDto {
       quantity: quantity,
       stock: product?.stock ?? 0,
       imageUrl: imageUrl,
+      brandId: product?.brandId,
+      categoryId: product?.categoryId,
     );
   }
 }

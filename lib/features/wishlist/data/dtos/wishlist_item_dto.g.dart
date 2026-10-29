@@ -31,6 +31,8 @@ WishlistProductJoinDto _$WishlistProductJoinDtoFromJson(
   basePriceMinor: (json['base_price_minor'] as num?)?.toInt(),
   stock: (json['stock'] as num?)?.toInt() ?? 0,
   status: json['status'] as String?,
+  brandId: json['brand_id'] as String?,
+  categoryId: json['category_id'] as String?,
   brands: json['brands'] == null
       ? null
       : WishlistBrandJoinDto.fromJson(json['brands'] as Map<String, dynamic>),
@@ -62,6 +64,8 @@ Map<String, dynamic> _$WishlistProductJoinDtoToJson(
   'base_price_minor': instance.basePriceMinor,
   'stock': instance.stock,
   'status': instance.status,
+  'brand_id': instance.brandId,
+  'category_id': instance.categoryId,
   'brands': instance.brands,
   'product_ratings': instance.productRatings,
   'product_variants': instance.productVariants,

@@ -31,6 +31,8 @@ class WishlistProductJoinDto {
     this.basePriceMinor,
     this.stock = 0,
     this.status,
+    this.brandId,
+    this.categoryId,
     this.brands,
     this.productRatings = const [],
     this.productVariants = const [],
@@ -47,6 +49,8 @@ class WishlistProductJoinDto {
   @JsonKey(defaultValue: 0)
   final int stock;
   final String? status;
+  final String? brandId;
+  final String? categoryId;
 
   @JsonKey(name: 'brands')
   final WishlistBrandJoinDto? brands;
