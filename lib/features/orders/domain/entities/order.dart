@@ -44,6 +44,21 @@ abstract class CustomerOrder with _$CustomerOrder {
 
   /// Delivered orders unlock reviews.
   bool get delivered => status == OrderStatus.delivered;
+
+  /// Payment-aware customer label. An unpaid QR order is `pending` on the
+  /// server (the order exists so PayWay can reference it), but calling that
+  /// "Order placed" makes it look finalized before payment.
+  String get statusLabel {
+    if (status == OrderStatus.pending) {
+      final payment = this.payment;
+      if (payment != null && payment.method == PaymentMethodKind.qr) {
+        return payment.status == PaymentStatusState.transactionVerified
+            ? 'Payment received'
+            : 'Awaiting payment';
+      }
+    }
+    return status.label;
+  }
 }
 
 /// Historical purchase line (§19) — current catalog edits never rewrite it.

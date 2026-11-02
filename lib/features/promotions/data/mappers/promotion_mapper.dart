@@ -6,7 +6,7 @@ extension SaleDtoX on SaleDto {
     return ManagedSale(
       id: id,
       name: name,
-      description: description,
+      description: description ?? '',
       scope: SaleScope.fromName(scope),
       discountType: PromoDiscountType.fromName(discountType),
       discountValue: discountValue,

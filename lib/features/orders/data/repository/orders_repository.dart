@@ -6,6 +6,10 @@ abstract interface class IOrdersRepository {
   /// Realtime sync signal (§31/§54): order record changes (incl. status).
   Stream<StreamResult<bool>> watchOrderChanges(String orderId);
 
+  /// Best-effort cleanup: cancels stale unpaid QR orders and restores stock.
+  /// Failures are logged, never surfaced as an orders-list error.
+  Future<void> expireUnpaidQrOrders();
+
   /// Section 7B: server-side history filters — [statuses] are wire values
   /// (null = no status filter); [fromDate]/[toDate] bound created_at (the
   /// to-date is inclusive of its whole day).

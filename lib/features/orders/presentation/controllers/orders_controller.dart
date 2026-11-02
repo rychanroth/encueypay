@@ -14,6 +14,8 @@ class OrdersController extends _$OrdersController {
 
   @override
   Future<OrderHistoryState> build() async {
+    // Lazy expiry fallback when pg_cron is unavailable; best-effort only.
+    await ref.read(ordersRepositoryProvider).expireUnpaidQrOrders();
     return _fetch(const OrderHistoryState());
   }
 

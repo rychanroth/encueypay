@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderTotalsPreview {
 
- List<CouponPreview> get manual; int get subtotalMinor; int get totalDiscountMinor; int get deliveryFeeMinor; int get totalMinor;
+ List<CouponPreview> get manual;/// Codes that no longer qualify after a cart edit — surfaced at checkout
+/// instead of being silently skipped by the preview.
+ List<CouponPreview> get rejected; int get subtotalMinor; int get totalDiscountMinor; int get deliveryFeeMinor; int get totalMinor;
 /// Create a copy of OrderTotalsPreview
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +28,16 @@ $OrderTotalsPreviewCopyWith<OrderTotalsPreview> get copyWith => _$OrderTotalsPre
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderTotalsPreview&&const DeepCollectionEquality().equals(other.manual, manual)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.totalDiscountMinor, totalDiscountMinor) || other.totalDiscountMinor == totalDiscountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderTotalsPreview&&const DeepCollectionEquality().equals(other.manual, manual)&&const DeepCollectionEquality().equals(other.rejected, rejected)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.totalDiscountMinor, totalDiscountMinor) || other.totalDiscountMinor == totalDiscountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(manual),subtotalMinor,totalDiscountMinor,deliveryFeeMinor,totalMinor);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(manual),const DeepCollectionEquality().hash(rejected),subtotalMinor,totalDiscountMinor,deliveryFeeMinor,totalMinor);
 
 @override
 String toString() {
-  return 'OrderTotalsPreview(manual: $manual, subtotalMinor: $subtotalMinor, totalDiscountMinor: $totalDiscountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor)';
+  return 'OrderTotalsPreview(manual: $manual, rejected: $rejected, subtotalMinor: $subtotalMinor, totalDiscountMinor: $totalDiscountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor)';
 }
 
 
@@ -46,7 +48,7 @@ abstract mixin class $OrderTotalsPreviewCopyWith<$Res>  {
   factory $OrderTotalsPreviewCopyWith(OrderTotalsPreview value, $Res Function(OrderTotalsPreview) _then) = _$OrderTotalsPreviewCopyWithImpl;
 @useResult
 $Res call({
- List<CouponPreview> manual, int subtotalMinor, int totalDiscountMinor, int deliveryFeeMinor, int totalMinor
+ List<CouponPreview> manual, List<CouponPreview> rejected, int subtotalMinor, int totalDiscountMinor, int deliveryFeeMinor, int totalMinor
 });
 
 
@@ -63,9 +65,10 @@ class _$OrderTotalsPreviewCopyWithImpl<$Res>
 
 /// Create a copy of OrderTotalsPreview
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? manual = null,Object? subtotalMinor = null,Object? totalDiscountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? manual = null,Object? rejected = null,Object? subtotalMinor = null,Object? totalDiscountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,}) {
   return _then(OrderTotalsPreview(
 manual: null == manual ? _self.manual : manual // ignore: cast_nullable_to_non_nullable
+as List<CouponPreview>,rejected: null == rejected ? _self.rejected : rejected // ignore: cast_nullable_to_non_nullable
 as List<CouponPreview>,subtotalMinor: null == subtotalMinor ? _self.subtotalMinor : subtotalMinor // ignore: cast_nullable_to_non_nullable
 as int,totalDiscountMinor: null == totalDiscountMinor ? _self.totalDiscountMinor : totalDiscountMinor // ignore: cast_nullable_to_non_nullable
 as int,deliveryFeeMinor: null == deliveryFeeMinor ? _self.deliveryFeeMinor : deliveryFeeMinor // ignore: cast_nullable_to_non_nullable
@@ -155,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CouponPreview> manual,  int subtotalMinor,  int totalDiscountMinor,  int deliveryFeeMinor,  int totalMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CouponPreview> manual,  List<CouponPreview> rejected,  int subtotalMinor,  int totalDiscountMinor,  int deliveryFeeMinor,  int totalMinor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderTotalsPreview() when $default != null:
-return $default(_that.manual,_that.subtotalMinor,_that.totalDiscountMinor,_that.deliveryFeeMinor,_that.totalMinor);case _:
+return $default(_that.manual,_that.rejected,_that.subtotalMinor,_that.totalDiscountMinor,_that.deliveryFeeMinor,_that.totalMinor);case _:
   return orElse();
 
 }
@@ -176,10 +179,10 @@ return $default(_that.manual,_that.subtotalMinor,_that.totalDiscountMinor,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CouponPreview> manual,  int subtotalMinor,  int totalDiscountMinor,  int deliveryFeeMinor,  int totalMinor)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CouponPreview> manual,  List<CouponPreview> rejected,  int subtotalMinor,  int totalDiscountMinor,  int deliveryFeeMinor,  int totalMinor)  $default,) {final _that = this;
 switch (_that) {
 case _OrderTotalsPreview():
-return $default(_that.manual,_that.subtotalMinor,_that.totalDiscountMinor,_that.deliveryFeeMinor,_that.totalMinor);case _:
+return $default(_that.manual,_that.rejected,_that.subtotalMinor,_that.totalDiscountMinor,_that.deliveryFeeMinor,_that.totalMinor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +199,10 @@ return $default(_that.manual,_that.subtotalMinor,_that.totalDiscountMinor,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CouponPreview> manual,  int subtotalMinor,  int totalDiscountMinor,  int deliveryFeeMinor,  int totalMinor)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CouponPreview> manual,  List<CouponPreview> rejected,  int subtotalMinor,  int totalDiscountMinor,  int deliveryFeeMinor,  int totalMinor)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderTotalsPreview() when $default != null:
-return $default(_that.manual,_that.subtotalMinor,_that.totalDiscountMinor,_that.deliveryFeeMinor,_that.totalMinor);case _:
+return $default(_that.manual,_that.rejected,_that.subtotalMinor,_that.totalDiscountMinor,_that.deliveryFeeMinor,_that.totalMinor);case _:
   return null;
 
 }
@@ -211,7 +214,7 @@ return $default(_that.manual,_that.subtotalMinor,_that.totalDiscountMinor,_that.
 
 
 class _OrderTotalsPreview implements OrderTotalsPreview {
-  const _OrderTotalsPreview({ List<CouponPreview> manual = const [], this.subtotalMinor = 0, this.totalDiscountMinor = 0, this.deliveryFeeMinor = 0, this.totalMinor = 0}): _manual = manual;
+  const _OrderTotalsPreview({ List<CouponPreview> manual = const [],  List<CouponPreview> rejected = const [], this.subtotalMinor = 0, this.totalDiscountMinor = 0, this.deliveryFeeMinor = 0, this.totalMinor = 0}): _manual = manual,_rejected = rejected;
   
 
  final  List<CouponPreview> _manual;
@@ -219,6 +222,17 @@ class _OrderTotalsPreview implements OrderTotalsPreview {
   if (_manual is EqualUnmodifiableListView) return _manual;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_manual);
+}
+
+/// Codes that no longer qualify after a cart edit — surfaced at checkout
+/// instead of being silently skipped by the preview.
+ final  List<CouponPreview> _rejected;
+/// Codes that no longer qualify after a cart edit — surfaced at checkout
+/// instead of being silently skipped by the preview.
+@override@JsonKey() List<CouponPreview> get rejected {
+  if (_rejected is EqualUnmodifiableListView) return _rejected;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_rejected);
 }
 
 @override@JsonKey() final  int subtotalMinor;
@@ -236,16 +250,16 @@ _$OrderTotalsPreviewCopyWith<_OrderTotalsPreview> get copyWith => __$OrderTotals
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderTotalsPreview&&const DeepCollectionEquality().equals(other._manual, _manual)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.totalDiscountMinor, totalDiscountMinor) || other.totalDiscountMinor == totalDiscountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderTotalsPreview&&const DeepCollectionEquality().equals(other._manual, _manual)&&const DeepCollectionEquality().equals(other._rejected, _rejected)&&(identical(other.subtotalMinor, subtotalMinor) || other.subtotalMinor == subtotalMinor)&&(identical(other.totalDiscountMinor, totalDiscountMinor) || other.totalDiscountMinor == totalDiscountMinor)&&(identical(other.deliveryFeeMinor, deliveryFeeMinor) || other.deliveryFeeMinor == deliveryFeeMinor)&&(identical(other.totalMinor, totalMinor) || other.totalMinor == totalMinor));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_manual),subtotalMinor,totalDiscountMinor,deliveryFeeMinor,totalMinor);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_manual),const DeepCollectionEquality().hash(_rejected),subtotalMinor,totalDiscountMinor,deliveryFeeMinor,totalMinor);
 
 @override
 String toString() {
-  return 'OrderTotalsPreview(manual: $manual, subtotalMinor: $subtotalMinor, totalDiscountMinor: $totalDiscountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor)';
+  return 'OrderTotalsPreview(manual: $manual, rejected: $rejected, subtotalMinor: $subtotalMinor, totalDiscountMinor: $totalDiscountMinor, deliveryFeeMinor: $deliveryFeeMinor, totalMinor: $totalMinor)';
 }
 
 
@@ -256,7 +270,7 @@ abstract mixin class _$OrderTotalsPreviewCopyWith<$Res> implements $OrderTotalsP
   factory _$OrderTotalsPreviewCopyWith(_OrderTotalsPreview value, $Res Function(_OrderTotalsPreview) _then) = __$OrderTotalsPreviewCopyWithImpl;
 @override @useResult
 $Res call({
- List<CouponPreview> manual, int subtotalMinor, int totalDiscountMinor, int deliveryFeeMinor, int totalMinor
+ List<CouponPreview> manual, List<CouponPreview> rejected, int subtotalMinor, int totalDiscountMinor, int deliveryFeeMinor, int totalMinor
 });
 
 
@@ -273,9 +287,10 @@ class __$OrderTotalsPreviewCopyWithImpl<$Res>
 
 /// Create a copy of OrderTotalsPreview
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? manual = null,Object? subtotalMinor = null,Object? totalDiscountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? manual = null,Object? rejected = null,Object? subtotalMinor = null,Object? totalDiscountMinor = null,Object? deliveryFeeMinor = null,Object? totalMinor = null,}) {
   return _then(_OrderTotalsPreview(
 manual: null == manual ? _self._manual : manual // ignore: cast_nullable_to_non_nullable
+as List<CouponPreview>,rejected: null == rejected ? _self._rejected : rejected // ignore: cast_nullable_to_non_nullable
 as List<CouponPreview>,subtotalMinor: null == subtotalMinor ? _self.subtotalMinor : subtotalMinor // ignore: cast_nullable_to_non_nullable
 as int,totalDiscountMinor: null == totalDiscountMinor ? _self.totalDiscountMinor : totalDiscountMinor // ignore: cast_nullable_to_non_nullable
 as int,deliveryFeeMinor: null == deliveryFeeMinor ? _self.deliveryFeeMinor : deliveryFeeMinor // ignore: cast_nullable_to_non_nullable

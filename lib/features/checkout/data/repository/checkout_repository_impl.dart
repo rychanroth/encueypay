@@ -62,17 +62,17 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
       }
 
       final rows = await _client
-          .from('cart_items')
+          .from('cart_item_details')
           .select(
-            'id, quantity, product_variants(name, price_minor, '
-            'products(name, base_price_minor, '
-            'product_images(storage_path, sort_order)))',
+            'id, cart_id, created_at, quantity, variant_id, variant_name, '
+            'product_id, product_name, unit_price_minor, '
+            'sale_unit_price_minor, image_storage_path',
           )
           .eq('cart_id', cart['id'] as String)
           .order('created_at');
 
       String? publicUrl(String? storagePath) {
-        if (storagePath == null) return null;
+        if (storagePath == null || storagePath.isEmpty) return null;
         // Full http(s) references pass through (seed demo imagery).
         if (storagePath.startsWith('http')) return storagePath;
         return _client.storage
@@ -82,13 +82,7 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
 
       final items = rows.map((row) {
         final dto = CheckoutItemDto.fromJson(row);
-        final images = [
-          ...dto.productVariants?.products?.productImages ??
-              const <CheckoutImageJoinDto>[],
-        ]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-        return dto.toDomain(
-          imageUrl: publicUrl(images.firstOrNull?.storagePath),
-        );
+        return dto.toDomain(imageUrl: publicUrl(dto.imageStoragePath));
       }).toList();
       final subtotal = items.fold<int>(0, (sum, item) => sum + item.lineTotalMinor);
       return CheckoutSummary(
@@ -101,18 +95,38 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
     }
   }
 
+  static int _asInt(Object? value) => (value as num?)?.toInt() ?? 0;
+
+  static DateTime? _asDate(Object? value) =>
+      value is String ? DateTime.tryParse(value) : null;
+
+  static CouponPreview _couponFromJson(
+    Map<String, dynamic> map, {
+    String? fallbackCode,
+  }) {
+    return CouponPreview(
+      code: (map['code'] as String?) ?? fallbackCode ?? '',
+      valid: map['valid'] == true,
+      discountMinor: _asInt(map['discount_minor']),
+      message: map['message'] as String?,
+      name: (map['name'] as String?) ?? '',
+      discountType: CouponDiscountType.fromName(map['discount_type'] as String?),
+      discountValue: _asInt(map['discount_value']),
+      minOrderAmountMinor: _asInt(map['min_order_amount_minor']),
+      startsAt: _asDate(map['starts_at']),
+      endsAt: _asDate(map['ends_at']),
+      subtotalMinor: _asInt(map['subtotal_minor']),
+      reason: map['reason'] as String?,
+    );
+  }
+
   @override
   Future<CouponPreview> validateCoupon(String code) async {
     try {
       final result =
           await _client.rpc('validate_coupon', params: {'p_code': code});
       final map = Map<String, dynamic>.from(result as Map);
-      return CouponPreview(
-        code: code,
-        valid: map['valid'] == true,
-        discountMinor: (map['discount_minor'] as int?) ?? 0,
-        message: map['message'] as String?,
-      );
+      return _couponFromJson(map, fallbackCode: code);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
@@ -128,18 +142,19 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
       final map = Map<String, dynamic>.from(result as Map);
       final manual = ((map['manual'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())
-          .map((row) => CouponPreview(
-                code: row['code'] as String? ?? '',
-                valid: true,
-                discountMinor: (row['discount_minor'] as int?) ?? 0,
-              ))
+          .map(_couponFromJson)
+          .toList();
+      final rejected = ((map['rejected'] as List? ?? const [])
+              .whereType<Map<String, dynamic>>())
+          .map(_couponFromJson)
           .toList();
       return OrderTotalsPreview(
         manual: manual,
-        subtotalMinor: (map['subtotal_minor'] as int?) ?? 0,
-        totalDiscountMinor: (map['total_discount_minor'] as int?) ?? 0,
-        deliveryFeeMinor: (map['delivery_fee_minor'] as int?) ?? 0,
-        totalMinor: (map['total_minor'] as int?) ?? 0,
+        rejected: rejected,
+        subtotalMinor: _asInt(map['subtotal_minor']),
+        totalDiscountMinor: _asInt(map['total_discount_minor']),
+        deliveryFeeMinor: _asInt(map['delivery_fee_minor']),
+        totalMinor: _asInt(map['total_minor']),
       );
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);

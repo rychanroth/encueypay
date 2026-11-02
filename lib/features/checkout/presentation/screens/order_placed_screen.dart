@@ -1,6 +1,12 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -45,6 +51,9 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
   /// rejection, …) — surfaced instead of spinning forever.
   String? _creationError;
 
+  final GlobalKey _qrKey = GlobalKey();
+  bool _exporting = false;
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +78,81 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
       _creationError = null;
     });
     _createQrOnce();
+  }
+
+  Future<Uint8List?> _captureQr() async {
+    final boundary = _qrKey.currentContext?.findRenderObject();
+    if (boundary is! RenderRepaintBoundary) return null;
+    final image = await boundary.toImage(pixelRatio: 3);
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data?.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
+  }
+
+  String get _qrFileName => 'encueypay-${widget.orderId.substring(0, 8)}.png';
+
+  Future<void> _saveQr() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final bytes = await _captureQr();
+      if (bytes == null) {
+        _showMessage('Could not capture the QR image.');
+        return;
+      }
+      final saved = await FilePicker.saveFile(
+        fileName: _qrFileName,
+        bytes: bytes,
+        mimeType: 'image/png',
+        type: FileType.custom,
+        allowedExtensions: const ['png'],
+        dialogTitle: 'Save QR image',
+      );
+      if (saved != null) _showMessage('QR image saved.');
+    } catch (error, stackTrace) {
+      debugPrint('QR save failed: $error\n$stackTrace');
+      _showMessage('Could not save the QR image.');
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _shareQr() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final bytes = await _captureQr();
+      if (bytes == null) {
+        _showMessage('Could not capture the QR image.');
+        return;
+      }
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(bytes, mimeType: 'image/png'),
+          ],
+          fileNameOverrides: [_qrFileName],
+          title: 'EncueYPay QR payment',
+          text: 'Scan this KHQR to pay for order '
+              '${widget.orderId.substring(0, 8).toUpperCase()}.',
+        ),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('QR share failed: $error\n$stackTrace');
+      _showMessage('Could not share the QR image.');
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// Compact order summary + entry into the full order details — the
@@ -117,7 +201,13 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Order placed')),
+      appBar: AppBar(
+        title: Text(
+          paymentAsync.value?.isPendingQr == true
+              ? 'Complete payment'
+              : 'Order summary',
+        ),
+      ),
       body: Center(
         child: ListView(
           padding: const EdgeInsets.all(24),
@@ -217,12 +307,12 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                     const Icon(Icons.hourglass_top_rounded,
                         size: 56, color: AppColors.primaryRoyal),
                     const SizedBox(height: 12),
-                    Text('Order placed — payment pending',
+                    Text('Complete payment',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.headlineSmall),
                     const SizedBox(height: 8),
                     Text(
-                      'Your order has been placed, but it is not paid yet. '
+                      'Your order is reserved, but it is not paid yet. '
                       'Scan the KHQR below with any KHQR-supported '
                       'banking app to complete the '
                       '${money.formatUsd()} payment.',
@@ -271,10 +361,30 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                       )
                     else ...[
                       // Official NBC Bakong KHQR card (§6.4).
-                      KhqrCard(
-                        qrPayload: payload,
-                        amountUsd: money.formatUsd(),
-                        amountKhr: money.formatKhr(),
+                      RepaintBoundary(
+                        key: _qrKey,
+                        child: KhqrCard(
+                          qrPayload: payload,
+                          amountUsd: money.formatUsd(),
+                          amountKhr: money.formatKhr(),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _exporting ? null : _saveQr,
+                            icon: const Icon(Icons.download_outlined, size: 18),
+                            label: const Text('Save image'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton.tonalIcon(
+                            onPressed: _exporting ? null : _shareQr,
+                            icon: const Icon(Icons.share_outlined, size: 18),
+                            label: const Text('Share'),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Row(

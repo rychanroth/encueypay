@@ -16,6 +16,7 @@ import '../controllers/product_detail_controller.dart';
 import '../controllers/sale_providers.dart';
 import '../widgets/product_card.dart';
 import '../widgets/product_image_gallery.dart';
+import '../widgets/sale_detail_sheet.dart';
 import '../widgets/rating_stars.dart';
 import '../widgets/review_card.dart';
 import '../widgets/variant_picker_sheet.dart';
@@ -265,28 +266,45 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             child: Row(
                               children: [
                                 if (sale != null) ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.promotionCoral,
+                                  Tooltip(
+                                    message: 'View sale details',
+                                    child: InkWell(
+                                      onTap: () =>
+                                          showSaleDetailSheet(context, sale),
                                       borderRadius: AppRadii.br8,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.local_offer_outlined,
-                                            size: 11, color: Colors.white),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          sale.chipLabel,
-                                          style: theme.textTheme.labelSmall
-                                              ?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.promotionCoral,
+                                          borderRadius: AppRadii.br8,
                                         ),
-                                      ],
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                                Icons.local_offer_outlined,
+                                                size: 11,
+                                                color: Colors.white),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              sale.chipLabel,
+                                              style: theme
+                                                  .textTheme.labelSmall
+                                                  ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            const Icon(
+                                              Icons.info_outline,
+                                              size: 11,
+                                              color: Colors.white,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),

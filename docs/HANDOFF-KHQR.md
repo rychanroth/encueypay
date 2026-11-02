@@ -67,8 +67,17 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
   create-hardening commit (global try/catch; tran_id unique per creation —
   PayWay rejects duplicate tran_ids with 403, and QRs regenerate after
   their 60-min lifetime).
-- `flutter analyze` clean; 23 tests pass; `deno check` clean on both
-  functions; migrations applied locally through `20261021000003`.
+- `flutter analyze` clean; all tests pass; `deno check` clean on both
+  functions; migrations applied locally through `20261102000003`.
+- **Unpaid QR orders**: `expire_unpaid_qr_orders()` (migration
+  `20261102000003`) cancels QR orders whose payment is still pending after
+  60 minutes and restores stock; `confirm_qr_payment` remains the only
+  verified transition. The customer UI labels an unpaid QR order
+  "Awaiting payment" instead of "Order placed". `pg_cron` scheduling is
+  attempted when available; the orders list also invokes the RPC lazily.
+- **QR export**: the order-placed screen captures the `KhqrCard` via a
+  `RepaintBoundary`; "Save image" uses `file_picker.saveFile`, "Share" uses
+  `share_plus`.
 - **Verified live 2026-10-22**: `payway-create` against the real sandbox
   returned a 241-char dynamic KHQR (stored on `payments.qr_payload`) —
   merchant id, API key, and the hash implementation are all accepted.

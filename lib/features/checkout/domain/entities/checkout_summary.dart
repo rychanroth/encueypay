@@ -10,7 +10,12 @@ abstract class CheckoutItem with _$CheckoutItem {
   const factory CheckoutItem({
     required String id,
     required String productName,
+
+    /// Variant price (or product base) — the "was" price when a sale applies.
     required int unitPriceMinor,
+
+    /// Server-computed sale price for this line.
+    required int saleUnitPriceMinor,
     required int quantity,
     String? variantName,
     String? imageUrl,
@@ -18,7 +23,11 @@ abstract class CheckoutItem with _$CheckoutItem {
 
   const CheckoutItem._();
 
-  int get lineTotalMinor => unitPriceMinor * quantity;
+  bool get hasSale => saleUnitPriceMinor < unitPriceMinor;
+
+  int get effectiveUnitPriceMinor => saleUnitPriceMinor;
+
+  int get lineTotalMinor => saleUnitPriceMinor * quantity;
 }
 
 @freezed

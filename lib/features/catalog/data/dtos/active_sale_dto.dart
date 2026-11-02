@@ -8,9 +8,14 @@ part 'active_sale_dto.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ActiveSaleDto {
   const ActiveSaleDto({
+    this.id,
+    this.name = '',
+    this.description = '',
     this.scope,
     this.discountType,
     this.discountValue = 0,
+    this.startsAt,
+    this.endsAt,
     this.brandId,
     this.categoryId,
   });
@@ -18,11 +23,23 @@ class ActiveSaleDto {
   factory ActiveSaleDto.fromJson(Map<String, dynamic> json) =>
       _$ActiveSaleDtoFromJson(json);
 
+  @JsonKey(defaultValue: '')
+  final String? id;
+
+  @JsonKey(defaultValue: '')
+  final String name;
+
+  @JsonKey(defaultValue: '')
+  final String description;
+
   final String? scope;
   final String? discountType;
 
   @JsonKey(defaultValue: 0)
   final int discountValue;
+
+  final DateTime? startsAt;
+  final DateTime? endsAt;
 
   final String? brandId;
   final String? categoryId;

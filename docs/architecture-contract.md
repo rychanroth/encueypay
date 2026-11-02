@@ -1,6 +1,7 @@
 # Architecture Contract
 
-**Version:** 2.2.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
+**Version:** 2.3.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
+**2.3.0 (2026-11-02):** `share_plus` added for QR image sharing (user-approved, DEPS-01); cart/checkout line pricing recorded as the `cart_item_details` read model (ACTION-03).
 **2.2.0 (2026-10-15):** DATA-09 added (PostgREST aggregate constraint); THEME-03 updated to the as-built token system; §3 CORE widget inventory; ACTION-02 recorded (single-seller schema retirement, migrations 0008–0010).
 **Audience:** Every AI agent and human contributor modifying this codebase.
 
@@ -641,7 +642,8 @@ constants per feature.
   | `supabase_flutter` ^2.17.2 | Backend (database, realtime, auth) |
   | `shared_preferences` | **Only** theme-mode persistence (THEME-02) |
   | `cupertino_icons` | Icons |
-  | `file_picker` ^13 | Proof/image picking (user-approved 2026-09-24) |
+  | `file_picker` ^13 | Proof/image picking + QR image save (user-approved 2026-09-24) |
+  | `share_plus` ^13 | Native share sheet for the QR image (user-approved 2026-11-02) |
   | `geolocator` ^14 | Device location — one-tap locate for address autofill (user-approved 2026-10-21) |
   | `geocoding` ^5 | Platform reverse geocoding for address autofill (user-approved 2026-10-21) |
   | `flutter_map` ^8 + `latlong2` | Verification map on the address form — OpenStreetMap raster tiles, no key/billing (user-approved 2026-10-21) |
@@ -699,8 +701,9 @@ constants per feature.
   **Banners** are cosmetic: an optional `sale_id` used only for the tap
   target; the client hides a banner whose sale is not live. Overlapping
   sales resolve by lowest final price. Client surfaces read `active_sales`
-  and mirror the math display-only; composition roots inject sale prices
-  into cart/checkout as plain id→price maps (ARCH-04). Retired:
+  for chips/detail; cart/checkout lines read the `cart_item_details` view,
+  whose `sale_unit_price_minor` uses the same `best_sale_price_minor`
+  helper as the order RPCs — no client-side price map. Retired:
   `auto_apply`, the order-function auto-apply block, `CAMP-` code
   generation, the Auto-applied summary row, `admin_create_campaign`,
   `admin_set_promotion_active`, `create_platform_promotion`,

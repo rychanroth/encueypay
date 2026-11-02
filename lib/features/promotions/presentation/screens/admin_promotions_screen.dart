@@ -39,6 +39,24 @@ class AdminPromotionsScreen extends ConsumerWidget {
 
   // --------------------------------------------------------------- sale
 
+  /// Percent values are whole percentages; fixed values are user-entered
+  /// dollars and must reach the RPC as minor units. Parsing them in one
+  /// place keeps the two dialogs from drifting.
+  static int? _parseDiscountValue(String text, {required bool isPercent}) {
+    final input = text.trim();
+    if (input.isEmpty) return null;
+    if (isPercent) {
+      final value = int.tryParse(input);
+      return value != null && value > 0 && value <= 100 ? value : null;
+    }
+    try {
+      final value = Money.parse(input).minorUnits;
+      return value > 0 ? value : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
   /// New sale: scope (platform/brand/category), percent-or-fixed value,
   /// window — and an optional banner image, which links an approved Home
   /// banner to the sale in the same call (the one-step campaign UX).
@@ -151,7 +169,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
                           decoration: InputDecoration(
                             labelText: isPercent
                                 ? 'Discount percent (1-100)'
-                                : 'Discount amount per item',
+                                : 'Discount amount per item (USD)',
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -230,14 +248,15 @@ class AdminPromotionsScreen extends ConsumerWidget {
               ),
               FilledButton(
                 onPressed: () {
-                  final discount = int.tryParse(value.text.trim());
+                  final discount = _parseDiscountValue(
+                    value.text,
+                    isPercent: isPercent,
+                  );
                   final groupMissing =
                       (scope == SaleScope.brand && brandId == null) ||
                           (scope == SaleScope.category && categoryId == null);
                   if (name.text.trim().isEmpty ||
                       discount == null ||
-                      discount <= 0 ||
-                      (isPercent && discount > 100) ||
                       groupMissing) {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
                       const SnackBar(
@@ -265,7 +284,8 @@ class AdminPromotionsScreen extends ConsumerWidget {
           scope: scope,
           discountType:
               isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
-          discountValue: int.parse(value.text.trim()),
+          discountValue:
+              _parseDiscountValue(value.text, isPercent: isPercent)!,
           startsAt: startsAt,
           endsAt: endsAt,
           brandId: scope == SaleScope.brand ? brandId : null,
@@ -322,7 +342,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
                           decoration: InputDecoration(
                             labelText: isPercent
                                 ? 'Discount percent (1-100)'
-                                : 'Discount amount',
+                                : 'Discount amount (USD)',
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -380,11 +400,11 @@ class AdminPromotionsScreen extends ConsumerWidget {
               ),
               FilledButton(
                 onPressed: () {
-                  final discount = int.tryParse(value.text.trim());
-                  if (code.text.trim().isEmpty ||
-                      discount == null ||
-                      discount <= 0 ||
-                      (isPercent && discount > 100)) {
+                  final discount = _parseDiscountValue(
+                    value.text,
+                    isPercent: isPercent,
+                  );
+                  if (code.text.trim().isEmpty || discount == null) {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
                       const SnackBar(
                         content: Text(
@@ -409,7 +429,8 @@ class AdminPromotionsScreen extends ConsumerWidget {
           code: code.text.trim(),
           discountType:
               isPercent ? PromoDiscountType.percent : PromoDiscountType.fixed,
-          discountValue: int.parse(value.text.trim()),
+          discountValue:
+              _parseDiscountValue(value.text, isPercent: isPercent)!,
           minOrderAmountMinor: minOrder.text.trim().isEmpty
               ? 0
               : Money.parse(minOrder.text.trim()).minorUnits,

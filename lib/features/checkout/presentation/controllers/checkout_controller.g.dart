@@ -8,24 +8,24 @@ part of 'checkout_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
-/// Address → Shipping method → Payment → Coupon → Order note → Summary.
-/// Selection state is presentation state (no optimistic persistence);
-/// placement stays an atomic use case (DOMAIN-02).
+/// Single-page checkout: the page renders cart review, address, payment,
+/// coupon, note and summary together. Selection state is presentation state
+/// (no optimistic persistence); placement stays an atomic use case
+/// (DOMAIN-02).
 
 @ProviderFor(CheckoutController)
 final checkoutControllerProvider = CheckoutControllerProvider._();
 
-/// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
-/// Address → Shipping method → Payment → Coupon → Order note → Summary.
-/// Selection state is presentation state (no optimistic persistence);
-/// placement stays an atomic use case (DOMAIN-02).
+/// Single-page checkout: the page renders cart review, address, payment,
+/// coupon, note and summary together. Selection state is presentation state
+/// (no optimistic persistence); placement stays an atomic use case
+/// (DOMAIN-02).
 final class CheckoutControllerProvider
     extends $AsyncNotifierProvider<CheckoutController, CheckoutState> {
-  /// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
-  /// Address → Shipping method → Payment → Coupon → Order note → Summary.
-  /// Selection state is presentation state (no optimistic persistence);
-  /// placement stays an atomic use case (DOMAIN-02).
+  /// Single-page checkout: the page renders cart review, address, payment,
+  /// coupon, note and summary together. Selection state is presentation state
+  /// (no optimistic persistence); placement stays an atomic use case
+  /// (DOMAIN-02).
   CheckoutControllerProvider._()
     : super(
         from: null,
@@ -46,12 +46,12 @@ final class CheckoutControllerProvider
 }
 
 String _$checkoutControllerHash() =>
-    r'9094643dcadbd7745bfc0486d63a6698e6bd5d76';
+    r'83c0c5f4e8c09670ea2f14d0384e025a5e37112c';
 
-/// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
-/// Address → Shipping method → Payment → Coupon → Order note → Summary.
-/// Selection state is presentation state (no optimistic persistence);
-/// placement stays an atomic use case (DOMAIN-02).
+/// Single-page checkout: the page renders cart review, address, payment,
+/// coupon, note and summary together. Selection state is presentation state
+/// (no optimistic persistence); placement stays an atomic use case
+/// (DOMAIN-02).
 
 abstract class _$CheckoutController extends $AsyncNotifier<CheckoutState> {
   FutureOr<CheckoutState> build();

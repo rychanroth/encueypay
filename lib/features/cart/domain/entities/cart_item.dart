@@ -13,7 +13,13 @@ abstract class CartItem with _$CartItem {
     required String productId,
     required String productName,
     String? variantName,
+
+    /// Variant price (or the product base price) — the "was" price when a
+    /// sale applies.
     required int unitPriceMinor,
+
+    /// Server-computed sale price for this line (`best_sale_price_minor`).
+    required int saleUnitPriceMinor,
     required int quantity,
 
     /// Product-wide stock snapshot (Section 6): all variants of the product
@@ -22,13 +28,18 @@ abstract class CartItem with _$CartItem {
     @Default(0) int stock,
     String? imageUrl,
 
-    /// Group ids for sale matching (set by the repository; the composition
-    /// root resolves them into display prices — ARCH-04).
+    /// Product group ids from the cart read model (kept for display/
+    /// diagnostics; pricing already arrives resolved as
+    /// [saleUnitPriceMinor]).
     String? brandId,
     String? categoryId,
   }) = _CartItem;
 
   const CartItem._();
 
-  int get lineTotalMinor => unitPriceMinor * quantity;
+  bool get hasSale => saleUnitPriceMinor < unitPriceMinor;
+
+  int get effectiveUnitPriceMinor => saleUnitPriceMinor;
+
+  int get lineTotalMinor => saleUnitPriceMinor * quantity;
 }

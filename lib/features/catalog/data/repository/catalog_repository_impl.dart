@@ -366,7 +366,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       // The view already filters active + window — the pricing rule lives
       // in SQL only; the client never re-derives eligibility.
       final rows = await _client.from('active_sales').select(
-          'scope, discount_type, discount_value, brand_id, category_id');
+          'id, name, description, scope, discount_type, discount_value, '
+          'starts_at, ends_at, brand_id, category_id');
       final sales = <ActiveSale>[];
       for (final row in rows) {
         final sale = ActiveSaleDto.fromJson(

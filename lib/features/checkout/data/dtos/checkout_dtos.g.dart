@@ -32,73 +32,27 @@ CheckoutItemDto _$CheckoutItemDtoFromJson(Map<String, dynamic> json) =>
     CheckoutItemDto(
       id: json['id'] as String,
       quantity: (json['quantity'] as num).toInt(),
-      productVariants: json['product_variants'] == null
-          ? null
-          : CheckoutVariantJoinDto.fromJson(
-              json['product_variants'] as Map<String, dynamic>,
-            ),
+      variantId: json['variant_id'] as String,
+      productId: json['product_id'] as String,
+      productName: json['product_name'] as String,
+      unitPriceMinor: (json['unit_price_minor'] as num).toInt(),
+      saleUnitPriceMinor: (json['sale_unit_price_minor'] as num).toInt(),
+      variantName: json['variant_name'] as String?,
+      imageStoragePath: json['image_storage_path'] as String?,
     );
 
 Map<String, dynamic> _$CheckoutItemDtoToJson(CheckoutItemDto instance) =>
     <String, dynamic>{
       'id': instance.id,
       'quantity': instance.quantity,
-      'product_variants': instance.productVariants,
+      'variant_id': instance.variantId,
+      'product_id': instance.productId,
+      'product_name': instance.productName,
+      'variant_name': instance.variantName,
+      'unit_price_minor': instance.unitPriceMinor,
+      'sale_unit_price_minor': instance.saleUnitPriceMinor,
+      'image_storage_path': instance.imageStoragePath,
     };
-
-CheckoutVariantJoinDto _$CheckoutVariantJoinDtoFromJson(
-  Map<String, dynamic> json,
-) => CheckoutVariantJoinDto(
-  name: json['name'] as String?,
-  priceMinor: (json['price_minor'] as num?)?.toInt(),
-  products: json['products'] == null
-      ? null
-      : CheckoutProductJoinDto.fromJson(
-          json['products'] as Map<String, dynamic>,
-        ),
-);
-
-Map<String, dynamic> _$CheckoutVariantJoinDtoToJson(
-  CheckoutVariantJoinDto instance,
-) => <String, dynamic>{
-  'name': instance.name,
-  'price_minor': instance.priceMinor,
-  'products': instance.products,
-};
-
-CheckoutProductJoinDto _$CheckoutProductJoinDtoFromJson(
-  Map<String, dynamic> json,
-) => CheckoutProductJoinDto(
-  name: json['name'] as String?,
-  basePriceMinor: (json['base_price_minor'] as num?)?.toInt(),
-  productImages:
-      (json['product_images'] as List<dynamic>?)
-          ?.map((e) => CheckoutImageJoinDto.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      [],
-);
-
-Map<String, dynamic> _$CheckoutProductJoinDtoToJson(
-  CheckoutProductJoinDto instance,
-) => <String, dynamic>{
-  'name': instance.name,
-  'base_price_minor': instance.basePriceMinor,
-  'product_images': instance.productImages,
-};
-
-CheckoutImageJoinDto _$CheckoutImageJoinDtoFromJson(
-  Map<String, dynamic> json,
-) => CheckoutImageJoinDto(
-  storagePath: json['storage_path'] as String?,
-  sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
-);
-
-Map<String, dynamic> _$CheckoutImageJoinDtoToJson(
-  CheckoutImageJoinDto instance,
-) => <String, dynamic>{
-  'storage_path': instance.storagePath,
-  'sort_order': instance.sortOrder,
-};
 
 PlatformSettingsDto _$PlatformSettingsDtoFromJson(Map<String, dynamic> json) =>
     PlatformSettingsDto(

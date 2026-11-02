@@ -29,15 +29,21 @@ class CheckoutAddressDto {
   Map<String, dynamic> toJson() => _$CheckoutAddressDtoToJson(this);
 }
 
-/// Wire shape of the `cart_items` row with display joins for the checkout
-/// summary (DATA-01). Purpose-shaped duplicate of the cart feature's DTO —
-/// features never import each other (ARCH-04).
+/// Wire shape of one `cart_item_details` row for checkout (DATA-01).
+/// Purpose-shaped duplicate of the cart feature's DTO — features never
+/// import each other (ARCH-04). The view supplies the sale-adjusted price.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CheckoutItemDto {
   const CheckoutItemDto({
     required this.id,
     required this.quantity,
-    this.productVariants,
+    required this.variantId,
+    required this.productId,
+    required this.productName,
+    required this.unitPriceMinor,
+    required this.saleUnitPriceMinor,
+    this.variantName,
+    this.imageStoragePath,
   });
 
   factory CheckoutItemDto.fromJson(Map<String, dynamic> json) =>
@@ -45,63 +51,20 @@ class CheckoutItemDto {
 
   final String id;
   final int quantity;
+  final String variantId;
+  final String productId;
+  final String productName;
+  final String? variantName;
 
-  @JsonKey(name: 'product_variants')
-  final CheckoutVariantJoinDto? productVariants;
+  /// Variant price (or product base) — the "was" price when a sale applies.
+  final int unitPriceMinor;
+
+  /// Server-computed `best_sale_price_minor` for this line.
+  final int saleUnitPriceMinor;
+
+  final String? imageStoragePath;
 
   Map<String, dynamic> toJson() => _$CheckoutItemDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CheckoutVariantJoinDto {
-  const CheckoutVariantJoinDto({this.name, this.priceMinor, this.products});
-
-  factory CheckoutVariantJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CheckoutVariantJoinDtoFromJson(json);
-
-  final String? name;
-
-  final int? priceMinor;
-
-  @JsonKey(name: 'products')
-  final CheckoutProductJoinDto? products;
-
-  Map<String, dynamic> toJson() => _$CheckoutVariantJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CheckoutProductJoinDto {
-  const CheckoutProductJoinDto({
-    this.name,
-    this.basePriceMinor,
-    this.productImages = const [],
-  });
-
-  factory CheckoutProductJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CheckoutProductJoinDtoFromJson(json);
-
-  final String? name;
-  final int? basePriceMinor;
-
-  @JsonKey(name: 'product_images', defaultValue: [])
-  final List<CheckoutImageJoinDto> productImages;
-
-  Map<String, dynamic> toJson() => _$CheckoutProductJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CheckoutImageJoinDto {
-  const CheckoutImageJoinDto({this.storagePath, this.sortOrder = 0});
-
-  factory CheckoutImageJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CheckoutImageJoinDtoFromJson(json);
-
-  final String? storagePath;
-
-  @JsonKey(defaultValue: 0)
-  final int sortOrder;
-
-  Map<String, dynamic> toJson() => _$CheckoutImageJoinDtoToJson(this);
 }
 
 /// Wire shape of the `platform_settings` singleton (DATA-01).

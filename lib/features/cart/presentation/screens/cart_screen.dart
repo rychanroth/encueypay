@@ -31,16 +31,7 @@ import '../controllers/cart_controller.dart';
 ///
 /// Single-vendor model: one flat list — every item belongs to the store.
 class CartScreen extends ConsumerWidget {
-  const CartScreen({super.key, this.salePricesByItemId = const {}});
-
-  /// Cart-item id → sale-adjusted unit price. Absent entries render the
-  /// raw price (no applicable sale).
-  final Map<String, int> salePricesByItemId;
-
-  /// The displayed unit price for [item]: the sale price when the
-  /// composition root resolved one, else the raw price.
-  int unitPriceOf(CartItem item) =>
-      salePricesByItemId[item.id] ?? item.unitPriceMinor;
+  const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,7 +108,7 @@ class CartScreen extends ConsumerWidget {
             );
           }
           final totalMinor = items.fold<int>(
-              0, (sum, i) => sum + unitPriceOf(i) * i.quantity);
+              0, (sum, i) => sum + i.lineTotalMinor);
 
           return Stack(
             children: [
@@ -129,11 +120,7 @@ class CartScreen extends ConsumerWidget {
                   148, // clearance above the floating dock (§1.5/§6.5)
                 ),
                 children: [
-                  for (final item in items)
-                    _CartItemTile(
-                      item: item,
-                      saleUnitPriceMinor: salePricesByItemId[item.id],
-                    ),
+                  for (final item in items) _CartItemTile(item: item),
                 ],
               ),
               // Floating Action Dock (§6.5): blurred glass, E2 shadow, docked
@@ -232,13 +219,9 @@ class _FloatingCheckoutDock extends StatelessWidget {
 }
 
 class _CartItemTile extends ConsumerWidget {
-  const _CartItemTile({required this.item, this.saleUnitPriceMinor});
+  const _CartItemTile({required this.item});
 
   final CartItem item;
-
-  /// The sale-adjusted unit price, when a sale applies to this line —
-  /// null renders the raw price.
-  final int? saleUnitPriceMinor;
 
   /// Product-wide stock cap (Section 6): every variant shares the product's
   /// stock; the stepper cannot exceed it. The server re-validates at
@@ -304,9 +287,9 @@ class _CartItemTile extends ConsumerWidget {
                       // variant → base server-side; the server re-prices
                       // at checkout). Sale-priced lines strike the original
                       // through.
-                      if (saleUnitPriceMinor != null) ...[
+                      if (item.hasSale) ...[
                         Text(
-                          '${Money(saleUnitPriceMinor!).formatUsd()} × ${item.quantity}',
+                          '${Money(item.saleUnitPriceMinor).formatUsd()} × ${item.quantity}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -326,10 +309,7 @@ class _CartItemTile extends ConsumerWidget {
                           ),
                         ),
                       Text(
-                        Money(saleUnitPriceMinor == null
-                                ? item.lineTotalMinor
-                                : saleUnitPriceMinor! * item.quantity)
-                            .formatUsd(),
+                        Money(item.lineTotalMinor).formatUsd(),
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

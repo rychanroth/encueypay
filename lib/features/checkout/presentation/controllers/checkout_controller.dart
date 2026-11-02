@@ -8,14 +8,12 @@ import '../states/checkout_state.dart';
 
 part 'checkout_controller.g.dart';
 
-/// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
-/// Address → Shipping method → Payment → Coupon → Order note → Summary.
-/// Selection state is presentation state (no optimistic persistence);
-/// placement stays an atomic use case (DOMAIN-02).
+/// Single-page checkout: the page renders cart review, address, payment,
+/// coupon, note and summary together. Selection state is presentation state
+/// (no optimistic persistence); placement stays an atomic use case
+/// (DOMAIN-02).
 @riverpod
 class CheckoutController extends _$CheckoutController {
-  static const _stepCount = 7;
-
   @override
   Future<CheckoutState> build() async {
     final repository = ref.watch(checkoutRepositoryProvider);
@@ -48,42 +46,36 @@ class CheckoutController extends _$CheckoutController {
     state = AsyncData(current.copyWith(note: note));
   }
 
-  /// Step navigation. [next] is blocked when the current step is invalid
-  /// (e.g. no address chosen) — the screen surfaces the reason.
-  void goToStep(int step) {
+  /// Validates a code and appends the server preview. Returns null when the
+  /// code is already applied; otherwise the preview carries the offer, the
+  /// exact failure reason, and the resulting cart discount.
+  Future<CouponPreview?> applyCoupon(String code) async {
     final current = state.value;
-    if (current == null) return;
-    if (step < 0 || step >= _stepCount) return;
-    state = AsyncData(current.copyWith(currentStep: step));
-  }
-
-  bool canContinue() {
-    final current = state.value;
-    if (current == null) return false;
-    return switch (current.currentStep) {
-      // Address step requires a selection.
-      1 => current.selectedAddressId != null,
-      _ => true,
-    };
-  }
-
-  Future<bool> applyCoupon(String code) async {
-    final current = state.value;
-    if (current == null) return false;
+    if (current == null) return null;
     if (current.coupons.any((coupon) => coupon.code == code)) {
-      return false; // already applied
+      return null;
     }
-    final preview = await ref.read(checkoutRepositoryProvider).validateCoupon(code);
+    final preview = await ref
+        .read(checkoutRepositoryProvider)
+        .validateCoupon(code);
     final coupons = List<CouponPreview>.from(current.coupons)..add(preview);
     state = AsyncData(current.copyWith(coupons: coupons));
-    return preview.valid;
+    return preview;
   }
 
   /// Returns the new order id, or null when validation/place failed
   /// (failure surfaces via the state's AsyncError for the screen to show).
   Future<String?> placeOrder() async {
     final current = state.value;
-    if (current == null || current.selectedAddressId == null) return null;
+    if (current == null ||
+        current.selectedAddressId == null ||
+        current.isPlacing) {
+      return null;
+    }
+    // Set the guard before awaiting: AsyncValue.guard's loading state only
+    // lands after the RPC completes, so without this a double tap could
+    // create two orders.
+    state = AsyncData(current.copyWith(isPlacing: true));
     String? orderId;
     state = await AsyncValue.guard(() async {
       orderId = await ref.read(placeOrderUseCaseProvider)(
@@ -95,7 +87,8 @@ class CheckoutController extends _$CheckoutController {
             .toList(),
         note: current.note,
       );
-      return current;
+      final latest = state.value ?? current;
+      return latest.copyWith(isPlacing: false);
     });
     return orderId;
   }

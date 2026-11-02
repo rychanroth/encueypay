@@ -7,14 +7,19 @@
 
 ## 0. State right now
 
-- **Code**: committed through `cd86fc8`; `flutter analyze` clean; the DB
-  chain replays from zero (`supabase db reset` green) and the model was
-  verified by an end-to-end SQL smoke (rolled back).
-- **Pending user action**: `supabase db push` — FIVE migrations are
+- **Code**: committed through `cd86fc8`; the working tree adds the
+  coupon-unit/feedback fixes, the product-detail sale sheet, the cart
+  sale-price fixes, server-side cart line pricing, single-page checkout,
+  unpaid-QR expiry, and QR save/share. `flutter analyze` clean; all tests
+  pass.
+- **Pending user action**: `supabase db push` — EIGHT migrations are
   unpushed: `20261028000003` (variant flow), `20261028000004` (the OLD
   campaign model — immediately superseded), `20261029000001` (drop stale
   RPC overloads), `20261029000002` (category scope enum value),
-  `20261029000003` (sales + standalone codes). The push **truncates**
+  `20261029000003` (sales + standalone codes), `20261102000001`
+  (structured coupon validation + rejected preview rows),
+  `20261102000002` (cart_item_details view), and `20261102000003`
+  (unpaid-QR expiry). The push **truncates**
   `sales`, `coupons`, `banners`, `order_coupons` — the admin recreates
   live sales through the new UI, which doubles as its first test. Past
   orders keep their aggregate `discount_minor`; only per-code breakdown
@@ -136,17 +141,23 @@ discount wins", which also compares percent vs dollars by outcome).
    the sale's brand/category (platform = full feed); flip the sale's
    switch → the banner disappears, chips and struck prices vanish.
 3. Product card, detail page, CTA, variant sheet, wishlist card, cart
-   line: all show the same struck-through sale price for a product.
-4. Checkout: Subtotal reflects sale prices; create a coupon ("New
-   coupon"), type it at step 5 → "Discount (codes)" row; the total matches
-   the placed order's.
-5. Coupon minimum order: a below-minimum cart silently skips the code at
-   placement (known gap — no "why didn't it apply" notice yet).
+   line: all show the same struck-through sale price. Cart/checkout lines
+   read `cart_item_details`, so their price matches the summary without a
+   client-side sales map.
+4. Checkout is one page (items, address, delivery/payment, coupon, note,
+   summary) with a sticky Place order bar. Create a coupon, apply it, and
+   confirm the per-code rows and total.
+5. Coupon minimum order: a below-minimum cart shows the exact required
+   minimum and the current subtotal; a valid code shows its name, offer
+   rate/amount, minimum (if any) and the cart's discount.
+6. Leave a pending QR order untouched: the Orders list shows "Awaiting
+   payment". `expire_unpaid_qr_orders()` cancels it after 60 minutes and
+   restores stock; a verified QR order is never cancelled.
+7. The QR screen offers Save image (Files/Downloads) and Share (native
+   share sheet).
 
 ## 7. Known gaps / deferred (do not build unasked)
 
-- No "why didn't my code apply" notice (min-order/invalid skips are silent
-  in `preview_order_totals`).
 - No per-sale reporting; `order_coupons` is write-only bookkeeping.
 - Admin product lists show base price only (no effective-price column).
 - Multi-code stacking follows the assignment sequence (codes sum, capped

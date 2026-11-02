@@ -9,9 +9,8 @@ part 'checkout_state.freezed.dart';
 
 /// Immutable checkout state (PRES-02; ==/copyWith via freezed).
 ///
-/// Section 6b: the assignment's multi-step sequence (Cart review → Address
-/// → Shipping method → Payment → Coupon → Order note → Summary) is driven
-/// by [currentStep]; the order note rides along to `create_order_from_cart`.
+/// The checkout page renders all sections at once; [isPlacing] blocks a
+/// second placement while the atomic order RPC is in flight.
 @freezed
 abstract class CheckoutState with _$CheckoutState {
   const factory CheckoutState({
@@ -21,7 +20,7 @@ abstract class CheckoutState with _$CheckoutState {
     @Default(PaymentMethod.cod) PaymentMethod method,
     @Default([]) List<CouponPreview> coupons,
     @Default('') String note,
-    @Default(0) int currentStep,
+    @Default(false) bool isPlacing,
   }) = _CheckoutState;
 
   const CheckoutState._();

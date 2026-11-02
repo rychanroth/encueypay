@@ -17,9 +17,14 @@ extension ActiveSaleDtoX on ActiveSaleDto {
     };
     if (scope == null || type == null) return null;
     return ActiveSale(
+      id: id ?? '',
       scope: scope,
       discountType: type,
       discountValue: discountValue,
+      name: name,
+      description: description,
+      startsAt: startsAt,
+      endsAt: endsAt,
       brandId: brandId,
       categoryId: categoryId,
     );

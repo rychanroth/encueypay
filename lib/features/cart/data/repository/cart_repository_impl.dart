@@ -36,25 +36,19 @@ class CartRepositoryImpl implements ICartRepository {
       if (cart == null) return const [];
 
       final rows = await _client
-          .from('cart_items')
+          .from('cart_item_details')
           .select(
-            'id, quantity, product_variants(id, name, price_minor, '
-            'products(id, name, base_price_minor, stock, '
-            'product_images(storage_path, sort_order)))',
+            'id, cart_id, created_at, quantity, variant_id, variant_name, '
+            'product_id, product_name, unit_price_minor, '
+            'sale_unit_price_minor, stock, brand_id, category_id, '
+            'image_storage_path',
           )
           .eq('cart_id', cart['id'] as String)
           .order('created_at');
 
       return rows.map((row) {
         final dto = CartItemDto.fromJson(row);
-        // Thumbnail must match the product page's first (lowest sort_order).
-        final images = [
-          ...dto.productVariants?.products?.productImages ?? const <CartImageJoinDto>[],
-        ]..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-        final storagePath = images.firstOrNull?.storagePath;
-        final imageUrl =
-            storagePath == null ? null : _publicUrl(storagePath);
-        return dto.toDomain(imageUrl: imageUrl);
+        return dto.toDomain(imageUrl: _publicUrl(dto.imageStoragePath));
       }).toList();
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
@@ -65,7 +59,8 @@ class CartRepositoryImpl implements ICartRepository {
   /// references pass through (the seed carries remote demo imagery — the
   /// same convention as the catalog; wrapping a full URL inside a storage
   /// public-URL produced the broken cart thumbnails).
-  String _publicUrl(String storagePath) {
+  String? _publicUrl(String? storagePath) {
+    if (storagePath == null || storagePath.isEmpty) return null;
     if (storagePath.startsWith('http')) return storagePath;
     return _client.storage.from('product_images').getPublicUrl(storagePath);
   }

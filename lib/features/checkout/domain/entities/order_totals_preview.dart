@@ -13,6 +13,10 @@ part 'order_totals_preview.freezed.dart';
 abstract class OrderTotalsPreview with _$OrderTotalsPreview {
   const factory OrderTotalsPreview({
     @Default([]) List<CouponPreview> manual,
+
+    /// Codes that no longer qualify after a cart edit — surfaced at checkout
+    /// instead of being silently skipped by the preview.
+    @Default([]) List<CouponPreview> rejected,
     @Default(0) int subtotalMinor,
     @Default(0) int totalDiscountMinor,
     @Default(0) int deliveryFeeMinor,

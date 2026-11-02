@@ -41,15 +41,25 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
 
   /// Friendly demo copy per in-flight status; null for terminal ones where
   /// the timeline (or the delivered all-checks state) speaks for itself.
-  String? get _headline => switch (order.status) {
-        OrderStatus.pending => "We've received your order",
-        OrderStatus.confirmed => 'Order confirmed',
-        OrderStatus.processing => 'Preparing your items',
-        OrderStatus.packed => 'Packed and ready to ship',
-        OrderStatus.shipped => 'Shipped — on its way',
-        OrderStatus.outForDelivery => 'Out for delivery — arriving soon',
-        _ => null,
-      };
+  String? get _headline {
+    final payment = order.payment;
+    if (order.status == OrderStatus.pending &&
+        payment != null &&
+        payment.method == PaymentMethodKind.qr) {
+      return payment.status == PaymentStatusState.transactionVerified
+          ? 'Payment received'
+          : 'Awaiting payment';
+    }
+    return switch (order.status) {
+      OrderStatus.pending => "We've received your order",
+      OrderStatus.confirmed => 'Order confirmed',
+      OrderStatus.processing => 'Preparing your items',
+      OrderStatus.packed => 'Packed and ready to ship',
+      OrderStatus.shipped => 'Shipped — on its way',
+      OrderStatus.outForDelivery => 'Out for delivery — arriving soon',
+      _ => null,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +110,16 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
               const SizedBox(height: AppSpacing.md),
               _SimplifiedTimeline(
                 currentIndex: _stageIndex,
-                labels: const ['Placed', 'Preparing', 'On its way', 'Delivered'],
+                labels: order.status == OrderStatus.pending &&
+                        order.payment?.method == PaymentMethodKind.qr &&
+                        order.payment?.status == PaymentStatusState.pending
+                    ? const [
+                        'Awaiting payment',
+                        'Preparing',
+                        'On its way',
+                        'Delivered',
+                      ]
+                    : const ['Placed', 'Preparing', 'On its way', 'Delivered'],
               ),
             ],
             // The exact §7A lifecycle — the reveal target; also the direct

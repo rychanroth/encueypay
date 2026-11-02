@@ -19,9 +19,14 @@ enum CatalogSaleType { percent, fixed }
 @freezed
 abstract class ActiveSale with _$ActiveSale {
   const factory ActiveSale({
+    required String id,
     required CatalogSaleScope scope,
     required CatalogSaleType discountType,
     required int discountValue,
+    @Default('') String name,
+    @Default('') String description,
+    DateTime? startsAt,
+    DateTime? endsAt,
     String? brandId,
     String? categoryId,
   }) = _ActiveSale;
@@ -44,4 +49,28 @@ abstract class ActiveSale with _$ActiveSale {
         CatalogSaleType.percent => '$discountValue% OFF',
         CatalogSaleType.fixed => '${Money(discountValue).formatUsd()} OFF',
       };
+
+  /// Detail-sheet label — `15% off` or `$3.00 off`.
+  String get offerLabel => switch (discountType) {
+        CatalogSaleType.percent => '$discountValue% off',
+        CatalogSaleType.fixed => '${Money(discountValue).formatUsd()} off',
+      };
+
+  String get scopeLabel => switch (scope) {
+        CatalogSaleScope.platform => 'Store-wide sale',
+        CatalogSaleScope.brand => 'Brand sale',
+        CatalogSaleScope.category => 'Category sale',
+      };
+
+  /// `Always on`, `From 2026-11-02`, `Until 2026-11-30`, or both dates.
+  String get windowLabel {
+    String day(DateTime value) =>
+        value.toLocal().toString().substring(0, 10);
+    if (startsAt == null && endsAt == null) return 'Always on';
+    if (startsAt != null && endsAt != null) {
+      return '${day(startsAt!)} – ${day(endsAt!)}';
+    }
+    if (startsAt != null) return 'From ${day(startsAt!)}';
+    return 'Until ${day(endsAt!)}';
+  }
 }

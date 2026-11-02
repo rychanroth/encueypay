@@ -203,7 +203,7 @@ class _OrderCard extends ConsumerWidget {
                   // label is the simplified customer vocabulary.
                   StatusBadge(
                     wireName: order.status.wireName,
-                    label: order.status.label,
+                    label: order.statusLabel,
                   ),
                 ],
               ),

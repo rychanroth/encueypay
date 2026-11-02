@@ -2,15 +2,24 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'cart_item_dto.g.dart';
 
-/// Wire shape of the `cart_items` row with PostgREST joins for display data
-/// (DATA-01). All join sections are nullable so partial embeds stay
-/// parseable. Never leaves the data layer.
+/// Wire shape of one `cart_item_details` row (DATA-01). The view resolves the
+/// product/variant joins, thumbnail and server-authoritative sale price, so
+/// the DTO is flat and never leaves the data layer.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CartItemDto {
   const CartItemDto({
     required this.id,
     required this.quantity,
-    this.productVariants,
+    required this.variantId,
+    required this.productId,
+    required this.productName,
+    required this.unitPriceMinor,
+    required this.saleUnitPriceMinor,
+    this.variantName,
+    this.stock = 0,
+    this.brandId,
+    this.categoryId,
+    this.imageStoragePath,
   });
 
   factory CartItemDto.fromJson(Map<String, dynamic> json) =>
@@ -18,81 +27,24 @@ class CartItemDto {
 
   final String id;
   final int quantity;
+  final String variantId;
+  final String productId;
+  final String productName;
+  final String? variantName;
 
-  /// PostgREST embed key for the variant join.
-  @JsonKey(name: 'product_variants')
-  final CartVariantJoinDto? productVariants;
+  /// Variant price, falling back to the product base price (the historical
+  /// "was" price when a sale applies).
+  final int unitPriceMinor;
 
-  Map<String, dynamic> toJson() => _$CartItemDtoToJson(this);
-}
+  /// Server-computed `best_sale_price_minor` — always <= [unitPriceMinor].
+  final int saleUnitPriceMinor;
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CartVariantJoinDto {
-  const CartVariantJoinDto({
-    this.id,
-    this.name,
-    this.priceMinor,
-    this.products,
-  });
-
-  factory CartVariantJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CartVariantJoinDtoFromJson(json);
-
-  final String? id;
-  final String? name;
-  final int? priceMinor;
-
-  @JsonKey(name: 'products')
-  final CartProductJoinDto? products;
-
-  Map<String, dynamic> toJson() => _$CartVariantJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CartProductJoinDto {
-  const CartProductJoinDto({
-    this.id,
-    this.name,
-    this.basePriceMinor,
-    this.stock = 0,
-    this.brandId,
-    this.categoryId,
-    this.productImages = const [],
-  });
-
-  factory CartProductJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CartProductJoinDtoFromJson(json);
-
-  final String? id;
-  final String? name;
-  final int? basePriceMinor;
-
-  /// Product-wide stock (Section 6/2d) — caps the tile's quantity stepper.
   @JsonKey(defaultValue: 0)
   final int stock;
 
-  /// Group ids for sale matching — the composition root computes sale
-  /// prices (features/cart never imports features/catalog, ARCH-04).
   final String? brandId;
   final String? categoryId;
+  final String? imageStoragePath;
 
-  @JsonKey(name: 'product_images', defaultValue: [])
-  final List<CartImageJoinDto> productImages;
-
-  Map<String, dynamic> toJson() => _$CartProductJoinDtoToJson(this);
-}
-
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CartImageJoinDto {
-  const CartImageJoinDto({this.storagePath, this.sortOrder = 0});
-
-  factory CartImageJoinDto.fromJson(Map<String, dynamic> json) =>
-      _$CartImageJoinDtoFromJson(json);
-
-  final String? storagePath;
-
-  @JsonKey(defaultValue: 0)
-  final int sortOrder;
-
-  Map<String, dynamic> toJson() => _$CartImageJoinDtoToJson(this);
+  Map<String, dynamic> toJson() => _$CartItemDtoToJson(this);
 }

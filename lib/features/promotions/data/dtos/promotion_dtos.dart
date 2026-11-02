@@ -9,7 +9,7 @@ class SaleDto {
   const SaleDto({
     required this.id,
     required this.name,
-    required this.description,
+    this.description,
     required this.discountValue,
     this.scope,
     this.discountType,
@@ -25,7 +25,7 @@ class SaleDto {
 
   final String id;
   final String name;
-  final String description;
+  final String? description;
   final String? scope;
   final String? discountType;
   final int discountValue;

@@ -9,7 +9,7 @@ part of 'promotion_dtos.dart';
 SaleDto _$SaleDtoFromJson(Map<String, dynamic> json) => SaleDto(
   id: json['id'] as String,
   name: json['name'] as String,
-  description: json['description'] as String,
+  description: json['description'] as String?,
   discountValue: (json['discount_value'] as num).toInt(),
   scope: json['scope'] as String?,
   discountType: json['discount_type'] as String?,

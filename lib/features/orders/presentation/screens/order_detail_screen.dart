@@ -113,7 +113,7 @@ class OrderDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    order.status.label,
+                    order.statusLabel,
                     style: theme.textTheme.titleSmall
                         ?.copyWith(color: theme.colorScheme.primary),
                   ),

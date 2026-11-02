@@ -42,16 +42,20 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     }
   }
 
-  /// Uploads the image and returns its full public URL (the sale/banner
-  /// RPCs store URLs, not bare paths).
-  Future<String> _uploadPromoAsset({
+  /// Uploads the image and returns its storage path plus full public URL
+  /// (the sale/banner RPCs store URLs, not bare paths). The path is kept
+  /// separately so a rejected sale write can clean up the orphan object.
+  Future<({String path, String url})> _uploadPromoAsset({
     required String filePath,
     required String fileName,
   }) async {
     final bytes = await File(filePath).readAsBytes();
     final path = '$_uid/${DateTime.now().millisecondsSinceEpoch}_$fileName';
     await _client.storage.from('promo_assets').uploadBinary(path, bytes);
-    return _client.storage.from('promo_assets').getPublicUrl(path);
+    return (
+      path: path,
+      url: _client.storage.from('promo_assets').getPublicUrl(path),
+    );
   }
 
   @override
@@ -151,10 +155,14 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     String? filePath,
     String? fileName,
   }) async {
+    ({String path, String url})? uploaded;
     try {
-      final imageUrl = filePath == null || fileName == null
-          ? null
-          : await _uploadPromoAsset(filePath: filePath, fileName: fileName);
+      if (filePath != null && fileName != null) {
+        uploaded = await _uploadPromoAsset(
+          filePath: filePath,
+          fileName: fileName,
+        );
+      }
       await _client.rpc('admin_create_sale', params: {
         'p_name': name,
         'p_description': description,
@@ -165,8 +173,23 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
         'p_category_id': categoryId,
         'p_starts_at': startsAt?.toIso8601String(),
         'p_ends_at': endsAt?.toIso8601String(),
-        'p_image_path': imageUrl,
+        'p_image_path': uploaded?.url,
       });
+    } on PostgrestException catch (error, stackTrace) {
+      // The RPC transaction rolled back, so the uploaded object is an
+      // orphan. Best-effort cleanup; a network ambiguity after a successful
+      // commit must not delete a banner image, so only a definite backend
+      // rejection cleans up.
+      if (uploaded != null) {
+        try {
+          await _client.storage
+              .from('promo_assets')
+              .remove([uploaded.path]);
+        } catch (cleanupError, cleanupStack) {
+          logSuppressedError(cleanupError, cleanupStack);
+        }
+      }
+      throw mapRepositoryError(error, stackTrace);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

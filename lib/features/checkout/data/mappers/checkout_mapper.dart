@@ -15,19 +15,13 @@ extension CheckoutAddressDtoX on CheckoutAddressDto {
 }
 
 extension CheckoutItemDtoX on CheckoutItemDto {
-  /// Unit price falls back variant → product base price (DATA-02 defaults) —
-  /// the same coalesce the order RPC prices with, so the summary matches the
-  /// cart and the placed order. The thumbnail is the product's first image
-  /// (lowest sort_order); full http(s) references pass through (seed demo
-  /// imagery — the same convention as the catalog/cart).
   CheckoutItem toDomain({String? imageUrl}) {
-    final variant = productVariants;
-    final product = variant?.products;
     return CheckoutItem(
       id: id,
-      productName: product?.name ?? 'Unknown product',
-      variantName: variant?.name,
-      unitPriceMinor: variant?.priceMinor ?? product?.basePriceMinor ?? 0,
+      productName: productName,
+      variantName: variantName,
+      unitPriceMinor: unitPriceMinor,
+      saleUnitPriceMinor: saleUnitPriceMinor,
       quantity: quantity,
       imageUrl: imageUrl,
     );

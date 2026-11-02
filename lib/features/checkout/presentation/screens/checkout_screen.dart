@@ -6,25 +6,17 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../domain/entities/coupon_preview.dart';
 import '../../domain/entities/payment_method.dart';
-import '../../domain/entities/checkout_summary.dart';
 import '../controllers/checkout_controller.dart';
 import '../controllers/order_totals_provider.dart';
+import '../states/checkout_state.dart';
 
-/// Multi-step checkout (Section 6b — assignment §6 sequence): Cart review →
-/// Shipping address → Shipping method → Payment method → Coupon → Order
-/// note → Order summary. Placement goes through the atomic RPC; per-step
-/// navigation is blocked while the current step is invalid.
+/// Single-page checkout: cart review, address, delivery/payment, coupon,
+/// note and summary are visible together; the place-order action stays in a
+/// bottom bar. Selection/placement state lives in [CheckoutController].
 class CheckoutScreen extends ConsumerStatefulWidget {
-  const CheckoutScreen({super.key, this.salePricesByItemId = const {}});
-
-  /// Cart-item id → sale-adjusted unit price, resolved by the composition
-  /// root (features/checkout never imports features/catalog, ARCH-04).
-  /// Absent entries render the raw price.
-  final Map<String, int> salePricesByItemId;
-
-  int unitPriceOf(CheckoutItem item) =>
-      salePricesByItemId[item.id] ?? item.unitPriceMinor;
+  const CheckoutScreen({super.key});
 
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -45,15 +37,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final code = _couponController.text.trim();
     if (code.isEmpty) return;
     try {
-      final valid =
-          await ref.read(checkoutControllerProvider.notifier).applyCoupon(code);
+      final preview = await ref
+          .read(checkoutControllerProvider.notifier)
+          .applyCoupon(code);
       if (!mounted) return;
+      final message = switch (preview) {
+        null => 'Coupon already applied',
+        CouponPreview(valid: true) => [
+          'Coupon applied',
+          if (preview.name.isNotEmpty) preview.name,
+          if (preview.offerLabel.isNotEmpty) preview.offerLabel,
+          '-${Money(preview.discountMinor).formatUsd()}',
+        ].join(' · '),
+        final CouponPreview coupon => _couponRequirement(coupon),
+      };
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text(valid ? 'Coupon applied' : 'Coupon not applicable'),
-        ));
-      if (valid) _couponController.clear();
+        ..showSnackBar(SnackBar(content: Text(message)));
+      if (preview?.valid == true) _couponController.clear();
     } on Failure catch (failure) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -62,29 +63,57 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
   }
 
+  /// Human-readable requirement for a rejected coupon. The server supplies
+  /// the structured fields; the client formats money and dates.
+  static String _couponRequirement(CouponPreview coupon) {
+    String day(DateTime value) => value.toLocal().toString().substring(0, 10);
+
+    return switch (coupon.reason) {
+      'not_found' => 'Coupon code not found.',
+      'inactive' => 'This coupon is no longer active.',
+      'not_started' =>
+        coupon.startsAt == null
+            ? 'This coupon is not active yet.'
+            : 'This coupon starts on ${day(coupon.startsAt!)}.',
+      'expired' =>
+        coupon.endsAt == null
+            ? 'This coupon has expired.'
+            : 'This coupon expired on ${day(coupon.endsAt!)}.',
+      'min_order_not_met' =>
+        'Minimum spend is '
+            '${Money(coupon.minOrderAmountMinor).formatUsd()} — '
+            'your subtotal is ${Money(coupon.subtotalMinor).formatUsd()}.',
+      'empty_cart' => 'Add items to your cart before applying a coupon.',
+      'not_authenticated' => 'Sign in to use a coupon.',
+      _ => coupon.message ?? 'Coupon not applicable.',
+    };
+  }
+
   Future<void> _placeOrder() async {
-    final orderId =
-        await ref.read(checkoutControllerProvider.notifier).placeOrder();
+    final orderId = await ref
+        .read(checkoutControllerProvider.notifier)
+        .placeOrder();
     if (!mounted) return;
     if (orderId != null) {
       context.pushNamed(AppRoutes.orderPlaced, pathParameters: {'id': orderId});
-    } else {
-      final error = ref.read(checkoutControllerProvider).error;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text(error is Failure
-              ? error.message
-              : 'Could not place the order'),
-        ));
+      return;
     }
+    final error = ref.read(checkoutControllerProvider).error;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            error is Failure ? error.message : 'Could not place the order',
+          ),
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
     final checkoutAsync = ref.watch(checkoutControllerProvider);
     final theme = Theme.of(context);
-    final controller = ref.read(checkoutControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
@@ -103,353 +132,482 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ],
           ),
         ),
-        data: (state) {
-          final summary = state.summary;
-          // Authoritative totals: the sale-applied subtotal + stacked code
-          // discounts (the same numbers placement produces). While the
-          // preview loads, fall back to the locally computed figures.
-          final totals = ref.watch(orderTotalsPreviewProvider).value;
-          final totalDiscount =
-              totals?.totalDiscountMinor ?? state.discountPreviewMinor;
-          final subtotalMinor =
-              totals?.subtotalMinor ?? summary?.subtotalMinor ?? 0;
-          final deliveryFeeMinor =
-              totals?.deliveryFeeMinor ?? summary?.deliveryFeeMinor ?? 0;
-          final totalMinor =
-              totals?.totalMinor ??
-              (summary?.totalMinor ?? 0) - state.discountPreviewMinor;
-          return Stepper(
-            currentStep: state.currentStep,
-            onStepTapped: controller.goToStep,
-            onStepContinue: () {
-              if (state.currentStep < 6) {
-                controller.goToStep(state.currentStep + 1);
-                return;
-              }
-              _placeOrder();
-            },
-            onStepCancel: () =>
-                controller.goToStep(state.currentStep - 1),
-            controlsBuilder: (context, details) {
-              final isLast = state.currentStep == 6;
-              final placing = checkoutAsync.isLoading;
-              return Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  children: [
-                    FilledButton(
-                      onPressed: (ref
-                                  .read(checkoutControllerProvider.notifier)
-                                  .canContinue() &&
-                              !placing)
-                          ? details.onStepContinue
-                          : null,
-                      child: placing && isLast
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(isLast ? 'Place order' : 'Continue'),
-                    ),
-                    if (state.currentStep > 0) ...[
-                      const SizedBox(width: 8),
-                      TextButton(
-                        onPressed: details.onStepCancel,
-                        child: const Text('Back'),
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            },
-            steps: [
-              // 1 — Cart review.
-              Step(
-                title: const Text('Cart review'),
-                isActive: state.currentStep >= 0,
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (summary == null || summary.items.isEmpty)
-                      const Text('Your cart is empty.')
-                    else ...[
-                      for (final item in summary.items)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 44,
-                                height: 44,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: MonogramImage(
-                                    imageUrl: item.imageUrl,
-                                    name: item.productName,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.variantName == null
-                                          ? '${item.productName} × ${item.quantity}'
-                                          : '${item.productName} (${item.variantName}) × ${item.quantity}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    // Variant-aware unit price under the
-                                    // title (falls back to base server-side);
-                                    // sale-priced lines strike the original
-                                    // through.
-                                    if (widget.salePricesByItemId[item.id] != null) ...[
-                                      Text(
-                                        '${Money(widget.unitPriceOf(item)).formatUsd()} each',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                          color: theme
-                                              .colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                      Text(
-                                        Money(item.unitPriceMinor).formatUsd(),
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                          color: theme
-                                              .colorScheme.onSurfaceVariant,
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                        ),
-                                      ),
-                                    ] else
-                                      Text(
-                                        '${Money(item.unitPriceMinor).formatUsd()} each',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                          color: theme
-                                              .colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                Money(widget.unitPriceOf(item) * item.quantity)
-                                    .format(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const Divider(height: 24),
-                      _SummaryRow(
-                          'Subtotal', Money(summary.subtotalMinor).format()),
-                    ],
-                  ],
-                ),
-              ),
-              // 2 — Shipping address.
-              Step(
-                title: const Text('Shipping address'),
-                isActive: state.currentStep >= 1,
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (state.addresses.isEmpty)
-                      const Text(
-                        'No addresses yet — add one in Profile → Addresses.',
-                      )
-                    else
-                      RadioGroup<String>(
-                        groupValue: state.selectedAddressId,
-                        onChanged: (value) => ref
-                            .read(checkoutControllerProvider.notifier)
-                            .selectAddress(value!),
-                        child: Column(
+        data: (state) => _buildCheckout(context, theme, state),
+      ),
+    );
+  }
+
+  Widget _buildCheckout(
+    BuildContext context,
+    ThemeData theme,
+    CheckoutState state,
+  ) {
+    final summary = state.summary;
+    final totals = ref.watch(orderTotalsPreviewProvider).value;
+    final totalDiscount =
+        totals?.totalDiscountMinor ?? state.discountPreviewMinor;
+    final subtotalMinor = totals?.subtotalMinor ?? summary?.subtotalMinor ?? 0;
+    final deliveryFeeMinor =
+        totals?.deliveryFeeMinor ?? summary?.deliveryFeeMinor ?? 0;
+    final totalMinor =
+        totals?.totalMinor ??
+        (summary?.totalMinor ?? 0) - state.discountPreviewMinor;
+
+    // The preview re-evaluates every applied code against the current cart.
+    // Overlay its verdict on the state previews so a code that stops (or
+    // starts) qualifying after a cart edit shows the current reason.
+    final effectiveCoupons = <String, CouponPreview>{
+      for (final coupon in totals?.manual ?? const <CouponPreview>[])
+        coupon.code: coupon,
+      for (final coupon in totals?.rejected ?? const <CouponPreview>[])
+        coupon.code: coupon,
+    };
+    final stateCodes = state.coupons.map((coupon) => coupon.code).toSet();
+    final rejectedCoupons = (totals?.rejected ?? const <CouponPreview>[])
+        .where((rejected) => !stateCodes.contains(rejected.code))
+        .toList();
+
+    return Column(
+      children: [
+        Expanded(
+          child: AbsorbPointer(
+            absorbing: state.isPlacing,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                _SectionCard(
+                  title: 'Order items',
+                  child: summary == null || summary.items.isEmpty
+                      ? const Text('Your cart is empty.')
+                      : Column(
                           children: [
-                            for (final address in state.addresses)
-                              RadioListTile<String>(
-                                value: address.id,
-                                title: Text(
-                                    '${address.label} · ${address.recipientName}'),
-                                subtitle: Text(
-                                  [address.line1, address.line2, address.city]
-                                      .whereType<String>()
-                                      .where((part) => part.isNotEmpty)
-                                      .join(', '),
+                            for (final item in summary.items)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 44,
+                                      height: 44,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: MonogramImage(
+                                          imageUrl: item.imageUrl,
+                                          name: item.productName,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.variantName == null
+                                                ? '${item.productName} × ${item.quantity}'
+                                                : '${item.productName} (${item.variantName}) × ${item.quantity}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (item.hasSale) ...[
+                                            Text(
+                                              '${Money(item.saleUnitPriceMinor).formatUsd()} each',
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
+                                            ),
+                                            Text(
+                                              Money(
+                                                item.unitPriceMinor,
+                                              ).formatUsd(),
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                    decoration: TextDecoration
+                                                        .lineThrough,
+                                                  ),
+                                            ),
+                                          ] else
+                                            Text(
+                                              '${Money(item.unitPriceMinor).formatUsd()} each',
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      Money(item.lineTotalMinor).formatUsd(),
+                                      style: theme.textTheme.titleSmall,
+                                    ),
+                                  ],
                                 ),
                               ),
                           ],
                         ),
-                      ),
-                    TextButton.icon(
-                      onPressed: () =>
-                          context.goNamed(AppRoutes.addresses), // cross-branch
-                      icon: const Icon(Icons.location_on_outlined, size: 18),
-                      label:
-                          const Text('Manage addresses (Profile tab)'),
-                    ),
-                  ],
                 ),
-              ),
-              // 3 — Shipping method (single fixed method; fee from settings).
-              Step(
-                title: const Text('Shipping method'),
-                isActive: state.currentStep >= 2,
-                content: Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.local_shipping_outlined),
-                    title: const Text('Standard delivery'),
-                    subtitle: Text(
-                      'Fee: ${Money(summary?.deliveryFeeMinor ?? 0).format()}',
-                    ),
-                  ),
+                _SectionCard(
+                  title: 'Delivery address',
+                  child: state.addresses.isEmpty
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('No addresses yet.'),
+                            TextButton.icon(
+                              onPressed: () =>
+                                  context.goNamed(AppRoutes.addresses),
+                              icon: const Icon(
+                                Icons.location_on_outlined,
+                                size: 18,
+                              ),
+                              label: const Text('Manage addresses'),
+                            ),
+                          ],
+                        )
+                      : RadioGroup<String>(
+                          groupValue: state.selectedAddressId,
+                          onChanged: (value) {
+                            if (value != null) {
+                              ref
+                                  .read(checkoutControllerProvider.notifier)
+                                  .selectAddress(value);
+                            }
+                          },
+                          child: Column(
+                            children: [
+                              for (final address in state.addresses)
+                                RadioListTile<String>(
+                                  value: address.id,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    '${address.label} · ${address.recipientName}',
+                                  ),
+                                  subtitle: Text(
+                                    [address.line1, address.line2, address.city]
+                                        .whereType<String>()
+                                        .where((part) => part.isNotEmpty)
+                                        .join(', '),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                 ),
-              ),
-              // 4 — Payment method (Section 6b: QR replaces bank transfer).
-              Step(
-                title: const Text('Payment method'),
-                isActive: state.currentStep >= 3,
-                content: RadioGroup<PaymentMethod>(
-                  groupValue: state.method,
-                  onChanged: (value) => ref
-                      .read(checkoutControllerProvider.notifier)
-                      .setMethod(value!),
+                _SectionCard(
+                  title: 'Delivery & payment',
                   child: Column(
                     children: [
-                      Card(
-                        child: RadioListTile<PaymentMethod>(
-                          value: PaymentMethod.cod,
-                          title: const Text('Cash on Delivery'),
-                          subtitle:
-                              const Text('Pay when your order arrives'),
-                        ),
-                      ),
-                      Card(
-                        child: RadioListTile<PaymentMethod>(
-                          value: PaymentMethod.qr,
-                          title: const Text('QR payment (KHQR)'),
-                          subtitle: const Text(
-                            'Scan with any KHQR-supported banking app',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // 5 — Coupon.
-              Step(
-                title: const Text('Coupon'),
-                isActive: state.currentStep >= 4,
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _couponController,
-                            decoration: const InputDecoration(
-                              hintText: 'Coupon code',
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                            ),
-                            textCapitalization: TextCapitalization.characters,
-                            onSubmitted: (_) => _applyCoupon(),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        FilledButton.tonal(
-                          onPressed: _applyCoupon,
-                          child: const Text('Apply'),
-                        ),
-                      ],
-                    ),
-                    for (final coupon in state.coupons)
                       ListTile(
-                        dense: true,
                         contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          coupon.valid
-                              ? Icons.check_circle
-                              : Icons.error_outline,
-                          color: coupon.valid
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.error,
+                        leading: const Icon(Icons.local_shipping_outlined),
+                        title: const Text('Standard delivery'),
+                        subtitle: Text(
+                          'Fee: ${Money(deliveryFeeMinor).formatUsd()}',
                         ),
-                        title: Row(
-                          children: [Text(coupon.code)],
+                      ),
+                      RadioGroup<PaymentMethod>(
+                        groupValue: state.method,
+                        onChanged: (value) {
+                          if (value != null) {
+                            ref
+                                .read(checkoutControllerProvider.notifier)
+                                .setMethod(value);
+                          }
+                        },
+                        child: const Column(
+                          children: [
+                            RadioListTile<PaymentMethod>(
+                              value: PaymentMethod.cod,
+                              contentPadding: EdgeInsets.zero,
+                              title: Text('Cash on Delivery'),
+                              subtitle: Text('Pay when your order arrives'),
+                            ),
+                            RadioListTile<PaymentMethod>(
+                              value: PaymentMethod.qr,
+                              contentPadding: EdgeInsets.zero,
+                              title: Text('QR payment (KHQR)'),
+                              subtitle: Text(
+                                'Scan with any KHQR-supported banking app',
+                              ),
+                            ),
+                          ],
                         ),
-                        subtitle: coupon.valid
-                            ? Text(
-                                '-${Money(coupon.discountMinor).formatUsd()} · ≈ ${Money(coupon.discountMinor).formatKhr()}')
-                            : Text(coupon.message ?? 'Not applicable'),
                       ),
-                  ],
-                ),
-              ),
-              // 6 — Order note.
-              Step(
-                title: const Text('Order note'),
-                isActive: state.currentStep >= 5,
-                content: TextField(
-                  controller: _noteController,
-                  decoration: const InputDecoration(
-                    hintText: 'Delivery instructions (optional)',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
-                  onChanged: controller.setNote,
-                ),
-              ),
-              // 7 — Order summary.
-              Step(
-                title: const Text('Summary'),
-                isActive: state.currentStep >= 6,
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (summary != null) ...[
-                      _SummaryRow('Subtotal', Money(subtotalMinor).formatUsd()),
-                      if (totalDiscount > 0)
-                        _SummaryRow(
-                          'Discount (codes)',
-                          '-${Money(totalDiscount).formatUsd()}',
-                        ),
-                      _SummaryRow(
-                        'Delivery fee',
-                        Money(deliveryFeeMinor).formatUsd(),
-                      ),
-                      const Divider(height: 24),
-                      _SummaryRow(
-                        'Total',
-                        Money(totalMinor).formatUsd(),
-                        bold: true,
-                      ),
-                      _SummaryRow(
-                        '',
-                        '≈ ${Money(totalMinor).formatKhr()}',
-                      ),
-                      if (state.method == PaymentMethod.qr)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            'You will scan the KHQR after placing the order.',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ),
                     ],
-                  ],
+                  ),
                 ),
+                _SectionCard(
+                  title: 'Coupon',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _couponController,
+                              decoration: const InputDecoration(
+                                hintText: 'Coupon code',
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              textCapitalization: TextCapitalization.characters,
+                              onSubmitted: (_) => _applyCoupon(),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton.tonal(
+                            onPressed: _applyCoupon,
+                            child: const Text('Apply'),
+                          ),
+                        ],
+                      ),
+                      for (final coupon in state.coupons)
+                        _CouponStepTile(
+                          coupon: effectiveCoupons[coupon.code] ?? coupon,
+                        ),
+                      for (final coupon in rejectedCoupons)
+                        _CouponStepTile(coupon: coupon),
+                    ],
+                  ),
+                ),
+                _SectionCard(
+                  title: 'Order note',
+                  child: TextField(
+                    controller: _noteController,
+                    decoration: const InputDecoration(
+                      hintText: 'Delivery instructions (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                    onChanged: ref
+                        .read(checkoutControllerProvider.notifier)
+                        .setNote,
+                  ),
+                ),
+                _SectionCard(
+                  title: 'Summary',
+                  child: summary == null
+                      ? const Text('Your cart is empty.')
+                      : Column(
+                          children: [
+                            _SummaryRow(
+                              'Subtotal',
+                              Money(subtotalMinor).formatUsd(),
+                            ),
+                            if (totalDiscount > 0) ...[
+                              if (totals != null && totals.manual.isNotEmpty)
+                                for (final coupon in totals.manual)
+                                  _SummaryRow(
+                                    coupon.name.isEmpty
+                                        ? 'Discount (${coupon.code})'
+                                        : 'Discount · ${coupon.name} '
+                                              '(${coupon.code})',
+                                    '-${Money(coupon.discountMinor).formatUsd()}',
+                                  )
+                              else
+                                _SummaryRow(
+                                  'Discount (codes)',
+                                  '-${Money(totalDiscount).formatUsd()}',
+                                ),
+                            ],
+                            _SummaryRow(
+                              'Delivery fee',
+                              Money(deliveryFeeMinor).formatUsd(),
+                            ),
+                            const Divider(height: 24),
+                            _SummaryRow(
+                              'Total',
+                              Money(totalMinor).formatUsd(),
+                              bold: true,
+                            ),
+                            _SummaryRow(
+                              '',
+                              '≈ ${Money(totalMinor).formatKhr()}',
+                            ),
+                            if (state.method == PaymentMethod.qr)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'You will scan the KHQR after placing the order.',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        _PlaceOrderBar(
+          totalMinor: totalMinor,
+          needsAddress: state.selectedAddressId == null,
+          emptyCart: summary == null || summary.items.isEmpty,
+          placing: state.isPlacing,
+          onPressed: _placeOrder,
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          );
-        },
+            ),
+            const SizedBox(height: 8),
+            child,
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _PlaceOrderBar extends StatelessWidget {
+  const _PlaceOrderBar({
+    required this.totalMinor,
+    required this.needsAddress,
+    required this.emptyCart,
+    required this.placing,
+    required this.onPressed,
+  });
+
+  final int totalMinor;
+  final bool needsAddress;
+  final bool emptyCart;
+  final bool placing;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final money = Money(totalMinor);
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            top: BorderSide(color: theme.colorScheme.outlineVariant),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Total', style: theme.textTheme.labelSmall),
+                  Text(
+                    money.formatUsd(),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (needsAddress)
+                    Text(
+                      'Select a delivery address',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            FilledButton(
+              onPressed: needsAddress || emptyCart || placing
+                  ? null
+                  : onPressed,
+              child: placing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Place order'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CouponStepTile extends StatelessWidget {
+  const _CouponStepTile({required this.coupon});
+
+  final CouponPreview coupon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        coupon.valid ? Icons.check_circle : Icons.error_outline,
+        color: coupon.valid
+            ? theme.colorScheme.primary
+            : theme.colorScheme.error,
+      ),
+      title: Text(
+        coupon.name.isEmpty ? coupon.code : '${coupon.code} · ${coupon.name}',
+      ),
+      subtitle: coupon.valid
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (coupon.offerLabel.isNotEmpty)
+                  Text('Offer: ${coupon.offerLabel}'),
+                Text(
+                  coupon.minOrderAmountMinor > 0
+                      ? 'Minimum spend: '
+                            '${Money(coupon.minOrderAmountMinor).formatUsd()}'
+                      : 'No minimum spend',
+                ),
+                Text(
+                  'Your discount: '
+                  '-${Money(coupon.discountMinor).formatUsd()}'
+                  ' · ≈ ${Money(coupon.discountMinor).formatKhr()}',
+                ),
+              ],
+            )
+          : Text(_CheckoutScreenState._couponRequirement(coupon)),
     );
   }
 }
@@ -464,16 +622,17 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = bold
-        ? Theme.of(context)
-            .textTheme
-            .titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold)
+        ? Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
         : Theme.of(context).textTheme.bodyMedium;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: style), Text(value, style: style)],
+        children: [
+          Expanded(child: Text(label, style: style)),
+          Text(value, style: style),
+        ],
       ),
     );
   }

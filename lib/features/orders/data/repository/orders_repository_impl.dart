@@ -52,6 +52,16 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   Failure _mapError(Object error, [StackTrace? stackTrace]) =>
       mapRepositoryError(error, stackTrace);
 
+  @override
+  Future<void> expireUnpaidQrOrders() async {
+    try {
+      await _client.rpc('expire_unpaid_qr_orders');
+    } catch (error, stackTrace) {
+      // Best-effort maintenance: a failure must not break the orders list.
+      logSuppressedError(error, stackTrace);
+    }
+  }
+
   CustomerOrder _mapRow(Map<String, dynamic> row) {
     final dto = OrderDto.fromJson(row);
     final itemImageUrls = <String, String?>{
