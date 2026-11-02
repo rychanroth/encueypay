@@ -28,10 +28,9 @@ class OrderDetailScreen extends ConsumerWidget {
       allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
     );
     if (file == null || file.path == null) return;
-    await ref.read(orderDetailControllerProvider(orderId).notifier).uploadProof(
-          filePath: file.path!,
-          fileName: file.name,
-        );
+    await ref
+        .read(orderDetailControllerProvider(orderId).notifier)
+        .uploadProof(filePath: file.path!, fileName: file.name);
   }
 
   Future<void> _confirmCancel(BuildContext context, WidgetRef ref) async {
@@ -55,7 +54,9 @@ class OrderDetailScreen extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-    await ref.read(orderDetailControllerProvider(orderId).notifier).cancelOrder();
+    await ref
+        .read(orderDetailControllerProvider(orderId).notifier)
+        .cancelOrder();
     final hasError = ref.read(orderDetailControllerProvider(orderId)).hasError;
     if (!hasError && context.mounted) context.pop();
   }
@@ -94,7 +95,8 @@ class OrderDetailScreen extends ConsumerWidget {
         ),
         data: (order) {
           final payment = order.payment;
-          final needsProof = payment != null &&
+          final needsProof =
+              payment != null &&
               payment.method == PaymentMethodKind.bankTransfer &&
               (payment.status == PaymentStatusState.pending ||
                   payment.status ==
@@ -108,14 +110,16 @@ class OrderDetailScreen extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       'Order ${order.id.substring(0, 8)}',
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Text(
                     order.statusLabel,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(color: theme.colorScheme.primary),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 ],
               ),
@@ -132,8 +136,9 @@ class OrderDetailScreen extends ConsumerWidget {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     'Reason: ${order.cancellationReason}',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.error),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -141,9 +146,12 @@ class OrderDetailScreen extends ConsumerWidget {
               // Items (§19 historical snapshots) — tappable OrderItemCards
               // with the product's current thumbnail; tapping opens the
               // product page (route-name navigation only, ARCH-04).
-              Text('Items',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Items',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               for (final item in order.items)
                 OrderItemCard(
@@ -151,16 +159,19 @@ class OrderDetailScreen extends ConsumerWidget {
                   onTap: item.productId.isEmpty
                       ? null
                       : () => context.pushNamed(
-                            AppRoutes.productDetail,
-                            pathParameters: {'id': item.productId},
-                          ),
+                          AppRoutes.productDetail,
+                          pathParameters: {'id': item.productId},
+                        ),
                 ),
               const SizedBox(height: 8),
 
               if (payment != null) ...[
-                Text('Payment',
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Payment',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 ListTile(
                   dense: true,
                   leading: const Icon(Icons.payment_outlined),
@@ -181,21 +192,23 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
               ],
 
-              Text('Shipping address',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              Text(
-                '${order.shippingRecipientName}\n'
-                '${[order.shippingLine1, order.shippingLine2, order.shippingCity].whereType<String>().where((part) => part.isNotEmpty).join(', ')}\n'
-                '${order.shippingPhone}',
-                style: theme.textTheme.bodyMedium,
-              ),
+              _ShippingDetailsCard(order: order),
               const Divider(height: 32),
               _SummaryRow('Subtotal', Money(order.subtotalMinor).format()),
               if (order.discountMinor > 0)
-                _SummaryRow('Discount', '-${Money(order.discountMinor).format()}'),
-              _SummaryRow('Delivery fee', Money(order.deliveryFeeMinor).format()),
-              _SummaryRow('Total', Money(order.totalMinor).format(), bold: true),
+                _SummaryRow(
+                  'Discount',
+                  '-${Money(order.discountMinor).format()}',
+                ),
+              _SummaryRow(
+                'Delivery fee',
+                Money(order.deliveryFeeMinor).format(),
+              ),
+              _SummaryRow(
+                'Total',
+                Money(order.totalMinor).format(),
+                bold: true,
+              ),
 
               const SizedBox(height: 24),
               if (order.delivered) ...[
@@ -223,9 +236,9 @@ class OrderDetailScreen extends ConsumerWidget {
                     onTap: item.productId.isEmpty
                         ? null
                         : () => context.pushNamed(
-                              AppRoutes.productDetail,
-                              pathParameters: {'id': item.productId},
-                            ),
+                            AppRoutes.productDetail,
+                            pathParameters: {'id': item.productId},
+                          ),
                     title: Text(
                       item.variantName == null
                           ? item.productName
@@ -237,8 +250,11 @@ class OrderDetailScreen extends ConsumerWidget {
                         ? const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_circle_outline,
-                                  size: 16, color: AppColors.accentEmerald),
+                              Icon(
+                                Icons.check_circle_outline,
+                                size: 16,
+                                color: AppColors.accentEmerald,
+                              ),
                               SizedBox(width: 4),
                               Text('Reviewed'),
                             ],
@@ -249,7 +265,7 @@ class OrderDetailScreen extends ConsumerWidget {
                               extra: (
                                 item.id,
                                 item.productId,
-                                item.productName
+                                item.productName,
                               ),
                             ),
                             child: const Text('Review'),
@@ -272,6 +288,65 @@ class OrderDetailScreen extends ConsumerWidget {
   }
 }
 
+class _ShippingDetailsCard extends StatelessWidget {
+  const _ShippingDetailsCard({required this.order});
+
+  final CustomerOrder order;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final address = [
+      order.shippingLine1,
+      order.shippingLine2,
+      order.shippingCity,
+    ].whereType<String>().where((part) => part.isNotEmpty).join(', ');
+    final phone = order.shippingPhone.trim();
+    final note = order.note.trim();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Shipping details',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          margin: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: Text(order.shippingRecipientName),
+                subtitle: phone.isEmpty ? null : Text(phone),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.location_on_outlined),
+                title: const Text('Delivery address'),
+                subtitle: SelectableText(
+                  address.isEmpty ? 'No address recorded' : address,
+                ),
+              ),
+              if (note.isNotEmpty) ...[
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.notes_outlined),
+                  title: const Text('Delivery note'),
+                  subtitle: Text(note),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow(this.label, this.value, {this.bold = false});
 
@@ -282,16 +357,18 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = bold
-        ? Theme.of(context)
-            .textTheme
-            .titleMedium
-            ?.copyWith(fontWeight: FontWeight.bold)
+        ? Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
         : Theme.of(context).textTheme.bodyMedium;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: style), Text(value, style: style)],
+        children: [
+          Text(label, style: style),
+          Text(value, style: style),
+        ],
       ),
     );
   }
