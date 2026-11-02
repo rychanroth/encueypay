@@ -5,21 +5,44 @@
 > `sales`, `coupons`, or `banners`. Supersedes every description of the
 > old promotion/coupon/banner campaign model.
 
-## 0. State right now
+## 0. State right now — 2026-11-02
 
-- **Code**: committed through `cd86fc8`; the working tree adds the
-  coupon-unit/feedback fixes, the product-detail sale sheet, the cart
-  sale-price fixes, server-side cart line pricing, single-page checkout,
-  unpaid-QR expiry, and QR save/share. `flutter analyze` clean; all tests
-  pass.
-- **Pending user action**: `supabase db push` — EIGHT migrations are
-  unpushed: `20261028000003` (variant flow), `20261028000004` (the OLD
-  campaign model — immediately superseded), `20261029000001` (drop stale
-  RPC overloads), `20261029000002` (category scope enum value),
-  `20261029000003` (sales + standalone codes), `20261102000001`
-  (structured coupon validation + rejected preview rows),
-  `20261102000002` (cart_item_details view), and `20261102000003`
-  (unpaid-QR expiry). The push **truncates**
+- **Code**: committed through `640728d`. Promotions fixes landed in
+  `e649771`; the address/QR work in later commits is unrelated. The
+  promotions slice includes:
+  - `SaleDto.description` is nullable and the mapper defaults it to `''`
+    (the likely source of the `type 'Null' is not a subtype of type
+    'String'` crash after sale creation).
+  - `admin_create_sale` failures now best-effort delete the uploaded
+    banner image (no orphan asset).
+  - Fixed-amount admin inputs parse dollars with `Money.parse`; percent
+    stays a whole number.
+  - Structured coupon validation/preview feedback, rejected-code rows,
+    and the product-detail sale sheet.
+  - Cart/checkout line prices come from `cart_item_details`.
+- **Runtime status**: the null-description path is covered by
+  `test/promotion_model_test.dart` and `flutter analyze`/`flutter test`
+  pass. **End-to-end sale creation with a banner has not been re-tested
+  after the fix.** If it still fails, capture the `[data-error]
+  unexpected ...` stack and check the next unguarded `as String` on the
+  post-create path (the banner `image_path` parse is the next candidate),
+  then the deployed function/schema.
+- **Live data observation**: the hosted project has a `bon om tuk` 10%
+  platform sale with an empty description, and coupons
+  `XXXYYY`/`XXXEEE` (`fixed`, value `2`), `YYYZZZ` (`fixed`, value `12`),
+  and `WWWEEE` (`fixed`, value `50`). Those fixed rows are still the old
+  wrong units (`$0.02`/`$0.12`/`$0.50`); recreate them through the fixed
+  admin form. The percent coupon is fine.
+- **Pending user action**: run `supabase migration list` and apply the
+  remaining migrations before testing. The list below may already be
+  partially applied remotely: `20261028000003` (variant flow),
+  `20261028000004` (the OLD campaign model — immediately superseded),
+  `20261029000001` (drop stale RPC overloads), `20261029000002` (category
+  scope enum value), `20261029000003` (sales + standalone codes),
+  `20261102000001` (structured coupon validation + rejected preview rows),
+  `20261102000002` (cart_item_details view), `20261102000003`
+  (unpaid-QR expiry). The sales/coupons schema is present remotely; do not
+  assume the newer function/view migrations are. The push **truncates**
   `sales`, `coupons`, `banners`, `order_coupons` — the admin recreates
   live sales through the new UI, which doubles as its first test. Past
   orders keep their aggregate `discount_minor`; only per-code breakdown
@@ -158,6 +181,13 @@ discount wins", which also compares percent vs dollars by outcome).
 
 ## 7. Known gaps / deferred (do not build unasked)
 
+- End-to-end admin sale creation + banner upload is not runtime-verified
+  after the null-description fix; capture the debug stack before changing
+  more code.
+- The old fixed-value coupons must be recreated (values `2`/`12`/`50` are
+  old wrong units).
+- Banner behavior was not changed in this pass; only the sale-write
+  orphan-image cleanup was added.
 - No per-sale reporting; `order_coupons` is write-only bookkeeping.
 - Admin product lists show base price only (no effective-price column).
 - Multi-code stacking follows the assignment sequence (codes sum, capped
