@@ -21,8 +21,9 @@ mixin _$CartItem {
  int get saleUnitPriceMinor; int get quantity;/// Product-wide stock snapshot (Section 6): all variants of the product
 /// share it; caps the tile's quantity stepper. The server re-validates
 /// authoritatively at checkout (§53).
- int get stock; String? get imageUrl;/// Group ids for sale matching (set by the repository; the composition
-/// root resolves them into display prices — ARCH-04).
+ int get stock; String? get imageUrl;/// Product group ids from the cart read model (kept for display/
+/// diagnostics; pricing already arrives resolved as
+/// [saleUnitPriceMinor]).
  String? get brandId; String? get categoryId;
 /// Create a copy of CartItem
 /// with the given fields replaced by the non-null parameter values.
@@ -245,8 +246,9 @@ class _CartItem extends CartItem {
 /// authoritatively at checkout (§53).
 @override@JsonKey() final  int stock;
 @override final  String? imageUrl;
-/// Group ids for sale matching (set by the repository; the composition
-/// root resolves them into display prices — ARCH-04).
+/// Product group ids from the cart read model (kept for display/
+/// diagnostics; pricing already arrives resolved as
+/// [saleUnitPriceMinor]).
 @override final  String? brandId;
 @override final  String? categoryId;
 
