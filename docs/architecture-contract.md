@@ -1,7 +1,7 @@
 # Architecture Contract
 
 **Version:** 2.3.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
-**2.3.0 (2026-11-02):** `share_plus` added for QR image sharing (user-approved, DEPS-01); cart/checkout line pricing recorded as the `cart_item_details` read model (ACTION-03).
+**2.3.0 (2026-11-02):** `share_plus` added for QR image sharing (user-approved, DEPS-01); cart/checkout line pricing recorded as the `cart_item_details` read model (ACTION-03); Nominatim address prefill recorded in DEPS-04.
 **2.2.0 (2026-10-15):** DATA-09 added (PostgREST aggregate constraint); THEME-03 updated to the as-built token system; §3 CORE widget inventory; ACTION-02 recorded (single-seller schema retirement, migrations 0008–0010).
 **Audience:** Every AI agent and human contributor modifying this codebase.
 
@@ -660,7 +660,10 @@ constants per feature.
 
 - **DEPS-04 (Backend contract).** Supabase is the only backend. Auth is Supabase Auth,
   with Google OAuth as the primary sign-in method. No second auth provider or REST layer
-  without approval.
+  without approval. Exception (user-approved 2026-11-02): the public Nominatim
+  reverse-geocoder is permitted solely as a best-effort address prefill; the bundled
+  official MEF hierarchy (`assets/geo`) remains the source of truth, and no user data is
+  sent beyond the coordinates being looked up.
 
 ---
 

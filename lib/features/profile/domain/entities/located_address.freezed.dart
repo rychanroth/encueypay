@@ -17,7 +17,9 @@ mixin _$LocatedAddress {
 
 /// Street line (e.g. "271 Preah Norodom Blvd"); empty when the geocoder
 /// could only resolve an administrative area.
- String get line1; String? get city;
+ String get line1; String? get city;/// Official 2025 codes when Nominatim output could be matched to the
+/// bundled hierarchy. Each level is filled independently.
+ String? get provinceCode; String? get provinceName; String? get districtCode; String? get districtName; String? get communeCode; String? get communeName; String? get villageCode; String? get villageName;
 /// Create a copy of LocatedAddress
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $LocatedAddressCopyWith<LocatedAddress> get copyWith => _$LocatedAddressCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocatedAddress&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.city, city) || other.city == city));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocatedAddress&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.city, city) || other.city == city)&&(identical(other.provinceCode, provinceCode) || other.provinceCode == provinceCode)&&(identical(other.provinceName, provinceName) || other.provinceName == provinceName)&&(identical(other.districtCode, districtCode) || other.districtCode == districtCode)&&(identical(other.districtName, districtName) || other.districtName == districtName)&&(identical(other.communeCode, communeCode) || other.communeCode == communeCode)&&(identical(other.communeName, communeName) || other.communeName == communeName)&&(identical(other.villageCode, villageCode) || other.villageCode == villageCode)&&(identical(other.villageName, villageName) || other.villageName == villageName));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,line1,city);
+int get hashCode => Object.hash(runtimeType,line1,city,provinceCode,provinceName,districtCode,districtName,communeCode,communeName,villageCode,villageName);
 
 @override
 String toString() {
-  return 'LocatedAddress(line1: $line1, city: $city)';
+  return 'LocatedAddress(line1: $line1, city: $city, provinceCode: $provinceCode, provinceName: $provinceName, districtCode: $districtCode, districtName: $districtName, communeCode: $communeCode, communeName: $communeName, villageCode: $villageCode, villageName: $villageName)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $LocatedAddressCopyWith<$Res>  {
   factory $LocatedAddressCopyWith(LocatedAddress value, $Res Function(LocatedAddress) _then) = _$LocatedAddressCopyWithImpl;
 @useResult
 $Res call({
- String line1, String? city
+ String line1, String? city, String? provinceCode, String? provinceName, String? districtCode, String? districtName, String? communeCode, String? communeName, String? villageCode, String? villageName
 });
 
 
@@ -65,10 +67,18 @@ class _$LocatedAddressCopyWithImpl<$Res>
 
 /// Create a copy of LocatedAddress
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? line1 = null,Object? city = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? line1 = null,Object? city = freezed,Object? provinceCode = freezed,Object? provinceName = freezed,Object? districtCode = freezed,Object? districtName = freezed,Object? communeCode = freezed,Object? communeName = freezed,Object? villageCode = freezed,Object? villageName = freezed,}) {
   return _then(LocatedAddress(
 line1: null == line1 ? _self.line1 : line1 // ignore: cast_nullable_to_non_nullable
 as String,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,provinceCode: freezed == provinceCode ? _self.provinceCode : provinceCode // ignore: cast_nullable_to_non_nullable
+as String?,provinceName: freezed == provinceName ? _self.provinceName : provinceName // ignore: cast_nullable_to_non_nullable
+as String?,districtCode: freezed == districtCode ? _self.districtCode : districtCode // ignore: cast_nullable_to_non_nullable
+as String?,districtName: freezed == districtName ? _self.districtName : districtName // ignore: cast_nullable_to_non_nullable
+as String?,communeCode: freezed == communeCode ? _self.communeCode : communeCode // ignore: cast_nullable_to_non_nullable
+as String?,communeName: freezed == communeName ? _self.communeName : communeName // ignore: cast_nullable_to_non_nullable
+as String?,villageCode: freezed == villageCode ? _self.villageCode : villageCode // ignore: cast_nullable_to_non_nullable
+as String?,villageName: freezed == villageName ? _self.villageName : villageName // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -154,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String line1,  String? city)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String line1,  String? city,  String? provinceCode,  String? provinceName,  String? districtCode,  String? districtName,  String? communeCode,  String? communeName,  String? villageCode,  String? villageName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LocatedAddress() when $default != null:
-return $default(_that.line1,_that.city);case _:
+return $default(_that.line1,_that.city,_that.provinceCode,_that.provinceName,_that.districtCode,_that.districtName,_that.communeCode,_that.communeName,_that.villageCode,_that.villageName);case _:
   return orElse();
 
 }
@@ -175,10 +185,10 @@ return $default(_that.line1,_that.city);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String line1,  String? city)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String line1,  String? city,  String? provinceCode,  String? provinceName,  String? districtCode,  String? districtName,  String? communeCode,  String? communeName,  String? villageCode,  String? villageName)  $default,) {final _that = this;
 switch (_that) {
 case _LocatedAddress():
-return $default(_that.line1,_that.city);case _:
+return $default(_that.line1,_that.city,_that.provinceCode,_that.provinceName,_that.districtCode,_that.districtName,_that.communeCode,_that.communeName,_that.villageCode,_that.villageName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +205,10 @@ return $default(_that.line1,_that.city);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String line1,  String? city)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String line1,  String? city,  String? provinceCode,  String? provinceName,  String? districtCode,  String? districtName,  String? communeCode,  String? communeName,  String? villageCode,  String? villageName)?  $default,) {final _that = this;
 switch (_that) {
 case _LocatedAddress() when $default != null:
-return $default(_that.line1,_that.city);case _:
+return $default(_that.line1,_that.city,_that.provinceCode,_that.provinceName,_that.districtCode,_that.districtName,_that.communeCode,_that.communeName,_that.villageCode,_that.villageName);case _:
   return null;
 
 }
@@ -209,14 +219,24 @@ return $default(_that.line1,_that.city);case _:
 /// @nodoc
 
 
-class _LocatedAddress implements LocatedAddress {
-  const _LocatedAddress({required this.line1, this.city});
+class _LocatedAddress extends LocatedAddress {
+  const _LocatedAddress({required this.line1, this.city, this.provinceCode, this.provinceName, this.districtCode, this.districtName, this.communeCode, this.communeName, this.villageCode, this.villageName}): super._();
   
 
 /// Street line (e.g. "271 Preah Norodom Blvd"); empty when the geocoder
 /// could only resolve an administrative area.
 @override final  String line1;
 @override final  String? city;
+/// Official 2025 codes when Nominatim output could be matched to the
+/// bundled hierarchy. Each level is filled independently.
+@override final  String? provinceCode;
+@override final  String? provinceName;
+@override final  String? districtCode;
+@override final  String? districtName;
+@override final  String? communeCode;
+@override final  String? communeName;
+@override final  String? villageCode;
+@override final  String? villageName;
 
 /// Create a copy of LocatedAddress
 /// with the given fields replaced by the non-null parameter values.
@@ -228,16 +248,16 @@ _$LocatedAddressCopyWith<_LocatedAddress> get copyWith => __$LocatedAddressCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocatedAddress&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.city, city) || other.city == city));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocatedAddress&&(identical(other.line1, line1) || other.line1 == line1)&&(identical(other.city, city) || other.city == city)&&(identical(other.provinceCode, provinceCode) || other.provinceCode == provinceCode)&&(identical(other.provinceName, provinceName) || other.provinceName == provinceName)&&(identical(other.districtCode, districtCode) || other.districtCode == districtCode)&&(identical(other.districtName, districtName) || other.districtName == districtName)&&(identical(other.communeCode, communeCode) || other.communeCode == communeCode)&&(identical(other.communeName, communeName) || other.communeName == communeName)&&(identical(other.villageCode, villageCode) || other.villageCode == villageCode)&&(identical(other.villageName, villageName) || other.villageName == villageName));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,line1,city);
+int get hashCode => Object.hash(runtimeType,line1,city,provinceCode,provinceName,districtCode,districtName,communeCode,communeName,villageCode,villageName);
 
 @override
 String toString() {
-  return 'LocatedAddress(line1: $line1, city: $city)';
+  return 'LocatedAddress(line1: $line1, city: $city, provinceCode: $provinceCode, provinceName: $provinceName, districtCode: $districtCode, districtName: $districtName, communeCode: $communeCode, communeName: $communeName, villageCode: $villageCode, villageName: $villageName)';
 }
 
 
@@ -248,7 +268,7 @@ abstract mixin class _$LocatedAddressCopyWith<$Res> implements $LocatedAddressCo
   factory _$LocatedAddressCopyWith(_LocatedAddress value, $Res Function(_LocatedAddress) _then) = __$LocatedAddressCopyWithImpl;
 @override @useResult
 $Res call({
- String line1, String? city
+ String line1, String? city, String? provinceCode, String? provinceName, String? districtCode, String? districtName, String? communeCode, String? communeName, String? villageCode, String? villageName
 });
 
 
@@ -265,10 +285,18 @@ class __$LocatedAddressCopyWithImpl<$Res>
 
 /// Create a copy of LocatedAddress
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? line1 = null,Object? city = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? line1 = null,Object? city = freezed,Object? provinceCode = freezed,Object? provinceName = freezed,Object? districtCode = freezed,Object? districtName = freezed,Object? communeCode = freezed,Object? communeName = freezed,Object? villageCode = freezed,Object? villageName = freezed,}) {
   return _then(_LocatedAddress(
 line1: null == line1 ? _self.line1 : line1 // ignore: cast_nullable_to_non_nullable
 as String,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,provinceCode: freezed == provinceCode ? _self.provinceCode : provinceCode // ignore: cast_nullable_to_non_nullable
+as String?,provinceName: freezed == provinceName ? _self.provinceName : provinceName // ignore: cast_nullable_to_non_nullable
+as String?,districtCode: freezed == districtCode ? _self.districtCode : districtCode // ignore: cast_nullable_to_non_nullable
+as String?,districtName: freezed == districtName ? _self.districtName : districtName // ignore: cast_nullable_to_non_nullable
+as String?,communeCode: freezed == communeCode ? _self.communeCode : communeCode // ignore: cast_nullable_to_non_nullable
+as String?,communeName: freezed == communeName ? _self.communeName : communeName // ignore: cast_nullable_to_non_nullable
+as String?,villageCode: freezed == villageCode ? _self.villageCode : villageCode // ignore: cast_nullable_to_non_nullable
+as String?,villageName: freezed == villageName ? _self.villageName : villageName // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

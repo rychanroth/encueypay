@@ -15,6 +15,12 @@ class AddressDto {
     required this.line1,
     this.line2,
     required this.city,
+    this.provinceCode,
+    this.districtCode,
+    this.communeCode,
+    this.villageCode,
+    this.latitude,
+    this.longitude,
     this.isDefault = false,
   });
 
@@ -29,6 +35,12 @@ class AddressDto {
   final String line1;
   final String? line2;
   final String city;
+  final String? provinceCode;
+  final String? districtCode;
+  final String? communeCode;
+  final String? villageCode;
+  final double? latitude;
+  final double? longitude;
 
   /// Section 6b: at most one default per user (partial unique index).
   @JsonKey(defaultValue: false)

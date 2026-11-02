@@ -15,6 +15,12 @@ AddressDto _$AddressDtoFromJson(Map<String, dynamic> json) => AddressDto(
   line1: json['line1'] as String,
   line2: json['line2'] as String?,
   city: json['city'] as String,
+  provinceCode: json['province_code'] as String?,
+  districtCode: json['district_code'] as String?,
+  communeCode: json['commune_code'] as String?,
+  villageCode: json['village_code'] as String?,
+  latitude: (json['latitude'] as num?)?.toDouble(),
+  longitude: (json['longitude'] as num?)?.toDouble(),
   isDefault: json['is_default'] as bool? ?? false,
 );
 
@@ -28,5 +34,11 @@ Map<String, dynamic> _$AddressDtoToJson(AddressDto instance) =>
       'line1': instance.line1,
       'line2': instance.line2,
       'city': instance.city,
+      'province_code': instance.provinceCode,
+      'district_code': instance.districtCode,
+      'commune_code': instance.communeCode,
+      'village_code': instance.villageCode,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
       'is_default': instance.isDefault,
     };

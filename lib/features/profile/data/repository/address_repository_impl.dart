@@ -64,6 +64,12 @@ class AddressRepositoryImpl implements IAddressRepository {
         'line1': draft.line1,
         'line2': draft.line2,
         'city': draft.city,
+        'province_code': draft.provinceCode,
+        'district_code': draft.districtCode,
+        'commune_code': draft.communeCode,
+        'village_code': draft.villageCode,
+        'latitude': draft.latitude,
+        'longitude': draft.longitude,
       });
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
@@ -80,6 +86,12 @@ class AddressRepositoryImpl implements IAddressRepository {
         'line1': draft.line1,
         'line2': draft.line2,
         'city': draft.city,
+        'province_code': draft.provinceCode,
+        'district_code': draft.districtCode,
+        'commune_code': draft.communeCode,
+        'village_code': draft.villageCode,
+        'latitude': draft.latitude,
+        'longitude': draft.longitude,
       }).eq('id', addressId);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);

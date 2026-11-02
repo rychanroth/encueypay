@@ -14,6 +14,15 @@ abstract class Address with _$Address {
     required String line1,
     String? line2,
     required String city,
+
+    /// Official 2025 administrative codes (bundled assets/geo data). Null
+    /// for legacy addresses whose city is still free text.
+    String? provinceCode,
+    String? districtCode,
+    String? communeCode,
+    String? villageCode,
+    double? latitude,
+    double? longitude,
     @Default(false) bool isDefault,
   }) = _Address;
 }
@@ -28,6 +37,12 @@ abstract class AddressDraft with _$AddressDraft {
     required String line1,
     String? line2,
     required String city,
+    String? provinceCode,
+    String? districtCode,
+    String? communeCode,
+    String? villageCode,
+    double? latitude,
+    double? longitude,
   }) = _AddressDraft;
 
   const AddressDraft._();
@@ -40,5 +55,11 @@ abstract class AddressDraft with _$AddressDraft {
         line1: line1,
         line2: line2,
         city: city,
+        provinceCode: provinceCode,
+        districtCode: districtCode,
+        communeCode: communeCode,
+        villageCode: villageCode,
+        latitude: latitude,
+        longitude: longitude,
       );
 }

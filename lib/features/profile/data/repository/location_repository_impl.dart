@@ -5,7 +5,11 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
+import '../../domain/entities/administrative_unit.dart';
 import '../../domain/entities/located_address.dart';
+import '../datasources/cambodia_geo_data_source.dart';
+import '../datasources/cambodia_location_matcher.dart';
+import '../datasources/nominatim_reverse_geocoder.dart';
 import 'location_repository.dart';
 
 /// Exposes the interface type, never the impl (DATA-07).
@@ -15,6 +19,7 @@ final locationRepositoryProvider = Provider<ILocationRepository>((ref) {
 
 class LocationRepositoryImpl implements ILocationRepository {
   final Geocoding _geocoder = Geocoding();
+  final CambodiaGeoDataSource _geo = CambodiaGeoDataSource();
 
   @override
   Future<({double latitude, double longitude})> currentPosition() async {
@@ -47,10 +52,73 @@ class LocationRepositoryImpl implements ILocationRepository {
   }
 
   @override
+  Future<List<AdministrativeUnit>> provinces() async {
+    try {
+      return await _geo.provinces();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<List<AdministrativeUnit>> districts(String provinceCode) async {
+    try {
+      return await _geo.districts(provinceCode);
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<List<AdministrativeUnit>> communes(
+    String provinceCode,
+    String districtCode,
+  ) async {
+    try {
+      return await _geo.communes(provinceCode, districtCode);
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<List<AdministrativeUnit>> villages(
+    String provinceCode,
+    String districtCode,
+    String communeCode,
+  ) async {
+    try {
+      return await _geo.villages(provinceCode, districtCode, communeCode);
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
   Future<LocatedAddress?> reverseGeocode({
     required double latitude,
     required double longitude,
   }) async {
+    // Best-effort official hierarchy first. Any failure here must not block
+    // the platform geocoder fallback.
+    try {
+      final nominatim = await nominatimReverseGeocode(
+        latitude: latitude,
+        longitude: longitude,
+      );
+      if (nominatim != null) {
+        final matched = await CambodiaLocationMatcher(_geo).match(nominatim);
+        if (matched != null &&
+            (matched.line1.isNotEmpty ||
+                matched.city != null ||
+                matched.matchedLevels > 0)) {
+          return matched;
+        }
+      }
+    } catch (error, stackTrace) {
+      logSuppressedError(error, stackTrace);
+    }
+
     try {
       final placemarks =
           await _geocoder.placemarkFromCoordinates(latitude, longitude);

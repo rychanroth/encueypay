@@ -12,6 +12,12 @@ extension AddressDtoX on AddressDto {
       line1: line1,
       line2: line2,
       city: city,
+      provinceCode: provinceCode,
+      districtCode: districtCode,
+      communeCode: communeCode,
+      villageCode: villageCode,
+      latitude: latitude,
+      longitude: longitude,
       isDefault: isDefault,
     );
   }
