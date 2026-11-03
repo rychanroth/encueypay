@@ -7,6 +7,7 @@ import '../../../../core/domain/failures.dart';
 import '../../domain/entities/address.dart';
 import '../../domain/entities/administrative_unit.dart';
 import '../../domain/entities/located_address.dart';
+import '../../domain/entities/user_profile.dart';
 import '../controllers/addresses_controller.dart';
 import '../controllers/current_location_controller.dart';
 import '../controllers/geo_controllers.dart';
@@ -60,6 +61,10 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
   bool _loadingGeo = false;
   String? _geoError;
 
+  /// New-address contact prefill: fills empty fields once from the profile.
+  ProviderSubscription<AsyncValue<UserProfile>>? _profileSubscription;
+  bool _profilePrefillDone = false;
+
   @override
   void initState() {
     super.initState();
@@ -67,11 +72,35 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     _districtCode = widget.address?.districtCode;
     _communeCode = widget.address?.communeCode;
     _villageCode = widget.address?.villageCode;
+    if (widget.address == null) {
+      // fireImmediately covers a profile that was already loaded before
+      // this screen opened; the empty checks preserve anything the user
+      // has already typed.
+      _profileSubscription = ref.listenManual(
+        profileControllerProvider,
+        (_, next) => _prefillContactFromProfile(next.value),
+        fireImmediately: true,
+      );
+    }
     _hydrateGeo();
+  }
+
+  void _prefillContactFromProfile(UserProfile? profile) {
+    if (_profilePrefillDone || profile == null) return;
+    _profilePrefillDone = true;
+    final name = profile.fullName.trim();
+    final phone = profile.phone?.trim() ?? '';
+    if (name.isNotEmpty && _recipientController.text.trim().isEmpty) {
+      _recipientController.text = name;
+    }
+    if (phone.isNotEmpty && _phoneController.text.trim().isEmpty) {
+      _phoneController.text = phone;
+    }
   }
 
   @override
   void dispose() {
+    _profileSubscription?.close();
     _labelController.dispose();
     _recipientController.dispose();
     _phoneController.dispose();
@@ -489,17 +518,6 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
           ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
-    // New addresses prefill the recipient with the customer's own name once
-    // the profile has loaded; the field stays fully editable.
-    if (widget.address == null) {
-      ref.listen(profileControllerProvider, (_, next) {
-        final name = next.value?.fullName ?? '';
-        if (name.isNotEmpty && _recipientController.text.isEmpty) {
-          _recipientController.text = name;
-        }
-      });
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.address == null ? 'Add address' : 'Edit address'),
@@ -510,8 +528,8 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // ---- Contact: label, recipient (prefilled with the
-            // customer's name), phone ----
+            // ---- Contact: label, recipient + phone (prefilled from the
+            // customer's profile for new addresses) ----
             Text(
               'Contact',
               style: theme.textTheme.titleSmall?.copyWith(
