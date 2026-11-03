@@ -46,7 +46,7 @@ final class CheckoutControllerProvider
 }
 
 String _$checkoutControllerHash() =>
-    r'2a5d1803ffcd5f61e92557fcf8f05020631362c8';
+    r'd72d8fb7cfeb2c867e7bc84902efb433c4cbcea5';
 
 /// Single-page checkout: the page renders cart review, address, payment,
 /// coupon, note and summary together. Selection state is presentation state

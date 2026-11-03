@@ -5,14 +5,12 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
 import 'order_status_timeline.dart';
 
-/// §7C tracking presentation for the order detail screen: the requirement's
-/// courier details / mock tracking number / ETA / step indicators
-/// consolidated into one card. The customer default is the simplified
-/// four-stage progress (`OrderStatus.label` mapping); a toggle reveals the
-/// exact §7A lifecycle. Everything except the status itself is
-/// presentation-only mock — no courier entity exists server-side, and the
-/// UI never flips states on its own: the admin advances the order and the
-/// realtime stream re-renders this card.
+/// §7C tracking presentation for the order detail screen: the real order
+/// id and status timeline consolidated into one card. The customer default
+/// is the simplified four-stage progress (`OrderStatus.label` mapping); a
+/// toggle reveals the exact §7A lifecycle. No courier entity or delivery
+/// estimate exists server-side, so neither is fabricated here — the admin
+/// advances the order and the realtime stream re-renders this card.
 class OrderTrackingCard extends StatefulWidget {
   const OrderTrackingCard({super.key, required this.order});
 
@@ -23,18 +21,12 @@ class OrderTrackingCard extends StatefulWidget {
 }
 
 class _OrderTrackingCardState extends State<OrderTrackingCard> {
-  /// MOCK courier identity (§7C "courier details") — a fixed stand-in,
-  /// deliberately non-interactive (no url_launcher dependency for a
-  /// decorative link).
-  static const _courierLine =
-      'EncueYPay Express · Rider Sok Dara · +855 12 345 678';
-
   bool _showExactStatus = false;
 
   CustomerOrder get order => widget.order;
 
-  /// Still able to move — headline/ETA/courier rows are hidden once the
-  /// order is delivered/cancelled (the timeline renders its own callout).
+  /// Still able to move — headline/timeline rows are hidden once the order
+  /// is delivered/cancelled (the exact timeline renders its own callout).
   bool get _inFlight =>
       order.status != OrderStatus.delivered &&
       order.status != OrderStatus.cancelled;
@@ -86,28 +78,11 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
               ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Tracking #${order.id.substring(0, 8).toUpperCase()}',
+              'Order #${order.id.substring(0, 8).toUpperCase()}',
               style: caption,
             ),
             if (_inFlight) ...[
-              Text(
-                'Estimated delivery '
-                '${order.createdAt.toLocal().add(const Duration(days: 3)).toString().substring(0, 10)}',
-                style: caption,
-              ),
               const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  Icon(
-                    Icons.local_shipping_outlined,
-                    size: 18,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(child: Text(_courierLine, style: caption)),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
               _SimplifiedTimeline(
                 currentIndex: _stageIndex,
                 labels: order.status == OrderStatus.pending &&

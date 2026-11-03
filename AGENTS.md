@@ -45,6 +45,8 @@ Silent invention is how architecture drifts.
   `core/presentation/responsive/`; no scaling packages (RESP-01…04).
 - **Backend:** Supabase only; Google OAuth primary (DEPS-04). `dio` and
   `go_router_builder` are declared but have no contracted role — do not use them (DEPS-01).
+  `drift_dev` is still in `dev_dependencies` with no drift code; DEPS-02 schedules its
+  removal — do not start using drift (CORE-05 bans local persistence).
 
 ## Commands
 
@@ -59,14 +61,18 @@ flutter test test/failure_mapping_test.dart                # focused run
 Running the app requires compile-time Supabase config; `main()` throws without it:
 
 ```bash
+flutter run --dart-define-from-file=config/.env     # local stack
+flutter run --dart-define-from-file=config/.remote  # hosted project
+# or explicitly:
 flutter run \
   --dart-define=SUPABASE_URL=<url> \
   --dart-define=SUPABASE_PUBLISHABLE_KEY=<publishable-key>
 ```
 
-Values live in gitignored `config/.env`; local-stack and physical-device OAuth
-prerequisites (including the ephemeral `adb reverse`) are in `supabase/README.md`.
-Never commit `config/`, `supabase/functions/.env`, or platform secrets.
+Values live in gitignored `config/.env` / `config/.remote`; local-stack and
+physical-device OAuth prerequisites (including the ephemeral `adb reverse`) are in
+`supabase/README.md`. Never commit `config/`, `supabase/functions/.env`, or platform
+secrets.
 
 ## Supabase / migrations
 
@@ -81,6 +87,10 @@ supabase functions deploy payway-create payway-webhook push-dispatch
 
 - The local harness expects PostgreSQL on `/tmp:55432` (setup notes in
   `supabase/testing/run_migrations.sh`).
+- Local edge functions need secrets in the CLI process environment; `supabase start` does
+  NOT read `supabase/functions/.env` on its own. Source **both** `config/.env` and
+  `supabase/functions/.env` before `supabase start`, and never `docker restart` the edge
+  runtime (it drops injected secrets). Details in `docs/HANDOFF-KHQR.md` §3.
 - Function signature change: `DROP FUNCTION` first. `CREATE OR REPLACE` with a changed
   signature **adds an overload**, which breaks PostgREST calls.
 - `ALTER TYPE ... ADD VALUE` must be its own migration file.
@@ -91,19 +101,33 @@ supabase functions deploy payway-create payway-webhook push-dispatch
 ## Definition of Done
 
 §12 of the contract. Minimum: `flutter analyze` clean, codegen regenerated, import fences
-hold, errors mapped at the repository boundary, no dependency/scope creep. Commit each
-slice after DoD.
+hold, errors mapped at the repository boundary, no dependency/scope creep. After each DoD, `git add` the related files, and `git commit -m [message]`.
+
+**Commit authorization:** the user pre-authorizes that commit after each slice/DoD.
+Do not wait for a separate “please commit” message. If a session-level rule
+conflicts, surface the conflict and treat this repo instruction as the user’s
+explicit authorization to commit the completed slice.
 
 ## Feature state index
 
 Active handoffs live in `docs/HANDOFF-<FEATURE>.md` — read the feature's handoff before
 resuming it. If a handoff contradicts this file, this file wins.
 
-- **Checkout:** mid-flight; the referenced `PLAN-CHECKOUT.md` was never written — gauge
-  state from `git log` and the contract.
+- **Checkout:** no active handoff. The flat one-page checkout, server-priced cart lines,
+  and QR order lifecycle landed in `e649771`; `docs/DESIGN.md` still describes the
+  retired multi-step wizard — the contract and current code win.
 - **Promotions:** `docs/HANDOFF-PROMOTIONS.md` — sales + standalone codes; awaiting
-  `supabase db push` and its §6 verification.
-- **KHQR:** `docs/HANDOFF-KHQR.md`.
+  `supabase db push`, §6 verification, and a re-test of sale creation with a banner
+  after the null-description fix.
+- **Variants:** `docs/HANDOFF-VARIANTS.md` — explicit DB variant, implicit UI
+  placeholder; awaiting `supabase db push` (`20261102000007`) and hosted verification.
+- **UX/visual:** `docs/HANDOFF-UX-VISUAL.md` — design brief + motion language;
+  pending decisions on reverting the nav rail and restoring the product-detail
+  trust composition.
+- **Commit cleanup:** `docs/HANDOFF-COMMIT-CLEANUP.md` — uncommitted combined
+  state from the previous/active agents; active agent commits the checkpoint.
+- **KHQR:** `docs/HANDOFF-KHQR.md` — awaiting hosted function deploy, PayWay callback
+  URL/whitelist, and one real end-to-end payment (§4).
 - `FEATURE_VERIFICATION_MATRIX.md` is a 2026-10-07 audit and is stale; trust the contract
   and current code over it.
 

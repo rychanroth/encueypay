@@ -17,11 +17,13 @@ mixin _$Product {
 
  String get id; String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor;/// Product-wide stock (Section 2d, assignment §3): purchasing any
 /// variant deducts this counter; variants carry no stock of their own.
- int get stock;/// Cheapest selectable price — min over variant effective prices, base
-/// price when the product has none. What grids/cards display.
- int get fromPriceMinor;/// First variant id (Section 6): the quick-action "add to cart" uses
-/// the product's default variant. Never null in practice —
-/// `create_product` auto-creates 'Default' — but tolerated here.
+ int get stock;/// Cheapest selectable price — min over the active priced variants,
+/// with the null-price single-price placeholder falling back to the
+/// base price. What grids/cards display.
+ int get fromPriceMinor;/// The cheapest sellable variant id (Section 6): quick-add and the
+/// detail page default to it. For a single-price product this is the
+/// hidden null-price placeholder, so carts still resolve a concrete
+/// variant. Null when the product has no active variant at all.
  String? get defaultVariantId; String get brandName; double? get ratingAvg; int get reviewCount;/// Catalog creation instant — feeds the new-arrivals qualification
 /// (§5.1.1) and the card NEW badge (§6.1). Null on synthetically built
 /// products (e.g. wishlist rows) which never qualify.
@@ -243,12 +245,14 @@ class _Product extends Product {
 /// Product-wide stock (Section 2d, assignment §3): purchasing any
 /// variant deducts this counter; variants carry no stock of their own.
 @override@JsonKey() final  int stock;
-/// Cheapest selectable price — min over variant effective prices, base
-/// price when the product has none. What grids/cards display.
+/// Cheapest selectable price — min over the active priced variants,
+/// with the null-price single-price placeholder falling back to the
+/// base price. What grids/cards display.
 @override final  int fromPriceMinor;
-/// First variant id (Section 6): the quick-action "add to cart" uses
-/// the product's default variant. Never null in practice —
-/// `create_product` auto-creates 'Default' — but tolerated here.
+/// The cheapest sellable variant id (Section 6): quick-add and the
+/// detail page default to it. For a single-price product this is the
+/// hidden null-price placeholder, so carts still resolve a concrete
+/// variant. Null when the product has no active variant at all.
 @override final  String? defaultVariantId;
 @override@JsonKey() final  String brandName;
 @override final  double? ratingAvg;

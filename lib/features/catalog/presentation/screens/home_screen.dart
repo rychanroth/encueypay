@@ -3,10 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/domain/failures.dart';
 
+import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
+import '../../../../core/presentation/widgets/staggered_grid.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/banner.dart';
 import '../../domain/entities/brand.dart';
@@ -175,7 +179,12 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
   Widget build(BuildContext context) {
     final bannersAsync = ref.watch(homeBannersProvider);
     final theme = Theme.of(context);
-    return bannersAsync.maybeWhen(
+    return bannersAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (error, _) => _SectionRetry(
+        message: userMessageFor(error),
+        onRetry: () => ref.invalidate(homeBannersProvider),
+      ),
       data: (banners) {
         if (banners.isEmpty) return const SizedBox.shrink();
         return Column(
@@ -307,7 +316,6 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
           ],
         );
       },
-      orElse: () => const SizedBox.shrink(),
     );
   }
 }
@@ -320,7 +328,12 @@ class _CategoryCardGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesProvider);
-    return categoriesAsync.maybeWhen(
+    return categoriesAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (error, _) => _SectionRetry(
+        message: userMessageFor(error),
+        onRetry: () => ref.invalidate(categoriesProvider),
+      ),
       data: (categories) {
         // Section 2c: the hero grid browses the top-level taxonomy —
         // subcategory products aggregate under their parent in Discover.
@@ -352,7 +365,6 @@ class _CategoryCardGrid extends ConsumerWidget {
           }),
         );
       },
-      orElse: () => const SizedBox.shrink(),
     );
   }
 }
@@ -429,7 +441,12 @@ class _BrandRail extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brandsAsync = ref.watch(brandsProvider);
-    return brandsAsync.maybeWhen(
+    return brandsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (error, _) => _SectionRetry(
+        message: userMessageFor(error),
+        onRetry: () => ref.invalidate(brandsProvider),
+      ),
       data: (brands) {
         if (brands.isEmpty) return const SizedBox.shrink();
         return SizedBox(
@@ -446,7 +463,6 @@ class _BrandRail extends ConsumerWidget {
           ),
         );
       },
-      orElse: () => const SizedBox.shrink(),
     );
   }
 }
@@ -515,15 +531,11 @@ class _HomeProductsGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productsAsync = ref.watch(homeProductsProvider);
-    return productsAsync.when(
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: CircularProgressIndicator(),
-        ),
-      ),
+    final child = productsAsync.when(
+      // Skeleton matches the final grid shape (§4) — no centered spinner.
+      loading: () => _HomeProductsSkeleton(columns: columns),
       error: (error, _) => _StripError(
-        message: '$error',
+        message: userMessageFor(error),
         onRetry: () => ref.invalidate(homeProductsProvider),
       ),
       data: (products) {
@@ -533,7 +545,7 @@ class _HomeProductsGrid extends ConsumerWidget {
             child: Text('No products yet.'),
           );
         }
-        return GridView.builder(
+        return StaggeredGrid(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -558,6 +570,80 @@ class _HomeProductsGrid extends ConsumerWidget {
         );
       },
     );
+    // Cross-fade skeleton → content (§3.2).
+    final stateKey = productsAsync.hasError
+        ? 'error'
+        : productsAsync.isLoading && !productsAsync.hasValue
+            ? 'loading'
+            : 'data';
+    return AnimatedSwitcher(
+      duration: AppMotion.duration(context, AppMotion.enter),
+      switchInCurve: AppMotion.enterCurve,
+      switchOutCurve: AppMotion.exitCurve,
+      child: KeyedSubtree(key: ValueKey(stateKey), child: child),
+    );
+  }
+}
+
+/// Loading skeleton for the Home product shelf — same geometry as the grid.
+class _HomeProductsSkeleton extends StatelessWidget {
+  const _HomeProductsSkeleton({required this.columns});
+
+  final int columns;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 0.62,
+      ),
+      itemCount: columns * 2,
+      itemBuilder: (_, _) => const _HomeProductSkeletonCard(),
+    );
+  }
+}
+
+class _HomeProductSkeletonCard extends StatelessWidget {
+  const _HomeProductSkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: AppRadii.br16,
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SkeletonBox(
+              height: double.infinity,
+              radius: BorderRadius.zero,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(AppSpacing.sm + 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonBox(width: 90),
+                SizedBox(height: AppSpacing.xs),
+                SkeletonBox(width: 56),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -574,6 +660,41 @@ class _StripError extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(message, maxLines: 2)),
+          TextButton(onPressed: onRetry, child: const Text('Retry')),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact inline failure for a home strip: keeps the section visible with a
+/// retry instead of silently collapsing it to blank space.
+class _SectionRetry extends StatelessWidget {
+  const _SectionRetry({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_outlined,
+              size: 18, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
           TextButton(onPressed: onRetry, child: const Text('Retry')),
         ],
       ),

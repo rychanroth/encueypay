@@ -403,6 +403,7 @@ PAYWAY_BASE_URL = "env(PAYWAY_BASE_URL)"
 PAYWAY_MERCHANT_ID = "env(PAYWAY_MERCHANT_ID)"
 PAYWAY_API_KEY = "env(PAYWAY_API_KEY)"
 PAYWAY_CALLBACK_URL = "env(PAYWAY_CALLBACK_URL)"
+FCM_SERVICE_ACCOUNT = "env(FCM_SERVICE_ACCOUNT)"
 
 # PayWay's server-to-server callback carries no Supabase JWT — the request
 # is authenticated by the X-PayWay-HMAC-SHA512 signature instead (fail-closed

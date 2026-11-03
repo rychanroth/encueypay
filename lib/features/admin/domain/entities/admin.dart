@@ -84,9 +84,13 @@ abstract class AdminProductImageRef with _$AdminProductImageRef {
   }) = _AdminProductImageRef;
 }
 
-/// Existing active variant on a product, for the edit form (Section 2b).
+/// Existing active priced variant on a product, for the edit form
+/// (Section 2b). The null-price single-price placeholder is filtered out by
+/// the repository — it is not an admin-managed option.
 @freezed
 abstract class AdminProductVariantRef with _$AdminProductVariantRef {
+  const AdminProductVariantRef._();
+
   const factory AdminProductVariantRef({
     required String id,
     required String name,
@@ -99,6 +103,8 @@ abstract class AdminProductVariantRef with _$AdminProductVariantRef {
     String? imagePath,
     String? imageUrl,
   }) = _AdminProductVariantRef;
+
+  bool get isBasePricePlaceholder => priceMinor == null;
 }
 
 /// Form input for creating/updating a product (Section 2b). [id] is null for
@@ -119,11 +125,12 @@ abstract class AdminProductDraft with _$AdminProductDraft {
     required int basePriceMinor,
     @Default(0) int stock,
 
-    /// Desired variant list. Create: empty → the server auto-creates a
-    /// 'Default' variant whose null price tracks the base price. Update:
-    /// rows with an [AdminProductVariantDraft.id] update in place, id-less
-    /// rows are inserted, and active variants missing from the list are
-    /// archived server-side (full-list sync).
+    /// Desired real variant list. Empty = single-price mode (the server
+    /// keeps/creates one null-price placeholder). Non-empty = option
+    /// pricing: rows with an [AdminProductVariantDraft.id] update in place,
+    /// id-less rows are inserted, missing active variants (and the
+    /// placeholder) are archived server-side, and the base price is derived
+    /// from the cheapest row.
     @Default([]) List<AdminProductVariantDraft> variants,
   }) = _AdminProductDraft;
 }
@@ -140,8 +147,8 @@ abstract class AdminProductVariantDraft with _$AdminProductVariantDraft {
     String? id,
     required String name,
 
-    /// Null tracks the product's base price (server rule §1.2; the form
-    /// reserves null for the Default row — hybrid pricing, 2026-10-28).
+    /// Required for authored variants. The form never sends the null-price
+    /// single-price placeholder (the server manages it).
     int? priceMinor,
     String? imagePath,
     String? imageLocalPath,

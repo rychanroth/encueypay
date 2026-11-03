@@ -1339,8 +1339,8 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.image
 /// @nodoc
 
 
-class _AdminProductVariantRef implements AdminProductVariantRef {
-  const _AdminProductVariantRef({required this.id, required this.name, this.priceMinor, this.imagePath, this.imageUrl});
+class _AdminProductVariantRef extends AdminProductVariantRef {
+  const _AdminProductVariantRef({required this.id, required this.name, this.priceMinor, this.imagePath, this.imageUrl}): super._();
   
 
 @override final  String id;
@@ -1419,11 +1419,12 @@ mixin _$AdminProductDraft {
  String? get id;/// Null on create — the server resolves (or provisions) the singleton
 /// prototype business (DESIGN.md §1.1); edits carry the product's
 /// existing business.
- String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;/// Desired variant list. Create: empty → the server auto-creates a
-/// 'Default' variant whose null price tracks the base price. Update:
-/// rows with an [AdminProductVariantDraft.id] update in place, id-less
-/// rows are inserted, and active variants missing from the list are
-/// archived server-side (full-list sync).
+ String get categoryId; String? get brandId; String get name; String get description; int get basePriceMinor; int get stock;/// Desired real variant list. Empty = single-price mode (the server
+/// keeps/creates one null-price placeholder). Non-empty = option
+/// pricing: rows with an [AdminProductVariantDraft.id] update in place,
+/// id-less rows are inserted, missing active variants (and the
+/// placeholder) are archived server-side, and the base price is derived
+/// from the cheapest row.
  List<AdminProductVariantDraft> get variants;
 /// Create a copy of AdminProductDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1636,17 +1637,19 @@ class _AdminProductDraft implements AdminProductDraft {
 @override@JsonKey() final  String description;
 @override final  int basePriceMinor;
 @override@JsonKey() final  int stock;
-/// Desired variant list. Create: empty → the server auto-creates a
-/// 'Default' variant whose null price tracks the base price. Update:
-/// rows with an [AdminProductVariantDraft.id] update in place, id-less
-/// rows are inserted, and active variants missing from the list are
-/// archived server-side (full-list sync).
+/// Desired real variant list. Empty = single-price mode (the server
+/// keeps/creates one null-price placeholder). Non-empty = option
+/// pricing: rows with an [AdminProductVariantDraft.id] update in place,
+/// id-less rows are inserted, missing active variants (and the
+/// placeholder) are archived server-side, and the base price is derived
+/// from the cheapest row.
  final  List<AdminProductVariantDraft> _variants;
-/// Desired variant list. Create: empty → the server auto-creates a
-/// 'Default' variant whose null price tracks the base price. Update:
-/// rows with an [AdminProductVariantDraft.id] update in place, id-less
-/// rows are inserted, and active variants missing from the list are
-/// archived server-side (full-list sync).
+/// Desired real variant list. Empty = single-price mode (the server
+/// keeps/creates one null-price placeholder). Non-empty = option
+/// pricing: rows with an [AdminProductVariantDraft.id] update in place,
+/// id-less rows are inserted, missing active variants (and the
+/// placeholder) are archived server-side, and the base price is derived
+/// from the cheapest row.
 @override@JsonKey() List<AdminProductVariantDraft> get variants {
   if (_variants is EqualUnmodifiableListView) return _variants;
   // ignore: implicit_dynamic_type
@@ -1721,8 +1724,8 @@ as List<AdminProductVariantDraft>,
 /// @nodoc
 mixin _$AdminProductVariantDraft {
 
- String? get id; String get name;/// Null tracks the product's base price (server rule §1.2; the form
-/// reserves null for the Default row — hybrid pricing, 2026-10-28).
+ String? get id; String get name;/// Required for authored variants. The form never sends the null-price
+/// single-price placeholder (the server manages it).
  int? get priceMinor; String? get imagePath; String? get imageLocalPath;
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1924,8 +1927,8 @@ class _AdminProductVariantDraft implements AdminProductVariantDraft {
 
 @override final  String? id;
 @override final  String name;
-/// Null tracks the product's base price (server rule §1.2; the form
-/// reserves null for the Default row — hybrid pricing, 2026-10-28).
+/// Required for authored variants. The form never sends the null-price
+/// single-price placeholder (the server manages it).
 @override final  int? priceMinor;
 @override final  String? imagePath;
 @override final  String? imageLocalPath;

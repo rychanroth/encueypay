@@ -91,7 +91,7 @@ final class AdminCouponsControllerProvider
 }
 
 String _$adminCouponsControllerHash() =>
-    r'4f731015bbb0b16c1a7b5f029b2842d9434cbd36';
+    r'dc0d551dcf1008cd3d30603b92bba04e7757344d';
 
 /// Admin standalone coupon codes — cart-wide, stacked on sale prices.
 

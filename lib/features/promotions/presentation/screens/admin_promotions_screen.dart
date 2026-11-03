@@ -1,12 +1,16 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/network/failure_mapping.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/promotion.dart';
 import '../controllers/admin_promotions_controller.dart';
+import '../widgets/coupon_tile.dart';
 
 /// Admin Promotions tab (spec §2.4/§27): three independent sections —
 /// Sales (group pricing: platform/brand/category), Coupons (standalone
@@ -439,6 +443,38 @@ class AdminPromotionsScreen extends ConsumerWidget {
         );
   }
 
+  Future<void> _deleteCoupon(
+    BuildContext context,
+    WidgetRef ref,
+    ManagedCoupon coupon,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete coupon?'),
+        content: Text(
+          'Delete ${coupon.code}? This cannot be undone. Codes already used '
+          'on an order cannot be deleted — deactivate those instead so the '
+          'order keeps its discount history.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ref
+        .read(adminCouponsControllerProvider.notifier)
+        .deleteCoupon(couponId: coupon.id);
+  }
+
   // -------------------------------------------------------------- banner
 
   /// Display-only banner: inert imagery with no sale behind it.
@@ -490,7 +526,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     }
 
@@ -541,7 +577,10 @@ class AdminPromotionsScreen extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-              error: (error, _) => Text('$error'),
+              error: (error, _) => AsyncErrorView(
+                message: userMessageFor(error),
+                retry: () => ref.invalidate(adminSalesControllerProvider),
+              ),
               data: (sales) {
                 if (sales.isEmpty) {
                   return const Text(
@@ -568,11 +607,14 @@ class AdminPromotionsScreen extends ConsumerWidget {
                             '${sale.startsAt == null ? '' : ' · from ${_day(sale.startsAt!)}'}'
                             '${sale.endsAt == null ? '' : ' · until ${_day(sale.endsAt!)}'}',
                           ),
-                          trailing: Switch(
-                            value: sale.active,
-                            onChanged: (active) => ref
-                                .read(adminSalesControllerProvider.notifier)
-                                .toggleSale(saleId: sale.id, active: active),
+                          trailing: Semantics(
+                            label: 'Activate sale ${sale.name}',
+                            child: Switch(
+                              value: sale.active,
+                              onChanged: (active) => ref
+                                  .read(adminSalesControllerProvider.notifier)
+                                  .toggleSale(saleId: sale.id, active: active),
+                            ),
                           ),
                         ),
                       ),
@@ -581,9 +623,20 @@ class AdminPromotionsScreen extends ConsumerWidget {
               },
             ),
             const SizedBox(height: 16),
-            Text('Coupons',
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Coupons',
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+                TextButton.icon(
+                  onPressed: () =>
+                      context.pushNamed(AppRoutes.adminArchivedCoupons),
+                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  label: const Text('Archived'),
+                ),
+              ],
+            ),
             couponsAsync.when(
               loading: () => const Padding(
                 padding: EdgeInsets.all(8),
@@ -593,40 +646,45 @@ class AdminPromotionsScreen extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-              error: (error, _) => Text('$error'),
+              error: (error, _) => AsyncErrorView(
+                message: userMessageFor(error),
+                retry: () => ref.invalidate(adminCouponsControllerProvider),
+              ),
               data: (coupons) {
-                if (coupons.isEmpty) {
-                  return const Text('No coupons yet. Use + to create one.');
+                final now = DateTime.now().toUtc();
+                final live = coupons
+                    .where((coupon) => !coupon.isArchivedAt(now))
+                    .toList();
+                if (live.isEmpty) {
+                  return const Text(
+                      'No live or scheduled coupons. Check Archived.');
                 }
                 return Column(
                   children: [
-                    for (final coupon in coupons)
-                      Card(
-                        margin: const EdgeInsets.only(top: 8),
-                        child: ListTile(
-                          title: Text(
-                            coupon.code,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: coupon.active
-                                  ? null
-                                  : theme.colorScheme.onSurfaceVariant,
+                    for (final coupon in live)
+                      CouponTile(
+                        coupon: coupon,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Semantics(
+                              label: 'Activate coupon ${coupon.code}',
+                              child: Switch(
+                                value: coupon.active,
+                                onChanged: (active) => ref
+                                    .read(
+                                        adminCouponsControllerProvider.notifier)
+                                    .toggleCoupon(
+                                        couponId: coupon.id, active: active),
+                              ),
                             ),
-                          ),
-                          subtitle: Text(
-                            '${_discountLabel(coupon.discountType, coupon.discountValue)}'
-                            '${coupon.name.isEmpty ? '' : ' · ${coupon.name}'}'
-                            '${coupon.minOrderAmountMinor == 0 ? '' : ' · min ${Money(coupon.minOrderAmountMinor).format()}'}'
-                            '${coupon.startsAt == null ? '' : ' · from ${_day(coupon.startsAt!)}'}'
-                            '${coupon.endsAt == null ? '' : ' · until ${_day(coupon.endsAt!)}'}',
-                          ),
-                          trailing: Switch(
-                            value: coupon.active,
-                            onChanged: (active) => ref
-                                .read(adminCouponsControllerProvider.notifier)
-                                .toggleCoupon(
-                                    couponId: coupon.id, active: active),
-                          ),
+                            IconButton(
+                              tooltip: 'Delete coupon',
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () =>
+                                  _deleteCoupon(context, ref, coupon),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -646,7 +704,10 @@ class AdminPromotionsScreen extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-              error: (error, _) => Text('$error'),
+              error: (error, _) => AsyncErrorView(
+                message: userMessageFor(error),
+                retry: () => ref.invalidate(adminBannersControllerProvider),
+              ),
               data: (banners) {
                 if (banners.isEmpty) {
                   return const Text('No banners submitted.');
@@ -656,21 +717,76 @@ class AdminPromotionsScreen extends ConsumerWidget {
                     for (final banner in banners)
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: Image.network(banner.imageUrl,
-                            width: 56, height: 40, fit: BoxFit.cover),
+                        leading: banner.imageUrl.isEmpty
+                            ? const SizedBox(
+                                width: 56,
+                                height: 40,
+                                child: Icon(Icons.image_not_supported_outlined),
+                              )
+                            : Image.network(banner.imageUrl,
+                                width: 56, height: 40, fit: BoxFit.cover),
                         title: Text(banner.name),
                         subtitle: Text('Banner · ${banner.status.name}'),
                         trailing: PopupMenuButton<String>(
-                          onSelected: (action) => ref
-                              .read(adminBannersControllerProvider.notifier)
-                              .moderate(bannerId: banner.id, action: action),
-                          itemBuilder: (context) => const [
-                            PopupMenuItem(
-                                value: 'approve', child: Text('Approve')),
-                            PopupMenuItem(
-                                value: 'reject', child: Text('Reject')),
-                            PopupMenuItem(
-                                value: 'disable', child: Text('Disable')),
+                          tooltip: 'Banner actions for ${banner.name}',
+                          onSelected: (action) async {
+                            if (action == 'reject' || action == 'disable') {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: Text(
+                                    action == 'reject'
+                                        ? 'Reject banner?'
+                                        : 'Disable banner?',
+                                  ),
+                                  content: Text(
+                                    action == 'reject'
+                                        ? 'The banner will not be shown.'
+                                        : 'The banner will be hidden from customers.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext)
+                                              .pop(false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    FilledButton(
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(true),
+                                      child: Text(
+                                        action == 'reject' ? 'Reject' : 'Disable',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed != true) return;
+                            }
+                            await ref
+                                .read(adminBannersControllerProvider.notifier)
+                                .moderate(
+                                  bannerId: banner.id,
+                                  action: action,
+                                );
+                          },
+                          itemBuilder: (context) => [
+                            if (banner.status != BannerStatus.approved &&
+                                banner.status != BannerStatus.disabled)
+                              const PopupMenuItem(
+                                value: 'approve',
+                                child: Text('Approve'),
+                              ),
+                            if (banner.status == BannerStatus.pending)
+                              const PopupMenuItem(
+                                value: 'reject',
+                                child: Text('Reject'),
+                              ),
+                            if (banner.status != BannerStatus.disabled)
+                              const PopupMenuItem(
+                                value: 'disable',
+                                child: Text('Disable'),
+                              ),
                           ],
                         ),
                       ),

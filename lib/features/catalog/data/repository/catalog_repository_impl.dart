@@ -44,7 +44,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
   static const _productSelect =
       '*, brands(name), product_ratings(rating_avg, review_count), '
       'product_images(storage_path, sort_order), '
-      'product_variants(id, price_minor)';
+      'product_variants(id, price_minor, status)';
 
   /// §48: Storage owns the binary; DB owns the reference. Public URLs are
   /// resolved here in the data layer — never in the UI. Full http(s)
@@ -216,7 +216,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       final brandName =
           ((data['brands'] as Map<String, dynamic>?)?['name'] as String?) ??
               '';
-      final variants = ((data['product_variants'] as List? ?? const [])
+      final activeVariants = ((data['product_variants'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())
           .map(ProductVariantDto.fromJson)
           .map((d) => d.toDomain(resolveImageUrl: _publicUrl))
@@ -224,6 +224,12 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           // referencing them) — customers never see them.
           .where((variant) => variant.status != ProductStatus.archived)
           .toList();
+      // A null-price row is the single-price placeholder, not a selectable
+      // option. Keep it only when there is no priced variant to choose.
+      final pricedVariants =
+          activeVariants.where((variant) => variant.priceMinor != null).toList();
+      final variants =
+          pricedVariants.isNotEmpty ? pricedVariants : activeVariants;
       final reviews = ((data['reviews'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())
           .map(ProductReviewJoinDto.fromJson)
@@ -322,15 +328,17 @@ class CatalogRepositoryImpl implements ICatalogRepository {
               saleEnds == null || saleEnds.compareTo(nowIso) > 0;
           if (!saleActive || !saleStarted || !saleNotEnded) continue;
           saleScope = sale['scope'] as String?;
+          final saleBrandId = sale['brand_id'] as String?;
+          final saleCategoryId = sale['category_id'] as String?;
           switch (saleScope) {
-            case 'brand' when sale['brand_id'] != null:
+            case 'brand' when saleBrandId != null:
               target = CatalogBannerTarget.brand;
-              targetId = sale['brand_id'] as String;
+              targetId = saleBrandId;
               targetName = (sale['brands'] as Map<String, dynamic>?)?['name']
                   as String?;
-            case 'category' when sale['category_id'] != null:
+            case 'category' when saleCategoryId != null:
               target = CatalogBannerTarget.category;
-              targetId = sale['category_id'] as String;
+              targetId = saleCategoryId;
               targetName =
                   (sale['categories'] as Map<String, dynamic>?)?['name']
                       as String?;
@@ -340,7 +348,8 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           }
         }
 
-        final path = row['image_path'] as String;
+        final path = row['image_path'] as String?;
+        if (path == null || path.isEmpty) continue;
         banners.add(CatalogBanner(
           id: row['id'] as String,
           name: row['name'] as String? ?? '',
@@ -376,6 +385,22 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         if (sale != null) sales.add(sale);
       }
       return sales;
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<int> fetchDeliveryFeeMinor() async {
+    try {
+      // Singleton row (`id = 1`) shared with checkout/admin; the storefront
+      // only reads the fee so it can state the real platform rate.
+      final row = await _client
+          .from('platform_settings')
+          .select('delivery_fee_minor')
+          .eq('id', 1)
+          .maybeSingle();
+      return (row?['delivery_fee_minor'] as int?) ?? 0;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

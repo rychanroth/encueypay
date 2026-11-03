@@ -9,6 +9,7 @@ import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/catalog/presentation/controllers/brands_provider.dart';
 import '../../../features/catalog/presentation/controllers/categories_provider.dart';
 import '../../../features/catalog/presentation/controllers/home_feed_providers.dart';
+import '../../presentation/motion.dart';
 import '../navigation_tabs.dart';
 
 /// Shell scaffold (ROUTE-06). Destinations derive from the same
@@ -71,25 +72,40 @@ class _AppShellState extends ConsumerState<AppShell> {
       if (next.hasError) showAuthStreamError(context, next.error);
     });
 
+    void selectTab(int nextIndex) => widget.navigationShell.goBranch(
+          nextIndex,
+          initialLocation: nextIndex == widget.navigationShell.currentIndex,
+        );
+
+    Widget destinationIcon(NavigationTab tab, IconData icon) {
+      if (tab.id != 'cart' || cartCount <= 0) return Icon(icon);
+      // Badge pops on count change, after server success (§3.4).
+      return AnimatedSwitcher(
+        duration: AppMotion.duration(context, AppMotion.press),
+        switchInCurve: AppMotion.enterCurve,
+        switchOutCurve: AppMotion.exitCurve,
+        transitionBuilder: (child, animation) => ScaleTransition(
+          scale: animation,
+          child: child,
+        ),
+        child: Badge(
+          key: ValueKey(cartCount),
+          label: Text('$cartCount'),
+          child: Icon(icon),
+        ),
+      );
+    }
+
     return Scaffold(
       body: widget.navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
-        onDestinationSelected: (index) =>
-            widget.navigationShell.goBranch(
-          index,
-          initialLocation: index == widget.navigationShell.currentIndex,
-        ),
+        onDestinationSelected: selectTab,
         destinations: [
           for (final tab in tabs)
             NavigationDestination(
-              icon: tab.id == 'cart' && cartCount > 0
-                  ? Badge(
-                      label: Text('$cartCount'),
-                      child: Icon(tab.icon),
-                    )
-                  : Icon(tab.icon),
-              selectedIcon: Icon(tab.selectedIcon),
+              icon: destinationIcon(tab, tab.icon),
+              selectedIcon: destinationIcon(tab, tab.selectedIcon),
               label: tab.label,
             ),
         ],

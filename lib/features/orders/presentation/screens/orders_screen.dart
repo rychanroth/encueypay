@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/domain/failures.dart';
 
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
@@ -52,7 +53,7 @@ class OrdersScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref.invalidate(ordersControllerProvider),
@@ -238,7 +239,9 @@ class _OrderCard extends ConsumerWidget {
               // Per-card actions (§5.1.4): Track always; Review/Return on
               // delivered orders.
               const SizedBox(height: AppSpacing.sm),
-              Row(
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: 4,
                 children: [
                   OutlinedButton.icon(
                     onPressed: () => context.pushNamed(
@@ -248,8 +251,7 @@ class _OrderCard extends ConsumerWidget {
                     icon: const Icon(Icons.local_shipping_outlined, size: 16),
                     label: const Text('Track Order'),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  if (order.delivered) ...[
+                  if (order.delivered)
                     TextButton.icon(
                       onPressed: () => context.pushNamed(
                         AppRoutes.orderDetail,
@@ -258,7 +260,6 @@ class _OrderCard extends ConsumerWidget {
                       icon: const Icon(Icons.rate_review_outlined, size: 16),
                       label: const Text('Leave Review'),
                     ),
-                  ],
                 ],
               ),
             ],

@@ -6,47 +6,13 @@ import '../../../../core/presentation/theme/theme_controller.dart';
 /// Theme mode is the only sanctioned local persistence (THEME-02) and is
 /// owned by the single ThemeController (THEME-01).
 ///
-/// The sign-out action is injected by the composition root
-/// (core/router profile branch, ROUTE-08) so this feature never imports
-/// the auth feature (ARCH-04).
-class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key, required this.onSignOut});
-
-  final Future<void> Function() onSignOut;
+/// Sign-out lives directly on the Profile screen now, injected by the
+/// composition root; this screen stays feature-local (ARCH-04).
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _signingOut = false;
-
-  Future<void> _confirmSignOut() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Sign out'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    setState(() => _signingOut = true);
-    await widget.onSignOut();
-    // On success the auth session stream updates and the router redirect
-    // leaves this screen; nothing to do here.
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeControllerProvider);
 
     return Scaffold(
@@ -78,12 +44,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onSelectionChanged: (selection) => ref
                 .read(themeControllerProvider.notifier)
                 .setThemeMode(selection.first),
-          ),
-          const SizedBox(height: 24),
-          OutlinedButton.icon(
-            onPressed: _signingOut ? null : _confirmSignOut,
-            icon: const Icon(Icons.logout),
-            label: const Text('Sign out'),
           ),
         ],
       ),

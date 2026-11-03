@@ -45,4 +45,8 @@ class CurrentLocationController extends _$CurrentLocationController {
   Future<void> openSettings() {
     return ref.read(locationRepositoryProvider).openSettings();
   }
+
+  Future<void> openLocationSettings() {
+    return ref.read(locationRepositoryProvider).openLocationSettings();
+  }
 }

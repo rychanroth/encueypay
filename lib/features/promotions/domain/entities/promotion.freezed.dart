@@ -501,8 +501,8 @@ return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discount
 /// @nodoc
 
 
-class _ManagedCoupon implements ManagedCoupon {
-  const _ManagedCoupon({required this.id, this.name = '', required this.code, required this.discountType, required this.discountValue, this.minOrderAmountMinor = 0, this.active = true, this.startsAt, this.endsAt});
+class _ManagedCoupon extends ManagedCoupon {
+  const _ManagedCoupon({required this.id, this.name = '', required this.code, required this.discountType, required this.discountValue, this.minOrderAmountMinor = 0, this.active = true, this.startsAt, this.endsAt}): super._();
   
 
 @override final  String id;

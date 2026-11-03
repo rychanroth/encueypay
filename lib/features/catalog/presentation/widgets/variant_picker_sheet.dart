@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/motion.dart';
 import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_variant.dart';
@@ -25,6 +26,7 @@ Future<void> showVariantPickerSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -71,6 +73,7 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
       widget.product.defaultVariantId ??
       (widget.variants.length == 1 ? widget.variants.first.id : null);
   int _quantity = 1;
+  bool _adding = false;
 
   /// Product-wide stock (Section 2d) caps the quantity selector; the server
   /// re-validates authoritatively at add and at checkout.
@@ -155,30 +158,36 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            Money(salePrice).format(),
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
-                          if (widget.sale != null) ...[
-                            const SizedBox(width: 8),
+                      AnimatedSwitcher(
+                        duration: AppMotion.duration(context, AppMotion.press),
+                        switchInCurve: AppMotion.enterCurve,
+                        switchOutCurve: AppMotion.exitCurve,
+                        child: Row(
+                          key: ValueKey('$_selectedVariantId-$salePrice'),
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
                             Text(
-                              Money(priceMinor).format(),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                                decoration: TextDecoration.lineThrough,
+                              Money(salePrice).format(),
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
                               ),
                             ),
+                            if (widget.sale != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                Money(priceMinor).format(),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                      if (selected != null) ...[
+                      if (selected != null && widget.variants.length > 1) ...[
                         const SizedBox(height: 4),
                         Text(
                           'Selected: ${selected.name}',
@@ -195,26 +204,30 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Flexible(
-            child: SingleChildScrollView(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final variant in widget.variants)
-                    ChoiceChip(
-                      label: Text(variant.name),
-                      selected: _selectedVariantId == variant.id,
-                      // Non-deselectable: a selection always exists (the
-                      // CTA and the displayed price depend on it).
-                      onSelected: (_) =>
-                          setState(() => _selectedVariantId = variant.id),
-                    ),
-                ],
+          // A single option needs no chip rail — and the single-price
+          // placeholder must never surface as a customer-facing "Default".
+          if (widget.variants.length > 1) ...[
+            const SizedBox(height: 16),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final variant in widget.variants)
+                      ChoiceChip(
+                        label: Text(variant.name),
+                        selected: _selectedVariantId == variant.id,
+                        // Non-deselectable: a selection always exists (the
+                        // CTA and the displayed price depend on it).
+                        onSelected: (_) =>
+                            setState(() => _selectedVariantId = variant.id),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 16),
           Row(
             children: [
@@ -262,10 +275,23 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
                 width: double.infinity,
                 child: FilledButton(
                   // Out-of-stock products cannot be purchased (Section 2d).
-                  onPressed: selected == null || _stockCap < 1
+                  // The pending state prevents a double add (§3.4).
+                  onPressed: selected == null || _stockCap < 1 || _adding
                       ? null
                       : () => _confirm(selected),
-                  child: const Text('Add to cart'),
+                  child: AnimatedSwitcher(
+                    duration: AppMotion.duration(context, AppMotion.press),
+                    switchInCurve: AppMotion.enterCurve,
+                    switchOutCurve: AppMotion.exitCurve,
+                    child: _adding
+                        ? const SizedBox(
+                            key: ValueKey('adding'),
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Add to cart', key: ValueKey('idle')),
+                  ),
                 ),
               ),
             ),
@@ -283,6 +309,8 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
   }
 
   Future<void> _confirm(ProductVariant variant) async {
+    if (_adding) return;
+    setState(() => _adding = true);
     final quantity = _quantity;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -293,11 +321,13 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
         ..hideCurrentSnackBar()
         ..showSnackBar(const SnackBar(content: Text('Added to cart')));
     } on Failure catch (failure) {
+      if (mounted) setState(() => _adding = false);
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(failure.message)));
     } catch (error, stackTrace) {
       // DATA-05: presentation never sees raw exceptions — classify first.
+      if (mounted) setState(() => _adding = false);
       final failure = mapRepositoryError(error, stackTrace);
       messenger
         ..hideCurrentSnackBar()

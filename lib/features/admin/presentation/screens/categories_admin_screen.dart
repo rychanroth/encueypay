@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
@@ -37,9 +38,11 @@ class CategoriesAdminScreen extends ConsumerWidget {
     String? pickedLocalPath;
     // 2-level taxonomy (§2c): a new category may nest under a top-level
     // parent; parent products aggregate in Discovery automatically.
-    final topLevelCategories = (ref.read(adminCategoriesControllerProvider).value ?? const <AdminCategory>[])
-        .where((category) => category.parentId == null)
-        .toList();
+    final topLevelCategories =
+        (ref.read(adminCategoriesControllerProvider).value ??
+                const <AdminCategory>[])
+            .where((category) => category.parentId == null)
+            .toList();
     String? parentId;
     final created = await showDialog<bool>(
       context: context,
@@ -49,30 +52,32 @@ class CategoriesAdminScreen extends ConsumerWidget {
         // without a dialog-scoped setState the field keeps displaying the
         // stale selection while Save still reads the updated value.
         content: StatefulBuilder(
-          builder: (context, dialogSetState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              const SizedBox(height: 12),
-              CatalogImagePickField(
-                label: 'Category image (optional)',
-                onPicked: (path) => pickedLocalPath = path,
-              ),
-              const SizedBox(height: 12),
-              SearchablePickerField(
-                label: 'Parent category (optional)',
-                allowEmpty: true,
-                options: [
-                  for (final category in topLevelCategories)
-                    SearchableOption(id: category.id, label: category.name),
-                ],
-                valueId: parentId,
-                onChanged: (value) => dialogSetState(() => parentId = value),
-              ),
-            ],
+          builder: (context, dialogSetState) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
+                const SizedBox(height: 12),
+                CatalogImagePickField(
+                  label: 'Category image (optional)',
+                  onPicked: (path) => pickedLocalPath = path,
+                ),
+                const SizedBox(height: 12),
+                SearchablePickerField(
+                  label: 'Parent category (optional)',
+                  allowEmpty: true,
+                  options: [
+                    for (final category in topLevelCategories)
+                      SearchableOption(id: category.id, label: category.name),
+                  ],
+                  valueId: parentId,
+                  onChanged: (value) => dialogSetState(() => parentId = value),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -81,7 +86,15 @@ class CategoriesAdminScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Enter a category name')),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(true);
+            },
             child: const Text('Create'),
           ),
         ],
@@ -99,10 +112,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error.message)));
+        ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       return;
     }
-    await ref.read(adminCategoriesControllerProvider.notifier).create(
+    await ref
+        .read(adminCategoriesControllerProvider.notifier)
+        .create(
           name: nameController.text.trim(),
           parentId: parentId,
           imagePath: imagePath,
@@ -118,10 +133,14 @@ class CategoriesAdminScreen extends ConsumerWidget {
     String? pickedLocalPath;
     // Parent options: top-level categories only, excluding the category
     // itself. Picking none promotes back to top-level.
-    final topLevelCategories = (ref.read(adminCategoriesControllerProvider).value ?? const <AdminCategory>[])
-        .where((candidate) =>
-            candidate.parentId == null && candidate.id != category.id)
-        .toList();
+    final topLevelCategories =
+        (ref.read(adminCategoriesControllerProvider).value ??
+                const <AdminCategory>[])
+            .where(
+              (candidate) =>
+                  candidate.parentId == null && candidate.id != category.id,
+            )
+            .toList();
     String? parentId = category.parentId;
     final saved = await showDialog<bool>(
       context: context,
@@ -129,32 +148,34 @@ class CategoriesAdminScreen extends ConsumerWidget {
         title: const Text('Edit category'),
         // StatefulBuilder — same reason as the create dialog above.
         content: StatefulBuilder(
-          builder: (context, dialogSetState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              const SizedBox(height: 12),
-              CatalogImagePickField(
-                label: 'Category image (optional)',
-                existingUrl: category.imageUrl,
-                existingPath: category.imagePath,
-                onPicked: (path) => pickedLocalPath = path,
-              ),
-              const SizedBox(height: 12),
-              SearchablePickerField(
-                label: 'Parent category (optional)',
-                allowEmpty: true,
-                options: [
-                  for (final candidate in topLevelCategories)
-                    SearchableOption(id: candidate.id, label: candidate.name),
-                ],
-                valueId: parentId,
-                onChanged: (value) => dialogSetState(() => parentId = value),
-              ),
-            ],
+          builder: (context, dialogSetState) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
+                const SizedBox(height: 12),
+                CatalogImagePickField(
+                  label: 'Category image (optional)',
+                  existingUrl: category.imageUrl,
+                  existingPath: category.imagePath,
+                  onPicked: (path) => pickedLocalPath = path,
+                ),
+                const SizedBox(height: 12),
+                SearchablePickerField(
+                  label: 'Parent category (optional)',
+                  allowEmpty: true,
+                  options: [
+                    for (final candidate in topLevelCategories)
+                      SearchableOption(id: candidate.id, label: candidate.name),
+                  ],
+                  valueId: parentId,
+                  onChanged: (value) => dialogSetState(() => parentId = value),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -163,7 +184,15 @@ class CategoriesAdminScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Enter a category name')),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(true);
+            },
             child: const Text('Save'),
           ),
         ],
@@ -181,10 +210,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error.message)));
+        ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       return;
     }
-    await ref.read(adminCategoriesControllerProvider.notifier).rename(
+    await ref
+        .read(adminCategoriesControllerProvider.notifier)
+        .rename(
           categoryId: category.id,
           name: nameController.text.trim(),
           imagePath: imagePath,
@@ -192,7 +223,11 @@ class CategoriesAdminScreen extends ConsumerWidget {
         );
   }
 
-  Future<void> _delete(BuildContext context, WidgetRef ref, String categoryId) async {
+  Future<void> _delete(
+    BuildContext context,
+    WidgetRef ref,
+    String categoryId,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -228,7 +263,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -241,10 +276,14 @@ class CategoriesAdminScreen extends ConsumerWidget {
       ),
       body: categoriesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) => Center(child: Text(userMessageFor(error))),
         data: (categories) {
           if (categories.isEmpty) {
-            return const Center(child: Text('No categories yet.'));
+            return const EmptyStateView(
+              icon: Icons.category_outlined,
+              title: 'No categories yet',
+              description: 'Add a top-level category to start the catalog.',
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -278,8 +317,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      onPressed: () =>
-                          _delete(context, ref, category.id),
+                      onPressed: () => _delete(context, ref, category.id),
                     ),
                   ],
                 ),

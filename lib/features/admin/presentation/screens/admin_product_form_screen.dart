@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -17,14 +18,14 @@ import '../widgets/searchable_picker_field.dart';
 /// lives in this StatefulWidget; mutations go through
 /// [AdminProductsController] (AsyncValue.guard + invalidate, PRES-03).
 ///
-/// Variants are authored inline (name + price + image) in both modes —
-/// hybrid pricing (2026-10-28): authored rows require a price, while the
-/// auto-'Default' row keeps the blank-means-base-price convention. Creation
-/// with an empty list lets the server auto-create a 'Default' variant,
-/// keeping carts strictly variant-based (map §10.3). Editing syncs the full
-/// list: id rows update in place, new rows insert, and removed rows archive
-/// server-side. Existing images can be removed; new ones are uploaded on
-/// save.
+/// Two modes share one form. A product with no variants is **single-price**:
+/// the editable base price is what customers pay, and the server keeps one
+/// null-price 'Default' placeholder for cart/order references. Adding
+/// variants switches to **option pricing**: only real priced variants are
+/// authored (name + price + image), the base price is derived from the
+/// cheapest one, and the placeholder is retired on save. Editing syncs the
+/// full list: id rows update in place, new rows insert, and removed rows
+/// archive server-side (never delete — historical orders reference them).
 class AdminProductFormScreen extends ConsumerStatefulWidget {
   const AdminProductFormScreen({super.key, this.product});
 
@@ -63,10 +64,22 @@ class _AdminProductFormScreenState
     widget.product?.images ?? const <AdminProductImageRef>[],
   );
   final List<String> _imageDrafts = <String>[];
+  final List<AdminProductImageRef> _removedImages = <AdminProductImageRef>[];
+  bool _saving = false;
+  final _nameFocus = FocusNode();
+  final _priceFocus = FocusNode();
+  final _stockFocus = FocusNode();
+  String? _nameError;
+  String? _priceError;
+  String? _stockError;
+  String? _categoryError;
+  String? _variantError;
 
-  /// Desired variant rows. Seeded from the product's active variants in edit
-  /// mode (carrying their existing image paths for the preview and the
-  /// save); rows without an id insert server-side, id rows update in place.
+  /// Desired real variant rows. Seeded from the product's active priced
+  /// variants in edit mode (carrying their existing image paths for the
+  /// preview and the save); the null-price single-price placeholder is not
+  /// seeded. Rows without an id insert server-side, id rows update in
+  /// place.
   late final List<_VariantRow> _variantRows = <_VariantRow>[
     for (final variant
         in widget.product?.variants ?? const <AdminProductVariantRef>[])
@@ -82,6 +95,19 @@ class _AdminProductFormScreenState
 
   void _addVariantRow() => setState(() => _variantRows.add(_VariantRow()));
 
+  /// True when the draft is in multi-variant mode. A blank new row does not
+  /// count until the admin starts authoring it, so the single-price field
+  /// stays available while the row is untouched.
+  bool get _hasActiveVariantRows => _variantRows.any(
+        (row) =>
+            !row.archived &&
+            (row.id != null ||
+                row.name.text.trim().isNotEmpty ||
+                row.price.text.trim().isNotEmpty ||
+                row.localPath != null ||
+                row.imagePath != null),
+      );
+
   void _removeVariantRow(_VariantRow row) {
     setState(() {
       _variantRows.remove(row);
@@ -95,6 +121,9 @@ class _AdminProductFormScreenState
     _descriptionController.dispose();
     _priceController.dispose();
     _stockController.dispose();
+    _nameFocus.dispose();
+    _priceFocus.dispose();
+    _stockFocus.dispose();
     for (final row in _variantRows) {
       row.dispose();
     }
@@ -129,93 +158,146 @@ class _AdminProductFormScreenState
   }
 
   Future<void> _save() async {
-    final price = _parseMoney(_priceController.text);
+    if (_saving) return;
+    setState(() {
+      _nameError = null;
+      _priceError = null;
+      _stockError = null;
+      _categoryError = null;
+      _variantError = null;
+    });
+    final name = _nameController.text.trim();
     final stock = _parseStock(_stockController.text);
     final categoryId = _categoryId;
-    if (categoryId == null || price == null || stock == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Category, a valid price and stock are required'),
-        ),
-      );
-      return;
-    }
-    // Variant rows: an untouched new row is ignored; every kept row needs a
-    // name; NEW rows also need a price and an image (hybrid pricing — the
-    // seeded Default row keeps the blank-means-base-price convention, and
-    // its price field is pre-filled so blank only happens deliberately).
-    // Rows archived in this draft are EXCLUDED from the payload — the
-    // server's full-list sync archives them (never deletes; historical
-    // orders keep their references).
+    // Variant rows: an untouched new row is ignored; every kept row is a
+    // real priced variant (name + price + image for new rows). Rows marked
+    // archived are EXCLUDED from the payload — the server's full-list sync
+    // archives them (never deletes; historical orders keep their refs).
     final variants = <AdminProductVariantDraft>[];
     for (final row in _variantRows) {
       if (row.archived) continue;
-      final name = row.name.text.trim();
+      final variantName = row.name.text.trim();
       final priceText = row.price.text.trim();
       final hasImage = row.localPath != null || row.imagePath != null;
       final isNew = row.id == null;
-      if (isNew && name.isEmpty && priceText.isEmpty && !hasImage) continue;
-      if (name.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Every variant needs a name')),
-        );
+      if (isNew && variantName.isEmpty && priceText.isEmpty && !hasImage) {
+        continue;
+      }
+      if (variantName.isEmpty) {
+        setState(() => _variantError = 'Every variant needs a name');
         return;
       }
-      final variantPrice = priceText.isEmpty ? null : _parseMoney(priceText);
-      if (priceText.isNotEmpty && variantPrice == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"$name" has an invalid price')),
-        );
-        return;
-      }
-      if (isNew && variantPrice == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Variant "$name" needs a price')),
+      final variantPrice = _parseMoney(priceText);
+      if (variantPrice == null) {
+        setState(
+          () => _variantError = '"$variantName" needs a valid price',
         );
         return;
       }
       if (isNew && !hasImage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Variant "$name" needs an image')),
+        setState(
+          () => _variantError = 'Variant "$variantName" needs an image',
         );
         return;
       }
       variants.add(AdminProductVariantDraft(
         id: row.id,
-        name: name,
+        name: variantName,
         priceMinor: variantPrice,
         imagePath: row.imagePath,
         imageLocalPath: row.localPath,
       ));
+    }
+    // Single-price mode: the editable base price is the price. Option mode:
+    // derive the base price from the cheapest variant; the server repeats
+    // this rule so a stale field cannot win.
+    final price = variants.isEmpty
+        ? _parseMoney(_priceController.text)
+        : variants
+            .map((variant) => variant.priceMinor!)
+            .reduce((a, b) => a < b ? a : b);
+    var invalid = false;
+    if (name.isEmpty) {
+      _nameError = 'Enter a product name';
+      invalid = true;
+    }
+    if (categoryId == null) {
+      _categoryError = 'Select a category';
+      invalid = true;
+    }
+    if (stock == null) {
+      _stockError = 'Enter a valid stock quantity';
+      invalid = true;
+    }
+    if (price == null) {
+      _priceError = 'Enter a valid price';
+      invalid = true;
+    }
+    if (invalid) {
+      setState(() {});
+      if (_nameError != null) {
+        _nameFocus.requestFocus();
+      } else if (_priceError != null) {
+        _priceFocus.requestFocus();
+      } else if (_stockError != null) {
+        _stockFocus.requestFocus();
+      }
+      return;
     }
     final draft = AdminProductDraft(
       id: widget.product?.id,
       // 2-role prototype (DESIGN.md §1.1): no store picker. Create passes
       // null — the server resolves/provisions the prototype business; edits
       // carry the product's existing business.
-      categoryId: categoryId,
+      categoryId: categoryId!,
       brandId: _brandId,
-      name: _nameController.text.trim(),
+      name: name,
       description: _descriptionController.text.trim(),
-      basePriceMinor: price,
-      stock: stock,
+      basePriceMinor: price!,
+      stock: stock!,
       variants: variants,
     );
-    final controller = ref.read(adminProductsControllerProvider(null).notifier);
-    if (widget.product == null) {
-      await controller.createWithImages(
-        draft: draft,
-        imageFilePaths: List.of(_imageDrafts),
-      );
-    } else {
-      await controller.updateWithImages(
-        draft: draft,
-        newImageFilePaths: List.of(_imageDrafts),
-      );
+    setState(() => _saving = true);
+    try {
+      final controller =
+          ref.read(adminProductsControllerProvider(null).notifier);
+      if (widget.product == null) {
+        await controller.createWithImages(
+          draft: draft,
+          imageFilePaths: List.of(_imageDrafts),
+        );
+      } else {
+        await controller.updateWithImages(
+          draft: draft,
+          newImageFilePaths: List.of(_imageDrafts),
+        );
+      }
+      final hasError =
+          ref.read(adminProductsControllerProvider(null)).hasError;
+      if (hasError) return;
+
+      // Staged removals only hit the server after the product save succeeds
+      // — cancelling the form never deletes an existing image.
+      for (final image in List.of(_removedImages)) {
+        final error = await controller.removeImage(
+          imageId: image.id,
+          storagePath: image.storagePath,
+        );
+        if (error != null) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(userMessageFor(error))),
+            );
+          return;
+        }
+        _removedImages.remove(image);
+      }
+      if (mounted) context.pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    final hasError =
-        ref.read(adminProductsControllerProvider(null)).hasError;
-    if (!hasError && mounted) context.pop();
   }
 
   @override
@@ -229,7 +311,7 @@ class _AdminProductFormScreenState
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -237,12 +319,20 @@ class _AdminProductFormScreenState
       appBar: AppBar(
         title: Text(widget.product == null ? 'New product' : 'Edit product'),
       ),
-      body: ListView(
+      body: ContentWidth(
+        child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
+            focusNode: _nameFocus,
+            decoration: InputDecoration(
+              labelText: 'Name',
+              errorText: _nameError,
+            ),
+            onChanged: (_) {
+              if (_nameError != null) setState(() => _nameError = null);
+            },
           ),
           const SizedBox(height: 12),
           TextField(
@@ -251,30 +341,50 @@ class _AdminProductFormScreenState
             maxLines: 3,
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _priceController,
-            decoration: const InputDecoration(
-              labelText: 'Base price',
-              prefixText: '\$ ',
+          if (_hasActiveVariantRows)
+            Text(
+              'Option pricing: the base price is derived from the cheapest '
+              'variant when you save.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            )
+          else
+            TextField(
+              controller: _priceController,
+              focusNode: _priceFocus,
+              decoration: InputDecoration(
+                labelText: 'Price',
+                helperText: 'Single-price product — customers pay this amount',
+                prefixText: '\$ ',
+                errorText: _priceError,
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (_) {
+                if (_priceError != null) setState(() => _priceError = null);
+              },
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-          ),
           const SizedBox(height: 12),
           TextField(
             controller: _stockController,
-            decoration: const InputDecoration(
+            focusNode: _stockFocus,
+            decoration: InputDecoration(
               labelText: 'Stock quantity (product-wide)',
               helperText:
                   'Purchasing any variant deducts from this counter',
+              errorText: _stockError,
             ),
             keyboardType: TextInputType.number,
+            onChanged: (_) {
+              if (_stockError != null) setState(() => _stockError = null);
+            },
           ),
           const SizedBox(height: 12),
-          // Variant authoring (map §10.3): name + optional price in both
-          // modes. Create: empty list → the server auto-creates a 'Default'
-          // variant. Edit: full-list sync — new rows insert, existing rows
-          // update, removed rows archive server-side.
+          // Variant authoring (map §10.3): no rows = single-price product.
+          // Rows = real options; the server derives the base price and
+          // retires the single-price placeholder on save. Full-list sync:
+          // new rows insert, existing rows update, removed rows archive.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -287,13 +397,24 @@ class _AdminProductFormScreenState
             ],
           ),
           Text(
-            'New variants need a name, price and image. Archiving keeps the '
-            'variant for historical orders (applied on save). The "Default" '
-            'row (blank price) tracks the product\'s base price.',
+            'No variants = single-price product. New variants need a name, '
+            'price and image. Archiving keeps the variant for order history; '
+            'archiving the last one switches the product back to its base '
+            'price.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
+          if (_variantError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                _variantError!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ),
           for (final row in _variantRows)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -307,10 +428,14 @@ class _AdminProductFormScreenState
                       localPath: row.localPath,
                       existingUrl: row.existingUrl,
                       enabled: !row.archived,
-                      onPicked: (path) => setState(() => row.localPath = path),
+                      onPicked: (path) => setState(() {
+                        row.localPath = path;
+                        _variantError = null;
+                      }),
                       onCleared: () => setState(() {
                         row.localPath = null;
                         row.imagePath = null;
+                        _variantError = null;
                       }),
                     ),
                     const SizedBox(width: 8),
@@ -319,6 +444,7 @@ class _AdminProductFormScreenState
                       child: TextField(
                         controller: row.name,
                         enabled: !row.archived,
+                        onChanged: (_) => setState(() => _variantError = null),
                         decoration: const InputDecoration(
                           labelText: 'Name',
                           isDense: true,
@@ -331,6 +457,7 @@ class _AdminProductFormScreenState
                       child: TextField(
                         controller: row.price,
                         enabled: !row.archived,
+                        onChanged: (_) => setState(() => _variantError = null),
                         decoration: const InputDecoration(
                           labelText: 'Price',
                           prefixText: '\$ ',
@@ -346,14 +473,41 @@ class _AdminProductFormScreenState
                           : row.archived
                               ? 'Restore variant'
                               : 'Archive variant (applies on save)',
-                      onPressed: () {
+                      onPressed: () async {
                         if (row.id == null) {
                           _removeVariantRow(row);
-                        } else {
-                          // Existing variants are archived, never deleted —
-                          // historical orders reference their rows.
-                          setState(() => row.archived = !row.archived);
+                          return;
                         }
+                        if (!row.archived &&
+                            _variantRows
+                                    .where((candidate) => !candidate.archived)
+                                    .length ==
+                                1) {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (dialogContext) => AlertDialog(
+                              title: const Text('Switch to single price?'),
+                              content: const Text(
+                                'Archiving the last variant leaves no options. '
+                                'The product will be sold at its base price.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                FilledButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(true),
+                                  child: const Text('Switch'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true) return;
+                        }
+                        setState(() => row.archived = !row.archived);
                       },
                       icon: Icon(
                         row.id == null
@@ -374,21 +528,39 @@ class _AdminProductFormScreenState
           // business (§1.1).
           categoriesAsync.when(
             loading: () => const LinearProgressIndicator(),
-            error: (error, _) => Text('$error'),
-            data: (categories) => SearchablePickerField(
-              label: 'Category',
-              options: [
-                for (final category in categories)
-                  SearchableOption(id: category.id, label: category.name),
+            error: (error, _) => Text(userMessageFor(error)),
+            data: (categories) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SearchablePickerField(
+                  label: 'Category',
+                  options: [
+                    for (final category in categories)
+                      SearchableOption(id: category.id, label: category.name),
+                  ],
+                  valueId: _categoryId,
+                  onChanged: (value) => setState(() {
+                    _categoryId = value;
+                    _categoryError = null;
+                  }),
+                ),
+                if (_categoryError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 12),
+                    child: Text(
+                      _categoryError!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
               ],
-              valueId: _categoryId,
-              onChanged: (value) => setState(() => _categoryId = value),
             ),
           ),
           const SizedBox(height: 12),
           brandsAsync.when(
             loading: () => const LinearProgressIndicator(),
-            error: (error, _) => Text('$error'),
+            error: (error, _) => Text(userMessageFor(error)),
             data: (brands) => SearchablePickerField(
               label: 'Brand (optional)',
               allowEmpty: true,
@@ -426,13 +598,10 @@ class _AdminProductFormScreenState
                   url: _images[i].url,
                   onRemove: () {
                     final image = _images[i];
-                    ref
-                        .read(adminProductsControllerProvider(null).notifier)
-                        .removeImage(
-                          imageId: image.id,
-                          storagePath: image.storagePath,
-                        );
-                    setState(() => _images.removeAt(i));
+                    setState(() {
+                      _removedImages.add(image);
+                      _images.removeAt(i);
+                    });
                   },
                 ),
               for (var i = 0; i < _imageDrafts.length; i++)
@@ -444,10 +613,17 @@ class _AdminProductFormScreenState
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _save,
-            child: Text(widget.product == null ? 'Create' : 'Save'),
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(widget.product == null ? 'Create' : 'Save'),
           ),
         ],
+      ),
       ),
     );
   }

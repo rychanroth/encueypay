@@ -14,10 +14,15 @@ class CurrentLocationMap extends StatelessWidget {
     super.key,
     required this.latitude,
     required this.longitude,
+    this.onPositionChanged,
   });
 
   final double latitude;
   final double longitude;
+
+  /// Tap-to-adjust: the screen owns the coordinates and rebuilds the map
+  /// with the new pin position.
+  final ValueChanged<({double latitude, double longitude})>? onPositionChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +36,16 @@ class CurrentLocationMap extends StatelessWidget {
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: FlutterMap(
-        options: MapOptions(initialCenter: target, initialZoom: 16),
+        options: MapOptions(
+          initialCenter: target,
+          initialZoom: 16,
+          onTap: onPositionChanged == null
+              ? null
+              : (_, point) => onPositionChanged!((
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                )),
+        ),
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',

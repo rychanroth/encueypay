@@ -39,33 +39,34 @@ class AdminProductsController extends _$AdminProductsController {
   }
 
   /// Quick inline stock adjustment (§5.2.2) — persist-then-invalidate
-  /// (PRES-03); the server rejects negatives.
-  Future<void> adjustStock({
+  /// (PRES-03); the server rejects negatives. Returns the failure instead of
+  /// replacing the loaded list with an AsyncError, so one network blip does
+  /// not wipe the inventory screen.
+  Future<Object?> adjustStock({
     required String productId,
     required int newStock,
   }) async {
-    final current = state.value ?? const <AdminProductSummary>[];
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       await ref
           .read(adminRepositoryProvider)
           .adjustProductStock(productId: productId, newStock: newStock);
       ref.invalidateSelf();
-      return current;
     });
+    return result.hasError ? result.error : null;
   }
 
-  Future<void> setArchived({
+  /// Archive/restore keeps the list visible on failure (same rule as stock).
+  Future<Object?> setArchived({
     required String productId,
     required bool archived,
   }) async {
-    final current = state.value ?? const <AdminProductSummary>[];
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       await ref
           .read(adminRepositoryProvider)
           .setProductArchived(productId: productId, archived: archived);
       ref.invalidateSelf();
-      return current;
     });
+    return result.hasError ? result.error : null;
   }
 
   /// Creates the product and then registers each picked image. Variant
@@ -87,10 +88,12 @@ class AdminProductsController extends _$AdminProductsController {
         }
         final imagePath = await repo.uploadVariantImage(filePath: local);
         resolvedVariants.add(
-            variant.copyWith(imagePath: imagePath, imageLocalPath: null));
+          variant.copyWith(imagePath: imagePath, imageLocalPath: null),
+        );
       }
-      final productId = await repo
-          .createProduct(draft.copyWith(variants: resolvedVariants));
+      final productId = await repo.createProduct(
+        draft.copyWith(variants: resolvedVariants),
+      );
       for (final path in imageFilePaths) {
         await repo.addProductImage(productId: productId, filePath: path);
       }
@@ -115,7 +118,8 @@ class AdminProductsController extends _$AdminProductsController {
         }
         final imagePath = await repo.uploadVariantImage(filePath: local);
         resolvedVariants.add(
-            variant.copyWith(imagePath: imagePath, imageLocalPath: null));
+          variant.copyWith(imagePath: imagePath, imageLocalPath: null),
+        );
       }
       await repo.updateProduct(draft.copyWith(variants: resolvedVariants));
       for (final path in newImageFilePaths) {
@@ -126,19 +130,16 @@ class AdminProductsController extends _$AdminProductsController {
     });
   }
 
-  Future<void> removeImage({
+  Future<Object?> removeImage({
     required String imageId,
     required String storagePath,
   }) async {
-    final current = state.value ?? const <AdminProductSummary>[];
-    state = await AsyncValue.guard(() async {
-      await ref.read(adminRepositoryProvider).removeProductImage(
-            imageId: imageId,
-            storagePath: storagePath,
-          );
+    final result = await AsyncValue.guard(() async {
+      await ref
+          .read(adminRepositoryProvider)
+          .removeProductImage(imageId: imageId, storagePath: storagePath);
       ref.invalidateSelf();
-      return current;
     });
+    return result.hasError ? result.error : null;
   }
 }
-

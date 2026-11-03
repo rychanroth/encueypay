@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/repository/checkout_repository_impl.dart';
@@ -13,10 +14,14 @@ part 'order_totals_provider.g.dart';
 /// regardless.
 @riverpod
 Future<OrderTotalsPreview> orderTotalsPreview(Ref ref) async {
-  // Watching the whole controller: the preview refetches on any checkout
-  // state emit (cheap RPC; the placement re-validates authoritatively).
-  final coupons = ref.watch(checkoutControllerProvider).value?.coupons ??
-      const <CouponPreview>[];
+  // Watch only the applied codes. Watching the whole controller made every
+  // note keystroke refetch the preview and flicker the summary; the codes
+  // list identity is unchanged by note/address/payment edits.
+  final coupons = ref.watch(
+    checkoutControllerProvider.select(
+      (async) => async.value?.coupons ?? const <CouponPreview>[],
+    ),
+  );
   final codes = coupons
       .where((coupon) => coupon.valid)
       .map((coupon) => coupon.code)

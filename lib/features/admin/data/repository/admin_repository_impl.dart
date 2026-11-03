@@ -213,13 +213,34 @@ class AdminRepositoryImpl implements IAdminRepository {
       return rows.map(AdminProductRowDto.fromJson).map((dto) {
         final images = [...dto.productImages]
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        // The form authors real priced variants only. The null-price
+        // single-price placeholder and archived rows never appear there.
+        final variants = [
+          for (final variant in dto.productVariants)
+            if (variant.status != 'archived' && variant.priceMinor != null)
+              AdminProductVariantRef(
+                id: variant.id ?? '',
+                name: variant.name ?? '',
+                priceMinor: variant.priceMinor,
+                imagePath: variant.imagePath,
+                imageUrl: _productImageUrlOrNull(variant.imagePath),
+              ),
+        ];
+        // Multi-variant base price is derived from the cheapest option, so
+        // the admin list shows the same "from" price customers see. A
+        // single-price product uses its stored base price.
+        final effectiveBasePrice = variants.isEmpty
+            ? dto.basePriceMinor
+            : variants
+                .map((variant) => variant.priceMinor!)
+                .reduce((a, b) => a < b ? a : b);
         return AdminProductSummary(
           id: dto.id,
           name: dto.name,
           categoryId: dto.categoryId,
           categoryName: dto.categories?.name ?? '',
-          basePriceMinor: dto.basePriceMinor,
-          variantCount: dto.productVariants.length,
+          basePriceMinor: effectiveBasePrice,
+          variantCount: variants.length,
           stock: dto.stock,
           description: dto.description ?? '',
           status: AdminCatalogStatus.fromName(dto.status),
@@ -232,19 +253,7 @@ class AdminRepositoryImpl implements IAdminRepository {
                     url: _productImageUrl(image.storagePath),
                   ))
               .toList(),
-          // Archived variants stay archived server-side; the form only
-          // authors actives.
-          variants: [
-            for (final variant in dto.productVariants)
-              if (variant.status != 'archived')
-                AdminProductVariantRef(
-                  id: variant.id ?? '',
-                  name: variant.name ?? '',
-                  priceMinor: variant.priceMinor,
-                  imagePath: variant.imagePath,
-                  imageUrl: _productImageUrlOrNull(variant.imagePath),
-                ),
-          ],
+          variants: variants,
         );
       }).toList();
     } catch (error, stackTrace) { // DATA-05: classify, don't guess

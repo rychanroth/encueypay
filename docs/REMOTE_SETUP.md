@@ -170,16 +170,16 @@ supabase functions deploy push-dispatch
 supabase secrets set FCM_SERVICE_ACCOUNT='{"type":"service_account", …}'
 ```
 
-(`push-dispatch` still needs the one-line `recipient_id` fix from
-PROTOTYPE_SETUP Phase 7 Step 1 if not applied yet. In the ABA merchant
-portal, set the payment callback URL to
+(The `push-dispatch` `recipient_id` fix is already applied. In the ABA
+merchant portal, set the payment callback URL to
 `https://<ref>.supabase.co/functions/v1/payway-webhook`.)
 
 ## Phase 7 — DB webhook for push [OPTIONAL]
 
 Same as local Phase 7 Step 5, but with the public URL: Dashboard →
 **Database → Webhooks → Create** → table `notifications`, event INSERT,
-method POST →
+type **Supabase Edge Function**, **Add secret key** (otherwise
+`verify_jwt` rejects the call with 401), method POST →
 
 ```
 https://<ref>.supabase.co/functions/v1/push-dispatch

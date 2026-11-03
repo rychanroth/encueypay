@@ -6,6 +6,7 @@ import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/domain/entities/user_role.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../presentation/app_keys.dart';
 import '../presentation/not_found_screen.dart';
 import 'app_routes.dart';
 import 'navigation_tabs.dart';
@@ -41,6 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final tabs = tabsForRole(role);
 
   return GoRouter(
+    navigatorKey: appNavigatorKey,
     initialLocation: '/',
     refreshListenable: refreshListenable,
     redirect: (context, state) {

@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -28,9 +29,15 @@ class OrderDetailScreen extends ConsumerWidget {
       allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
     );
     if (file == null || file.path == null) return;
-    await ref
+    final uploaded = await ref
         .read(orderDetailControllerProvider(orderId).notifier)
         .uploadProof(filePath: file.path!, fileName: file.name);
+    if (!uploaded || !context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Payment proof submitted')),
+      );
   }
 
   Future<void> _confirmCancel(BuildContext context, WidgetRef ref) async {
@@ -54,11 +61,10 @@ class OrderDetailScreen extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-    await ref
+    final cancelled = await ref
         .read(orderDetailControllerProvider(orderId).notifier)
         .cancelOrder();
-    final hasError = ref.read(orderDetailControllerProvider(orderId)).hasError;
-    if (!hasError && context.mounted) context.pop();
+    if (cancelled && context.mounted) context.pop();
   }
 
   @override
@@ -71,19 +77,28 @@ class OrderDetailScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
+    });
+
+    ref.listen(orderActionErrorProvider(orderId), (previous, next) {
+      if (next == null) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(next)));
+      ref.read(orderActionErrorProvider(orderId).notifier).clear();
     });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Order details')),
-      body: orderAsync.when(
+      body: ContentWidth(
+        child: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () =>
@@ -95,12 +110,11 @@ class OrderDetailScreen extends ConsumerWidget {
         ),
         data: (order) {
           final payment = order.payment;
-          final needsProof =
-              payment != null &&
+          // Once submitted the proof is awaiting verification — hide the
+          // upload action and let the status label show the new state.
+          final needsProof = payment != null &&
               payment.method == PaymentMethodKind.bankTransfer &&
-              (payment.status == PaymentStatusState.pending ||
-                  payment.status ==
-                      PaymentStatusState.awaitingPaymentVerification);
+              payment.status == PaymentStatusState.pending;
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -181,7 +195,8 @@ class OrderDetailScreen extends ConsumerWidget {
                     _ => 'Cash on delivery',
                   }),
                   subtitle: Text(
-                    '${Money(payment.amountMinor).format()} · ${payment.status.name}',
+                    '${Money(payment.amountMinor).format()} · '
+                    '${payment.status.label}',
                   ),
                   trailing: needsProof
                       ? FilledButton.tonal(
@@ -283,6 +298,7 @@ class OrderDetailScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
       ),
     );
   }

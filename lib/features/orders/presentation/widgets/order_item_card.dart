@@ -79,12 +79,14 @@ class OrderItemCard extends StatelessWidget {
                       style: theme.textTheme.titleSmall
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 2),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 18,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    if (onTap != null) ...[
+                      const SizedBox(height: 2),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
                   ],
                 ),
               ],

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -52,6 +54,26 @@ class ProfileRepositoryImpl implements IProfileRepository {
         'full_name': fullName,
         'phone': phone,
       }).eq('id', _uid);
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<void> updateMyAvatar({required String filePath}) async {
+    try {
+      final fileName = filePath.split(Platform.pathSeparator).last;
+      // {uid}/... matches the avatars bucket RLS: users write only their
+      // own folder. The public URL is what the users row stores, matching
+      // the OAuth-provided avatar convention.
+      final path =
+          '$_uid/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      final bytes = await File(filePath).readAsBytes();
+      await _client.storage.from('avatars').uploadBinary(path, bytes);
+      final url = _client.storage.from('avatars').getPublicUrl(path);
+      await _client
+          .from('users')
+          .update({'avatar_url': url}).eq('id', _uid);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

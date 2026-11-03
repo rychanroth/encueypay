@@ -60,6 +60,36 @@ class NotificationsRepositoryImpl implements INotificationsRepository {
     }
   }
 
+  @override
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+  }) async {
+    try {
+      await _client.rpc('register_device_token', params: {
+        'p_token': token,
+        'p_platform': platform,
+      });
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<void> unregisterDeviceToken(String token) async {
+    try {
+      // Runs while the user is still authenticated (before signOut); RLS
+      // permits deleting only the caller's own device rows.
+      await _client
+          .from('device_tokens')
+          .delete()
+          .eq('token', token)
+          .eq('user_id', _uid);
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
   Failure _mapError(Object error) {
     if (error is PostgrestException) return ServerFailure(error.message);
     return const NetworkFailure();

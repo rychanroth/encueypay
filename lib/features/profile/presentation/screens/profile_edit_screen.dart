@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../controllers/profile_controller.dart';
@@ -41,11 +43,24 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final isSaving = profileAsync.isLoading;
 
     if (!_filled) {
-      profileAsync.whenData((profile) {
-        _nameController.text = profile.fullName;
-        _phoneController.text = profile.phone ?? '';
-        _filled = true;
-      });
+      final profile = profileAsync.value;
+      if (profile == null) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Edit profile')),
+          body: profileAsync.hasError
+              ? AsyncErrorView(
+                  message: userMessageFor(profileAsync.error!),
+                  retry: () =>
+                      ref.invalidate(profileControllerProvider),
+                )
+              : const Center(child: CircularProgressIndicator()),
+        );
+      }
+      // Fill once, only after the profile has actually loaded — typing is
+      // never overwritten by a late fetch.
+      _nameController.text = profile.fullName;
+      _phoneController.text = profile.phone ?? '';
+      _filled = true;
     }
 
     ref.listen(profileControllerProvider, (previous, next) {
@@ -53,13 +68,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Edit profile')),
-      body: Form(
+      body: ContentWidth(
+        child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -98,6 +114,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

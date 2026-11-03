@@ -99,11 +99,14 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
           .order('created_at', ascending: false);
       return rows.map(BannerDto.fromJson).map((dto) {
         final path = dto.imagePath;
-        // Full public URLs pass through; only re-wrap bare paths.
+        // Full public URLs pass through; only re-wrap bare paths. A missing
+        // path renders a placeholder instead of crashing the moderation list.
         return dto.toDomain(
-          imageUrl: path.startsWith('http')
-              ? path
-              : _client.storage.from('promo_assets').getPublicUrl(path),
+          imageUrl: path == null || path.isEmpty
+              ? ''
+              : path.startsWith('http')
+                  ? path
+                  : _client.storage.from('promo_assets').getPublicUrl(path),
         );
       }).toList();
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
@@ -268,5 +271,10 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
       'p_coupon_id': couponId,
       'p_active': active,
     });
+  }
+
+  @override
+  Future<void> deleteCoupon({required String couponId}) {
+    return _rpc('admin_delete_coupon', {'p_coupon_id': couponId});
   }
 }

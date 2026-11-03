@@ -62,6 +62,12 @@ void main() {
       expect(PaymentStatusState.fromName('transaction_verified'),
           PaymentStatusState.transactionVerified);
     });
+
+    test('labels never expose the raw enum name', () {
+      expect(PaymentStatusState.awaitingPaymentVerification.label,
+          'Awaiting verification');
+      expect(PaymentStatusState.transactionVerified.label, 'Payment received');
+    });
   });
 }
 

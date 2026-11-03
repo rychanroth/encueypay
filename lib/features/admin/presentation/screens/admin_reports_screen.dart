@@ -117,64 +117,60 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen> {
                     style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  // KPI summary (§5.2.4).
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                            label: 'Orders', value: '${report.totalOrders}'),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _StatCard(
-                            label: 'Completed',
-                            value: '${report.completedOrders}'),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _StatCard(
-                            label: 'Cancelled',
-                            value: '${report.cancelledOrders}'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
+                  // KPI summary — responsive card grid rather than fixed
+                  // 3/2-per-row rows that clip on phones and large text.
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final columns = constraints.maxWidth >= 720
+                          ? 4
+                          : constraints.maxWidth >= 420
+                              ? 2
+                              : 1;
+                      final gap = AppSpacing.sm;
+                      final width =
+                          (constraints.maxWidth - gap * (columns - 1)) /
+                              columns;
+                      final cards = <Widget>[
+                        _StatCard(
+                          label: 'Orders',
+                          value: '${report.totalOrders}',
+                        ),
+                        _StatCard(
+                          label: 'Completed',
+                          value: '${report.completedOrders}',
+                        ),
+                        _StatCard(
+                          label: 'Cancelled',
+                          value: '${report.cancelledOrders}',
+                        ),
+                        _StatCard(
                           label: 'Gross realized revenue',
                           value: Money(report.totalSalesMinor).formatUsd(),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _StatCard(
+                        _StatCard(
                           label: 'AOV',
-                          value:
-                              Money(report.averageOrderValueMinor).formatUsd(),
+                          value: Money(report.averageOrderValueMinor)
+                              .formatUsd(),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
+                        _StatCard(
                           label: 'Net settled balance',
                           value: Money(report.netSettledMinor).formatUsd(),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _StatCard(
+                        _StatCard(
                           label: 'Inventory valuation',
-                          value:
-                              Money(report.inventoryValuationMinor).formatUsd(),
+                          value: Money(report.inventoryValuationMinor)
+                              .formatUsd(),
                         ),
-                      ),
-                    ],
+                      ];
+                      return Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        children: [
+                          for (final card in cards)
+                            SizedBox(width: width, child: card),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: AppSpacing.md),
                   // Payment gateway distribution (§5.2.4): KHQR vs COD split
@@ -362,10 +358,22 @@ class _StatCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.sm + 4),
         child: Column(
           children: [
-            Text(value, style: theme.textTheme.titleMedium),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: theme.textTheme.titleMedium,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(label,
-                style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
+            Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

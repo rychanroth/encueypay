@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/domain/failures.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
@@ -12,6 +14,7 @@ import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_detail.dart';
 import '../../domain/entities/product_variant.dart';
+import '../controllers/delivery_fee_provider.dart';
 import '../controllers/product_detail_controller.dart';
 import '../controllers/sale_providers.dart';
 import '../widgets/product_card.dart';
@@ -23,10 +26,11 @@ import '../widgets/variant_picker_sheet.dart';
 
 /// Product detail (spec §32), restructured to the Shopee-style reference
 /// (Section 9): image carousel with variant-synced selection, variant
-/// thumbnail rail, tappable brand tag (→ Discovery), rating row, mocked
-/// merchandising blocks (warranty, logistics facts, KHQR/COD, returns,
-/// specs), reviews with an empty state, related products, and a bottom
-/// action bar pairing wishlist with the cart CTA (dual-currency price).
+/// thumbnail rail, tappable brand tag (→ Discovery), rating row, reviews
+/// with an empty state, related products, and a bottom action bar pairing
+/// wishlist with the cart CTA (dual-currency price). Only verified product
+/// data is rendered; the trust block states the real platform fee, supported
+/// payment methods and the single-seller identity.
 ///
 /// The add-to-cart flow opens the variant picker sheet — it owns variant +
 /// quantity (the page deliberately has no quantity row, mirroring the
@@ -118,7 +122,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref
@@ -153,6 +157,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           // The sale prices the page at the real discounted amount — the
           // same math placement charges (percent truncates, fixed floors).
           final salePagePrice = displayPriceMinor(sale, pagePriceMinor);
+          // Real platform delivery fee for the store-promises card.
+          final deliveryFeeMinor =
+              ref.watch(deliveryFeeMinorProvider).value;
 
           return Column(
             children: [
@@ -211,56 +218,51 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           // real data from the embedded reviews.
                           _RatingSummaryRow(detail: detail),
                           const SizedBox(height: 4),
-                          // Stock line (Section 9): real product-wide stock
-                          // against a hardcoded hub label (prototype mock).
+                          // Stock line (Section 9): real product-wide stock.
                           _StockLine(product: product),
-                          // TODO(prototype): hardcoded social-proof line
-                          // from the UI reference — no sales aggregation
-                          // exists yet.
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              '450+ sold in Cambodia',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
                           const SizedBox(height: 12),
                           // Dual-currency price (DESIGN.md §1.4): USD
                           // primary, KHR approximation secondary — the
                           // selected variant's price once one is selected.
                           // Percent campaigns strike the original through.
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                Money(salePagePrice).formatUsd(),
-                                style: AppTypography.priceHighlight
-                                    .copyWith(fontSize: 24),
-                              ),
-                              if (sale != null) ...[
-                                const SizedBox(width: 8),
+                          // Cross-fades when the variant changes (§3.3).
+                          AnimatedSwitcher(
+                            duration:
+                                AppMotion.duration(context, AppMotion.press),
+                            switchInCurve: AppMotion.enterCurve,
+                            switchOutCurve: AppMotion.exitCurve,
+                            child: Wrap(
+                              key: ValueKey('$salePagePrice-$pagePriceMinor'),
+                              spacing: 8,
+                              runSpacing: 2,
+                              crossAxisAlignment: WrapCrossAlignment.end,
+                              children: [
                                 Text(
-                                  Money(pagePriceMinor).formatUsd(),
+                                  Money(salePagePrice).formatUsd(),
+                                  style: AppTypography.priceHighlight
+                                      .copyWith(fontSize: 24),
+                                ),
+                                if (sale != null)
+                                  Text(
+                                    Money(pagePriceMinor).formatUsd(),
+                                    style:
+                                        theme.textTheme.bodySmall?.copyWith(
+                                      color: theme
+                                          .colorScheme.onSurfaceVariant,
+                                      decoration:
+                                          TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                Text(
+                                  '≈ ${Money(salePagePrice).formatKhr()}',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant,
-                                    decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
                               ],
-                              const SizedBox(width: 8),
-                              Text(
-                                '≈ ${Money(salePagePrice).formatKhr()}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                          // Sale chip + VAT caption (Section 9): the chip
-                          // is real sale data; the caption is mocked.
+                          // Sale chip (Section 9): real sale data.
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
@@ -307,29 +309,29 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
                                 ],
-                                // TODO(prototype): hardcoded per the
-                                // reference.
-                                Text(
-                                  'VAT included',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
                               ],
                             ),
                           ),
                           const SizedBox(height: AppSpacing.lg),
-                          const Divider(),
-                          Text('Description', style: theme.textTheme.titleMedium),
-                          const SizedBox(height: 4),
-                          Text(
-                            product.description.isEmpty
-                                ? 'No description available.'
-                                : product.description,
-                            style: theme.textTheme.bodyMedium,
+                          // Honest store promises (§2): real platform fee,
+                          // supported payment methods and the single-seller
+                          // identity — no invented warranty/ETA/returns.
+                          _StorePromises(
+                            deliveryFeeMinor: deliveryFeeMinor,
                           ),
+                          // Description only when the product carries one.
+                          if (product.description.isNotEmpty) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            const Divider(),
+                            Text('Description',
+                                style: theme.textTheme.titleMedium),
+                            const SizedBox(height: 4),
+                            Text(
+                              product.description,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
                           // Reviews (Section 9): always rendered — the empty
                           // state was previously unreachable because the
                           // whole section was gated on a non-empty list.
@@ -354,11 +356,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             for (final review in detail.reviews)
                               ReviewCard(review: review),
                           const SizedBox(height: AppSpacing.lg),
-                          const Divider(),
-                          // Mocked merchandising blocks (Section 9).
-                          _PurchaseFacts(),
-                          const SizedBox(height: AppSpacing.lg),
-                          _SpecificationsHighlights(),
                         ],
                       ),
                     ),
@@ -432,17 +429,24 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   product, detail.variants, sale)
                               : null,
                           icon: const Icon(Icons.shopping_cart_outlined),
-                          label: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Add to Cart'),
-                              Text(
-                                '${Money(salePagePrice).formatUsd()}'
-                                ' · ≈ ${Money(salePagePrice).formatKhr()}',
-                                style: theme.textTheme.labelSmall,
-                              ),
-                            ],
+                          label: AnimatedSwitcher(
+                            duration:
+                                AppMotion.duration(context, AppMotion.press),
+                            switchInCurve: AppMotion.enterCurve,
+                            switchOutCurve: AppMotion.exitCurve,
+                            child: Column(
+                              key: ValueKey(salePagePrice),
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Add to Cart'),
+                                Text(
+                                  '${Money(salePagePrice).formatUsd()}'
+                                  ' · ≈ ${Money(salePagePrice).formatKhr()}',
+                                  style: theme.textTheme.labelSmall,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -544,8 +548,109 @@ class _RatingSummaryRow extends StatelessWidget {
   }
 }
 
-/// In-stock row with real product-wide stock against the hardcoded hub
-/// label; archived/out-of-stock render the error-toned availability text.
+/// Honest store-promises card (HANDOFF-UX-VISUAL §2): only verifiable facts —
+/// the platform delivery fee, supported payment methods and the single-seller
+/// identity. No warranty, ETA, returns or social-proof claims.
+class _StorePromises extends StatelessWidget {
+  const _StorePromises({required this.deliveryFeeMinor});
+
+  /// Null while loading or on failure — the row falls back to "calculated at
+  /// checkout" rather than inventing a fee.
+  final int? deliveryFeeMinor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final delivery = switch (deliveryFeeMinor) {
+      null => 'Calculated at checkout',
+      0 => 'Free delivery',
+      final fee => '${Money(fee).formatUsd()} platform delivery fee',
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: AppRadii.br16,
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          _PromiseRow(
+            icon: Icons.local_shipping_outlined,
+            title: 'Delivery',
+            subtitle: delivery,
+          ),
+          Divider(
+            height: AppSpacing.md,
+            color: theme.colorScheme.outlineVariant,
+          ),
+          const _PromiseRow(
+            icon: Icons.qr_code_2,
+            title: 'Payment',
+            subtitle: 'Cash on delivery or KHQR',
+          ),
+          Divider(
+            height: AppSpacing.md,
+            color: theme.colorScheme.outlineVariant,
+          ),
+          const _PromiseRow(
+            icon: Icons.storefront_outlined,
+            title: 'Sold by EncueYPay',
+            subtitle: 'Official single-seller storefront',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One compact promise row — icon, title, supporting line.
+class _PromiseRow extends StatelessWidget {
+  const _PromiseRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: theme.colorScheme.primary),
+          const SizedBox(width: AppSpacing.sm + 2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleSmall),
+                const SizedBox(height: 1),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// In-stock row with real product-wide stock; archived/out-of-stock render
+/// the error-toned availability text.
 class _StockLine extends StatelessWidget {
   const _StockLine({required this.product});
 
@@ -585,7 +690,7 @@ class _StockLine extends StatelessWidget {
         const SizedBox(width: 6),
         Flexible(
           child: Text(
-            '(${product.stock} units left at Phnom Penh hub)',
+            '${product.stock} ${product.stock == 1 ? 'unit' : 'units'} available',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
@@ -640,7 +745,9 @@ class _VariantThumbnailRow extends StatelessWidget {
             borderRadius: AppRadii.br12,
             child: Column(
               children: [
-                Container(
+                AnimatedContainer(
+                  duration: AppMotion.duration(context, AppMotion.press),
+                  curve: AppMotion.layoutCurve,
                   width: 64,
                   height: 64,
                   clipBehavior: Clip.antiAlias,
@@ -679,289 +786,6 @@ class _VariantThumbnailRow extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-/// Mocked purchase-facts card (Section 9): warranty banner + the three
-/// logistics/payment/returns rows. Content is hardcoded per the UI
-/// reference — none of it is backed by data yet.
-// TODO(prototype): hardcoded merchandising content from the reference
-// mock; wire to real data (warranty/promises) when it exists.
-class _PurchaseFacts extends StatelessWidget {
-  const _PurchaseFacts();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: AppRadii.br16,
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.verified_user_outlined,
-                  size: 20, color: theme.colorScheme.primary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('12-Month Official Warranty',
-                        style: theme.textTheme.titleSmall),
-                    Text(
-                      'Cambodia authorized replacement support.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.accentEmeraldLight,
-                  borderRadius: AppRadii.br8,
-                ),
-                child: Text(
-                  'Included',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: AppColors.accentEmerald,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 24),
-          const _FactRow(
-            icon: Icons.local_shipping_outlined,
-            title: 'Delivery managed by EncueYPay Logistics',
-            subtitle:
-                'Express 2–3 business days across Phnom Penh & Kandal. '
-                'Same-day pickup available at central hubs.',
-          ),
-          const _FactRow(
-            icon: Icons.qr_code_2,
-            title: 'KHQR & Cash on Delivery Accepted',
-            subtitle:
-                'Pay instantly with any Cambodian mobile banking app or '
-                'upon package handover.',
-            trailingPill: 'BAKONG',
-          ),
-          const _FactRow(
-            icon: Icons.assignment_return_outlined,
-            title: '7-Day Hassle-Free Returns',
-            subtitle:
-                'Instant refund or direct swap guaranteed for factory '
-                'imperfections.',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One mocked fact row (Section 9) — icon, two-line copy, optional pill.
-class _FactRow extends StatelessWidget {
-  const _FactRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.trailingPill,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String? trailingPill;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: theme.colorScheme.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: theme.textTheme.titleSmall),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (trailingPill != null) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer,
-                borderRadius: AppRadii.br8,
-              ),
-              child: Text(
-                trailingPill!,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onErrorContainer,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Mocked Specifications & Highlights block (Section 9): generic hardcoded
-/// chips and expandable panels — every product renders the same content.
-// TODO(prototype): hardcoded per the reference; real product spec data
-// would need a schema addition — out of scope for the mock.
-class _SpecificationsHighlights extends StatelessWidget {
-  const _SpecificationsHighlights();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 24),
-        Text('Specifications & Highlights',
-            style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            for (final (index, spec) in const [
-              (Icons.verified_outlined, 'Official Product', '100% genuine'),
-              (
-                Icons.battery_charging_full_outlined,
-                '1-Year Warranty',
-                'local support'
-              ),
-              (Icons.local_shipping_outlined, 'Nationwide', 'delivery'),
-            ].indexed) ...[
-              if (index > 0) const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerLowest,
-                    borderRadius: AppRadii.br12,
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(spec.$1, size: 22, color: theme.colorScheme.primary),
-                      const SizedBox(height: 4),
-                      Text(
-                        spec.$2,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.labelMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      Text(
-                        spec.$3,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 8),
-        const _HighlightTile(
-          title: 'Quality Guaranteed',
-          body:
-              'Every item is inspected before dispatch. If anything falls '
-              'short of the listing, the 7-day return window covers an '
-              'instant refund or a direct swap.',
-        ),
-        const _HighlightTile(
-          title: 'Secure Packaging',
-          body:
-              'Shock-absorbing wrap and sealed cartons on every order — '
-              'validated at the central hub before handover to the courier.',
-        ),
-        const _HighlightTile(
-          title: 'Supported Payments',
-          body:
-              'KHQR through any KHQR-supported banking app, cash on '
-              'delivery, and platform coupons stack at checkout.',
-          initiallyExpanded: true,
-        ),
-      ],
-    );
-  }
-}
-
-/// Expandable mock highlight panel (Section 9).
-class _HighlightTile extends StatelessWidget {
-  const _HighlightTile({
-    required this.title,
-    required this.body,
-    this.initiallyExpanded = false,
-  });
-
-  final String title;
-  final String body;
-  final bool initiallyExpanded;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: AppRadii.br12,
-      ),
-      child: Theme(
-        data: theme.copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-          childrenPadding:
-              const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          initiallyExpanded: initiallyExpanded,
-          title: Text(title, style: theme.textTheme.titleSmall),
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                body,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

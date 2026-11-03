@@ -17,6 +17,7 @@ abstract final class AppRoutes {
 
   // Checkout (nested under Cart).
   static const checkout = 'checkout';
+  static const checkoutAddressEdit = 'checkoutAddressEdit';
   static const orderPlaced = 'orderPlaced';
 
   // Orders (nested under Orders tab).
@@ -45,6 +46,7 @@ abstract final class AppRoutes {
   static const adminDashboard = 'adminDashboard';
   static const adminCategories = 'adminCategories';
   static const adminPromotions = 'adminPromotions';
+  static const adminArchivedCoupons = 'adminArchivedCoupons';
 
   // Admin products (Section 2b — nested under the Products tab).
   static const adminProducts = 'adminProducts';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -32,7 +33,7 @@ class WishlistScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -44,7 +45,7 @@ class WishlistScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref.invalidate(wishlistControllerProvider),
@@ -55,7 +56,13 @@ class WishlistScreen extends ConsumerWidget {
         ),
         data: (items) {
           if (items.isEmpty) {
-            return const Center(child: Text('Your wishlist is empty.'));
+            return EmptyStateView(
+              icon: Icons.favorite_border,
+              title: 'Your wishlist is empty',
+              description: 'Save products you want to come back to.',
+              actionLabel: 'Browse products',
+              onAction: () => context.goNamed(AppRoutes.home),
+            );
           }
           if (cardBuilder != null) {
             final columns = switch (context.screenSize) {

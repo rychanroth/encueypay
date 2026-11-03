@@ -67,4 +67,9 @@ abstract interface class IPromotionsRepository {
   });
 
   Future<void> setCouponActive({required String couponId, required bool active});
+
+  /// Hard-delete a coupon that has never been redeemed. Used codes are
+  /// rejected server-side — deactivate them instead so order history keeps
+  /// its `order_coupons` breakdown.
+  Future<void> deleteCoupon({required String couponId});
 }

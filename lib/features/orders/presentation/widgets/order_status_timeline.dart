@@ -42,6 +42,19 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline>
   )..repeat(reverse: true);
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reduceMotion) {
+      _pulse.stop();
+      _pulse.value = 1;
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    }
+  }
+
+  @override
   void dispose() {
     _pulse.dispose();
     super.dispose();

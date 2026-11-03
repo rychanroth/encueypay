@@ -9,6 +9,8 @@ extension NotificationDtoX on NotificationDto {
       content: content,
       read: read,
       createdAt: createdAt,
+      type: type ?? 'system',
+      orderId: orderId,
     );
   }
 }

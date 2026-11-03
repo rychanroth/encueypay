@@ -110,6 +110,19 @@ class AdminCouponsController extends _$AdminCouponsController {
       return current;
     });
   }
+
+  /// Hard delete an unredeemed code. The server rejects codes referenced by
+  /// `order_coupons`; the UI surfaces that as "deactivate instead".
+  Future<void> deleteCoupon({required String couponId}) async {
+    final current = state.value ?? const <ManagedCoupon>[];
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(promotionsRepositoryProvider)
+          .deleteCoupon(couponId: couponId);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
 }
 
 /// Banner moderation list (Section 5b — banners are their own table).

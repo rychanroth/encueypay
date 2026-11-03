@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -98,16 +99,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       context.pushNamed(AppRoutes.orderPlaced, pathParameters: {'id': orderId});
       return;
     }
-    final error = ref.read(checkoutControllerProvider).error;
+    final error = ref
+        .read(checkoutControllerProvider)
+        .value
+        ?.placementError;
+    if (error == null) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            error is Failure ? error.message : 'Could not place the order',
-          ),
-        ),
-      );
+      ..showSnackBar(SnackBar(content: Text(error)));
+  }
+
+  Future<void> _addAddress() async {
+    await context.pushNamed(AppRoutes.checkoutAddressEdit);
+    if (!mounted) return;
+    final error = await ref
+        .read(checkoutControllerProvider.notifier)
+        .refreshAddresses();
+    if (!mounted || error == null) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
   }
 
   @override
@@ -117,13 +128,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
-      body: checkoutAsync.when(
+      body: ContentWidth(
+        child: checkoutAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref.invalidate(checkoutControllerProvider),
@@ -134,6 +146,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
         data: (state) => _buildCheckout(context, theme, state),
       ),
+      ),
     );
   }
 
@@ -143,7 +156,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     CheckoutState state,
   ) {
     final summary = state.summary;
-    final totals = ref.watch(orderTotalsPreviewProvider).value;
+    final totalsAsync = ref.watch(orderTotalsPreviewProvider);
+    final totals = totalsAsync.value;
     final totalDiscount =
         totals?.totalDiscountMinor ?? state.discountPreviewMinor;
     final subtotalMinor = totals?.subtotalMinor ?? summary?.subtotalMinor ?? 0;
@@ -260,23 +274,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
                 _SectionCard(
                   title: 'Delivery address',
-                  child: state.addresses.isEmpty
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('No addresses yet.'),
-                            TextButton.icon(
-                              onPressed: () =>
-                                  context.goNamed(AppRoutes.addresses),
-                              icon: const Icon(
-                                Icons.location_on_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Manage addresses'),
-                            ),
-                          ],
-                        )
-                      : RadioGroup<String>(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (state.addresses.isEmpty)
+                        const Text('No delivery address yet.')
+                      else
+                        RadioGroup<String>(
                           groupValue: state.selectedAddressId,
                           onChanged: (value) {
                             if (value != null) {
@@ -304,6 +308,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             ],
                           ),
                         ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: _addAddress,
+                          icon: const Icon(
+                            Icons.add_location_alt_outlined,
+                            size: 18,
+                          ),
+                          label: Text(
+                            state.addresses.isEmpty
+                                ? 'Add delivery address'
+                                : 'Add another address',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 _SectionCard(
                   title: 'Delivery & payment',
@@ -377,6 +398,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       for (final coupon in state.coupons)
                         _CouponStepTile(
                           coupon: effectiveCoupons[coupon.code] ?? coupon,
+                          onRemove: () => ref
+                              .read(checkoutControllerProvider.notifier)
+                              .removeCoupon(coupon.code),
                         ),
                       for (final coupon in rejectedCoupons)
                         _CouponStepTile(coupon: coupon),
@@ -403,6 +427,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ? const Text('Your cart is empty.')
                       : Column(
                           children: [
+                            if (totalsAsync.hasError)
+                              _PreviewNotice(
+                                message: userMessageFor(totalsAsync.error!),
+                                onRetry: () =>
+                                    ref.invalidate(orderTotalsPreviewProvider),
+                              )
+                            else if (totalsAsync.isLoading && totals == null)
+                              const _PreviewNotice(
+                                message: 'Refreshing totals…',
+                              ),
                             _SummaryRow(
                               'Subtotal',
                               Money(subtotalMinor).formatUsd(),
@@ -569,9 +603,10 @@ class _PlaceOrderBar extends StatelessWidget {
 }
 
 class _CouponStepTile extends StatelessWidget {
-  const _CouponStepTile({required this.coupon});
+  const _CouponStepTile({required this.coupon, this.onRemove});
 
   final CouponPreview coupon;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -608,6 +643,49 @@ class _CouponStepTile extends StatelessWidget {
               ],
             )
           : Text(_CheckoutScreenState._couponRequirement(coupon)),
+      trailing: onRemove == null
+          ? null
+          : IconButton(
+              tooltip: 'Remove coupon',
+              onPressed: onRemove,
+              icon: const Icon(Icons.close, size: 18),
+            ),
+    );
+  }
+}
+
+class _PreviewNotice extends StatelessWidget {
+  const _PreviewNotice({required this.message, this.onRetry});
+
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 16,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          if (onRetry != null)
+            TextButton(onPressed: onRetry, child: const Text('Retry')),
+        ],
+      ),
     );
   }
 }

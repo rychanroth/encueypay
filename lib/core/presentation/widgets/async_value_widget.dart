@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/failures.dart';
+import '../motion.dart';
 import '../theme/app_dimensions.dart';
 
 /// Uniform `AsyncValue` renderer (DESIGN.md §8 `async_value_widget.dart`):
@@ -28,7 +30,7 @@ class AsyncValueWidget<T> extends StatelessWidget {
   /// Custom loading branch; defaults to the skeleton shimmer.
   final Widget? loading;
 
-  /// Custom error copy (defaults to the failure's toString).
+  /// Custom error copy (defaults to [userMessageFor]).
   final String Function(Object error)? errorBuilder;
 
   /// Keep the previous data on-screen through background refetches — no
@@ -37,15 +39,29 @@ class AsyncValueWidget<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return value.when(
+    final child = value.when(
       skipLoadingOnReload: skipLoadingOnReload,
       skipLoadingOnRefresh: true,
       data: data,
       loading: () => loading ?? const SkeletonListView(),
       error: (error, _) => AsyncErrorView(
-        message: errorBuilder?.call(error) ?? '$error',
+        message: errorBuilder?.call(error) ?? userMessageFor(error),
         retry: retry,
       ),
+    );
+    // Cross-fade skeleton → content / error instead of hard-swapping the
+    // surface (§3.2, §3.7). The state key keeps content rebuilds (pagination,
+    // refetch) from replaying the transition.
+    final stateKey = value.hasError
+        ? 'error'
+        : value.isLoading && !value.hasValue
+            ? 'loading'
+            : 'data';
+    return AnimatedSwitcher(
+      duration: AppMotion.duration(context, AppMotion.enter),
+      switchInCurve: AppMotion.enterCurve,
+      switchOutCurve: AppMotion.exitCurve,
+      child: KeyedSubtree(key: ValueKey(stateKey), child: child),
     );
   }
 }
@@ -79,10 +95,7 @@ class AsyncErrorView extends StatelessWidget {
             ),
             if (retry != null) ...[
               const SizedBox(height: AppSpacing.md),
-              FilledButton.tonal(
-                onPressed: retry,
-                child: const Text('Retry'),
-              ),
+              FilledButton.tonal(onPressed: retry, child: const Text('Retry')),
             ],
           ],
         ),
@@ -125,7 +138,11 @@ class EmptyStateView extends StatelessWidget {
                 color: theme.colorScheme.surfaceContainer,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: theme.colorScheme.onSurfaceVariant),
+              child: Icon(
+                icon,
+                size: 32,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
@@ -191,9 +208,10 @@ class _SkeletonBoxState extends State<SkeletonBox>
     final theme = Theme.of(context);
     final base = theme.colorScheme.surfaceContainerHigh;
     return FadeTransition(
-      opacity: Tween(begin: 0.45, end: 1.0).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      ),
+      opacity: Tween(
+        begin: 0.45,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
       child: Container(
         width: widget.width,
         height: widget.height,
@@ -205,7 +223,11 @@ class _SkeletonBoxState extends State<SkeletonBox>
 
 /// Full-area skeleton grid — default loading branch for list/grid screens.
 class SkeletonListView extends StatelessWidget {
-  const SkeletonListView({super.key, this.itemCount = 6, this.crossAxisCount = 2});
+  const SkeletonListView({
+    super.key,
+    this.itemCount = 6,
+    this.crossAxisCount = 2,
+  });
 
   final int itemCount;
   final int crossAxisCount;

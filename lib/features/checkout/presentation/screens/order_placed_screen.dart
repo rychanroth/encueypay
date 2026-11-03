@@ -68,7 +68,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
           .read(orderPaymentControllerProvider(widget.orderId).notifier)
           .ensureQrRegistered();
     } on Failure catch (error) {
-      if (mounted) setState(() => _creationError = error.message);
+      if (mounted) setState(() => _creationError = userMessageFor(error));
     }
   }
 
@@ -216,7 +216,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => Column(
                 children: [
-                  Text('$error', textAlign: TextAlign.center),
+                  Text(userMessageFor(error), textAlign: TextAlign.center),
                   const SizedBox(height: 8),
                   FilledButton.tonal(
                     onPressed: () => ref.invalidate(

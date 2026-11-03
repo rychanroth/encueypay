@@ -52,4 +52,8 @@ abstract interface class ICatalogRepository {
   /// definition (the pricing rule lives in SQL). Display mirrors the
   /// server's math; placement re-prices authoritatively.
   Future<List<ActiveSale>> fetchActiveSales();
+
+  /// Platform-wide delivery fee (minor units) from `platform_settings`.
+  /// Used by the storefront to state the real fee before checkout.
+  Future<int> fetchDeliveryFeeMinor();
 }

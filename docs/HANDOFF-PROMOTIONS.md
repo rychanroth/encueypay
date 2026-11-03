@@ -10,23 +10,30 @@
 - **Code**: committed through `640728d`. Promotions fixes landed in
   `e649771`; the address/QR work in later commits is unrelated. The
   promotions slice includes:
-  - `SaleDto.description` is nullable and the mapper defaults it to `''`
-    (the likely source of the `type 'Null' is not a subtype of type
-    'String'` crash after sale creation).
+  - The promotions DTOs (`SaleDto`, `CouponDto`, `BannerDto`, brand/category
+    refs) no longer cast nullable wire values to non-null `String`; text
+    fields default to `''`, `image_path` is nullable and a missing banner
+    image renders a placeholder. `fetchApprovedBanners` skips banners with
+    no image path and nullable target ids.
   - `admin_create_sale` failures now best-effort delete the uploaded
     banner image (no orphan asset).
+  - Coupon delete: `admin_delete_coupon` (migration
+    `20261102000005`) hard-deletes only unredeemed codes; a code referenced
+    by `order_coupons` is rejected with "deactivate instead". The admin
+    coupon row has a delete action with confirmation.
   - Fixed-amount admin inputs parse dollars with `Money.parse`; percent
     stays a whole number.
   - Structured coupon validation/preview feedback, rejected-code rows,
     and the product-detail sale sheet.
   - Cart/checkout line prices come from `cart_item_details`.
-- **Runtime status**: the null-description path is covered by
-  `test/promotion_model_test.dart` and `flutter analyze`/`flutter test`
-  pass. **End-to-end sale creation with a banner has not been re-tested
-  after the fix.** If it still fails, capture the `[data-error]
-  unexpected ...` stack and check the next unguarded `as String` on the
-  post-create path (the banner `image_path` parse is the next candidate),
-  then the deployed function/schema.
+- **Runtime status**: the null-cast hardening is covered by
+  `test/promotion_model_test.dart` (sale/coupon/banner DTOs with null
+  fields) and `flutter analyze`/`flutter test` pass. **End-to-end sale
+  creation with a banner has not been re-tested after the changes.** If the
+  `UnexpectedFailure(type 'Null' ... String ...)` still appears, capture
+  the `[data-error] unexpected ...` stack — the remaining suspects are a
+  stale installed build or a deployed schema/function that differs from
+  `supabase/migrations/`.
 - **Live data observation**: the hosted project has a `bon om tuk` 10%
   platform sale with an empty description, and coupons
   `XXXYYY`/`XXXEEE` (`fixed`, value `2`), `YYYZZZ` (`fixed`, value `12`),
@@ -41,7 +48,9 @@
   scope enum value), `20261029000003` (sales + standalone codes),
   `20261102000001` (structured coupon validation + rejected preview rows),
   `20261102000002` (cart_item_details view), `20261102000003`
-  (unpaid-QR expiry). The sales/coupons schema is present remotely; do not
+  (unpaid-QR expiry), `20261102000005` (admin coupon delete),
+  `20261102000006` (delete RPC as SECURITY DEFINER so the order_coupons
+  check can see FK rows). The sales/coupons schema is present remotely; do not
   assume the newer function/view migrations are. The push **truncates**
   `sales`, `coupons`, `banners`, `order_coupons` — the admin recreates
   live sales through the new UI, which doubles as its first test. Past
@@ -89,7 +98,9 @@ discount wins", which also compares percent vs dollars by outcome).
   p_ends_at, p_image_path)` → `{sale_id, banner_id}` — with an image, the
   same call inserts an approved banner linked to the sale (one-step
   campaign UX, single-admin). `admin_set_sale_active`,
-  `admin_create_coupon` (replaces `create_platform_promotion`).
+  `admin_create_coupon` (replaces `create_platform_promotion`),
+  `admin_delete_coupon` (unredeemed codes only; used codes must be
+  deactivated because `order_coupons` keeps the historical breakdown).
 - `validate_coupon(p_code)` — standalone, cart-wide, sale-applied base;
   returns `{valid, message, discount_minor}` (no scope).
 - `preview_order_totals(p_codes)` → `{subtotal_minor, manual[],
@@ -125,7 +136,12 @@ discount wins", which also compares percent vs dollars by outcome).
 - `features/promotions` (admin): Sales / Coupons / Banners sections;
   `ManagedSale` / `ManagedCoupon` / `ManagedBanner` entities;
   `AdminSalesController` / `AdminCouponsController` /
-  `AdminBannersController`.
+  `AdminBannersController`. The Coupons section shows only live or
+  scheduled codes; expired or manually deactivated codes move to a
+  read-only **Archived coupons** screen
+  (`AppRoutes.adminArchivedCoupons`, nested under the promotions route).
+  Each live coupon row keeps the active switch and adds a confirmed delete
+  action; the server rejects used codes.
 
 ## 4. Root causes found on the way (don't rediscover)
 
@@ -144,6 +160,11 @@ discount wins", which also compares percent vs dollars by outcome).
 5. Stale scripts: `supabase/testing/*.sql` reference retired RPCs;
    `supabase/APPLY-UI-OVERHAUL-MIGRATIONS.sql` must NEVER be re-run (it
    would regress `validate_coupon` to the business-era body).
+6. RLS can make an admin RPC's pre-check lie: `order_coupons` only exposes
+   a customer's own rows, so the original `admin_delete_coupon` saw no
+   reference, deleted, and got a raw FK violation. Cross-tenant existence
+   checks inside admin RPCs need `SECURITY DEFINER` (plus `SET search_path`
+   and the `is_admin()` gate), not a wider read policy.
 
 ## 5. Settled decisions (do not re-litigate without the user)
 
@@ -153,7 +174,12 @@ discount wins", which also compares percent vs dollars by outcome).
 - Banners auto-hide when their sale is off; display-only banners inert.
 - Old campaign data truncated (user decision), not migrated.
 - Fixed dollar sales render struck-through per unit like percent sales.
-- Coupon codes kept (simplified), not deleted.
+- Coupon codes are never auto-deleted. An unredeemed code may be hard
+  deleted by the admin; a redeemed code is deactivated so `order_coupons`
+  history and its FK stay intact.
+- Archive split: main list = active and not past `ends_at` (scheduled
+  coupons stay main). Archive = deactivated or expired. The archive is
+  view-only by user decision (no restore action yet).
 
 ## 6. Verification checklist (user, after `supabase db push` + restart)
 
@@ -173,17 +199,24 @@ discount wins", which also compares percent vs dollars by outcome).
 5. Coupon minimum order: a below-minimum cart shows the exact required
    minimum and the current subtotal; a valid code shows its name, offer
    rate/amount, minimum (if any) and the cart's discount.
-6. Leave a pending QR order untouched: the Orders list shows "Awaiting
+6. Coupon delete: create a throwaway code, delete it (confirmation), and
+   confirm it disappears; apply a code to an order, then try deleting it —
+   the snackbar must say to deactivate it instead.
+7. Coupon archive: create a code with a past end date (or switch a live
+   code off) → it leaves the main Coupons section and appears under
+   **Archived**; the archive screen has no switch or delete control.
+8. Leave a pending QR order untouched: the Orders list shows "Awaiting
    payment". `expire_unpaid_qr_orders()` cancels it after 60 minutes and
    restores stock; a verified QR order is never cancelled.
-7. The QR screen offers Save image (Files/Downloads) and Share (native
+9. The QR screen offers Save image (Files/Downloads) and Share (native
    share sheet).
 
 ## 7. Known gaps / deferred (do not build unasked)
 
 - End-to-end admin sale creation + banner upload is not runtime-verified
-  after the null-description fix; capture the debug stack before changing
-  more code.
+  after the null-cast hardening; capture the debug stack before changing
+  more code. If the error names a String field, check the installed build
+  and the hosted schema before adding more defaults.
 - The old fixed-value coupons must be recreated (values `2`/`12`/`50` are
   old wrong units).
 - Banner behavior was not changed in this pass; only the sale-write

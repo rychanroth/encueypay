@@ -92,16 +92,6 @@ where not exists (
 );
 
 -- --------------------------------------------------------------- variants
--- Every product gets the auto-'Default' variant (null price tracks the
--- base price — a variant-less product is un-buyable, map §10.3).
-insert into public.product_variants (product_id, name)
-select p.id, 'Default'
-from public.products p
-where not exists (
-  select 1 from public.product_variants pv
-   where pv.product_id = p.id and pv.name = 'Default'
-);
-
 -- A few priced variants to exercise the variant picker and the server rule
 -- coalesce(variant.price, product.base_price) (§1.2).
 insert into public.product_variants (product_id, name, price_minor)
@@ -117,6 +107,18 @@ join public.products p on p.name = v.product_name
 where not exists (
   select 1 from public.product_variants pv
    where pv.product_id = p.id and pv.name = v.name
+);
+
+-- A product with real variants must not also carry the single-price
+-- placeholder. Only products left with no active variant get 'Default'
+-- (null price tracks the base price — a variant-less product is
+-- un-buyable, map §10.3).
+insert into public.product_variants (product_id, name)
+select p.id, 'Default'
+from public.products p
+where not exists (
+  select 1 from public.product_variants pv
+   where pv.product_id = p.id and pv.status = 'active'
 );
 
 -- ----------------------------------------------------------------- images

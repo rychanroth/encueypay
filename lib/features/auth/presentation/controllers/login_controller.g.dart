@@ -42,7 +42,7 @@ final class LoginControllerProvider
   LoginController create() => LoginController();
 }
 
-String _$loginControllerHash() => r'7e88e10157357cf4178fe06c8069306990cea07e';
+String _$loginControllerHash() => r'515d7b084e6634f7fa30bdec4f79d5e641da2684';
 
 /// Drives the login form. Mutations follow PRES-03: `AsyncValue.guard`,
 /// no optimistic UI — on success the session stream updates and the router

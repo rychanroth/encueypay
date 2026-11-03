@@ -11,6 +11,8 @@ class NotificationDto {
     required this.content,
     required this.read,
     required this.createdAt,
+    this.type,
+    this.orderId,
   });
 
   factory NotificationDto.fromJson(Map<String, dynamic> json) =>
@@ -21,6 +23,12 @@ class NotificationDto {
   final String content;
   final bool read;
   final DateTime createdAt;
+
+  /// `notifications.type` wire value (`order`, `promotion`, `system`, …).
+  final String? type;
+
+  /// Linked order when the notification came from an order/payment event.
+  final String? orderId;
 
   Map<String, dynamic> toJson() => _$NotificationDtoToJson(this);
 }

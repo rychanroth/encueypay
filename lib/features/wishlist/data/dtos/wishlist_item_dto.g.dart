@@ -99,11 +99,16 @@ WishlistVariantJoinDto _$WishlistVariantJoinDtoFromJson(
 ) => WishlistVariantJoinDto(
   id: json['id'] as String?,
   priceMinor: (json['price_minor'] as num?)?.toInt(),
+  status: json['status'] as String?,
 );
 
 Map<String, dynamic> _$WishlistVariantJoinDtoToJson(
   WishlistVariantJoinDto instance,
-) => <String, dynamic>{'id': instance.id, 'price_minor': instance.priceMinor};
+) => <String, dynamic>{
+  'id': instance.id,
+  'price_minor': instance.priceMinor,
+  'status': instance.status,
+};
 
 WishlistImageJoinDto _$WishlistImageJoinDtoFromJson(
   Map<String, dynamic> json,

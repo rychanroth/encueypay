@@ -11,4 +11,13 @@ abstract interface class INotificationsRepository {
   Future<void> markRead(String notificationId);
 
   Future<void> markAllRead();
+
+  /// Upserts the FCM token for the signed-in user (register_device_token).
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+  });
+
+  /// Removes this device's token before sign-out (own-row RLS).
+  Future<void> unregisterDeviceToken(String token);
 }

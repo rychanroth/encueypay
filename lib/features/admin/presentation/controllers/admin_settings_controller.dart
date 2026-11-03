@@ -12,12 +12,18 @@ class AdminSettingsController extends _$AdminSettingsController {
     return ref.watch(adminRepositoryProvider).fetchPlatformSettings();
   }
 
-  Future<void> save(PlatformSettings settings) async {
+  /// Saves without replacing the form with an AsyncError. Returns the
+  /// failure for the screen's snackbar; keeps the current settings visible.
+  Future<Object?> save(PlatformSettings settings) async {
     final current = state.value;
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       await ref.read(adminRepositoryProvider).updatePlatformSettings(settings);
       ref.invalidateSelf();
-      return current ?? settings;
     });
+    if (result.hasError) {
+      if (current != null) state = AsyncData(current);
+      return result.error;
+    }
+    return null;
   }
 }

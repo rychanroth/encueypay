@@ -41,7 +41,7 @@ class WishlistRepositoryImpl implements IWishlistRepository {
             'id, product_id, products(name, base_price_minor, stock, status, '
             'brand_id, category_id, brands(name), '
             'product_ratings(rating_avg, review_count), '
-            'product_variants(id, price_minor), '
+            'product_variants(id, price_minor, status), '
             'product_images(storage_path, sort_order))',
           )
           .eq('wishlist_id', wishlist['id'] as String)

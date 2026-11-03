@@ -25,7 +25,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -33,7 +33,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Order')),
       body: ordersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) => Center(child: Text(userMessageFor(error))),
         data: (orders) {
           final order = orders.where((order) => order.id == orderId).firstOrNull;
           if (order == null) {

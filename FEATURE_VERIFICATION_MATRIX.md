@@ -100,7 +100,7 @@
 | Admin return review: approve/reject → complete | ASSIGN §7 / SPEC B.7 (7E) | `admin_order_detail_screen.dart` (`_ReturnTile`) / `admin_orders_controller.dart` / `admin_process_return` + `admin_complete_return` | n/a (admin order view) | Yes (per-request buttons) | **[WIRED]** |
 | Review compose (tappable 5-star → integer, server-verified 1/item) | ASSIGN §7 / SPEC B.7 (7F) | `features/reviews/presentation/screens/review_compose_screen.dart` / `controllers/review_compose_controller.dart` / `create_review` RPC | Yes (`/orders/:id/review`) | Yes (delivered item rows) | **[WIRED]** |
 | Notifications inbox (realtime, tap-to-read, mark-all) | ASSIGN §8 / SPEC B.8 | `features/notifications/presentation/screens/notifications_screen.dart` / `controllers/notifications_controller.dart` / `notifications_repository_impl.dart` (stream + RPCs) | Yes (`/home/notifications`) | Yes (Home app-bar bell) | **[WIRED]** |
-| FCM push registration + dispatch | ASSIGN §8 / SPEC B.8 (8E) | `features/notifications/data/push_notification_registrar.dart` / `main.dart` / `register_device_token` RPC + `supabase/functions/push-dispatch` | n/a (startup/data) | n/a (startup hook) | **[WIRED]** (inert w/o Firebase config — Part A.6; foreground display not wired, background/terminated tray only) |
+| FCM push registration + dispatch | ASSIGN §8 / SPEC B.8 (8E) | `features/notifications/data/push_notifications_service.dart` / `main.dart` / `register_device_token` RPC + `supabase/functions/push-dispatch` | n/a (startup/data) | n/a (startup hook) | **[WIRED]** (inert w/o Firebase config — Part A.6; auth-aware token sync, foreground SnackBar, tap→OrderDetail; background/terminated tray) |
 
 ## §8 — Security, Roles & Administrative Features (SPEC B.8)
 
@@ -146,5 +146,5 @@
 | Daily/weekly/monthly report buckets (range-based implemented) | B.8 |
 | Multi-code coupons per promotion | B.5 |
 | Reviewer public profile screens (card is non-interactive) | B.7 |
-| FCM foreground display listener; promotion/coupon notification triggers | B.8 |
+| Promotion/coupon notification triggers | B.8 |
 | Category subcategory browsing UI (aggregation implemented server-side) | B.2 |

@@ -20,6 +20,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isSignUp = false;
+  bool _obscurePassword = true;
+  String? _formError;
 
   @override
   void dispose() {
@@ -31,6 +33,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _formError = null);
     final controller = ref.read(loginControllerProvider.notifier);
     if (_isSignUp) {
       await controller.signUp(
@@ -47,11 +50,69 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
+    setState(() => _formError = null);
     await ref.read(loginControllerProvider.notifier).signInWithGoogle();
   }
 
+  Future<void> _forgotPassword() async {
+    final emailController = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reset password'),
+        content: TextField(
+          controller: emailController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email_outlined),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final email = emailController.text.trim();
+              if (!email.contains('@')) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Enter a valid email')),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(true);
+            },
+            child: const Text('Send link'),
+          ),
+        ],
+      ),
+    );
+    final email = emailController.text.trim();
+    emailController.dispose();
+    if (submitted != true || !mounted) return;
+    setState(() => _formError = null);
+    await ref
+        .read(loginControllerProvider.notifier)
+        .sendPasswordReset(email: email);
+    if (!mounted) return;
+    if (!ref.read(loginControllerProvider).hasError) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Reset link sent to $email')),
+        );
+    }
+  }
+
   void _toggleMode() {
-    setState(() => _isSignUp = !_isSignUp);
+    setState(() {
+      _isSignUp = !_isSignUp;
+      _formError = null;
+    });
     _formKey.currentState?.reset();
   }
 
@@ -64,10 +125,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen(loginControllerProvider, (previous, next) {
       final error = next.hasError ? next.error : null;
-      if (error is Failure) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+      if (error != null) {
+        setState(() => _formError = userMessageFor(error));
       }
     });
 
@@ -134,6 +193,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
+                      onChanged: (_) {
+                        if (_formError != null) {
+                          setState(() => _formError = null);
+                        }
+                      },
                       validator: (value) =>
                           (value == null || !value.contains('@'))
                               ? 'Enter a valid email'
@@ -142,17 +206,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _passwordController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
                       ),
-                      obscureText: true,
-                      autofillHints: const [AutofillHints.password],
+                      obscureText: _obscurePassword,
+                      autofillHints: [
+                        _isSignUp
+                            ? AutofillHints.newPassword
+                            : AutofillHints.password,
+                      ],
+                      onChanged: (_) {
+                        if (_formError != null) {
+                          setState(() => _formError = null);
+                        }
+                      },
                       validator: (value) =>
                           (value == null || value.length < 6)
                               ? 'At least 6 characters'
                               : null,
                     ),
+                    if (!_isSignUp)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: isLoading ? null : _forgotPassword,
+                          child: const Text('Forgot password?'),
+                        ),
+                      ),
+                    if (_formError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          _formError!,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: isLoading ? null : _submit,

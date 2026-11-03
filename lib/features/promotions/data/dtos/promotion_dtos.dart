@@ -23,11 +23,17 @@ class SaleDto {
   factory SaleDto.fromJson(Map<String, dynamic> json) =>
       _$SaleDtoFromJson(json);
 
+  @JsonKey(defaultValue: '')
   final String id;
+
+  @JsonKey(defaultValue: '')
   final String name;
+
   final String? description;
   final String? scope;
   final String? discountType;
+
+  @JsonKey(defaultValue: 0)
   final int discountValue;
 
   /// Admin kill switch — window expiry is derived from the dates.
@@ -65,13 +71,17 @@ class CouponDto {
   factory CouponDto.fromJson(Map<String, dynamic> json) =>
       _$CouponDtoFromJson(json);
 
+  @JsonKey(defaultValue: '')
   final String id;
 
   @JsonKey(defaultValue: '')
   final String name;
 
+  @JsonKey(defaultValue: '')
   final String code;
   final String? discountType;
+
+  @JsonKey(defaultValue: 0)
   final int discountValue;
 
   @JsonKey(defaultValue: 0)
@@ -101,11 +111,14 @@ class BannerDto {
   factory BannerDto.fromJson(Map<String, dynamic> json) =>
       _$BannerDtoFromJson(json);
 
+  @JsonKey(defaultValue: '')
   final String id;
+
+  @JsonKey(defaultValue: '')
   final String name;
 
   @JsonKey(name: 'image_path')
-  final String imagePath;
+  final String? imagePath;
 
   final String? status;
   final DateTime? startsAt;
@@ -121,7 +134,10 @@ class PromoCategoryRefDto {
   factory PromoCategoryRefDto.fromJson(Map<String, dynamic> json) =>
       _$PromoCategoryRefDtoFromJson(json);
 
+  @JsonKey(defaultValue: '')
   final String id;
+
+  @JsonKey(defaultValue: '')
   final String name;
 
   Map<String, dynamic> toJson() => _$PromoCategoryRefDtoToJson(this);
@@ -134,7 +150,10 @@ class PromoBrandRefDto {
   factory PromoBrandRefDto.fromJson(Map<String, dynamic> json) =>
       _$PromoBrandRefDtoFromJson(json);
 
+  @JsonKey(defaultValue: '')
   final String id;
+
+  @JsonKey(defaultValue: '')
   final String name;
 
   Map<String, dynamic> toJson() => _$PromoBrandRefDtoToJson(this);

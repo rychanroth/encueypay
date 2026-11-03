@@ -28,17 +28,19 @@ class ProductVariantDto {
 }
 
 /// Slim wire shape for price-only variant embeds
-/// (`select('product_variants(id, price_minor)')`) — grid cards derive the
-/// displayed "from" price and (Section 6) the default variant from it.
+/// (`select('product_variants(id, price_minor, status)')`) — grid cards
+/// derive the displayed "from" price and (Section 6) the default variant
+/// from it. `status` lets the mapper drop archived rows.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ProductVariantPriceDto {
-  const ProductVariantPriceDto({this.id, this.priceMinor});
+  const ProductVariantPriceDto({this.id, this.priceMinor, this.status});
 
   factory ProductVariantPriceDto.fromJson(Map<String, dynamic> json) =>
       _$ProductVariantPriceDtoFromJson(json);
 
   final String? id;
   final int? priceMinor;
+  final String? status;
 
   Map<String, dynamic> toJson() => _$ProductVariantPriceDtoToJson(this);
 }

@@ -30,3 +30,14 @@ class NetworkFailure extends Failure {
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure(Object cause) : super('Unexpected error: $cause');
 }
+
+/// Presentation-safe copy for a caught error. Recognized failures keep
+/// their actionable message; unexpected/client-bug failures never leak raw
+/// types or stack details into the UI.
+String userMessageFor(Object error) {
+  if (error is UnexpectedFailure) {
+    return 'Something went wrong. Please try again.';
+  }
+  if (error is Failure) return error.message;
+  return 'Something went wrong. Please try again.';
+}

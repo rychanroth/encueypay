@@ -18,13 +18,15 @@ abstract class Product with _$Product {
     /// variant deducts this counter; variants carry no stock of their own.
     @Default(0) int stock,
 
-    /// Cheapest selectable price — min over variant effective prices, base
-    /// price when the product has none. What grids/cards display.
+    /// Cheapest selectable price — min over the active priced variants,
+    /// with the null-price single-price placeholder falling back to the
+    /// base price. What grids/cards display.
     required int fromPriceMinor,
 
-    /// First variant id (Section 6): the quick-action "add to cart" uses
-    /// the product's default variant. Never null in practice —
-    /// `create_product` auto-creates 'Default' — but tolerated here.
+    /// The cheapest sellable variant id (Section 6): quick-add and the
+    /// detail page default to it. For a single-price product this is the
+    /// hidden null-price placeholder, so carts still resolve a concrete
+    /// variant. Null when the product has no active variant at all.
     String? defaultVariantId,
     @Default('') String brandName,
     double? ratingAvg,

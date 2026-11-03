@@ -42,7 +42,7 @@ class CartScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -90,7 +90,7 @@ class CartScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref.invalidate(cartControllerProvider),
@@ -206,7 +206,7 @@ class _FloatingCheckoutDock extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text('Checkout'),
-                    Text('Step 1 of 7', style: TextStyle(fontSize: 10)),
+                    Text('Review order', style: TextStyle(fontSize: 10)),
                   ],
                 ),
               ),
@@ -363,7 +363,8 @@ class _CartItemTile extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      visualDensity: VisualDensity.compact,
+                      constraints:
+                          const BoxConstraints(minWidth: 48, minHeight: 48),
                       tooltip: 'Remove item',
                       onPressed: () => controller.remove(itemId: item.id),
                       icon: Icon(Icons.delete_outline,
@@ -395,7 +396,7 @@ class _StepButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       tooltip: tooltip,
-      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       onPressed: onPressed,
       icon: Icon(icon, size: 18),
     );

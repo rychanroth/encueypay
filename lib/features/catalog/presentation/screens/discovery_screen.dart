@@ -229,6 +229,8 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                     PopupMenuItem(value: ProductSort.name, child: Text('Name')),
                   ],
                   child: Container(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm + 2,
                       vertical: 6,

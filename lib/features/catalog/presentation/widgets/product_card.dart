@@ -346,11 +346,9 @@ class _WishlistHeartState extends State<_WishlistHeart>
           .animate(CurvedAnimation(parent: _pulse, curve: Curves.easeOutBack)),
       child: IconButton(
         tooltip: saved ? 'Remove from wishlist' : 'Add to wishlist',
-        // 40dp inside the 1:1 tile — still ≥40 and comfortably in the
-        // thumb zone on a 2-col grid (§1.5).
-        constraints:
-            const BoxConstraints(minWidth: 40, minHeight: 40),
-        padding: const EdgeInsets.all(AppSpacing.sm),
+        // 48dp target (Material minimum) inside the 1:1 tile.
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        padding: const EdgeInsets.all(AppSpacing.sm + 2),
         iconSize: 20,
         icon: Icon(
           saved ? Icons.favorite : Icons.favorite_border,

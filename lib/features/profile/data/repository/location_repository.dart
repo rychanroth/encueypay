@@ -34,4 +34,8 @@ abstract interface class ILocationRepository {
   /// Opens the platform settings page — recovery path for a denied
   /// permission.
   Future<void> openSettings();
+
+  /// Opens the OS location-services settings (service disabled, not
+  /// permission denied).
+  Future<void> openLocationSettings();
 }

@@ -40,6 +40,15 @@ class LoginController extends _$LoginController {
     );
   }
 
+  Future<void> sendPasswordReset({required String email}) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(authRepositoryProvider).sendPasswordResetEmail(
+            email: email,
+          ),
+    );
+  }
+
   Future<void> signInWithGoogle() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(

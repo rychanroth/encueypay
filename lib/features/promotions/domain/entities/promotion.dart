@@ -29,6 +29,8 @@ abstract class ManagedSale with _$ManagedSale {
 /// and minimum order — no promotion link.
 @freezed
 abstract class ManagedCoupon with _$ManagedCoupon {
+  const ManagedCoupon._();
+
   const factory ManagedCoupon({
     required String id,
     @Default('') String name,
@@ -40,6 +42,15 @@ abstract class ManagedCoupon with _$ManagedCoupon {
     DateTime? startsAt,
     DateTime? endsAt,
   }) = _ManagedCoupon;
+
+  /// `ends_at` is inclusive in SQL; at the boundary the code is no longer
+  /// usable, so equal-to-now counts as expired.
+  bool isExpiredAt(DateTime now) =>
+      endsAt != null && !endsAt!.toUtc().isAfter(now.toUtc());
+
+  /// Main admin list = still usable or scheduled. Archive = switched off or
+  /// past its end date. Starting in the future does not archive a code.
+  bool isArchivedAt(DateTime now) => !active || isExpiredAt(now);
 }
 
 /// A promotional banner (Section 5b/§9): the advertising surface and

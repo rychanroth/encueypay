@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/domain/failures.dart';
 
 import '../controllers/admin_audit_controller.dart';
 
@@ -17,10 +19,14 @@ class AuditLogsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Audit logs')),
       body: logsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) => Center(child: Text(userMessageFor(error))),
         data: (logs) {
           if (logs.isEmpty) {
-            return const Center(child: Text('No audit entries yet.'));
+            return const EmptyStateView(
+              icon: Icons.history,
+              title: 'No audit entries yet',
+              description: 'Admin actions will be recorded here.',
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),

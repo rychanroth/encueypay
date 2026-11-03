@@ -7,10 +7,10 @@ part of 'promotion_dtos.dart';
 // **************************************************************************
 
 SaleDto _$SaleDtoFromJson(Map<String, dynamic> json) => SaleDto(
-  id: json['id'] as String,
-  name: json['name'] as String,
+  id: json['id'] as String? ?? '',
+  name: json['name'] as String? ?? '',
   description: json['description'] as String?,
-  discountValue: (json['discount_value'] as num).toInt(),
+  discountValue: (json['discount_value'] as num?)?.toInt() ?? 0,
   scope: json['scope'] as String?,
   discountType: json['discount_type'] as String?,
   active: json['active'] as bool? ?? true,
@@ -45,9 +45,9 @@ Map<String, dynamic> _$SaleDtoToJson(SaleDto instance) => <String, dynamic>{
 };
 
 CouponDto _$CouponDtoFromJson(Map<String, dynamic> json) => CouponDto(
-  id: json['id'] as String,
-  code: json['code'] as String,
-  discountValue: (json['discount_value'] as num).toInt(),
+  id: json['id'] as String? ?? '',
+  code: json['code'] as String? ?? '',
+  discountValue: (json['discount_value'] as num?)?.toInt() ?? 0,
   name: json['name'] as String? ?? '',
   discountType: json['discount_type'] as String?,
   minOrderAmountMinor: (json['min_order_amount_minor'] as num?)?.toInt() ?? 0,
@@ -73,9 +73,9 @@ Map<String, dynamic> _$CouponDtoToJson(CouponDto instance) => <String, dynamic>{
 };
 
 BannerDto _$BannerDtoFromJson(Map<String, dynamic> json) => BannerDto(
-  id: json['id'] as String,
-  name: json['name'] as String,
-  imagePath: json['image_path'] as String,
+  id: json['id'] as String? ?? '',
+  name: json['name'] as String? ?? '',
+  imagePath: json['image_path'] as String?,
   status: json['status'] as String?,
   startsAt: json['starts_at'] == null
       ? null
@@ -95,14 +95,20 @@ Map<String, dynamic> _$BannerDtoToJson(BannerDto instance) => <String, dynamic>{
 };
 
 PromoCategoryRefDto _$PromoCategoryRefDtoFromJson(Map<String, dynamic> json) =>
-    PromoCategoryRefDto(id: json['id'] as String, name: json['name'] as String);
+    PromoCategoryRefDto(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+    );
 
 Map<String, dynamic> _$PromoCategoryRefDtoToJson(
   PromoCategoryRefDto instance,
 ) => <String, dynamic>{'id': instance.id, 'name': instance.name};
 
 PromoBrandRefDto _$PromoBrandRefDtoFromJson(Map<String, dynamic> json) =>
-    PromoBrandRefDto(id: json['id'] as String, name: json['name'] as String);
+    PromoBrandRefDto(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+    );
 
 Map<String, dynamic> _$PromoBrandRefDtoToJson(PromoBrandRefDto instance) =>
     <String, dynamic>{'id': instance.id, 'name': instance.name};

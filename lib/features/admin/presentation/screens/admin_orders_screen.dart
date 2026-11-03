@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -22,7 +23,7 @@ class AdminOrdersScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -34,7 +35,7 @@ class AdminOrdersScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref.invalidate(adminOrdersControllerProvider),
@@ -45,7 +46,11 @@ class AdminOrdersScreen extends ConsumerWidget {
         ),
         data: (orders) {
           if (orders.isEmpty) {
-            return const Center(child: Text('No orders yet.'));
+            return const EmptyStateView(
+              icon: Icons.receipt_long_outlined,
+              title: 'No orders yet',
+              description: 'Customer orders will appear here.',
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),

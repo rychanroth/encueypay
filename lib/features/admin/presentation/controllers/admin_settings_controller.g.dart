@@ -34,7 +34,7 @@ final class AdminSettingsControllerProvider
 }
 
 String _$adminSettingsControllerHash() =>
-    r'c43b4fbca62ad965446373c5ee0965bf73206b38';
+    r'7c29494b132d1b0bc2770f0737dea7fde000554c';
 
 abstract class _$AdminSettingsController
     extends $AsyncNotifier<PlatformSettings> {

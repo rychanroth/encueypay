@@ -21,6 +21,10 @@ abstract class CheckoutState with _$CheckoutState {
     @Default([]) List<CouponPreview> coupons,
     @Default('') String note,
     @Default(false) bool isPlacing,
+
+    /// Transient placement failure shown while the form remains editable.
+    /// Initial-load failures still use the controller's AsyncError branch.
+    String? placementError,
   }) = _CheckoutState;
 
   const CheckoutState._();
@@ -30,7 +34,6 @@ abstract class CheckoutState with _$CheckoutState {
       .fold<int>(0, (sum, coupon) => sum + coupon.discountMinor);
 
   /// The first address is the default (repository ordering, Section 6b).
-  AddressOption? get selectedAddress => addresses
-      .where((address) => address.id == selectedAddressId)
-      .firstOrNull;
+  AddressOption? get selectedAddress =>
+      addresses.where((address) => address.id == selectedAddressId).firstOrNull;
 }

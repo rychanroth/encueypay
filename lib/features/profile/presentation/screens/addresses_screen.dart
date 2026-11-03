@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/router/app_routes.dart';
@@ -42,7 +43,7 @@ class AddressesScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -59,7 +60,7 @@ class AddressesScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$error', textAlign: TextAlign.center),
+              Text(userMessageFor(error), textAlign: TextAlign.center),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () => ref.invalidate(addressesControllerProvider),
@@ -70,7 +71,13 @@ class AddressesScreen extends ConsumerWidget {
         ),
         data: (addresses) {
           if (addresses.isEmpty) {
-            return const Center(child: Text('No addresses yet.'));
+            return EmptyStateView(
+              icon: Icons.location_on_outlined,
+              title: 'No addresses yet',
+              description: 'Add a delivery address to place an order.',
+              actionLabel: 'Add address',
+              onAction: () => context.pushNamed(AppRoutes.addressEdit),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -109,6 +116,7 @@ class AddressesScreen extends ConsumerWidget {
                               .setDefault(address.id),
                         ),
                       IconButton(
+                        tooltip: 'Delete address',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () => _confirmDelete(context, ref, address),
                       ),

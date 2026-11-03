@@ -7,6 +7,7 @@ import '../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../features/catalog/domain/entities/product.dart';
 import '../../../features/catalog/presentation/widgets/product_card.dart';
 import '../../../features/dashboard/presentation/widgets/dashboard_overview_panel.dart';
+import '../../../features/notifications/data/push_notifications_service.dart';
 import '../../../features/wishlist/domain/entities/wishlist_item.dart';
 import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../../../features/profile/domain/entities/address.dart';
@@ -87,6 +88,14 @@ final profileBranch = StatefulShellBranch(
             overviewPanel: role == UserRole.customer
                 ? DashboardOverviewPanel(wishlistCards: wishlistCards)
                 : null,
+            onSignOut: () async {
+              // Remove this device's push token while still authenticated,
+              // then end the session (best-effort; never blocks sign-out).
+              await ref
+                  .read(pushNotificationsServiceProvider)
+                  .unregisterCurrentDevice();
+              await ref.read(authControllerProvider.notifier).signOut();
+            },
           );
         },
       ),
@@ -132,13 +141,7 @@ final profileBranch = StatefulShellBranch(
         GoRoute(
           name: AppRoutes.settings,
           path: 'settings',
-          builder: (context, state) => Consumer(
-            builder: (context, ref, _) => SettingsScreen(
-              onSignOut: () async {
-                await ref.read(authControllerProvider.notifier).signOut();
-              },
-            ),
-          ),
+          builder: (context, state) => const SettingsScreen(),
         ),
       ],
     ),

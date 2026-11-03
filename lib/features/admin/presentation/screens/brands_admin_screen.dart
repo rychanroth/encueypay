@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
@@ -20,24 +21,27 @@ class BrandsAdminScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('New brand'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: descriptionController,
-              decoration:
-                  const InputDecoration(labelText: 'Description (optional)'),
-            ),
-            const SizedBox(height: 12),
-            CatalogImagePickField(
-              label: 'Logo image (optional)',
-              onPicked: (path) => pickedLocalPath = path,
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                ),
+              ),
+              const SizedBox(height: 12),
+              CatalogImagePickField(
+                label: 'Logo image (optional)',
+                onPicked: (path) => pickedLocalPath = path,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -45,7 +49,15 @@ class BrandsAdminScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Enter a brand name')),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(true);
+            },
             child: const Text('Create'),
           ),
         ],
@@ -63,10 +75,12 @@ class BrandsAdminScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error.message)));
+        ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       return;
     }
-    await ref.read(adminBrandsControllerProvider.notifier).create(
+    await ref
+        .read(adminBrandsControllerProvider.notifier)
+        .create(
           name: nameController.text.trim(),
           description: descriptionController.text.trim(),
           imagePath: imagePath,
@@ -97,32 +111,36 @@ class BrandsAdminScreen extends ConsumerWidget {
     AdminBrand brand,
   ) async {
     final nameController = TextEditingController(text: brand.name);
-    final descriptionController =
-        TextEditingController(text: brand.description);
+    final descriptionController = TextEditingController(
+      text: brand.description,
+    );
     String? pickedLocalPath;
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Edit brand'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: descriptionController,
-              decoration:
-                  const InputDecoration(labelText: 'Description (optional)'),
-            ),
-            CatalogImagePickField(
-              label: 'Logo image (optional)',
-              existingUrl: brand.imageUrl,
-              existingPath: brand.imagePath,
-              onPicked: (path) => pickedLocalPath = path,
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                ),
+              ),
+              CatalogImagePickField(
+                label: 'Logo image (optional)',
+                existingUrl: brand.imageUrl,
+                existingPath: brand.imagePath,
+                onPicked: (path) => pickedLocalPath = path,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -130,7 +148,15 @@ class BrandsAdminScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Enter a brand name')),
+                );
+                return;
+              }
+              Navigator.of(dialogContext).pop(true);
+            },
             child: const Text('Save'),
           ),
         ],
@@ -148,10 +174,12 @@ class BrandsAdminScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error.message)));
+        ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       return;
     }
-    await ref.read(adminBrandsControllerProvider.notifier).edit(
+    await ref
+        .read(adminBrandsControllerProvider.notifier)
+        .edit(
           brandId: brand.id,
           name: nameController.text.trim(),
           description: descriptionController.text.trim(),
@@ -199,7 +227,7 @@ class BrandsAdminScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -212,10 +240,14 @@ class BrandsAdminScreen extends ConsumerWidget {
       ),
       body: brandsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) => Center(child: Text(userMessageFor(error))),
         data: (brands) {
           if (brands.isEmpty) {
-            return const Center(child: Text('No brands yet.'));
+            return const EmptyStateView(
+              icon: Icons.sell_outlined,
+              title: 'No brands yet',
+              description: 'Add a brand to group products and run brand sales.',
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -252,9 +284,11 @@ class BrandsAdminScreen extends ConsumerWidget {
                   children: [
                     IconButton(
                       tooltip: isArchived ? 'Activate' : 'Archive',
-                      icon: Icon(isArchived
-                          ? Icons.unarchive_outlined
-                          : Icons.archive_outlined),
+                      icon: Icon(
+                        isArchived
+                            ? Icons.unarchive_outlined
+                            : Icons.archive_outlined,
+                      ),
                       onPressed: () => ref
                           .read(adminBrandsControllerProvider.notifier)
                           .setArchived(

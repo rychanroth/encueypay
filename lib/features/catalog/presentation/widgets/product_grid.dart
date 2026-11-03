@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/responsive/screen_size.dart';
+import '../../../../core/presentation/widgets/staggered_grid.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/product.dart';
 import '../states/product_list_state.dart';
@@ -49,7 +50,7 @@ class ProductGrid extends ConsumerWidget {
         }
         return false;
       },
-      child: GridView.builder(
+      child: StaggeredGrid(
         padding: const EdgeInsets.all(16),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: columns,

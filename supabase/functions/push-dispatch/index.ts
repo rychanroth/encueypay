@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
   // Database Webhook payload: { type, table, record, ... }.
   const body = await req.json();
   const notification = body?.record ?? body;
-  const recipient: string | undefined = notification?.recipient;
+  const recipient: string | undefined = notification?.recipient_id;
   const title: string = notification?.title ?? 'EncueYPay';
   const content: string = notification?.content ?? '';
   if (!recipient) {
@@ -123,7 +123,10 @@ Deno.serve(async (req) => {
           message: {
             token,
             notification: { title, body: content },
-            data: { notification_id: notification.id ?? '' },
+            data: {
+              notification_id: notification.id ?? '',
+              order_id: notification.order_id ?? '',
+            },
           },
         }),
       },

@@ -25,6 +25,10 @@ abstract interface class IAuthRepository {
     required String fullName,
   });
 
+  /// Sends a Supabase password-reset email. The hosted reset page handles
+  /// the new-password step.
+  Future<void> sendPasswordResetEmail({required String email});
+
   /// Google OAuth — the primary sign-in method (DEPS-04).
   Future<void> signInWithGoogle();
 

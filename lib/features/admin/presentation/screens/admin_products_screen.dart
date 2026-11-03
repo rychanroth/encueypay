@@ -39,7 +39,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -147,7 +147,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
   }
 }
 
-class _AdminProductTile extends ConsumerWidget {
+class _AdminProductTile extends ConsumerStatefulWidget {
   const _AdminProductTile({required this.product, required this.query});
 
   final AdminProductSummary product;
@@ -157,10 +157,61 @@ class _AdminProductTile extends ConsumerWidget {
   final String? query;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final isArchived = product.status == AdminCatalogStatus.archived;
+  ConsumerState<_AdminProductTile> createState() => _AdminProductTileState();
+}
 
+class _AdminProductTileState extends ConsumerState<_AdminProductTile> {
+  bool _busy = false;
+
+  Future<void> _adjustStock(int delta) async {
+    if (_busy) return;
+    final product = widget.product;
+    setState(() => _busy = true);
+    final error = await ref
+        .read(adminProductsControllerProvider(widget.query).notifier)
+        .adjustStock(
+          productId: product.id,
+          newStock: product.stock + delta,
+        );
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (error != null) _showError(error);
+  }
+
+  Future<void> _toggleArchive() async {
+    if (_busy) return;
+    final product = widget.product;
+    setState(() => _busy = true);
+    final error = await ref
+        .read(adminProductsControllerProvider(widget.query).notifier)
+        .setArchived(
+          productId: product.id,
+          archived: product.status != AdminCatalogStatus.archived,
+        );
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (error != null) _showError(error);
+  }
+
+  void _showError(Object error) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isArchived =
+        widget.product.status == AdminCatalogStatus.archived;
+
+    return Opacity(
+      opacity: _busy ? 0.6 : 1,
+      child: _buildCard(context, theme, isArchived),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, ThemeData theme, bool isArchived) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Card(
@@ -176,8 +227,8 @@ class _AdminProductTile extends ConsumerWidget {
                   borderRadius: AppRadii.br12,
                   child: MonogramImage(
                     imageUrl:
-                        product.images.isEmpty ? null : product.images.first.url,
-                    name: product.name,
+                        widget.product.images.isEmpty ? null : widget.product.images.first.url,
+                    name: widget.product.name,
                   ),
                 ),
               ),
@@ -190,7 +241,7 @@ class _AdminProductTile extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            product.name,
+                            widget.product.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
@@ -221,10 +272,10 @@ class _AdminProductTile extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${product.categoryName}'
-                      '${product.brandName == null ? '' : ' · ${product.brandName}'}'
-                      ' · ${Money(product.basePriceMinor).formatUsd()}'
-                      ' · ${product.variantCount} variant(s)',
+                      '${widget.product.categoryName}'
+                      '${widget.product.brandName == null ? '' : ' · ${widget.product.brandName}'}'
+                      ' · ${Money(widget.product.basePriceMinor).formatUsd()}'
+                      ' · ${widget.product.variantCount == 0 ? 'Single price' : '${widget.product.variantCount} variant(s)'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -239,9 +290,9 @@ class _AdminProductTile extends ConsumerWidget {
               // preserved: low-stock tint when ≤5.
               Container(
                 decoration: BoxDecoration(
-                  color: product.stock == 0
+                  color: widget.product.stock == 0
                       ? theme.colorScheme.errorContainer
-                      : product.stock <= 5
+                      : widget.product.stock <= 5
                           ? theme.colorScheme.tertiaryContainer
                           : theme.colorScheme.surfaceContainer,
                   borderRadius: AppRadii.brFull,
@@ -252,23 +303,17 @@ class _AdminProductTile extends ConsumerWidget {
                     IconButton(
                       tooltip: 'Decrease stock',
                       visualDensity: VisualDensity.compact,
-                      onPressed: product.stock <= 0
+                      onPressed: _busy || widget.product.stock <= 0
                           ? null
-                          : () => ref
-                              .read(adminProductsControllerProvider(query)
-                                  .notifier)
-                              .adjustStock(
-                                productId: product.id,
-                                newStock: product.stock - 1,
-                              ),
+                          : () => _adjustStock(-1),
                       icon: const Icon(Icons.remove, size: 16),
                     ),
                     Text(
-                      '${product.stock}',
+                      '${widget.product.stock}',
                       style: AppTypography.labelMedium.copyWith(
-                        color: product.stock == 0
+                        color: widget.product.stock == 0
                             ? theme.colorScheme.onErrorContainer
-                            : product.stock <= 5
+                            : widget.product.stock <= 5
                                 ? theme.colorScheme.onTertiaryContainer
                                 : null,
                       ),
@@ -276,33 +321,33 @@ class _AdminProductTile extends ConsumerWidget {
                     IconButton(
                       tooltip: 'Increase stock',
                       visualDensity: VisualDensity.compact,
-                      onPressed: () => ref
-                          .read(adminProductsControllerProvider(query).notifier)
-                          .adjustStock(
-                            productId: product.id,
-                            newStock: product.stock + 1,
-                          ),
+                      onPressed: _busy ? null : () => _adjustStock(1),
                       icon: const Icon(Icons.add, size: 16),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                tooltip: isArchived ? 'Restore' : 'Archive',
-                icon: Icon(isArchived
-                    ? Icons.unarchive_outlined
-                    : Icons.archive_outlined),
-                onPressed: () => ref
-                    .read(adminProductsControllerProvider(query).notifier)
-                    .setArchived(productId: product.id, archived: !isArchived),
-              ),
-              IconButton(
-                tooltip: 'Edit',
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () => context.pushNamed(
-                  AppRoutes.adminProductForm,
-                  extra: product,
-                ),
+              PopupMenuButton<String>(
+                tooltip: 'Product actions',
+                enabled: !_busy,
+                onSelected: (action) {
+                  switch (action) {
+                    case 'edit':
+                      context.pushNamed(
+                        AppRoutes.adminProductForm,
+                        extra: widget.product,
+                      );
+                    case 'toggle':
+                      _toggleArchive();
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem(
+                    value: 'toggle',
+                    child: Text(isArchived ? 'Restore' : 'Archive'),
+                  ),
+                ],
               ),
             ],
           ),

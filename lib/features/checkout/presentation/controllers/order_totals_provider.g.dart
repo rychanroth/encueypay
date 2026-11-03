@@ -62,4 +62,4 @@ final class OrderTotalsPreviewProvider
 }
 
 String _$orderTotalsPreviewHash() =>
-    r'ad84a6f47a4888310bdab0416f6c2668163af84c';
+    r'8a9ff356b64c066579d0af4613be3fb598286848';

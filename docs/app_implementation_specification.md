@@ -87,21 +87,23 @@ real banking app before pointing it at a production account.
 ## A.6 FCM push prerequisites (Section 8E)
 
 The full wiring is implemented and **gracefully inert without configuration** — the
-in-app realtime inbox is unaffected, and `registerPushNotifications` no-ops when
+in-app realtime inbox is unaffected, and `PushNotificationsService` no-ops when
 Firebase is unconfigured:
 
 | Prerequisite | Purpose |
 |---|---|
-| Firebase project + `android/app/google-services.json` (+ Gradle `google-services` plugin) and/or `ios/Runner/GoogleService-Info.plist` | `Firebase.initializeApp()` on the platforms (the Gradle plugin step is deliberately NOT pre-wired — the Android build fails without the JSON, so add it together) |
+| Firebase project + `android/app/google-services.json` (Gradle `google-services` plugin applied) and/or `ios/Runner/GoogleService-Info.plist` | `Firebase.initializeApp()` on the platforms. Android is wired; iOS still needs the plist/capability |
 | `supabase secrets set FCM_SERVICE_ACCOUNT='{...service-account json...}'` | The `push-dispatch` Edge Function signs FCM HTTP v1 requests (RS256 JWT → OAuth exchange, implemented in Deno) |
 | Database Webhook on `public.notifications` (INSERT) → `https://<project>.supabase.co/functions/v1/push-dispatch` | Delivers every notification row to the dispatcher |
 | `supabase functions deploy push-dispatch` | Serves the function |
 
 Flow: domain event → trigger inserts a `notifications` row → webhook → `push-dispatch`
-→ recipient's `device_tokens` → FCM HTTP v1. Tokens are registered at startup
-(`register_device_token` RPC, user-scoped upsert; refreshed on rotation). Events covered
-by existing triggers: order updates, payment statuses (7D), delivery stages, returns;
-promotions/coupons events would need new triggers (documented, not built).
+→ recipient's `device_tokens` → FCM HTTP v1. Tokens stay in sync with the session
+(`register_device_token` on sign-in/token refresh, own-row delete on sign-out).
+Order notifications carry `order_id`, so a tray tap opens the linked OrderDetail; the
+in-app foreground banner uses a SnackBar with a View action. Events covered by existing
+triggers: order updates and payment statuses. Promotion/coupon triggers are still not
+built.
 
 ---
 
@@ -348,10 +350,15 @@ appended as sections land.)
   strictly variant-based; the original owner-guarded RPCs were removed (Section 9).
   The product form authors variants inline at creation (Part F); the update RPC
   (20261015000002) syncs the full authored list — id rows update in place, new rows
-  insert, removed rows archive. **Hybrid pricing (2026-10-28):** authored rows require
-  name + price and carry an optional `image_path` (uploaded to the `product_images`
-  bucket before the RPC); the Default row's blank price keeps tracking the base.
-  The never-read `attributes` column was dropped (20261028000003).
+  insert, removed rows archive. **Harmonized variant model (2026-11-02,
+  `20261102000007`):** the null-price 'Default' row is a single-price placeholder,
+  not an admin-managed option. A product with no authored variants is single-price
+  (base price); adding variants switches to option pricing (name + price required,
+  image optional; the cheapest sets the base/from price). The admin form hides the
+  placeholder, an empty variant payload means "single price" (server keeps/creates
+  exactly one placeholder), and a non-empty payload archives it. A unique partial
+  index enforces one active placeholder per product. The never-read `attributes`
+  column was dropped (20261028000003).
 * `products_admin_read` lets the admin list see archived products;
   `product_images_admin_all` + storage `product_images_admin_write/delete` give admin
   full image-row and binary management. Path convention amended by the
@@ -458,8 +465,11 @@ appended as sections land.)
   snackbars; screens take an `actionsBuilder`, the wishlist screen a
   `cardBuilder` (item → ProductCard mapping in the profile branch).
 * Add-to-cart uses the product's **default variant** (`products` embed now
-  carries variant ids; `Product.defaultVariantId`); remove-from-cart drops
-  every cart line of the product.
+  carries variant ids; `Product.defaultVariantId`) — the cheapest active priced
+  variant, or the hidden single-price placeholder when no variants exist.
+  Archived rows and the placeholder-with-real-variants case are filtered in the
+  read model, so cards/detail/wishlist share the same from-price and default.
+  Remove-from-cart drops every cart line of the product.
 * Cart keeps its independent `CartItemTile` (per user decision — no
   refactor into ProductCard); its quantity stepper is now capped at the
   product-wide stock carried on the cart line; the server re-validates at

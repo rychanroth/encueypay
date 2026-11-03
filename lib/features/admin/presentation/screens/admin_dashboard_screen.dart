@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/domain/failures.dart';
 
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
@@ -42,7 +43,7 @@ class AdminDashboardScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('$error', textAlign: TextAlign.center),
+                  Text(userMessageFor(error), textAlign: TextAlign.center),
                   const SizedBox(height: 8),
                   FilledButton.tonal(
                     onPressed: () => ref.invalidate(adminKpisControllerProvider),
@@ -353,6 +354,33 @@ class _TrendBars extends StatelessWidget {
           const SizedBox(height: 4),
           // Baseline — anchors the bars against the card surface.
           Container(height: 1, color: theme.colorScheme.outlineVariant),
+          if (trend.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Text(
+                  '${trend.first.day.month}/${trend.first.day.day}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Max ${Money(maxSales).format()}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${trend.last.day.month}/${trend.last.day.day}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -177,4 +177,12 @@ enum PaymentStatusState {
     }
     return PaymentStatusState.pending;
   }
+
+  /// Customer-facing label (never render the raw enum/wire name).
+  String get label => switch (this) {
+        PaymentStatusState.pending => 'Pending',
+        PaymentStatusState.awaitingPaymentVerification =>
+          'Awaiting verification',
+        PaymentStatusState.transactionVerified => 'Payment received',
+      };
 }

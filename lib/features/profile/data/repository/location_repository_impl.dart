@@ -149,6 +149,9 @@ class LocationRepositoryImpl implements ILocationRepository {
 
   @override
   Future<void> openSettings() => Geolocator.openAppSettings();
+
+  @override
+  Future<void> openLocationSettings() => Geolocator.openLocationSettings();
 }
 
 /// "271 Preah Norodom Blvd", whichever of the number/street pair survives.

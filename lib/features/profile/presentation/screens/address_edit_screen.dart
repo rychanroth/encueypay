@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../domain/entities/address.dart';
@@ -57,6 +58,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
   String? _communeCode;
   String? _villageCode;
   bool _loadingGeo = false;
+  String? _geoError;
 
   @override
   void initState() {
@@ -148,6 +150,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       setState(() {
         _provinces = provinces;
         _provinceCode = province;
+        _geoError = null;
         if (province == null) {
           _districtCode = null;
           _communeCode = null;
@@ -168,7 +171,8 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         selectCode: _villageCode,
       );
     } on Failure catch (failure) {
-      _showSnack(failure.message);
+      if (!mounted) return;
+      setState(() => _geoError = userMessageFor(failure));
     }
   }
 
@@ -482,7 +486,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
     // New addresses prefill the recipient with the customer's own name once
@@ -500,7 +504,8 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       appBar: AppBar(
         title: Text(widget.address == null ? 'Add address' : 'Edit address'),
       ),
-      body: Form(
+      body: ContentWidth(
+        child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -571,11 +576,13 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
               CurrentLocationMap(
                 latitude: _locatedCoordinates!.latitude,
                 longitude: _locatedCoordinates!.longitude,
+                onPositionChanged: (position) => setState(
+                  () => _locatedCoordinates = position,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Verify the pin matches your location — then review the '
-                'fields below.',
+                'Tap the map to adjust the pin, then review the fields below.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -613,6 +620,26 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                   : _onVillageChanged,
             ),
             if (_loadingGeo) const LinearProgressIndicator(minHeight: 2),
+            if (_geoError != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _geoError!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _loadingGeo ? null : _hydrateGeo,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
             if (_provinceCode != null || _cityController.text.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -656,6 +683,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

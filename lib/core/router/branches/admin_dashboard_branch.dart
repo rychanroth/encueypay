@@ -6,10 +6,12 @@ import '../../../features/admin/presentation/screens/audit_logs_screen.dart';
 import '../../../features/admin/presentation/screens/categories_admin_screen.dart';
 import '../../../features/admin/presentation/screens/platform_settings_screen.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../../features/notifications/data/push_notifications_service.dart';
 import '../../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
 import '../../../features/promotions/presentation/screens/admin_promotions_screen.dart';
+import '../../../features/promotions/presentation/screens/archived_coupons_screen.dart';
 import '../app_routes.dart';
 
 /// Admin tab 1 — Dashboard (DESIGN.md §5.2.1). The DESIGN.md 4-tab shell
@@ -42,11 +44,28 @@ final adminDashboardBranch = StatefulShellBranch(
           name: AppRoutes.adminPromotions,
           path: 'promotions',
           builder: (context, state) => const AdminPromotionsScreen(),
+          routes: [
+            GoRoute(
+              name: AppRoutes.adminArchivedCoupons,
+              path: 'archive',
+              builder: (context, state) => const ArchivedCouponsScreen(),
+            ),
+          ],
         ),
         GoRoute(
           name: AppRoutes.profile,
           path: 'account',
-          builder: (context, state) => const ProfileScreen(isCustomer: false),
+          builder: (context, state) => Consumer(
+            builder: (context, ref, _) => ProfileScreen(
+              isCustomer: false,
+              onSignOut: () async {
+                await ref
+                    .read(pushNotificationsServiceProvider)
+                    .unregisterCurrentDevice();
+                await ref.read(authControllerProvider.notifier).signOut();
+              },
+            ),
+          ),
           routes: [
             GoRoute(
               name: AppRoutes.profileEdit,
@@ -56,15 +75,7 @@ final adminDashboardBranch = StatefulShellBranch(
             GoRoute(
               name: AppRoutes.settings,
               path: 'settings',
-              builder: (context, state) => Consumer(
-                builder: (context, ref, _) => SettingsScreen(
-                  onSignOut: () async {
-                    await ref
-                        .read(authControllerProvider.notifier)
-                        .signOut();
-                  },
-                ),
-              ),
+              builder: (context, state) => const SettingsScreen(),
             ),
           ],
         ),

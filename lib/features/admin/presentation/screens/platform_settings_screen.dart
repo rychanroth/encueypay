@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -22,6 +23,7 @@ class _PlatformSettingsScreenState
   final _platformCommissionController = TextEditingController();
   final _paymentAccountController = TextEditingController();
   bool _filled = false;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -32,6 +34,7 @@ class _PlatformSettingsScreenState
   }
 
   Future<void> _save() async {
+    if (_saving) return;
     int feeMinor;
     try {
       feeMinor = Money.parse(_feeController.text).minorUnits;
@@ -45,42 +48,52 @@ class _PlatformSettingsScreenState
       );
       return;
     }
-    await ref.read(adminSettingsControllerProvider.notifier).save(
-          PlatformSettings(
-            deliveryFeeMinor: feeMinor,
-            platformCommissionPercent: platformCommission,
-            paymentAccount: _paymentAccountController.text.trim(),
+    setState(() => _saving = true);
+    try {
+      final error =
+          await ref.read(adminSettingsControllerProvider.notifier).save(
+                PlatformSettings(
+                  deliveryFeeMinor: feeMinor,
+                  platformCommissionPercent: platformCommission,
+                  paymentAccount: _paymentAccountController.text.trim(),
+                ),
+              );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              error == null ? 'Settings saved' : userMessageFor(error),
+            ),
           ),
         );
-    final hasError = ref.read(adminSettingsControllerProvider).hasError;
-    if (!hasError && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Settings saved')),
-      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(adminSettingsControllerProvider);
-    final saving = ref.watch(
-      adminSettingsControllerProvider.select((async) => async.isLoading),
-    );
 
     ref.listen(adminSettingsControllerProvider, (previous, next) {
       final error = next.hasError ? next.error : null;
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Platform settings')),
-      body: settingsAsync.when(
+      body: ContentWidth(
+        child: settingsAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        error: (error, _) => Center(child: Text(userMessageFor(error))),
         data: (settings) {
           if (!_filled) {
             _feeController.text =
@@ -118,12 +131,19 @@ class _PlatformSettingsScreenState
               ),
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: saving ? null : _save,
-                child: const Text('Save'),
+                onPressed: _saving ? null : _save,
+                child: _saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save'),
               ),
             ],
           );
         },
+      ),
       ),
     );
   }

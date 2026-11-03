@@ -43,7 +43,7 @@ final class CurrentLocationControllerProvider
 }
 
 String _$currentLocationControllerHash() =>
-    r'a2c53ea6df0fd7b5996468e5f4b0890bb54c3bae';
+    r'0b8e4af75348da7766a1c1c2a95f26cedc4e8740';
 
 /// One-shot locate for the address form (spec B.6): device position →
 /// platform reverse geocode. A plain fetch, so the controller calls the

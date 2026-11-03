@@ -36,6 +36,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .from('addresses')
           .select()
           .eq('user_id', _uid)
+          // Default first, then chronological — checkout preselects first.
+          .order('is_default', ascending: false)
           .order('created_at');
       return rows
           .map(CheckoutAddressDto.fromJson)

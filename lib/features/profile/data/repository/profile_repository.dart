@@ -9,4 +9,8 @@ abstract interface class IProfileRepository {
     required String fullName,
     required String phone,
   });
+
+  /// Uploads [filePath] to the public `avatars` bucket under the caller's
+  /// `{uid}/` folder and stores the resolved public URL on the user row.
+  Future<void> updateMyAvatar({required String filePath});
 }

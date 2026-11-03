@@ -4,6 +4,7 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/router/app_routes.dart';
 import '../controllers/review_compose_controller.dart';
@@ -71,13 +72,14 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(error.message)));
+          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
       }
     });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Write a review')),
-      body: ListView(
+      body: ContentWidth(
+        child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
@@ -92,13 +94,19 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (var star = 1; star <= 5; star++)
-                IconButton(
-                  iconSize: 36,
-                  icon: Icon(
-                    star <= _rating ? Icons.star : Icons.star_border,
-                    color: AppColors.accentAmber,
+                Semantics(
+                  button: true,
+                  selected: star == _rating,
+                  label: '$star star${star == 1 ? '' : 's'}',
+                  child: IconButton(
+                    iconSize: 36,
+                    tooltip: '$star star${star == 1 ? '' : 's'}',
+                    icon: Icon(
+                      star <= _rating ? Icons.star : Icons.star_border,
+                      color: AppColors.accentAmber,
+                    ),
+                    onPressed: () => setState(() => _rating = star),
                   ),
-                  onPressed: () => setState(() => _rating = star),
                 ),
             ],
           ),
@@ -130,6 +138,7 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
             style: TextStyle(fontSize: 12),
           ),
         ],
+      ),
       ),
     );
   }

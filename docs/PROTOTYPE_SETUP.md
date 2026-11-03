@@ -22,8 +22,8 @@ the app degrades gracefully without them (each one says what you lose).
 | Google OAuth client credentials (local dev) | ✅ already in root `.env` | `.env` (gitignored) |
 | Android deep link for OAuth | ✅ wired | `android/app/src/main/AndroidManifest.xml` |
 | Firebase Android config (`google-services.json`) | ✅ already in repo | `android/app/` |
-| Gradle google-services plugin | ⚠️ **not applied** — you add 2 lines (Phase 7) | `android/` |
-| FCM push bug fix (1 line) | ⚠️ **you apply it** (Phase 7, Step 1) | `supabase/functions/push-dispatch/index.ts` |
+| Gradle google-services plugin | ✅ applied (Phase 7, Step 2) | `android/` |
+| FCM push `recipient_id` fix | ✅ applied (Phase 7, Step 1) | `supabase/functions/push-dispatch/index.ts` |
 | PayWay sandbox secrets | ❌ you add them (`supabase/functions/.env`) | Phase 6 |
 | Demo user (admin) + in-app coupons | ❌ you create them | Phases 3–4 |
 
@@ -229,46 +229,29 @@ production values, and run one real low-value transaction before launch.
 
 ---
 
-## Phase 7 — FCM push [OPTIONAL, 2 one-time fixes + config]
+## Phase 7 — FCM push [OPTIONAL, config + device test]
 
 State of the repo: `android/app/google-services.json` **already exists**
 (Firebase project `encueypay`, Android package `com.example.encueypay`), the
-FCM packages are in `pubspec.yaml`, and the app registers device tokens on
-startup. What's missing is (1) a one-line function fix, (2) the Gradle plugin
-line, (3) the service-account secret, (4) the database webhook. Without all
-four, push stays inert (the app still runs; the in-app realtime inbox is
-unaffected).
+FCM packages are in `pubspec.yaml`, the Gradle plugin is applied, and the
+app keeps the device token in sync with the Supabase session (register on
+sign-in/token refresh, unregister on sign-out). What's still required is
+(1) the service-account secret, (2) the database webhook, (3) a device test.
+Without those, push stays inert (the app still runs; the in-app realtime
+inbox is unaffected).
 
-**Step 1 — the push-dispatch fix (mandatory, previously flagged).** Open
-`supabase/functions/push-dispatch/index.ts` and change line 91:
+**Step 1 — the push-dispatch fix (applied 2026-11-02).**
+`supabase/functions/push-dispatch/index.ts` now reads
+`notification?.recipient_id` — the webhook payload carries the
+`notifications` row, and that column is `recipient_id`. The old
+`notification?.recipient` looked up device tokens for `undefined` and
+silently sent nothing.
 
-```ts
-// before
-const recipient: string | undefined = notification?.recipient;
-// after
-const recipient: string | undefined = notification?.recipient_id;
-```
-
-The webhook payload carries the `notifications` row, and that column is
-`recipient_id` — as written, the function looks up device tokens for
-`undefined` and silently sends nothing.
-
-**Step 2 — apply the google-services Gradle plugin.** In
-`android/settings.gradle.kts`, inside the top-level `plugins { … }` block add:
-
-```kotlin
-id("com.google.gms.google-services") version "4.4.2" apply false
-```
-
-In `android/app/build.gradle.kts`, inside its `plugins { … }` block add:
-
-```kotlin
-id("com.google.gms.google-services")
-```
-
-(The JSON is already in place, so this is the whole story. If the build then
-complains about `minSdk`, set `minSdk = 23` in
-`android/app/build.gradle.kts` `defaultConfig`.)
+**Step 2 — the google-services Gradle plugin (applied 2026-11-02).**
+`android/settings.gradle.kts` declares
+`id("com.google.gms.google-services") version "4.4.2" apply false` and
+`android/app/build.gradle.kts` applies it. The project's Flutter default
+minSdk is 24, which satisfies Firebase Messaging.
 
 **Step 3 — service-account secret.** Firebase Console → ⚙️ Project settings →
 **Service accounts → Generate new private key** → download the JSON. Put its
@@ -279,17 +262,29 @@ FCM_SERVICE_ACCOUNT='{"type":"service_account","project_id":"encueypay", … }'
 ```
 
 `supabase/functions/.env` is local-secret storage for edge functions and is
-loaded on `supabase start` — keep it out of git
-(`supabase/.gitignore` already ignores `.env.local`; add a line
-`functions/.env` there if you create it).
+gitignored — keep it out of git. `supabase start` does **not** load it on its
+own: source both env files into the CLI process first (see `AGENTS.md`).
+`supabase/config.toml` already forwards `FCM_SERVICE_ACCOUNT` from the host
+environment via `[edge_runtime.secrets]`.
 
 **Step 4 — restart the stack** so the function runtime gets the secret:
-`supabase stop && supabase start`.
+
+```bash
+set -a
+source config/.env
+source supabase/functions/.env
+set +a
+supabase stop && supabase start
+```
+
+Never `docker restart` the edge runtime — it drops the injected secrets.
 
 **Step 5 — create the database webhook** (this is what invokes the function
 on every new notification): Studio → **Database → Webhooks → Create a new
 hook** → name `push-dispatch`, table `notifications`, event **INSERT**,
-delivery: POST to
+type **Supabase Edge Function**, then **Add secret key** (without it the
+function's default `verify_jwt` rejects the webhook with 401), delivery:
+POST to
 
 ```
 http://kong:8000/functions/v1/push-dispatch
@@ -301,10 +296,18 @@ http://kong:8000/functions/v1/push-dispatch
 > to 54321). If pushes never fire, this URL is the first thing to check.
 
 **Step 6 — test:** run the app on a device **with Google Play services**,
-sign in (a device token is registered at startup), then trigger a
-notification as the admin (e.g. transition an order). Push arrives in the
-system tray when the app is **backgrounded or terminated** — an in-app
-foreground display is intentionally not built (matrix row 101).
+sign in (the device token registers on the auth event), then trigger a
+notification as the admin (e.g. transition an order).
+
+- Background/terminated: the system tray shows the push.
+- Tap the push: it opens the linked `OrderDetail` (notifications with no
+  order link open the inbox). The notification is marked read.
+- Foreground: a SnackBar appears with a **View order/View** action.
+- Sign out: this device's token is removed before the session ends; a
+  different account signing in re-registers it.
+
+Order notifications carry `order_id`; older rows without one still open the
+inbox.
 
 ---
 
@@ -372,7 +375,7 @@ To reproduce on a fresh machine:
 | Tab set doesn't switch after promoting the admin | Profile is read per auth event → **sign out and back in** (or hot-restart) |
 | QR screen: "Could not start the QR payment" | PayWay secrets missing / rejected — the exact stage is shown on screen (Phase 6) |
 | "Some items in your cart are no longer available" | A cart line's variant/product is no longer active (server-side gate) — remove the line |
-| Push never arrives | In order: recipient_id fix applied (Step 1)? Gradle plugin applied (Step 2)? `FCM_SERVICE_ACCOUNT` set + stack restarted (Steps 3–4)? Webhook created with the `kong:8000` URL (Step 5)? Device has Play services? App backgrounded? |
+| Push never arrives | In order: `FCM_SERVICE_ACCOUNT` set + stack restarted (Steps 3–4)? Webhook created with the `kong:8000` URL and a secret key (Step 5)? Device has Play services? App backgrounded? Function deployed (hosted)? |
 | OAuth: `redirect_uri_mismatch` | The Google client must allow exactly `http://127.0.0.1:54321/auth/v1/callback`, and `.env`'s `SUPABASE_REDIRECT_URI` must match; then the restart ritual |
 | OAuth on device: browser can't open callback | `adb reverse tcp:54321 tcp:54321` (ephemeral — re-run) |
 | Device can't reach the backend at all | LAN IP changed → update `.env` `SUPABASE_URL` **and** `network_security_config.xml`, then the restart ritual |
@@ -386,5 +389,5 @@ To reproduce on a fresh machine:
 | One auth user + admin promotion | The demo itself | 3–4 |
 | `qr_account_id` in Platform settings | KHQR visible at checkout | 6.1 |
 | PayWay sandbox secrets (`PAYWAY_MERCHANT_ID`, `PAYWAY_API_KEY`) + portal callback URL | Real webhook confirmation | 6.4 |
-| push-dispatch 1-line fix + Gradle plugin + `FCM_SERVICE_ACCOUNT` + notifications webhook | Real push notifications | 7 |
+| `FCM_SERVICE_ACCOUNT` + notifications webhook (+ deploy) | Real push notifications (code/Gradle already wired) | 7 |
 | Google OAuth client (already in `.env` here) | Google sign-in; email/password is the fallback | 8 |

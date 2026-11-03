@@ -80,6 +80,15 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+    } catch (error, stackTrace) {
+      throw _mapError(error, stackTrace);
+    }
+  }
+
+  @override
   Future<void> signInWithGoogle() async {
     try {
       await _client.auth.signInWithOAuth(

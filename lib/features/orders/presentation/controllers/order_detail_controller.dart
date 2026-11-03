@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../data/repository/orders_repository_impl.dart';
 import '../../domain/entities/order.dart';
@@ -19,10 +20,9 @@ class OrderDetailController extends _$OrderDetailController {
     // treating it as a change would invalidate → resubscribe → snapshot, a
     // permanent rebuild loop.
     final subscriptions = <StreamSubscription<StreamResult<bool>>>[
-      repository
-          .watchOrderChanges(orderId)
-          .skipInitialSnapshot()
-          .listen((result) {
+      repository.watchOrderChanges(orderId).skipInitialSnapshot().listen((
+        result,
+      ) {
         if (result is StreamData) ref.invalidateSelf();
       }),
     ];
@@ -34,32 +34,59 @@ class OrderDetailController extends _$OrderDetailController {
     return repository.fetchOrder(orderId);
   }
 
-  Future<void> cancelOrder() async {
-    final current = state.value;
-    if (current == null) return;
-    state = await AsyncValue.guard(() async {
+  /// Cancels the order while keeping the order content on screen. Returns
+  /// true on success; failures land in [OrderActionError] as a snackbar
+  /// message instead of replacing the detail with an AsyncError.
+  Future<bool> cancelOrder() async {
+    if (state.value == null) return false;
+    final result = await AsyncValue.guard(() async {
       await ref.read(ordersRepositoryProvider).cancelOrder(orderId);
       ref.invalidateSelf();
-      return current;
     });
+    if (result.hasError) {
+      ref
+          .read(orderActionErrorProvider(orderId).notifier)
+          .show(userMessageFor(result.error!));
+      return false;
+    }
     // Keep the list consistent too.
     ref.invalidate(ordersControllerProvider);
+    return true;
   }
 
-  Future<void> uploadProof({
+  Future<bool> uploadProof({
     required String filePath,
     required String fileName,
   }) async {
-    final current = state.value;
-    if (current == null) return;
-    state = await AsyncValue.guard(() async {
-      await ref.read(ordersRepositoryProvider).submitPaymentProof(
+    if (state.value == null) return false;
+    final result = await AsyncValue.guard(() async {
+      await ref
+          .read(ordersRepositoryProvider)
+          .submitPaymentProof(
             orderId: orderId,
             filePath: filePath,
             fileName: fileName,
           );
       ref.invalidateSelf();
-      return current;
     });
+    if (result.hasError) {
+      ref
+          .read(orderActionErrorProvider(orderId).notifier)
+          .show(userMessageFor(result.error!));
+      return false;
+    }
+    return true;
   }
+}
+
+/// Transient action failure for one order detail screen. Kept separate from
+/// the order AsyncValue so a failed cancel/upload never wipes the order.
+@riverpod
+class OrderActionError extends _$OrderActionError {
+  @override
+  String? build(String orderId) => null;
+
+  void show(String message) => state = message;
+
+  void clear() => state = null;
 }
