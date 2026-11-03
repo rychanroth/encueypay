@@ -116,9 +116,9 @@ resuming it. If a handoff contradicts this file, this file wins.
 - **Checkout:** no active handoff. The flat one-page checkout, server-priced cart lines,
   and QR order lifecycle landed in `e649771`; `docs/DESIGN.md` still describes the
   retired multi-step wizard — the contract and current code win.
-- **Promotions:** `docs/HANDOFF-PROMOTIONS.md` — migrations applied remotely
-  (2026-11-03); awaiting §6 verification, a sale-with-banner re-test, and recreation of
-  the old fixed-value coupons.
+- **Promotions:** `docs/HANDOFF-PROMOTIONS.md` — migrations applied remotely and the
+  old fixed-value coupons corrected (2026-11-03); awaiting §6 verification and a
+  sale-with-banner re-test.
 - **Variants:** `docs/HANDOFF-VARIANTS.md` — explicit DB variant, implicit UI
   placeholder; migration `20261102000007` applied; awaiting hosted verification.
 - **UX/visual:** `docs/HANDOFF-UX-VISUAL.md` — implementation and motion pass complete;
