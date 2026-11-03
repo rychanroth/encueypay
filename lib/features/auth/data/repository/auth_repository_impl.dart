@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -91,9 +93,25 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> signInWithGoogle() async {
     try {
-      await _client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: _oauthRedirect,
+      final launched = await _client.auth
+          .signInWithOAuth(
+            OAuthProvider.google,
+            redirectTo: _oauthRedirect,
+          )
+          .timeout(const Duration(seconds: 20));
+      if (!launched) {
+        // The SDK returns false when the platform could not open the
+        // browser. Without this the button silently no-ops.
+        throw const NetworkFailure(
+          'Could not open Google sign-in. Check that a browser is available '
+          'and try again.',
+        );
+      }
+    } on Failure {
+      rethrow;
+    } on TimeoutException {
+      throw const NetworkFailure(
+        'Google sign-in took too long. Please try again.',
       );
     } catch (error, stackTrace) {
       throw _mapError(error, stackTrace);
@@ -112,5 +130,5 @@ class AuthRepositoryImpl implements IAuthRepository {
   /// Fixed boundary mapping (DATA-05), centralized in the shared mapper —
   /// auth rejections are server responses and classify as ServerFailure.
   Failure _mapError(Object error, [StackTrace? stackTrace]) =>
-      mapRepositoryError(error, stackTrace);
+      error is Failure ? error : mapRepositoryError(error, stackTrace);
 }
