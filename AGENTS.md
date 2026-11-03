@@ -116,18 +116,18 @@ resuming it. If a handoff contradicts this file, this file wins.
 - **Checkout:** no active handoff. The flat one-page checkout, server-priced cart lines,
   and QR order lifecycle landed in `e649771`; `docs/DESIGN.md` still describes the
   retired multi-step wizard — the contract and current code win.
-- **Promotions:** `docs/HANDOFF-PROMOTIONS.md` — sales + standalone codes; awaiting
-  `supabase db push`, §6 verification, and a re-test of sale creation with a banner
-  after the null-description fix.
+- **Promotions:** `docs/HANDOFF-PROMOTIONS.md` — migrations applied remotely
+  (2026-11-03); awaiting §6 verification, a sale-with-banner re-test, and recreation of
+  the old fixed-value coupons.
 - **Variants:** `docs/HANDOFF-VARIANTS.md` — explicit DB variant, implicit UI
-  placeholder; awaiting `supabase db push` (`20261102000007`) and hosted verification.
-- **UX/visual:** `docs/HANDOFF-UX-VISUAL.md` — design brief + motion language;
-  pending decisions on reverting the nav rail and restoring the product-detail
-  trust composition.
-- **Commit cleanup:** `docs/HANDOFF-COMMIT-CLEANUP.md` — uncommitted combined
-  state from the previous/active agents; active agent commits the checkpoint.
-- **KHQR:** `docs/HANDOFF-KHQR.md` — awaiting hosted function deploy, PayWay callback
-  URL/whitelist, and one real end-to-end payment (§4).
+  placeholder; migration `20261102000007` applied; awaiting hosted verification.
+- **UX/visual:** `docs/HANDOFF-UX-VISUAL.md` — implementation and motion pass complete;
+  only device visual QA remains (compact/expanded, light/dark, large text).
+- **Push/FCM:** code complete, migration `20261102000009` applied, `push-dispatch`
+  deployed. Awaiting `FCM_SERVICE_ACCOUNT`, the `notifications` INSERT webhook with a
+  secret key, and a physical-device test (`docs/PROTOTYPE_SETUP.md` Phase 7 / A.6).
+- **KHQR:** `docs/HANDOFF-KHQR.md` — working end-to-end (hosted functions + PayWay
+  callback live, 2026-11-03); production credentials remain a launch checklist item.
 - `FEATURE_VERIFICATION_MATRIX.md` is a 2026-10-07 audit and is stale; trust the contract
   and current code over it.
 

@@ -7,9 +7,9 @@
 
 ## 0. State right now — 2026-11-02
 
-- **Code**: committed through `640728d`. Promotions fixes landed in
-  `e649771`; the address/QR work in later commits is unrelated. The
-  promotions slice includes:
+- **Code**: committed through `410a7ba` (combined UX/variants/promotions/
+  push checkpoint). Promotions fixes landed in `e649771`; the address/QR
+  work in later commits is unrelated. The promotions slice includes:
   - The promotions DTOs (`SaleDto`, `CouponDto`, `BannerDto`, brand/category
     refs) no longer cast nullable wire values to non-null `String`; text
     fields default to `''`, `image_path` is nullable and a missing banner
@@ -40,24 +40,13 @@
   and `WWWEEE` (`fixed`, value `50`). Those fixed rows are still the old
   wrong units (`$0.02`/`$0.12`/`$0.50`); recreate them through the fixed
   admin form. The percent coupon is fine.
-- **Pending user action**: run `supabase migration list` and apply the
-  remaining migrations before testing. The list below may already be
-  partially applied remotely: `20261028000003` (variant flow),
-  `20261028000004` (the OLD campaign model — immediately superseded),
-  `20261029000001` (drop stale RPC overloads), `20261029000002` (category
-  scope enum value), `20261029000003` (sales + standalone codes),
-  `20261102000001` (structured coupon validation + rejected preview rows),
-  `20261102000002` (cart_item_details view), `20261102000003`
-  (unpaid-QR expiry), `20261102000005` (admin coupon delete),
-  `20261102000006` (delete RPC as SECURITY DEFINER so the order_coupons
-  check can see FK rows). The sales/coupons schema is present remotely; do not
-  assume the newer function/view migrations are. The push **truncates**
-  `sales`, `coupons`, `banners`, `order_coupons` — the admin recreates
-  live sales through the new UI, which doubles as its first test. Past
-  orders keep their aggregate `discount_minor`; only per-code breakdown
-  rows go.
-- The app and DB ship together (the `promotions`→`sales` rename breaks the
-  old queries): push, then hot-restart.
+- **Remote migrations applied (2026-11-03):** `20261028000003`,
+  `20261028000004`, `20261029000001`, `20261029000002`, `20261029000003`,
+  `20261102000001`–`20261102000009` are on the hosted project. Remaining
+  work is runtime verification (§6), a sale-with-banner re-test, and
+  recreating the old fixed-value coupons in the corrected dollar units.
+  The app and DB ship together (the `promotions`→`sales` rename breaks old
+  queries), so hot-restart after any further backend change.
 
 ## 1. The model (three independent concepts)
 

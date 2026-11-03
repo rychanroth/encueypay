@@ -48,10 +48,8 @@ pricing. Decision 2026-11-02: **explicit in the DB, implicit in the UI.**
 
 ## Remaining steps
 
-1. `supabase db push` (migration `20261102000007`) together with the app
-   build. Older builds still send the null-price `Default` row in the
-   variant payload; the new RPC rejects that with “Variant price is
-   required”, so don't leave the old client pointed at the new function.
+1. ~~`supabase db push` (migration `20261102000007`).~~ Applied remotely
+   (2026-11-03) together with the current app build.
 2. Verify on the hosted project:
    - Dyson: customer no longer sees a `Default` option; from/default becomes
      the cheapest real variant (45000), not the old base 40000.

@@ -105,19 +105,12 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
 
 ## 4. Remaining steps (in order)
 
-1. **Hosted deploy** (`REMOTE_SETUP.md` Phase 6):
-   `supabase functions deploy payway-create payway-webhook` +
-   `supabase secrets set PAYWAY_BASE_URL=… PAYWAY_MERCHANT_ID=… PAYWAY_API_KEY=…`.
-   This is what makes PayWay's own HTTP callback reachable (the sandbox
-   baked callback_url currently points at the local stack's address).
-2. In the ABA PayWay portal: set the callback URL to
-   `https://<ref>.supabase.co/functions/v1/payway-webhook` and have PayWay
-   whitelist the domain (errors 6/81 mean it isn't whitelisted yet).
-3. **Real end-to-end**: place a small order in the app (pointed at the
-   hosted project) → scan the KHQR with a banking app → pay → the screen
-   must flip to "Payment received" via PayWay's webhook. If the sandbox
-   profile lacks the QR API service (error 23), pivot `payway-create` to
-   Purchase `abapay_khqr_deeplink` (same file, documented response).
+1. ~~**Hosted deploy** (`REMOTE_SETUP.md` Phase 6)~~ Done: `payway-create`
+   and `payway-webhook` are active, with the hosted PayWay secrets set.
+2. ~~**PayWay callback URL + domain whitelist**~~ Done: hosted callbacks
+   reach `payway-webhook`.
+3. ~~**Real end-to-end**~~ Verified working (2026-11-03): a live QR order
+   flips to "Payment received" via PayWay's webhook.
 4. Production checklist: production `PAYWAY_BASE_URL` + credentials,
    one real low-value transaction, then normal launch.
 

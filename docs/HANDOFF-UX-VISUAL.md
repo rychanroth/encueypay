@@ -160,13 +160,9 @@ These slices are implemented but **not committed**:
   verified (and QR errors) with an animated height; the quick-action sheet
   has a drag handle; timeline stages carry semantics.
 
-Pending DB migrations from earlier slices (run together with the app):
-`20261102000005_admin_delete_coupon.sql`,
-`20261102000006_admin_delete_coupon_security.sql`,
-`20261102000007_variant_placeholder_harmonization.sql`,
-`20261102000008_avatar_storage.sql`,
-`20261102000009_notification_order_link.sql`.
-See `docs/HANDOFF-PROMOTIONS.md` and `docs/HANDOFF-VARIANTS.md`.
+Migrations `20261102000005`–`20261102000009` are applied remotely
+(2026-11-03). See `docs/HANDOFF-PROMOTIONS.md` and `docs/HANDOFF-VARIANTS.md`
+for the remaining data/verification steps.
 
 ## 6. Recommended next session
 
