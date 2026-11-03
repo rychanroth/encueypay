@@ -149,16 +149,23 @@ These slices are implemented but **not committed**:
   single-seller identity) plus real stock; the fake warranty/returns/ETA/
   sold claims stay removed and the description now renders only when
   present.
-- **Motion started 2026-11-02:** shared `AppMotion` tokens; `AsyncValueWidget`
+- **Motion landed 2026-11-02/03:** shared `AppMotion` tokens; `AsyncValueWidget`
   cross-fades loading/error/data; Home + Discovery grids use one staggered
   entrance controller and a shape-matching skeleton; variant price/CTA
   cross-fade, thumbnail border animates, add-to-cart has a pending state,
   and the cart badge pops after server success. Reduced motion is honored.
+  Cart lines now collapse/fade only after the server-confirmed refetch
+  (`AnimatedList`); cart quantities/totals cross-fade; the checkout CTA and
+  total cross-fade; the order-placed screen cross-fades QR-pending →
+  verified (and QR errors) with an animated height; the quick-action sheet
+  has a drag handle; timeline stages carry semantics.
 
 Pending DB migrations from earlier slices (run together with the app):
 `20261102000005_admin_delete_coupon.sql`,
 `20261102000006_admin_delete_coupon_security.sql`,
-`20261102000007_variant_placeholder_harmonization.sql`.
+`20261102000007_variant_placeholder_harmonization.sql`,
+`20261102000008_avatar_storage.sql`,
+`20261102000009_notification_order_link.sql`.
 See `docs/HANDOFF-PROMOTIONS.md` and `docs/HANDOFF-VARIANTS.md`.
 
 ## 6. Recommended next session
@@ -170,10 +177,12 @@ Do **not** continue with more audit cleanup. Start with design.
    module; fix hierarchy and spacing.~~ Done (catalog reads
    `platform_settings.delivery_fee_minor` directly — approved ARCH-04-safe
    data read; verify against the hosted DB).
-3. **Motion pass**: grid entrance, skeleton cross-fade, variant selection,
-   add-to-cart/badge, and bottom-sheet enter are implemented. Remaining:
-   cart-line removal animation and a visual pass on timings.
-4. **Cart/checkout confirmation motion** and success states — not started.
+3. ~~**Motion pass**: grid entrance, skeleton cross-fade, variant selection,
+   add-to-cart/badge, bottom-sheet enter, cart-line removal, and timing
+   polish.~~ Done.
+4. ~~**Cart/checkout confirmation motion** and success states.~~ Done
+   (checkout CTA/total cross-fade; order-placed state cross-fade + animated
+   height).
 5. **Device visual QA**: screenshots on compact + expanded, light/dark,
    large text; adjust — not started (no device run in this session).
 

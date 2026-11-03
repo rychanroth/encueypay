@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
@@ -155,6 +156,31 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Cross-fades the payment state (QR pending → verified, or QR creation
+  /// failure) and animates the card height. Reduced motion collapses both
+  /// durations to zero.
+  Widget _animatedBody(BuildContext context, String state, Widget child) {
+    return AnimatedSize(
+      duration: AppMotion.duration(context, AppMotion.enter),
+      curve: AppMotion.layoutCurve,
+      child: AnimatedSwitcher(
+        duration: AppMotion.duration(context, AppMotion.enter),
+        switchInCurve: AppMotion.enterCurve,
+        switchOutCurve: AppMotion.exitCurve,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween(begin: 0.97, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: AppMotion.enterCurve),
+            ),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(key: ValueKey(state), child: child),
+      ),
+    );
+  }
+
   /// Compact order summary + entry into the full order details — the
   /// success screen stays clean; items, delivery and live tracking live in
   /// the Order Detail screen.
@@ -229,7 +255,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                 // Verified is the ONLY paid state — celebrate here.
                 if (payment.isVerified) {
                   final money = Money(payment.amountMinor);
-                  return Column(
+                  return _animatedBody(context, 'verified', Column(
                     children: [
                       const Icon(Icons.check_circle_outline,
                           size: 72, color: AppColors.accentEmerald),
@@ -270,12 +296,12 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                       const SizedBox(height: AppSpacing.md),
                       _orderSummary(context, theme),
                     ],
-                  );
+                  ));
                 }
                 if (payment.method != 'qr') {
                   // COD: order placed, nothing to pay now — awaiting the
                   // store's confirmation, not a payment.
-                  return Column(
+                  return _animatedBody(context, 'cod', Column(
                     children: [
                       const Icon(Icons.check_circle_outline,
                           size: 72, color: AppColors.accentEmerald),
@@ -293,14 +319,19 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                       const SizedBox(height: AppSpacing.md),
                       _orderSummary(context, theme),
                     ],
-                  );
+                  ));
                 }
                 // Pending QR. Creation is one-shot; a failure is surfaced
                 // instead of spinning forever.
                 final payload = payment.qrPayload;
                 final money = Money(payment.amountMinor);
                 final creationError = _creationError;
-                return Column(
+                final qrState = payload == null
+                    ? 'qr-waiting'
+                    : creationError == null
+                        ? 'qr-ready'
+                        : 'qr-error';
+                return _animatedBody(context, qrState, Column(
                   children: [
                     // NOT a success state: the order exists, the payment
                     // does not yet.
@@ -404,7 +435,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                       ),
                     ],
                   ],
-                );
+                ));
               },
             ),
             const SizedBox(height: 24),

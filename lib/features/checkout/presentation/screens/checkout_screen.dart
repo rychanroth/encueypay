@@ -5,6 +5,7 @@ import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/coupon_preview.dart';
@@ -566,10 +567,16 @@ class _PlaceOrderBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Total', style: theme.textTheme.labelSmall),
-                  Text(
-                    money.formatUsd(),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  AnimatedSwitcher(
+                    duration: AppMotion.duration(context, AppMotion.press),
+                    switchInCurve: AppMotion.enterCurve,
+                    switchOutCurve: AppMotion.exitCurve,
+                    child: Text(
+                      money.formatUsd(),
+                      key: ValueKey(totalMinor),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   if (needsAddress)
@@ -587,13 +594,19 @@ class _PlaceOrderBar extends StatelessWidget {
               onPressed: needsAddress || emptyCart || placing
                   ? null
                   : onPressed,
-              child: placing
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Place order'),
+              child: AnimatedSwitcher(
+                duration: AppMotion.duration(context, AppMotion.press),
+                switchInCurve: AppMotion.enterCurve,
+                switchOutCurve: AppMotion.exitCurve,
+                child: placing
+                    ? const SizedBox(
+                        key: ValueKey('placing'),
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Place order', key: ValueKey('idle')),
+              ),
             ),
           ],
         ),

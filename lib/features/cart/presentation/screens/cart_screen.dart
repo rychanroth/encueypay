@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
@@ -112,17 +113,10 @@ class CartScreen extends ConsumerWidget {
 
           return Stack(
             children: [
-              ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  148, // clearance above the floating dock (§1.5/§6.5)
-                ),
-                children: [
-                  for (final item in items) _CartItemTile(item: item),
-                ],
-              ),
+              // AnimatedList removes rows only after the server-confirmed
+              // refetch drops them, so the exit motion never fakes state
+              // (PRES-03). The dock stays outside the list.
+              _AnimatedCartList(items: items),
               // Floating Action Dock (§6.5): blurred glass, E2 shadow, docked
               // above the navigation bar with safe-area respect.
               Positioned(
@@ -177,10 +171,16 @@ class _FloatingCheckoutDock extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Total payable', style: theme.textTheme.labelSmall),
-                    Text(
-                      money.formatUsd(),
-                      style: AppTypography.priceHighlight.copyWith(
-                        color: theme.colorScheme.primary,
+                    AnimatedSwitcher(
+                      duration: AppMotion.duration(context, AppMotion.press),
+                      switchInCurve: AppMotion.enterCurve,
+                      switchOutCurve: AppMotion.exitCurve,
+                      child: Text(
+                        money.formatUsd(),
+                        key: ValueKey(payableMinor),
+                        style: AppTypography.priceHighlight.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                     Text(
@@ -341,10 +341,26 @@ class _CartItemTile extends ConsumerWidget {
                           ),
                           SizedBox(
                             width: 28,
-                            child: Text(
-                              '${item.quantity}',
-                              textAlign: TextAlign.center,
-                              style: AppTypography.labelMedium,
+                            child: AnimatedSwitcher(
+                              duration:
+                                  AppMotion.duration(context, AppMotion.press),
+                              switchInCurve: AppMotion.enterCurve,
+                              switchOutCurve: AppMotion.exitCurve,
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: Tween(begin: 0.9, end: 1.0)
+                                      .animate(animation),
+                                  child: child,
+                                ),
+                              ),
+                              child: Text(
+                                '${item.quantity}',
+                                key: ValueKey(item.quantity),
+                                textAlign: TextAlign.center,
+                                style: AppTypography.labelMedium,
+                              ),
                             ),
                           ),
                           _StepButton(
@@ -376,6 +392,110 @@ class _CartItemTile extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Server-confirmed cart list. The controller refetches after a mutation;
+/// this widget diffs the new list and lets AnimatedList collapse/fade a
+/// removed row instead of yanking the list upward.
+class _AnimatedCartList extends StatefulWidget {
+  const _AnimatedCartList({required this.items});
+
+  final List<CartItem> items;
+
+  @override
+  State<_AnimatedCartList> createState() => _AnimatedCartListState();
+}
+
+class _AnimatedCartListState extends State<_AnimatedCartList> {
+  final _listKey = GlobalKey<AnimatedListState>();
+  late final List<CartItem> _items = List.of(widget.items);
+  bool _reduceMotion = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = AppMotion.reduced(context);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AnimatedCartList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = widget.items;
+    final nextIds = {for (final item in next) item.id};
+    final duration = _reduceMotion ? Duration.zero : AppMotion.enter;
+
+    // Removals: walk backwards so the index stays valid while collapsing.
+    for (var i = _items.length - 1; i >= 0; i--) {
+      final item = _items[i];
+      if (nextIds.contains(item.id)) continue;
+      _items.removeAt(i);
+      _listKey.currentState?.removeItem(
+        i,
+        (context, animation) => _RemovedCartTile(
+          item: item,
+          animation: animation,
+        ),
+        duration: duration,
+      );
+    }
+
+    // Additions + in-place updates (quantity/price refetch).
+    for (var i = 0; i < next.length; i++) {
+      final item = next[i];
+      final existing = _items.indexWhere((entry) => entry.id == item.id);
+      if (existing == -1) {
+        _items.insert(i, item);
+        _listKey.currentState?.insertItem(i, duration: duration);
+      } else {
+        _items[existing] = item;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedList(
+      key: _listKey,
+      initialItemCount: _items.length,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        148, // clearance above the floating dock (§1.5/§6.5)
+      ),
+      itemBuilder: (context, index, animation) {
+        return SizeTransition(
+          sizeFactor: animation,
+          alignment: Alignment.topCenter,
+          child: FadeTransition(
+            opacity: animation,
+            child: _CartItemTile(item: _items[index]),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// The row being removed — sized/faded by the AnimatedList animation. It is
+/// non-interactive while it collapses.
+class _RemovedCartTile extends StatelessWidget {
+  const _RemovedCartTile({required this.item, required this.animation});
+
+  final CartItem item;
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(
+      sizeFactor: animation,
+      alignment: Alignment.topCenter,
+      child: FadeTransition(
+        opacity: animation,
+        child: IgnorePointer(child: _CartItemTile(item: item)),
       ),
     );
   }

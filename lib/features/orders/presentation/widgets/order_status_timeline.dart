@@ -154,10 +154,20 @@ class _StageRow extends StatelessWidget {
       _StageState.upcoming => theme.colorScheme.onSurfaceVariant,
     };
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+    final stateLabel = switch (state) {
+      _StageState.done => 'completed',
+      _StageState.current => 'current',
+      _StageState.upcoming => 'upcoming',
+    };
+
+    return Semantics(
+      container: true,
+      label: '$label, $stateLabel',
+      child: ExcludeSemantics(
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
           // --- Track + node column -------------------------------------------
           SizedBox(
             width: _nodeSize + 8,
@@ -246,6 +256,8 @@ class _StageRow extends StatelessWidget {
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }

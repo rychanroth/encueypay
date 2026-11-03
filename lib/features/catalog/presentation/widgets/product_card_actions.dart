@@ -31,6 +31,7 @@ class ProductCardActions {
   Future<void> showSheet(BuildContext context, Product product) {
     return showModalBottomSheet<void>(
       context: context,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.r24)),
       ),
