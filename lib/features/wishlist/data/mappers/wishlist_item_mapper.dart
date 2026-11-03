@@ -7,17 +7,12 @@ extension WishlistItemDtoX on WishlistItemDto {
   WishlistItem toDomain({String? imageUrl}) {
     final product = products;
     final basePriceMinor = product?.basePriceMinor ?? 0;
-    final active = (product?.productVariants ?? const [])
+    // Active variants only; a business-authored "Default" is just an option.
+    final variants = (product?.productVariants ?? const [])
         .where(
           (variant) => variant.status == null || variant.status == 'active',
         )
         .toList();
-    final priced = active
-        .where((variant) => variant.priceMinor != null)
-        .toList();
-    // Same rule as the catalog: priced variants win; the null-price
-    // placeholder is only the single-price product's sole row.
-    final variants = priced.isNotEmpty ? priced : active;
     return WishlistItem(
       id: id,
       productId: productId,
@@ -25,12 +20,7 @@ extension WishlistItemDtoX on WishlistItemDto {
       priceMinor: basePriceMinor,
       fromPriceMinor: variants.isEmpty
           ? basePriceMinor
-          // Same cheapest-selectable rule as the catalog cards — the
-          // wishlist must never quote a price the product can't be bought
-          // at (the base price is only the null-price variant fallback).
-          : variants
-                .map((variant) => variant.priceMinor ?? basePriceMinor)
-                .reduce(min),
+          : variants.map((variant) => variant.priceMinor).reduce(min),
       stock: product?.stock ?? 0,
       status: product?.status,
       defaultVariantId: _defaultVariantId(variants, basePriceMinor),
@@ -54,8 +44,8 @@ extension WishlistItemDtoX on WishlistItemDto {
         best = variant;
         continue;
       }
-      final price = variant.priceMinor ?? basePriceMinor;
-      final bestPrice = best.priceMinor ?? basePriceMinor;
+      final price = variant.priceMinor;
+      final bestPrice = best.priceMinor;
       final cheaper = price < bestPrice;
       final tie =
           price == bestPrice && (variant.id ?? '').compareTo(best.id ?? '') < 0;

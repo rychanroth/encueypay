@@ -122,15 +122,12 @@ abstract class AdminProductDraft with _$AdminProductDraft {
     String? brandId,
     required String name,
     @Default('') String description,
-    required int basePriceMinor,
     @Default(0) int stock,
 
-    /// Desired real variant list. Empty = single-price mode (the server
-    /// keeps/creates one null-price placeholder). Non-empty = option
-    /// pricing: rows with an [AdminProductVariantDraft.id] update in place,
-    /// id-less rows are inserted, missing active variants (and the
-    /// placeholder) are archived server-side, and the base price is derived
-    /// from the cheapest row.
+    /// Every product needs at least one explicit variant. Rows with an
+    /// [AdminProductVariantDraft.id] update in place, id-less rows are
+    /// inserted, and missing active variants are archived server-side. The
+    /// server derives `products.base_price_minor` from the cheapest row.
     @Default([]) List<AdminProductVariantDraft> variants,
   }) = _AdminProductDraft;
 }

@@ -1,68 +1,73 @@
-# Handoff — product variants & the single-price placeholder
+# Handoff — explicit product variants
 
 Read before touching `product_variants`, the admin product form, or catalog
-pricing. Decision 2026-11-02: **explicit in the DB, implicit in the UI.**
+pricing. Decision 2026-11-03: **explicit variants only — no silent Default
+logic.**
 
 ## Model
 
-- Every product keeps at least one **active variant** so cart/order lines
-  (`product_variant_id NOT NULL`) always resolve.
-- A null-price variant is the **single-price placeholder**, not a selectable
-  option. It tracks `products.base_price_minor`.
-- **Single-price product** = exactly one active null-price placeholder.
-  Admin sees only an editable Price; customer sees no variant picker.
-- **Option-pricing product** = active set contains priced variants. The
-  placeholder is hidden from admin and customer, and the base/from price is
-  the cheapest priced variant.
-- Archived variants stay in the table forever (order history references).
+- Every product has at least **one explicit variant**. A variant has a name
+  and a real price (`price_minor NOT NULL`).
+- A variant named `Default` is just a normal, business-authored row. The app
+  never creates, hides, or archives it implicitly; the business can name one
+  `Default` if it wants.
+- Archived variants stay in the table forever for order history; the client
+  never shows them.
+- `products.base_price_minor` is a **server-derived cache** of
+  `min(active variant price)`. It exists only for server-side price sorting
+  and admin analytics. It is never an admin input and never a pricing
+  fallback.
+- Cart/checkout/order pricing uses `product_variants.price_minor` directly.
 
-## Server (`20261102000007_variant_placeholder_harmonization.sql`)
+## Server (`20261103000001_explicit_variants.sql`)
 
-- Backfills `Default` only for products with **zero active variants** — never
-  onto products that already have real variants.
-- Archives duplicate active placeholders, then enforces one with a partial
-  unique index (`product_id WHERE status='active' AND price_minor IS NULL`).
-- `admin_update_product`:
-  - `p_variants = '[]'` → single-price mode: keep/create one placeholder,
-    archive every active priced variant.
-  - non-empty → every row requires name + price; sync in place; archive rows
-    and the placeholder that are absent; derive `base_price_minor` from the
-    cheapest payload price.
-  - `p_variants = NULL` → untouched (back-compat).
-- `seed.sql` now inserts `Default` only after the priced seed variants, and
-  only for products still without an active variant.
+- Backfills legacy null prices from `products.base_price_minor`, then makes
+  `price_minor NOT NULL`.
+- Drops the null-price placeholder index.
+- `admin_create_product`: requires a non-empty variant list; inserts every
+  authored variant; derives the cached base from the cheapest row; no
+  implicit Default.
+- `admin_update_product`: a supplied variant list must be non-empty; syncs
+  rows in place, inserts new rows, archives active rows absent from the
+  payload, and recomputes the cached base. No placeholder creation/archiving.
+  `p_variants = NULL` leaves variants and the cache untouched.
+- `cart_item_details`, `validate_coupon`, `preview_order_totals`, and
+  `create_order_from_cart` no longer coalesce variant price with the base.
+- The admin RPC signatures no longer take `p_base_price_minor`.
 
 ## Client
 
-- `ProductDtoX` filters archived variants and drops the placeholder when any
-  priced variant exists; `fromPriceMinor`/`defaultVariantId` come from that
-  visible set. Default = cheapest, id tie-break.
-- Catalog list select includes `product_variants.status`; detail returns the
-  same visible set; wishlist mirrors the rule in its own mapper
-  (`ARCH-04` — no cross-feature import).
-- Admin repository exposes only active priced variants (and derives the list
-  base price); `variantCount == 0` renders “Single price”.
-- Admin form hides the placeholder. No active rows = single-price (editable
-  Price). Rows = option pricing (base hidden/derived). Archiving the last
-  variant asks to confirm the switch back to single price.
+- Admin form: no separate Price field and no single-price mode. A new
+  product starts with one blank variant row; saving requires at least one
+  complete variant. Existing active rows (including an explicit `Default`)
+  are shown and editable.
+- Admin repository/draft: no base-price input; summaries derive the from
+  price from the cheapest active variant.
+- Catalog/wishlist: active variants only; `fromPriceMinor` is the cheapest
+  active price; `defaultVariantId` is the cheapest active variant.
+- `ProductVariant.priceMinor` is non-null; the old placeholder filtering and
+  base fallbacks are gone.
 
-## Remaining steps
+## State (2026-11-03)
 
-1. ~~`supabase db push` (migration `20261102000007`).~~ Applied remotely
-   (2026-11-03) together with the current app build.
-2. Verify on the hosted project:
-   - Dyson: customer no longer sees a `Default` option; from/default becomes
-     the cheapest real variant (45000), not the old base 40000.
-   - Editing Dyson hides `Default`; saving archives it.
-   - A single-price product shows Price only; adding a variant switches the
-     form; archiving the last variant warns and converts back.
-   - New product with no variants, and existing products with only a named
-     real variant (Nike/Croptop/ghffy) render/form correctly.
-3. Carts holding an archived/retired variant are rejected at checkout — this
-   is the existing archived-variant rule, not a new failure path.
+- Local **and hosted** databases were reset to replay all migrations + seed.
+- Hosted has 8 seed products, 10 explicit variants, zero null prices, and
+  zero products without an active variant; every cached base equals its
+  cheapest active variant.
+- Hosted auth users were wiped by the reset. The demo admin was recreated:
+  `admin@demo.local` / `Admin123!` (change the password).
+- Coupons, sales, banners, orders, and carts were wiped; re-author them in
+  the admin UI.
+- Platform settings were re-applied (`delivery_fee_minor = 250`,
+  `payment_account = demo-payment-desk`).
+
+## Remaining
+
+1. Device/UI smoke: admin create/edit with one variant, adding a second,
+   archiving it, and confirming the `Default` row stays manageable.
+2. Recreate sales/coupons/banners and run the promotions verification pass.
 
 ## Tests
 
-`test/product_variant_visibility_test.dart` pins placeholder-only,
-placeholder+real, archived exclusion, real-only, tie-break, and the wishlist
-mirror. `flutter analyze` + `flutter test` pass.
+`test/product_variant_visibility_test.dart` now pins active-only visibility,
+cheapest selection, archived exclusion, tie-break, and the wishlist mirror.

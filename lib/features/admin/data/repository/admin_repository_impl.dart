@@ -350,13 +350,12 @@ class AdminRepositoryImpl implements IAdminRepository {
   @override
   Future<String> createProduct(AdminProductDraft draft) async {
     try {
-      // Empty p_variants → the server auto-creates a 'Default' variant with
-      // a null price, which keeps tracking the base price.
+      // Variants are authored explicitly; the server derives the cached
+      // base price from the cheapest row.
       final productId = await _client.rpc('admin_create_product', params: {
         'p_category_id': draft.categoryId,
         'p_name': draft.name,
         'p_description': draft.description,
-        'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
         'p_stock': draft.stock,
         'p_variants': [
@@ -386,7 +385,6 @@ class AdminRepositoryImpl implements IAdminRepository {
         'p_category_id': draft.categoryId,
         'p_name': draft.name,
         'p_description': draft.description,
-        'p_base_price_minor': draft.basePriceMinor,
         'p_brand_id': draft.brandId,
         'p_stock': draft.stock,
         // Full-list sync: id-less rows insert, id rows update in place,

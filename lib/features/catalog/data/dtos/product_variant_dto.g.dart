@@ -11,7 +11,7 @@ ProductVariantDto _$ProductVariantDtoFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       productId: json['product_id'] as String,
       name: json['name'] as String,
-      priceMinor: (json['price_minor'] as num?)?.toInt(),
+      priceMinor: (json['price_minor'] as num).toInt(),
       imagePath: json['image_path'] as String?,
       status: json['status'] as String?,
     );
@@ -30,7 +30,7 @@ ProductVariantPriceDto _$ProductVariantPriceDtoFromJson(
   Map<String, dynamic> json,
 ) => ProductVariantPriceDto(
   id: json['id'] as String?,
-  priceMinor: (json['price_minor'] as num?)?.toInt(),
+  priceMinor: (json['price_minor'] as num).toInt(),
   status: json['status'] as String?,
 );
 

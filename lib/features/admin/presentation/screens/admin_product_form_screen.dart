@@ -18,14 +18,12 @@ import '../widgets/searchable_picker_field.dart';
 /// lives in this StatefulWidget; mutations go through
 /// [AdminProductsController] (AsyncValue.guard + invalidate, PRES-03).
 ///
-/// Two modes share one form. A product with no variants is **single-price**:
-/// the editable base price is what customers pay, and the server keeps one
-/// null-price 'Default' placeholder for cart/order references. Adding
-/// variants switches to **option pricing**: only real priced variants are
-/// authored (name + price + image), the base price is derived from the
-/// cheapest one, and the placeholder is retired on save. Editing syncs the
+/// Variants are authored explicitly — there is no implicit "Default". Every
+/// product needs at least one named, priced variant; a business that wants a
+/// Default option creates and manages that row itself. Editing syncs the
 /// full list: id rows update in place, new rows insert, and removed rows
 /// archive server-side (never delete — historical orders reference them).
+/// The server derives the cached from-price from the cheapest active row.
 class AdminProductFormScreen extends ConsumerStatefulWidget {
   const AdminProductFormScreen({super.key, this.product});
 
@@ -44,11 +42,6 @@ class _AdminProductFormScreenState
       TextEditingController(text: widget.product?.name ?? '');
   late final _descriptionController =
       TextEditingController(text: widget.product?.description ?? '');
-  late final _priceController = TextEditingController(
-    text: widget.product == null
-        ? ''
-        : Money(widget.product!.basePriceMinor).format(),
-  );
   late final _stockController = TextEditingController(
     text: widget.product == null ? '0' : '${widget.product!.stock}',
   );
@@ -67,19 +60,16 @@ class _AdminProductFormScreenState
   final List<AdminProductImageRef> _removedImages = <AdminProductImageRef>[];
   bool _saving = false;
   final _nameFocus = FocusNode();
-  final _priceFocus = FocusNode();
   final _stockFocus = FocusNode();
   String? _nameError;
-  String? _priceError;
   String? _stockError;
   String? _categoryError;
   String? _variantError;
 
-  /// Desired real variant rows. Seeded from the product's active priced
-  /// variants in edit mode (carrying their existing image paths for the
-  /// preview and the save); the null-price single-price placeholder is not
-  /// seeded. Rows without an id insert server-side, id rows update in
-  /// place.
+  /// Desired variant rows. Seeded from the product's active variants in edit
+  /// mode (carrying their existing image paths for the preview and the save);
+  /// a new product starts with one blank row. Rows without an id insert
+  /// server-side, id rows update in place.
   late final List<_VariantRow> _variantRows = <_VariantRow>[
     for (final variant
         in widget.product?.variants ?? const <AdminProductVariantRef>[])
@@ -95,19 +85,6 @@ class _AdminProductFormScreenState
 
   void _addVariantRow() => setState(() => _variantRows.add(_VariantRow()));
 
-  /// True when the draft is in multi-variant mode. A blank new row does not
-  /// count until the admin starts authoring it, so the single-price field
-  /// stays available while the row is untouched.
-  bool get _hasActiveVariantRows => _variantRows.any(
-        (row) =>
-            !row.archived &&
-            (row.id != null ||
-                row.name.text.trim().isNotEmpty ||
-                row.price.text.trim().isNotEmpty ||
-                row.localPath != null ||
-                row.imagePath != null),
-      );
-
   void _removeVariantRow(_VariantRow row) {
     setState(() {
       _variantRows.remove(row);
@@ -116,13 +93,19 @@ class _AdminProductFormScreenState
   }
 
   @override
+  void initState() {
+    super.initState();
+    // A blank row is a UI affordance, not a database default — saving still
+    // requires the business to name and price at least one variant.
+    if (widget.product == null) _variantRows.add(_VariantRow());
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _priceController.dispose();
     _stockController.dispose();
     _nameFocus.dispose();
-    _priceFocus.dispose();
     _stockFocus.dispose();
     for (final row in _variantRows) {
       row.dispose();
@@ -161,7 +144,6 @@ class _AdminProductFormScreenState
     if (_saving) return;
     setState(() {
       _nameError = null;
-      _priceError = null;
       _stockError = null;
       _categoryError = null;
       _variantError = null;
@@ -194,12 +176,6 @@ class _AdminProductFormScreenState
         );
         return;
       }
-      if (isNew && !hasImage) {
-        setState(
-          () => _variantError = 'Variant "$variantName" needs an image',
-        );
-        return;
-      }
       variants.add(AdminProductVariantDraft(
         id: row.id,
         name: variantName,
@@ -208,14 +184,6 @@ class _AdminProductFormScreenState
         imageLocalPath: row.localPath,
       ));
     }
-    // Single-price mode: the editable base price is the price. Option mode:
-    // derive the base price from the cheapest variant; the server repeats
-    // this rule so a stale field cannot win.
-    final price = variants.isEmpty
-        ? _parseMoney(_priceController.text)
-        : variants
-            .map((variant) => variant.priceMinor!)
-            .reduce((a, b) => a < b ? a : b);
     var invalid = false;
     if (name.isEmpty) {
       _nameError = 'Enter a product name';
@@ -229,16 +197,14 @@ class _AdminProductFormScreenState
       _stockError = 'Enter a valid stock quantity';
       invalid = true;
     }
-    if (price == null) {
-      _priceError = 'Enter a valid price';
+    if (variants.isEmpty) {
+      _variantError = 'Add at least one variant';
       invalid = true;
     }
     if (invalid) {
       setState(() {});
       if (_nameError != null) {
         _nameFocus.requestFocus();
-      } else if (_priceError != null) {
-        _priceFocus.requestFocus();
       } else if (_stockError != null) {
         _stockFocus.requestFocus();
       }
@@ -253,7 +219,6 @@ class _AdminProductFormScreenState
       brandId: _brandId,
       name: name,
       description: _descriptionController.text.trim(),
-      basePriceMinor: price!,
       stock: stock!,
       variants: variants,
     );
@@ -341,30 +306,13 @@ class _AdminProductFormScreenState
             maxLines: 3,
           ),
           const SizedBox(height: 12),
-          if (_hasActiveVariantRows)
-            Text(
-              'Option pricing: the base price is derived from the cheapest '
-              'variant when you save.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            )
-          else
-            TextField(
-              controller: _priceController,
-              focusNode: _priceFocus,
-              decoration: InputDecoration(
-                labelText: 'Price',
-                helperText: 'Single-price product — customers pay this amount',
-                prefixText: '\$ ',
-                errorText: _priceError,
-              ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (_) {
-                if (_priceError != null) setState(() => _priceError = null);
-              },
+          Text(
+            'Every product needs at least one variant. The cheapest active '
+            'variant becomes the catalog "from" price.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _stockController,
@@ -381,9 +329,8 @@ class _AdminProductFormScreenState
             },
           ),
           const SizedBox(height: 12),
-          // Variant authoring (map §10.3): no rows = single-price product.
-          // Rows = real options; the server derives the base price and
-          // retires the single-price placeholder on save. Full-list sync:
+          // Explicit variant authoring: the business manages every row,
+          // including one it chooses to call "Default". Full-list sync:
           // new rows insert, existing rows update, removed rows archive.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -397,10 +344,9 @@ class _AdminProductFormScreenState
             ],
           ),
           Text(
-            'No variants = single-price product. New variants need a name, '
-            'price and image. Archiving keeps the variant for order history; '
-            'archiving the last one switches the product back to its base '
-            'price.',
+            'At least one variant is required. New variants need a name and '
+            'price (image optional). Archiving keeps the variant for order '
+            'history; archiving the last one is blocked.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -483,29 +429,25 @@ class _AdminProductFormScreenState
                                     .where((candidate) => !candidate.archived)
                                     .length ==
                                 1) {
-                          final confirmed = await showDialog<bool>(
+                          await showDialog<void>(
                             context: context,
                             builder: (dialogContext) => AlertDialog(
-                              title: const Text('Switch to single price?'),
+                              title: const Text('Keep at least one variant'),
                               content: const Text(
-                                'Archiving the last variant leaves no options. '
-                                'The product will be sold at its base price.',
+                                'Every product needs at least one active '
+                                'variant. Add another variant before '
+                                'archiving this one.',
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
-                                      Navigator.of(dialogContext).pop(false),
-                                  child: const Text('Cancel'),
-                                ),
-                                FilledButton(
-                                  onPressed: () =>
-                                      Navigator.of(dialogContext).pop(true),
-                                  child: const Text('Switch'),
+                                      Navigator.of(dialogContext).pop(),
+                                  child: const Text('OK'),
                                 ),
                               ],
                             ),
                           );
-                          if (confirmed != true) return;
+                          return;
                         }
                         setState(() => row.archived = !row.archived);
                       },

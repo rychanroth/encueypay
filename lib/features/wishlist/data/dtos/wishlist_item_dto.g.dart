@@ -98,7 +98,7 @@ WishlistVariantJoinDto _$WishlistVariantJoinDtoFromJson(
   Map<String, dynamic> json,
 ) => WishlistVariantJoinDto(
   id: json['id'] as String?,
-  priceMinor: (json['price_minor'] as num?)?.toInt(),
+  priceMinor: (json['price_minor'] as num).toInt(),
   status: json['status'] as String?,
 );
 

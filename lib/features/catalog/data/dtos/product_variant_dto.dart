@@ -9,7 +9,7 @@ class ProductVariantDto {
     required this.id,
     required this.productId,
     required this.name,
-    this.priceMinor,
+    required this.priceMinor,
     this.imagePath,
     this.status,
   });
@@ -20,7 +20,7 @@ class ProductVariantDto {
   final String id;
   final String productId;
   final String name;
-  final int? priceMinor;
+  final int priceMinor;
   final String? imagePath;
   final String? status;
 
@@ -33,13 +33,17 @@ class ProductVariantDto {
 /// from it. `status` lets the mapper drop archived rows.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ProductVariantPriceDto {
-  const ProductVariantPriceDto({this.id, this.priceMinor, this.status});
+  const ProductVariantPriceDto({
+    this.id,
+    required this.priceMinor,
+    this.status,
+  });
 
   factory ProductVariantPriceDto.fromJson(Map<String, dynamic> json) =>
       _$ProductVariantPriceDtoFromJson(json);
 
   final String? id;
-  final int? priceMinor;
+  final int priceMinor;
   final String? status;
 
   Map<String, dynamic> toJson() => _$ProductVariantPriceDtoToJson(this);

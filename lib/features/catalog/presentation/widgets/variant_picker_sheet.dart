@@ -90,8 +90,7 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
     // Base product price until a variant is chosen; the variant's own price
     // (falling back to the base price) once selected.
     final priceMinor =
-        selected?.effectivePriceMinor(widget.product) ??
-            widget.product.basePriceMinor;
+        selected?.priceMinor ?? widget.product.basePriceMinor;
     final salePrice = displayPriceMinor(widget.sale, priceMinor);
     final headerImageUrl = selected?.imageUrl ??
         (widget.product.imageUrls.isEmpty
@@ -204,8 +203,8 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
               ),
             ],
           ),
-          // A single option needs no chip rail — and the single-price
-          // placeholder must never surface as a customer-facing "Default".
+          // A single option needs no chip rail. Every row here is a real,
+          // business-authored variant (including one named "Default").
           if (widget.variants.length > 1) ...[
             const SizedBox(height: 16),
             Flexible(

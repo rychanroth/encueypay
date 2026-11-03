@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductVariant {
 
- String get id; String get productId; String get name; int? get priceMinor; String? get imageUrl; ProductStatus get status;
+ String get id; String get productId; String get name; int get priceMinor; String? get imageUrl; ProductStatus get status;
 /// Create a copy of ProductVariant
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,12 +26,12 @@ $ProductVariantCopyWith<ProductVariant> get copyWith => _$ProductVariantCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&const DeepCollectionEquality().equals(other.status, status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,name,priceMinor,imageUrl,status);
+int get hashCode => Object.hash(runtimeType,id,productId,name,priceMinor,imageUrl,const DeepCollectionEquality().hash(status));
 
 @override
 String toString() {
@@ -46,7 +46,7 @@ abstract mixin class $ProductVariantCopyWith<$Res>  {
   factory $ProductVariantCopyWith(ProductVariant value, $Res Function(ProductVariant) _then) = _$ProductVariantCopyWithImpl;
 @useResult
 $Res call({
- String id, String productId, String name, int? priceMinor, String? imageUrl, ProductStatus status
+ String id, String productId, String name, int priceMinor, String? imageUrl, ProductStatus status
 });
 
 
@@ -63,14 +63,14 @@ class _$ProductVariantCopyWithImpl<$Res>
 
 /// Create a copy of ProductVariant
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? name = null,Object? priceMinor = freezed,Object? imageUrl = freezed,Object? status = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? productId = null,Object? name = null,Object? priceMinor = null,Object? imageUrl = freezed,Object? status = freezed,}) {
   return _then(ProductVariant(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
-as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,priceMinor: null == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
+as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as ProductStatus,
   ));
 }
@@ -156,7 +156,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String name,  int? priceMinor,  String? imageUrl,  ProductStatus status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String productId,  String name,  int priceMinor,  String? imageUrl,  ProductStatus status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductVariant() when $default != null:
 return $default(_that.id,_that.productId,_that.name,_that.priceMinor,_that.imageUrl,_that.status);case _:
@@ -177,7 +177,7 @@ return $default(_that.id,_that.productId,_that.name,_that.priceMinor,_that.image
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String name,  int? priceMinor,  String? imageUrl,  ProductStatus status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String productId,  String name,  int priceMinor,  String? imageUrl,  ProductStatus status)  $default,) {final _that = this;
 switch (_that) {
 case _ProductVariant():
 return $default(_that.id,_that.productId,_that.name,_that.priceMinor,_that.imageUrl,_that.status);case _:
@@ -197,7 +197,7 @@ return $default(_that.id,_that.productId,_that.name,_that.priceMinor,_that.image
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String name,  int? priceMinor,  String? imageUrl,  ProductStatus status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String productId,  String name,  int priceMinor,  String? imageUrl,  ProductStatus status)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductVariant() when $default != null:
 return $default(_that.id,_that.productId,_that.name,_that.priceMinor,_that.imageUrl,_that.status);case _:
@@ -211,14 +211,14 @@ return $default(_that.id,_that.productId,_that.name,_that.priceMinor,_that.image
 /// @nodoc
 
 
-class _ProductVariant extends ProductVariant {
-  const _ProductVariant({required this.id, required this.productId, required this.name, required this.priceMinor, this.imageUrl, required this.status}): super._();
+class _ProductVariant implements ProductVariant {
+  const _ProductVariant({required this.id, required this.productId, required this.name, required this.priceMinor, this.imageUrl, required this.status});
   
 
 @override final  String id;
 @override final  String productId;
 @override final  String name;
-@override final  int? priceMinor;
+@override final  int priceMinor;
 @override final  String? imageUrl;
 @override final  ProductStatus status;
 
@@ -232,12 +232,12 @@ _$ProductVariantCopyWith<_ProductVariant> get copyWith => __$ProductVariantCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductVariant&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&const DeepCollectionEquality().equals(other.status, status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,name,priceMinor,imageUrl,status);
+int get hashCode => Object.hash(runtimeType,id,productId,name,priceMinor,imageUrl,const DeepCollectionEquality().hash(status));
 
 @override
 String toString() {
@@ -252,7 +252,7 @@ abstract mixin class _$ProductVariantCopyWith<$Res> implements $ProductVariantCo
   factory _$ProductVariantCopyWith(_ProductVariant value, $Res Function(_ProductVariant) _then) = __$ProductVariantCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String productId, String name, int? priceMinor, String? imageUrl, ProductStatus status
+ String id, String productId, String name, int priceMinor, String? imageUrl, ProductStatus status
 });
 
 
@@ -269,14 +269,14 @@ class __$ProductVariantCopyWithImpl<$Res>
 
 /// Create a copy of ProductVariant
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? name = null,Object? priceMinor = freezed,Object? imageUrl = freezed,Object? status = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? productId = null,Object? name = null,Object? priceMinor = null,Object? imageUrl = freezed,Object? status = freezed,}) {
   return _then(_ProductVariant(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
-as int?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
-as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,priceMinor: null == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
+as int,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as ProductStatus,
   ));
 }

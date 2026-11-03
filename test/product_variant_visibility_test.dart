@@ -19,29 +19,13 @@ void main() {
     productVariants: variants,
   );
 
-  test('placeholder-only product prices from the base and selects it', () {
+  test('all active variants are visible, including a named Default', () {
     final product = dto(
       basePriceMinor: 4000,
       variants: const [
         ProductVariantPriceDto(
           id: 'default',
-          priceMinor: null,
-          status: 'active',
-        ),
-      ],
-    ).toDomain();
-
-    expect(product.fromPriceMinor, 4000);
-    expect(product.defaultVariantId, 'default');
-  });
-
-  test('priced variants hide the placeholder and archived rows', () {
-    final product = dto(
-      basePriceMinor: 4000,
-      variants: const [
-        ProductVariantPriceDto(
-          id: 'default',
-          priceMinor: null,
+          priceMinor: 4000,
           status: 'active',
         ),
         ProductVariantPriceDto(id: 'cheap', priceMinor: 5000, status: 'active'),
@@ -54,21 +38,26 @@ void main() {
       ],
     ).toDomain();
 
-    expect(product.fromPriceMinor, 5000);
-    expect(product.defaultVariantId, 'cheap');
+    // Cheapest active option wins the "from" price and default selection.
+    expect(product.fromPriceMinor, 4000);
+    expect(product.defaultVariantId, 'default');
   });
 
-  test('real-only product selects the cheapest active variant', () {
+  test('archived rows never contribute to price or selection', () {
     final product = dto(
       basePriceMinor: 9000,
       variants: const [
         ProductVariantPriceDto(id: 'large', priceMinor: 6000, status: 'active'),
-        ProductVariantPriceDto(id: 'small', priceMinor: 4500, status: 'active'),
+        ProductVariantPriceDto(
+          id: 'retired',
+          priceMinor: 100,
+          status: 'archived',
+        ),
       ],
     ).toDomain();
 
-    expect(product.fromPriceMinor, 4500);
-    expect(product.defaultVariantId, 'small');
+    expect(product.fromPriceMinor, 6000);
+    expect(product.defaultVariantId, 'large');
   });
 
   test('equal prices fall back to a deterministic id tie-break', () {
@@ -83,7 +72,7 @@ void main() {
     expect(product.defaultVariantId, 'a');
   });
 
-  test('no variants falls back to the base price with no default id', () {
+  test('no variants falls back to the cached base price', () {
     final product = dto(basePriceMinor: 3200, variants: const []).toDomain();
 
     expect(product.fromPriceMinor, 3200);
@@ -103,13 +92,13 @@ void main() {
     ),
   );
 
-  test('wishlist uses the same placeholder/archived rules as catalog', () {
+  test('wishlist uses the same active-only variant rules as catalog', () {
     final item = wishlistDto(
       basePriceMinor: 4000,
       variants: const [
         WishlistVariantJoinDto(
           id: 'default',
-          priceMinor: null,
+          priceMinor: 4000,
           status: 'active',
         ),
         WishlistVariantJoinDto(id: 'cheap', priceMinor: 5000, status: 'active'),
@@ -121,23 +110,23 @@ void main() {
       ],
     ).toDomain();
 
-    expect(item.fromPriceMinor, 5000);
-    expect(item.defaultVariantId, 'cheap');
+    expect(item.fromPriceMinor, 4000);
+    expect(item.defaultVariantId, 'default');
   });
 
-  test('wishlist placeholder-only product uses base price and default id', () {
+  test('wishlist with no active variants uses the cached base price', () {
     final item = wishlistDto(
       basePriceMinor: 4000,
       variants: const [
         WishlistVariantJoinDto(
-          id: 'default',
-          priceMinor: null,
-          status: 'active',
+          id: 'archived',
+          priceMinor: 100,
+          status: 'archived',
         ),
       ],
     ).toDomain();
 
     expect(item.fromPriceMinor, 4000);
-    expect(item.defaultVariantId, 'default');
+    expect(item.defaultVariantId, isNull);
   });
 }

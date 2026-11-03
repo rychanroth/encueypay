@@ -23,12 +23,11 @@ abstract class ProductDetail with _$ProductDetail {
 
   bool get hasVariants => variants.isNotEmpty;
 
-  /// Cheapest selectable price — "from" price for display.
+  /// Cheapest selectable price — "from" price for display. The base price is
+  /// only a defensive fallback when a product has no active variant.
   int get fromPriceMinor => variants.isEmpty
       ? product.basePriceMinor
-      : variants
-          .map((v) => v.effectivePriceMinor(product))
-          .reduce(min);
+      : variants.map((v) => v.priceMinor).reduce(min);
 
   double? get averageRating {
     if (reviews.isEmpty) return null;

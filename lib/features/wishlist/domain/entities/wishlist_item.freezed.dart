@@ -15,10 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WishlistItem {
 
- String get id; String get productId; String get productName; int get priceMinor;/// The card's "from" price — the same cheapest-selectable rule the
-/// catalog cards use (min over variant prices, base as the null-price
-/// fallback), so every surface shows the same number for a product.
-/// [priceMinor] stays the raw base price.
+ String get id; String get productId; String get productName; int get priceMinor;/// The card's "from" price — the same cheapest-active-variant rule the
+/// catalog cards use. [priceMinor] stays the server-cached base price.
  int get fromPriceMinor; int get stock; String? get status; String? get defaultVariantId; String? get imageUrl; String? get brandId;/// Group ids ride along so brand- and category-scoped sales can match
 /// wishlist cards (the composition root's synthetic Product needs them).
  String? get categoryId; String get brandName; double? get ratingAvg; int get reviewCount;
@@ -233,10 +231,8 @@ class _WishlistItem implements WishlistItem {
 @override final  String productId;
 @override final  String productName;
 @override final  int priceMinor;
-/// The card's "from" price — the same cheapest-selectable rule the
-/// catalog cards use (min over variant prices, base as the null-price
-/// fallback), so every surface shows the same number for a product.
-/// [priceMinor] stays the raw base price.
+/// The card's "from" price — the same cheapest-active-variant rule the
+/// catalog cards use. [priceMinor] stays the server-cached base price.
 @override final  int fromPriceMinor;
 @override@JsonKey() final  int stock;
 @override final  String? status;

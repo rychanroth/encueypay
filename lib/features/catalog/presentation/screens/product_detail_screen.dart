@@ -143,11 +143,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   variant.id ==
                   (_selectedVariantId ?? detail.product.defaultVariantId))
               .firstOrNull;
-          // The page price follows the selected variant (hybrid pricing:
-          // effectivePriceMinor falls back to the base price for the
-          // tracking Default variant).
-          final pagePriceMinor =
-              selected?.effectivePriceMinor(product) ?? detail.fromPriceMinor;
+          // The page price follows the selected variant's explicit price.
+          final pagePriceMinor = selected?.priceMinor ?? detail.fromPriceMinor;
           final carouselImages = _carouselImages(product, selected);
           // Sale chip (Section 9): the live sale matching this product —
           // the winner among platform, brand and category scopes.

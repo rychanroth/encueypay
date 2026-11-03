@@ -34,20 +34,14 @@
   the `[data-error] unexpected ...` stack — the remaining suspects are a
   stale installed build or a deployed schema/function that differs from
   `supabase/migrations/`.
-- **Live data observation**: the hosted project has a `bon om tuk` 10%
-  platform sale with an empty description, and coupons
-  `XXXYYY`/`XXXEEE` (`fixed`, value `2`), `YYYZZZ` (`fixed`, value `12`),
-  and `WWWEEE` (`fixed`, value `50`). Those fixed rows carried the old
-  wrong units (`$0.02`/`$0.12`/`$0.50`); corrected in place on 2026-11-03 to
-  minor units `200`/`200`/`1200`/`5000` (`$2`/`$2`/`$12`/`$50`). The
-  percent coupon is fine.
-- **Remote migrations applied (2026-11-03):** `20261028000003`,
-  `20261028000004`, `20261029000001`, `20261029000002`, `20261029000003`,
-  `20261102000001`–`20261102000009` are on the hosted project. Remaining
-  work is runtime verification (§6) and a sale-with-banner re-test. The old
-  fixed-value coupons were corrected in place on 2026-11-03. The app and DB
-  ship together (the `promotions`→`sales` rename breaks old queries), so
-  hot-restart after any further backend change.
+- **Live data reset (2026-11-03)**: the local and hosted databases were
+  reset for the explicit-variant model. Sales, coupons, banners, orders, and
+  carts are empty; the previously corrected coupons are gone. Re-author the
+  demo sale/coupons/banners through the admin UI, then run §6.
+- **Remote migrations applied (2026-11-03):** all migrations through
+  `20261103000001` are on the hosted project. The app and DB ship together
+  (the `promotions`→`sales` rename breaks old queries), so hot-restart after
+  any further backend change.
 
 ## 1. The model (three independent concepts)
 

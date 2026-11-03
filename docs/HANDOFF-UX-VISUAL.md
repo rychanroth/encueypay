@@ -160,9 +160,9 @@ These slices are implemented but **not committed**:
   verified (and QR errors) with an animated height; the quick-action sheet
   has a drag handle; timeline stages carry semantics.
 
-Migrations `20261102000005`–`20261102000009` are applied remotely
-(2026-11-03). See `docs/HANDOFF-PROMOTIONS.md` and `docs/HANDOFF-VARIANTS.md`
-for the remaining data/verification steps.
+Migrations `20261102000005`–`20261102000009` and `20261103000001` are
+applied remotely (2026-11-03). See `docs/HANDOFF-PROMOTIONS.md` and
+`docs/HANDOFF-VARIANTS.md` for the remaining data/verification steps.
 
 ## 6. Recommended next session
 

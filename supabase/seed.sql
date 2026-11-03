@@ -92,8 +92,7 @@ where not exists (
 );
 
 -- --------------------------------------------------------------- variants
--- A few priced variants to exercise the variant picker and the server rule
--- coalesce(variant.price, product.base_price) (§1.2).
+-- A few priced variants to exercise the variant picker and explicit pricing.
 insert into public.product_variants (product_id, name, price_minor)
 select p.id, v.name, v.price_minor
 from (values
@@ -109,17 +108,27 @@ where not exists (
    where pv.product_id = p.id and pv.name = v.name
 );
 
--- A product with real variants must not also carry the single-price
--- placeholder. Only products left with no active variant get 'Default'
--- (null price tracks the base price — a variant-less product is
--- un-buyable, map §10.3).
-insert into public.product_variants (product_id, name)
-select p.id, 'Default'
+-- Explicit variants only: demo products without an authored option get a
+-- normal, priced 'Default' row (fixture data — the app never creates it
+-- implicitly).
+insert into public.product_variants (product_id, name, price_minor)
+select p.id, 'Default', p.base_price_minor
 from public.products p
 where not exists (
   select 1 from public.product_variants pv
    where pv.product_id = p.id and pv.status = 'active'
 );
+
+-- Keep the cached from-price consistent with the explicit variants above.
+update public.products p
+   set base_price_minor = derived.min_price
+  from (
+    select product_id, min(price_minor) as min_price
+      from public.product_variants
+     where status = 'active'
+     group by product_id
+  ) derived
+ where derived.product_id = p.id;
 
 -- ----------------------------------------------------------------- images
 -- storage_path may be a bare catalog path or a full http(s) URL (the
@@ -158,7 +167,11 @@ where not exists (
 insert into public.platform_settings
   (id, delivery_fee_minor, platform_commission_percent, payment_account)
 values (1, 250, 0, 'demo-payment-desk')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  delivery_fee_minor = excluded.delivery_fee_minor,
+  platform_commission_percent = excluded.platform_commission_percent,
+  payment_account = excluded.payment_account,
+  updated_at = now();
 
 -- NOT seeded (require auth users — create them in the dashboard):
 --   * banners            → created_by references users

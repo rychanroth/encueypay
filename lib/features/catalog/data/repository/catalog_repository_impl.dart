@@ -224,12 +224,9 @@ class CatalogRepositoryImpl implements ICatalogRepository {
           // referencing them) — customers never see them.
           .where((variant) => variant.status != ProductStatus.archived)
           .toList();
-      // A null-price row is the single-price placeholder, not a selectable
-      // option. Keep it only when there is no priced variant to choose.
-      final pricedVariants =
-          activeVariants.where((variant) => variant.priceMinor != null).toList();
-      final variants =
-          pricedVariants.isNotEmpty ? pricedVariants : activeVariants;
+      // Active variants are the options. There is no implicit placeholder;
+      // archived rows stay only for historical order references.
+      final variants = activeVariants;
       final reviews = ((data['reviews'] as List? ?? const [])
               .whereType<Map<String, dynamic>>())
           .map(ProductReviewJoinDto.fromJson)

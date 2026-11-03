@@ -103,19 +103,21 @@ class WishlistRatingJoinDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class WishlistVariantJoinDto {
-  const WishlistVariantJoinDto({this.id, this.priceMinor, this.status});
+  const WishlistVariantJoinDto({
+    this.id,
+    required this.priceMinor,
+    this.status,
+  });
 
   factory WishlistVariantJoinDto.fromJson(Map<String, dynamic> json) =>
       _$WishlistVariantJoinDtoFromJson(json);
 
   final String? id;
 
-  /// Null for the single-price placeholder (its price is the product's base
-  /// price).
-  final int? priceMinor;
+  final int priceMinor;
 
   /// Archived rows stay in the table for order history; the mapper drops
-  /// them (and the placeholder when priced variants exist).
+  /// them.
   final String? status;
 
   Map<String, dynamic> toJson() => _$WishlistVariantJoinDtoToJson(this);

@@ -28,30 +28,23 @@ extension ProductDtoX on ProductDto {
     );
   }
 
-  /// Customer-facing options: active variants only. When at least one is
-  /// priced, the null-price single-price placeholder is excluded — it is a
-  /// base-price tracking row, not a selectable choice. A placeholder-only
-  /// product keeps its sole row so add-to-cart can resolve a concrete
-  /// variant id.
+  /// Customer-facing options: active variants only. Archived rows stay in
+  /// the table for order history and are never selectable. There is no
+  /// placeholder filtering — a business-authored "Default" variant is a
+  /// normal option.
   List<ProductVariantPriceDto> _visibleVariants() {
-    final active = productVariants
+    return productVariants
         .where(
           (variant) => variant.status == null || variant.status == 'active',
         )
         .toList();
-    final priced = active
-        .where((variant) => variant.priceMinor != null)
-        .toList();
-    return priced.isNotEmpty ? priced : active;
   }
 
-  /// Cheapest visible price; the null-price placeholder falls back to the
-  /// product's base price.
+  /// Cheapest visible price. The base price is only a defensive fallback for
+  /// a product with no active variant (the server requires at least one).
   int _fromPriceMinor(List<ProductVariantPriceDto> variants) {
     if (variants.isEmpty) return basePriceMinor;
-    return variants
-        .map((variant) => variant.priceMinor ?? basePriceMinor)
-        .reduce(min);
+    return variants.map((variant) => variant.priceMinor).reduce(min);
   }
 
   /// The variant the quick-add and detail page default to: cheapest visible
@@ -64,8 +57,8 @@ extension ProductDtoX on ProductDto {
         best = variant;
         continue;
       }
-      final price = variant.priceMinor ?? basePriceMinor;
-      final bestPrice = best.priceMinor ?? basePriceMinor;
+      final price = variant.priceMinor;
+      final bestPrice = best.priceMinor;
       final cheaper = price < bestPrice;
       final tie =
           price == bestPrice && (variant.id ?? '').compareTo(best.id ?? '') < 0;
