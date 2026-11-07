@@ -158,16 +158,16 @@ class DashboardOverviewPanel extends ConsumerWidget {
               // ~110dp and the image flexes into the remainder — the old
               // 150dp rail starved it ("Bottom overflowed by 78px").
               height: 210,
-              child: ListView(
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  for (final card in wishlistCards)
-                    SizedBox(
-                      width: 140,
-                      child: card,
-                    ),
-                ],
+                itemCount: wishlistCards.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: AppSpacing.sm),
+                itemBuilder: (context, index) => SizedBox(
+                  width: 140,
+                  child: wishlistCards[index],
+                ),
               ),
             ),
           _PanelHeader(

@@ -6,10 +6,10 @@ import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/order.dart';
 
 /// One purchased line on the order detail screen (Section 7A, §19): the
-/// product's current thumbnail, title, variant + unit price × quantity,
-/// and the line total — tappable through to the product's detail page
-/// (the card navigates by route name; orders never imports catalog,
-/// ARCH-04).
+/// product's current thumbnail, title, variant, an explicit
+/// quantity × unit-price breakdown, any item discount, and the line total —
+/// tappable through to the product's detail page (the card navigates by
+/// route name; orders never imports catalog, ARCH-04).
 class OrderItemCard extends StatelessWidget {
   const OrderItemCard({super.key, required this.item, this.onTap});
 
@@ -34,10 +34,11 @@ class OrderItemCard extends StatelessWidget {
               border: Border.all(color: theme.colorScheme.outlineVariant),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 56,
-                  height: 56,
+                  width: 64,
+                  height: 64,
                   child: ClipRRect(
                     borderRadius: AppRadii.br12,
                     child: MonogramImage(
@@ -53,20 +54,50 @@ class OrderItemCard extends StatelessWidget {
                     children: [
                       Text(
                         item.productName,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.titleSmall,
                       ),
-                      const SizedBox(height: 2),
+                      if (item.variantName != null &&
+                          item.variantName!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: AppRadii.br12,
+                          ),
+                          child: Text(
+                            item.variantName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 6),
                       Text(
-                        item.variantName == null
-                            ? '${Money(item.unitPriceMinor).formatUsd()} × ${item.quantity}'
-                            : '${item.variantName} · '
-                                '${Money(item.unitPriceMinor).formatUsd()} × ${item.quantity}',
+                        'Qty ${item.quantity} × '
+                        '${Money(item.unitPriceMinor).formatUsd()}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
+                      if (item.discountMinor > 0) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Item discount −'
+                          '${Money(item.discountMinor).formatUsd()}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -80,7 +111,7 @@ class OrderItemCard extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     if (onTap != null) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Icon(
                         Icons.chevron_right,
                         size: 18,

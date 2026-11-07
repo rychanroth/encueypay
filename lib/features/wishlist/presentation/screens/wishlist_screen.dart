@@ -6,6 +6,7 @@ import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/responsive/screen_size.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/router/app_routes.dart';
 import '../controllers/wishlist_controller.dart';
 import '../../domain/entities/wishlist_item.dart';
@@ -82,12 +83,14 @@ class WishlistScreen extends ConsumerWidget {
               itemBuilder: (context, index) => cardBuilder!(items[index]),
             );
           }
-          return ListView.builder(
+          return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: items.length,
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               final item = items[index];
               return Card(
+                margin: EdgeInsets.zero,
                 child: ListTile(
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),

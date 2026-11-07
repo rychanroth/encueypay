@@ -208,14 +208,6 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
-        FilledButton.tonal(
-          onPressed: () => context.pushNamed(
-            AppRoutes.orderDetail,
-            pathParameters: {'id': widget.orderId},
-          ),
-          child: const Text('View order details'),
-        ),
       ],
     );
   }
@@ -439,9 +431,22 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
               },
             ),
             const SizedBox(height: 24),
-            FilledButton(
+            // One primary action + one secondary action: the old tonal
+            // "View order details" inside the summary competed with this
+            // filled "Back to Home".
+            FilledButton.icon(
+              onPressed: () => context.pushNamed(
+                AppRoutes.orderDetail,
+                pathParameters: {'id': widget.orderId},
+              ),
+              icon: const Icon(Icons.receipt_long_outlined),
+              label: const Text('View order details'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
               onPressed: () => context.goNamed(AppRoutes.home),
-              child: const Text('Back to Home'),
+              icon: const Icon(Icons.home_outlined),
+              label: const Text('Back to Home'),
             ),
           ],
         ),

@@ -50,6 +50,11 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => context.pushNamed(AppRoutes.notifications),
           ),
+          IconButton(
+            tooltip: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.goNamed(AppRoutes.profile),
+          ),
         ],
       ),
       body: ListView(
