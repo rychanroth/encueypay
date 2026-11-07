@@ -17,7 +17,11 @@ import '../controllers/admin_report_provider.dart';
 /// the 14-day trend, top sellers, and quick links. Raw counts live in the
 /// Reporting area, not here.
 class AdminDashboardScreen extends ConsumerWidget {
-  const AdminDashboardScreen({super.key});
+  const AdminDashboardScreen({super.key, this.profileAction});
+
+  /// Signed-in avatar action, injected by the composition root so the
+  /// admin feature never imports the profile feature (ARCH-04).
+  final Widget? profileAction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,13 +34,7 @@ class AdminDashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin dashboard'),
-        actions: [
-          IconButton(
-            tooltip: 'Profile',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => context.pushNamed(AppRoutes.profile),
-          ),
-        ],
+        actions: [?profileAction],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

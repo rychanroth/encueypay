@@ -6,9 +6,11 @@ import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/catalog/presentation/screens/home_screen.dart';
 import '../../../features/catalog/presentation/screens/product_detail_screen.dart';
 import '../../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../../domain/failures.dart';
 import '../../network/supabase_client_provider.dart';
+import '../../presentation/widgets/profile_avatar_button.dart';
 import '../app_routes.dart';
 import '../product_card_actions.dart';
 
@@ -29,11 +31,24 @@ final homeBranch = StatefulShellBranch(
       name: AppRoutes.home,
       path: '/home',
       builder: (context, state) => Consumer(
-        builder: (context, ref, _) => HomeScreen(
-          // Long-press quick actions (Section 6) — cart/wishlist wiring
-          // lives in the composition root (ARCH-04, ROUTE-08).
-          actionsBuilder: (product) => productCardActions(context, ref, product),
-        ),
+        builder: (context, ref, _) {
+          final avatarUrl = ref.watch(
+            profileControllerProvider.select(
+              (profile) => profile.value?.avatarUrl,
+            ),
+          );
+          return HomeScreen(
+            // Signed-in avatar lives in the composition root (ARCH-04).
+            profileAction: ProfileAvatarButton(
+              avatarUrl: avatarUrl,
+              onPressed: () => context.goNamed(AppRoutes.profile),
+            ),
+            // Long-press quick actions (Section 6) — cart/wishlist wiring
+            // lives in the composition root (ARCH-04, ROUTE-08).
+            actionsBuilder: (product) =>
+                productCardActions(context, ref, product),
+          );
+        },
       ),
       routes: [
         GoRoute(

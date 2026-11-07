@@ -7,11 +7,13 @@ import '../../../features/admin/presentation/screens/categories_admin_screen.dar
 import '../../../features/admin/presentation/screens/platform_settings_screen.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../features/notifications/data/push_notifications_service.dart';
+import '../../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
 import '../../../features/promotions/presentation/screens/admin_promotions_screen.dart';
 import '../../../features/promotions/presentation/screens/archived_coupons_screen.dart';
+import '../../presentation/widgets/profile_avatar_button.dart';
 import '../app_routes.dart';
 
 /// Admin tab 1 — Dashboard (DESIGN.md §5.2.1). The DESIGN.md 4-tab shell
@@ -23,7 +25,21 @@ final adminDashboardBranch = StatefulShellBranch(
     GoRoute(
       name: AppRoutes.adminDashboard,
       path: '/admin/dashboard',
-      builder: (context, state) => const AdminDashboardScreen(),
+      builder: (context, state) => Consumer(
+        builder: (context, ref, _) {
+          final avatarUrl = ref.watch(
+            profileControllerProvider.select(
+              (profile) => profile.value?.avatarUrl,
+            ),
+          );
+          return AdminDashboardScreen(
+            profileAction: ProfileAvatarButton(
+              avatarUrl: avatarUrl,
+              onPressed: () => context.pushNamed(AppRoutes.profile),
+            ),
+          );
+        },
+      ),
       routes: [
         GoRoute(
           name: AppRoutes.adminAudit,

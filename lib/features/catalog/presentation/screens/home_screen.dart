@@ -26,11 +26,15 @@ import '../widgets/product_grid.dart';
 /// 2-Role Academic Prototype (living spec Part C L-04/L-05) — vendor
 /// discovery is bypassed; the underlying data model is untouched.
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key, this.actionsBuilder});
+  const HomeScreen({super.key, this.actionsBuilder, this.profileAction});
 
   /// Long-press quick actions per product (Section 6) — injected by the
   /// composition root; null keeps cards tap-only.
   final ProductCardActionsBuilder? actionsBuilder;
+
+  /// Signed-in avatar action, injected by the composition root so the
+  /// catalog feature never imports the profile feature (ARCH-04).
+  final Widget? profileAction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,11 +54,7 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => context.pushNamed(AppRoutes.notifications),
           ),
-          IconButton(
-            tooltip: 'Profile',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => context.goNamed(AppRoutes.profile),
-          ),
+          ?profileAction,
         ],
       ),
       body: ListView(
