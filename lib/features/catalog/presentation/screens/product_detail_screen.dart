@@ -53,8 +53,10 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   final Future<void> Function(String variantId, int quantity) onAddToCart;
 
   /// Wishlist state + toggle, injected by the composition root (ARCH-04).
+  /// The product rides along so the toggle can seed an optimistic wishlist
+  /// row before the write completes (PRES-03 exception).
   final bool inWishlist;
-  final Future<void> Function()? onToggleWishlist;
+  final Future<void> Function(Product product)? onToggleWishlist;
 
   @override
   ConsumerState<ProductDetailScreen> createState() =>
@@ -405,7 +407,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             : 'Add to wishlist',
                         onPressed: widget.onToggleWishlist == null
                             ? null
-                            : () => widget.onToggleWishlist!(),
+                            : () => widget.onToggleWishlist!(product),
                         icon: Icon(
                           widget.inWishlist
                               ? Icons.favorite

@@ -425,6 +425,13 @@ wrapped in a use case "for symmetry."
   `ref.invalidateSelf()` to re-run `build()` and refetch ground truth. **No optimistic
   UI** — state reflects backend truth after the mutation completes.
 
+  **Ratified exception (2026-11-07): wishlist favorite toggles.** Add/remove on the
+  wishlist controller MAY update the watched item list immediately so heart icons react
+  without waiting for the round-trip. On success it still calls `ref.invalidateSelf()`
+  to reconcile with server truth. On failure it MUST restore the pre-mutation list and
+  rethrow the `Failure` so the caller surfaces it via snackbar. This exception is scoped
+  to wishlist toggles only; every other mutation follows the non-optimistic rule above.
+
 - **PRES-04 (Screens are dumb-ish).** Screens watch controllers. Screens MUST NOT import
   repositories, `supabaseClientProvider`, DTOs, or mappers.
 
@@ -467,13 +474,15 @@ class CelestialDetailController extends _$CelestialDetailController {
 ```
 
 **Anti-patterns:** a manual `StateProvider`/`NotifierProvider` for UI state; optimistic
-`state = state.copyWith(...)` after a mutation instead of invalidate-refetch; a screen
-importing `celestial_repository_impl.dart`; a 300-line `build()` with inline sub-widgets.
+`state = state.copyWith(...)` after a mutation instead of invalidate-refetch (except the
+ratified wishlist-toggle exception); a screen importing `celestial_repository_impl.dart`;
+a 300-line `build()` with inline sub-widgets.
 
 **Checklist:**
 - [ ] Controller uses `@riverpod` codegen; `.g.dart` regenerated.
 - [ ] State class is immutable with `copyWith`.
-- [ ] Mutations go through `AsyncValue.guard` + `ref.invalidateSelf()`.
+- [ ] Mutations go through `AsyncValue.guard` + `ref.invalidateSelf()` (wishlist toggles
+      use the ratified optimistic exception, with rollback on failure).
 - [ ] Screen imports only controllers, entities, and route/theme/responsive helpers.
 - [ ] Sub-widgets extracted per PRES-06.
 

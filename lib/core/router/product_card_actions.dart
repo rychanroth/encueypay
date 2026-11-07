@@ -6,6 +6,7 @@ import '../../features/cart/domain/entities/cart_item.dart';
 import '../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../features/catalog/domain/entities/product.dart';
 import '../../features/catalog/presentation/widgets/product_card_actions.dart';
+import '../../features/wishlist/domain/entities/wishlist_item.dart';
 import '../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import 'app_routes.dart';
 import '../domain/failures.dart';
@@ -18,6 +19,26 @@ import '../network/supabase_client_provider.dart';
 /// mutations onto the injected callbacks with Failure snackbars. The
 /// add-to-cart action uses the product's default variant; remove-from-cart
 /// drops every cart line of the product.
+///
+/// Product → the optimistic wishlist row shown while the add write is in
+/// flight. The wishlist controller replaces it with the server row on success.
+WishlistItem wishlistItemFromProduct(Product product) => WishlistItem(
+      id: 'optimistic-${product.id}',
+      productId: product.id,
+      productName: product.name,
+      priceMinor: product.basePriceMinor,
+      fromPriceMinor: product.fromPriceMinor,
+      stock: product.stock,
+      status: product.status.name,
+      defaultVariantId: product.defaultVariantId,
+      imageUrl: product.thumbnailUrl.isEmpty ? null : product.thumbnailUrl,
+      brandId: product.brandId,
+      categoryId: product.categoryId,
+      brandName: product.brandName,
+      ratingAvg: product.ratingAvg,
+      reviewCount: product.reviewCount,
+    );
+
 ProductCardActions productCardActions(
   BuildContext context,
   WidgetRef ref,
@@ -59,15 +80,12 @@ ProductCardActions productCardActions(
     }
   }
 
-  /// Wishlist actions route through here. Controller mutations mirror
-  /// failures into their state instead of rethrowing (PRES-03), so a
-  /// rejected add/remove is surfaced from state — without this, a failing
-  /// write looks exactly like a no-op on every heart surface.
+  /// Wishlist actions route through here. Optimistic mutations roll back and
+  /// rethrow on failure (PRES-03 ratified exception), so [run] surfaces the
+  /// rejection — without this, a failing write looks like a no-op on every
+  /// heart surface.
   Future<void> runWishlist(Future<void> Function() action) async {
     await run(action);
-    final wishlistState = ref.read(wishlistControllerProvider);
-    final failure = wishlistState.hasError ? wishlistState.error : null;
-    if (failure is Failure) showFailure(failure);
   }
 
   return ProductCardActions(
@@ -78,9 +96,10 @@ ProductCardActions productCardActions(
           ? ref
               .read(wishlistControllerProvider.notifier)
               .remove(productId: product.id)
-          : ref
-              .read(wishlistControllerProvider.notifier)
-              .add(productId: product.id),
+          : ref.read(wishlistControllerProvider.notifier).add(
+                productId: product.id,
+                optimistic: wishlistItemFromProduct(product),
+              ),
     ),
     onAddToCart: () {
       final variantId = product.defaultVariantId;

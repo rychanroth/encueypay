@@ -9,6 +9,7 @@ import '../../../features/notifications/presentation/screens/notifications_scree
 import '../../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../../domain/failures.dart';
+import '../../network/failure_mapping.dart';
 import '../../network/supabase_client_provider.dart';
 import '../../presentation/widgets/profile_avatar_button.dart';
 import '../app_routes.dart';
@@ -72,21 +73,27 @@ final homeBranch = StatefulShellBranch(
               return ProductDetailScreen(
                 productId: productId,
                 inWishlist: inWishlist,
-                onToggleWishlist: () async {
+                onToggleWishlist: (product) async {
                   final wishlist = ref.read(wishlistControllerProvider.notifier);
-                  if (inWishlist) {
-                    await wishlist.remove(productId: productId);
-                  } else {
-                    await wishlist.add(productId: productId);
-                  }
-                  // Mutations mirror failures into state (PRES-03) — surface
-                  // them, or a rejected write looks like a no-op here.
-                  final failure = ref.read(wishlistControllerProvider).error;
-                  if (failure is Failure) {
+                  try {
+                    if (inWishlist) {
+                      await wishlist.remove(productId: productId);
+                    } else {
+                      await wishlist.add(
+                        productId: productId,
+                        optimistic: wishlistItemFromProduct(product),
+                      );
+                    }
+                  } catch (error, stackTrace) {
+                    // Optimistic mutations roll back and rethrow (PRES-03
+                    // exception) — surface the rejection here.
+                    final failure = error is Failure
+                        ? error
+                        : mapRepositoryError(error, stackTrace);
                     final needsSignIn = ref
-                        .read(supabaseClientProvider)
-                        .auth
-                        .currentUser ==
+                            .read(supabaseClientProvider)
+                            .auth
+                            .currentUser ==
                         null;
                     messenger
                       ..hideCurrentSnackBar()

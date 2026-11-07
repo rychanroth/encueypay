@@ -111,9 +111,22 @@ class WishlistScreen extends ConsumerWidget {
                   subtitle: Text(Money(item.fromPriceMinor).format()),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
-                    onPressed: () => ref
-                        .read(wishlistControllerProvider.notifier)
-                        .remove(productId: item.productId),
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      try {
+                        await ref
+                            .read(wishlistControllerProvider.notifier)
+                            .remove(productId: item.productId);
+                      } catch (error) {
+                        // Optimistic remove rolls back and rethrows (PRES-03
+                        // exception) — surface the rejection here.
+                        messenger
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(content: Text(userMessageFor(error))),
+                          );
+                      }
+                    },
                   ),
                   onTap: () => context.pushNamed(
                     AppRoutes.productDetail,
