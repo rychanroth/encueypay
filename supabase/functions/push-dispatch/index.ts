@@ -100,16 +100,27 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  const { data: tokens } = await supabase
+  const { data: tokens, error } = await supabase
     .from('device_tokens')
     .select('token')
     .eq('user_id', recipient);
+  if (error) {
+    // Never swallow this: a permission/schema failure otherwise looks like
+    // "no devices" and silently drops every push.
+    console.error('device_tokens lookup failed', error);
+    return Response.json(
+      { sent: 0, reason: error.message },
+      { status: 500 },
+    );
+  }
   if (!tokens || tokens.length === 0) {
     return Response.json({ sent: 0, reason: 'no devices' });
   }
 
   const accessToken = await getAccessToken(account);
   let sent = 0;
+  let failed = 0;
+  let firstError: string | null = null;
   for (const { token } of tokens) {
     const response = await fetch(
       `https://fcm.googleapis.com/v1/projects/${account.project_id}/messages:send`,
@@ -131,7 +142,14 @@ Deno.serve(async (req) => {
         }),
       },
     );
-    if (response.ok) sent += 1;
+    if (response.ok) {
+      sent += 1;
+    } else {
+      failed += 1;
+      const detail = await response.text();
+      firstError ??= `${response.status} ${detail}`;
+      console.error(`FCM send failed (${response.status}): ${detail}`);
+    }
   }
-  return Response.json({ sent });
+  return Response.json({ sent, failed, error: firstError ?? undefined });
 });
