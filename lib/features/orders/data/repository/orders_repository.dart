@@ -6,6 +6,9 @@ abstract interface class IOrdersRepository {
   /// Realtime sync signal (§31/§54): order record changes (incl. status).
   Stream<StreamResult<bool>> watchOrderChanges(String orderId);
 
+  /// Realtime sync signal for the customer's order-history list.
+  Stream<StreamResult<bool>> watchMyOrderChanges();
+
   /// Best-effort cleanup: cancels stale unpaid QR orders and restores stock.
   /// Failures are logged, never surfaced as an orders-list error.
   Future<void> expireUnpaidQrOrders();

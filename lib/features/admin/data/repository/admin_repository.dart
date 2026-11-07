@@ -1,3 +1,4 @@
+import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/admin.dart';
 
 /// Admin management contract (spec §2.4/§35.4/§58) (DATA-03). Admin
@@ -93,6 +94,10 @@ abstract interface class IAdminRepository {
 
   // -------------------------------------------------------- orders (§3)
   Future<List<AdminOrderSummary>> fetchOrders();
+
+  /// Realtime sync signal for the admin order feed. Fires on both order
+  /// lifecycle changes and payment changes so the list/detail stay fresh.
+  Stream<StreamResult<bool>> watchOrderFeedChanges();
 
   /// Section 7A: advances the order's single lifecycle one step (or
   /// cancels a not-yet-shipped order with a reason).

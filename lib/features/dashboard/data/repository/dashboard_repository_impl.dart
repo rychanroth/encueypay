@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/dashboard.dart';
@@ -15,6 +17,24 @@ class DashboardRepositoryImpl implements IDashboardRepository {
   DashboardRepositoryImpl(this._client);
 
   final SupabaseClient _client;
+
+  Failure _mapError(Object error) => mapRepositoryError(error);
+
+  @override
+  Stream<StreamResult<bool>> watchDashboardChanges() {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      return Stream.value(
+        const StreamError(ServerFailure('Not authenticated')),
+      );
+    }
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('customer_id', user.id)
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
 
   @override
   Future<DashboardSummary> fetchSummary() async {

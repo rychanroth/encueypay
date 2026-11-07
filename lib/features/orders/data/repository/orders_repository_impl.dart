@@ -49,6 +49,16 @@ class OrdersRepositoryImpl implements IOrdersRepository {
         .asStreamResult(_mapError);
   }
 
+  @override
+  Stream<StreamResult<bool>> watchMyOrderChanges() {
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('customer_id', _uid)
+        .map((_) => true)
+        .asStreamResult(_mapError);
+  }
+
   Failure _mapError(Object error, [StackTrace? stackTrace]) =>
       mapRepositoryError(error, stackTrace);
 

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/admin.dart';
@@ -533,6 +535,36 @@ class AdminRepositoryImpl implements IAdminRepository {
       throw mapRepositoryError(error, stackTrace);
     }
   }
+
+  @override
+  Stream<StreamResult<bool>> watchOrderFeedChanges() {
+    final controller = StreamController<StreamResult<bool>>();
+    final subscriptions = <StreamSubscription<StreamResult<bool>>>[];
+
+    Stream<StreamResult<bool>> signal(String table) {
+      return _client
+          .from(table)
+          .stream(primaryKey: ['id'])
+          .map((_) => true)
+          .asStreamResult(_mapStreamError)
+          .skipInitialSnapshot();
+    }
+
+    controller.onListen = () {
+      subscriptions
+        ..add(signal('orders').listen(controller.add))
+        ..add(signal('payments').listen(controller.add));
+    };
+    controller.onCancel = () async {
+      for (final subscription in subscriptions) {
+        await subscription.cancel();
+      }
+      subscriptions.clear();
+    };
+    return controller.stream;
+  }
+
+  Failure _mapStreamError(Object error) => mapRepositoryError(error);
 
   @override
   Future<void> transitionOrder({
