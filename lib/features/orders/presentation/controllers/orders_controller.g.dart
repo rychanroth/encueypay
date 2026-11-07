@@ -10,19 +10,22 @@ part of 'orders_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// Paginated "my orders" list with server-side history filters
 /// (Section 7B: status group + date range). Changing a filter refetches
-/// page 0; loadMore carries the active filter set.
+/// page 0; loadMore carries the active filter set. A customer-scoped order
+/// stream keeps the already-loaded window fresh without resetting filters.
 
 @ProviderFor(OrdersController)
 final ordersControllerProvider = OrdersControllerProvider._();
 
 /// Paginated "my orders" list with server-side history filters
 /// (Section 7B: status group + date range). Changing a filter refetches
-/// page 0; loadMore carries the active filter set.
+/// page 0; loadMore carries the active filter set. A customer-scoped order
+/// stream keeps the already-loaded window fresh without resetting filters.
 final class OrdersControllerProvider
     extends $AsyncNotifierProvider<OrdersController, OrderHistoryState> {
   /// Paginated "my orders" list with server-side history filters
   /// (Section 7B: status group + date range). Changing a filter refetches
-  /// page 0; loadMore carries the active filter set.
+  /// page 0; loadMore carries the active filter set. A customer-scoped order
+  /// stream keeps the already-loaded window fresh without resetting filters.
   OrdersControllerProvider._()
     : super(
         from: null,
@@ -42,11 +45,12 @@ final class OrdersControllerProvider
   OrdersController create() => OrdersController();
 }
 
-String _$ordersControllerHash() => r'10cbdb17e2a17f5d3a2f4b2f9b024dcac5fe0ba2';
+String _$ordersControllerHash() => r'2850bb385f4ab7dec124205d6da0157bc2ccdf39';
 
 /// Paginated "my orders" list with server-side history filters
 /// (Section 7B: status group + date range). Changing a filter refetches
-/// page 0; loadMore carries the active filter set.
+/// page 0; loadMore carries the active filter set. A customer-scoped order
+/// stream keeps the already-loaded window fresh without resetting filters.
 
 abstract class _$OrdersController extends $AsyncNotifier<OrderHistoryState> {
   FutureOr<OrderHistoryState> build();

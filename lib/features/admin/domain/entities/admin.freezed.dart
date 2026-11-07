@@ -2284,7 +2284,7 @@ as List<AdminOrderItem>,
 /// @nodoc
 mixin _$AdminOrderItem {
 
- String get productName; int get quantity; int get lineTotalMinor; String? get variantName;
+ String get productName; int get quantity; int get lineTotalMinor; String? get variantName; int? get unitPriceMinor; int? get discountMinor; String? get imageUrl;
 /// Create a copy of AdminOrderItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2295,16 +2295,16 @@ $AdminOrderItemCopyWith<AdminOrderItem> get copyWith => _$AdminOrderItemCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminOrderItem&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminOrderItem&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,productName,quantity,lineTotalMinor,variantName);
+int get hashCode => Object.hash(runtimeType,productName,quantity,lineTotalMinor,variantName,unitPriceMinor,discountMinor,imageUrl);
 
 @override
 String toString() {
-  return 'AdminOrderItem(productName: $productName, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName)';
+  return 'AdminOrderItem(productName: $productName, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, unitPriceMinor: $unitPriceMinor, discountMinor: $discountMinor, imageUrl: $imageUrl)';
 }
 
 
@@ -2315,7 +2315,7 @@ abstract mixin class $AdminOrderItemCopyWith<$Res>  {
   factory $AdminOrderItemCopyWith(AdminOrderItem value, $Res Function(AdminOrderItem) _then) = _$AdminOrderItemCopyWithImpl;
 @useResult
 $Res call({
- String productName, int quantity, int lineTotalMinor, String? variantName
+ String productName, int quantity, int lineTotalMinor, String? variantName, int? unitPriceMinor, int? discountMinor, String? imageUrl
 });
 
 
@@ -2332,12 +2332,15 @@ class _$AdminOrderItemCopyWithImpl<$Res>
 
 /// Create a copy of AdminOrderItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? productName = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? productName = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? unitPriceMinor = freezed,Object? discountMinor = freezed,Object? imageUrl = freezed,}) {
   return _then(AdminOrderItem(
 productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
 as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotalMinor // ignore: cast_nullable_to_non_nullable
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
+as String?,unitPriceMinor: freezed == unitPriceMinor ? _self.unitPriceMinor : unitPriceMinor // ignore: cast_nullable_to_non_nullable
+as int?,discountMinor: freezed == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
+as int?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -2423,10 +2426,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String productName,  int quantity,  int lineTotalMinor,  String? variantName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String productName,  int quantity,  int lineTotalMinor,  String? variantName,  int? unitPriceMinor,  int? discountMinor,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminOrderItem() when $default != null:
-return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.variantName);case _:
+return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.unitPriceMinor,_that.discountMinor,_that.imageUrl);case _:
   return orElse();
 
 }
@@ -2444,10 +2447,10 @@ return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.vari
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String productName,  int quantity,  int lineTotalMinor,  String? variantName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String productName,  int quantity,  int lineTotalMinor,  String? variantName,  int? unitPriceMinor,  int? discountMinor,  String? imageUrl)  $default,) {final _that = this;
 switch (_that) {
 case _AdminOrderItem():
-return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.variantName);case _:
+return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.unitPriceMinor,_that.discountMinor,_that.imageUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2464,10 +2467,10 @@ return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.vari
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String productName,  int quantity,  int lineTotalMinor,  String? variantName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String productName,  int quantity,  int lineTotalMinor,  String? variantName,  int? unitPriceMinor,  int? discountMinor,  String? imageUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminOrderItem() when $default != null:
-return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.variantName);case _:
+return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.variantName,_that.unitPriceMinor,_that.discountMinor,_that.imageUrl);case _:
   return null;
 
 }
@@ -2479,13 +2482,16 @@ return $default(_that.productName,_that.quantity,_that.lineTotalMinor,_that.vari
 
 
 class _AdminOrderItem implements AdminOrderItem {
-  const _AdminOrderItem({required this.productName, required this.quantity, required this.lineTotalMinor, this.variantName});
+  const _AdminOrderItem({required this.productName, required this.quantity, required this.lineTotalMinor, this.variantName, this.unitPriceMinor, this.discountMinor, this.imageUrl});
   
 
 @override final  String productName;
 @override final  int quantity;
 @override final  int lineTotalMinor;
 @override final  String? variantName;
+@override final  int? unitPriceMinor;
+@override final  int? discountMinor;
+@override final  String? imageUrl;
 
 /// Create a copy of AdminOrderItem
 /// with the given fields replaced by the non-null parameter values.
@@ -2497,16 +2503,16 @@ _$AdminOrderItemCopyWith<_AdminOrderItem> get copyWith => __$AdminOrderItemCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminOrderItem&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminOrderItem&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.lineTotalMinor, lineTotalMinor) || other.lineTotalMinor == lineTotalMinor)&&(identical(other.variantName, variantName) || other.variantName == variantName)&&(identical(other.unitPriceMinor, unitPriceMinor) || other.unitPriceMinor == unitPriceMinor)&&(identical(other.discountMinor, discountMinor) || other.discountMinor == discountMinor)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,productName,quantity,lineTotalMinor,variantName);
+int get hashCode => Object.hash(runtimeType,productName,quantity,lineTotalMinor,variantName,unitPriceMinor,discountMinor,imageUrl);
 
 @override
 String toString() {
-  return 'AdminOrderItem(productName: $productName, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName)';
+  return 'AdminOrderItem(productName: $productName, quantity: $quantity, lineTotalMinor: $lineTotalMinor, variantName: $variantName, unitPriceMinor: $unitPriceMinor, discountMinor: $discountMinor, imageUrl: $imageUrl)';
 }
 
 
@@ -2517,7 +2523,7 @@ abstract mixin class _$AdminOrderItemCopyWith<$Res> implements $AdminOrderItemCo
   factory _$AdminOrderItemCopyWith(_AdminOrderItem value, $Res Function(_AdminOrderItem) _then) = __$AdminOrderItemCopyWithImpl;
 @override @useResult
 $Res call({
- String productName, int quantity, int lineTotalMinor, String? variantName
+ String productName, int quantity, int lineTotalMinor, String? variantName, int? unitPriceMinor, int? discountMinor, String? imageUrl
 });
 
 
@@ -2534,12 +2540,15 @@ class __$AdminOrderItemCopyWithImpl<$Res>
 
 /// Create a copy of AdminOrderItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? productName = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? productName = null,Object? quantity = null,Object? lineTotalMinor = null,Object? variantName = freezed,Object? unitPriceMinor = freezed,Object? discountMinor = freezed,Object? imageUrl = freezed,}) {
   return _then(_AdminOrderItem(
 productName: null == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
 as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,lineTotalMinor: null == lineTotalMinor ? _self.lineTotalMinor : lineTotalMinor // ignore: cast_nullable_to_non_nullable
 as int,variantName: freezed == variantName ? _self.variantName : variantName // ignore: cast_nullable_to_non_nullable
+as String?,unitPriceMinor: freezed == unitPriceMinor ? _self.unitPriceMinor : unitPriceMinor // ignore: cast_nullable_to_non_nullable
+as int?,discountMinor: freezed == discountMinor ? _self.discountMinor : discountMinor // ignore: cast_nullable_to_non_nullable
+as int?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

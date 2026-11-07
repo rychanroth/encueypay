@@ -229,6 +229,13 @@ AdminItemJoinDto _$AdminItemJoinDtoFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       lineTotalMinor: (json['line_total_minor'] as num).toInt(),
       variantName: json['variant_name'] as String?,
+      unitPriceMinor: (json['unit_price_minor'] as num?)?.toInt(),
+      discountMinor: (json['discount_minor'] as num?)?.toInt(),
+      products: json['products'] == null
+          ? null
+          : AdminItemProductJoinDto.fromJson(
+              json['products'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$AdminItemJoinDtoToJson(AdminItemJoinDto instance) =>
@@ -237,4 +244,23 @@ Map<String, dynamic> _$AdminItemJoinDtoToJson(AdminItemJoinDto instance) =>
       'quantity': instance.quantity,
       'line_total_minor': instance.lineTotalMinor,
       'variant_name': instance.variantName,
+      'unit_price_minor': instance.unitPriceMinor,
+      'discount_minor': instance.discountMinor,
+      'products': instance.products,
     };
+
+AdminItemProductJoinDto _$AdminItemProductJoinDtoFromJson(
+  Map<String, dynamic> json,
+) => AdminItemProductJoinDto(
+  productImages:
+      (json['product_images'] as List<dynamic>?)
+          ?.map(
+            (e) => AdminProductImagePathDto.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      [],
+);
+
+Map<String, dynamic> _$AdminItemProductJoinDtoToJson(
+  AdminItemProductJoinDto instance,
+) => <String, dynamic>{'product_images': instance.productImages};

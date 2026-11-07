@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_orders_controller.dart';
+import '../widgets/admin_order_item_card.dart';
 
 /// Fulfillment view for one order (Section 3): the one-step lifecycle
 /// transitions, cancellation with reason, and the payment summary. The
@@ -79,19 +81,9 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               Text('Items',
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: AppSpacing.sm),
               for (final item in order.items)
-                ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    item.variantName == null
-                        ? '${item.productName} × ${item.quantity}'
-                        : '${item.productName} (${item.variantName}) × ${item.quantity}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: Text(Money(item.lineTotalMinor).format()),
-                ),
+                AdminOrderItemCard(item: item),
             ],
           );
         },

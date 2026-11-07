@@ -25,7 +25,18 @@ void main() {
           'quantity': 1,
           'product_name': 'Nordwind Trail Backpack 30L',
           'variant_name': 'Sand',
+          'unit_price_minor': 5999,
+          'discount_minor': 500,
           'line_total_minor': 5999,
+          'products': {
+            'product_images': [
+              {
+                'id': 'image-1',
+                'storage_path': 'seed/backpack.jpg',
+                'sort_order': 0,
+              },
+            ],
+          },
         },
       ],
     };
@@ -36,5 +47,11 @@ void main() {
     expect(dto.payments!.status, 'pending');
     expect(dto.users?.fullName, 'RothGemini');
     expect(dto.items.first.productName, 'Nordwind Trail Backpack 30L');
+    expect(dto.items.first.unitPriceMinor, 5999);
+    expect(dto.items.first.discountMinor, 500);
+    expect(
+      dto.items.first.products?.productImages.first.storagePath,
+      'seed/backpack.jpg',
+    );
   });
 }

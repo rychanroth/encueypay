@@ -8,21 +8,21 @@ part of 'dashboard_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Customer dashboard (assignment §1, Section 5). Plain one-shot fetch —
-/// the aggregation is server-side (DOMAIN-03); pull-to-refresh on the
-/// screen re-runs it.
+/// Customer dashboard (assignment §1, Section 5). The aggregation stays
+/// server-side (DOMAIN-03); a customer-scoped order stream invalidates the
+/// one-shot fetch whenever spending or order counts change.
 
 @ProviderFor(DashboardController)
 final dashboardControllerProvider = DashboardControllerProvider._();
 
-/// Customer dashboard (assignment §1, Section 5). Plain one-shot fetch —
-/// the aggregation is server-side (DOMAIN-03); pull-to-refresh on the
-/// screen re-runs it.
+/// Customer dashboard (assignment §1, Section 5). The aggregation stays
+/// server-side (DOMAIN-03); a customer-scoped order stream invalidates the
+/// one-shot fetch whenever spending or order counts change.
 final class DashboardControllerProvider
     extends $AsyncNotifierProvider<DashboardController, DashboardSummary> {
-  /// Customer dashboard (assignment §1, Section 5). Plain one-shot fetch —
-  /// the aggregation is server-side (DOMAIN-03); pull-to-refresh on the
-  /// screen re-runs it.
+  /// Customer dashboard (assignment §1, Section 5). The aggregation stays
+  /// server-side (DOMAIN-03); a customer-scoped order stream invalidates the
+  /// one-shot fetch whenever spending or order counts change.
   DashboardControllerProvider._()
     : super(
         from: null,
@@ -43,11 +43,11 @@ final class DashboardControllerProvider
 }
 
 String _$dashboardControllerHash() =>
-    r'ee9968ac0339176a3e19fd420f27bb7ffe6d3291';
+    r'5257c078fdea04f6e82439dfb2cc6ca2bc76396e';
 
-/// Customer dashboard (assignment §1, Section 5). Plain one-shot fetch —
-/// the aggregation is server-side (DOMAIN-03); pull-to-refresh on the
-/// screen re-runs it.
+/// Customer dashboard (assignment §1, Section 5). The aggregation stays
+/// server-side (DOMAIN-03); a customer-scoped order stream invalidates the
+/// one-shot fetch whenever spending or order counts change.
 
 abstract class _$DashboardController extends $AsyncNotifier<DashboardSummary> {
   FutureOr<DashboardSummary> build();

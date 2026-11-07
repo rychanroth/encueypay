@@ -501,8 +501,9 @@ class AdminRepositoryImpl implements IAdminRepository {
             'id, status, cancellation_reason, subtotal_minor, '
             'discount_minor, delivery_fee_minor, total_minor, created_at, '
             'users(full_name), payments(method, status), '
-            'order_items(product_name, variant_name, '
-            'quantity, line_total_minor)',
+            'order_items(product_name, variant_name, quantity, '
+            'unit_price_minor, discount_minor, line_total_minor, '
+            'products(product_images(storage_path, sort_order)))',
           )
           .order('created_at', ascending: false)
           .limit(50);
@@ -526,7 +527,10 @@ class AdminRepositoryImpl implements IAdminRepository {
                     productName: item.productName,
                     variantName: item.variantName,
                     quantity: item.quantity,
+                    unitPriceMinor: item.unitPriceMinor,
+                    discountMinor: item.discountMinor,
                     lineTotalMinor: item.lineTotalMinor,
+                    imageUrl: _itemImageUrl(item),
                   ))
               .toList(),
         );
@@ -534,6 +538,17 @@ class AdminRepositoryImpl implements IAdminRepository {
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
+  }
+
+  /// Resolves the first catalog image for an order line; full http(s)
+  /// references pass through (seed imagery convention shared with orders).
+  String? _itemImageUrl(AdminItemJoinDto item) {
+    final images = [...?item.products?.productImages]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final storagePath = images.firstOrNull?.storagePath;
+    if (storagePath == null) return null;
+    if (storagePath.startsWith('http')) return storagePath;
+    return _client.storage.from('product_images').getPublicUrl(storagePath);
   }
 
   @override

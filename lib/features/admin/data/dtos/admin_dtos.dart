@@ -281,6 +281,9 @@ class AdminItemJoinDto {
     required this.quantity,
     required this.lineTotalMinor,
     this.variantName,
+    this.unitPriceMinor,
+    this.discountMinor,
+    this.products,
   });
 
   factory AdminItemJoinDto.fromJson(Map<String, dynamic> json) =>
@@ -290,6 +293,25 @@ class AdminItemJoinDto {
   final int quantity;
   final int lineTotalMinor;
   final String? variantName;
+  final int? unitPriceMinor;
+  final int? discountMinor;
+
+  /// Live catalog reference — used only to resolve the current thumbnail.
+  @JsonKey(name: 'products')
+  final AdminItemProductJoinDto? products;
 
   Map<String, dynamic> toJson() => _$AdminItemJoinDtoToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminItemProductJoinDto {
+  const AdminItemProductJoinDto({this.productImages = const []});
+
+  factory AdminItemProductJoinDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminItemProductJoinDtoFromJson(json);
+
+  @JsonKey(name: 'product_images', defaultValue: [])
+  final List<AdminProductImagePathDto> productImages;
+
+  Map<String, dynamic> toJson() => _$AdminItemProductJoinDtoToJson(this);
 }

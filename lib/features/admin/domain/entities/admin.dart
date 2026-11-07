@@ -208,6 +208,9 @@ abstract class AdminOrderItem with _$AdminOrderItem {
     required int quantity,
     required int lineTotalMinor,
     String? variantName,
+    int? unitPriceMinor,
+    int? discountMinor,
+    String? imageUrl,
   }) = _AdminOrderItem;
 }
 

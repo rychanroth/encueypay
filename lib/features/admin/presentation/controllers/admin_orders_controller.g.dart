@@ -11,8 +11,9 @@ part of 'admin_orders_controller.dart';
 /// Admin order oversight + fulfillment (Section 3, spec §8 "manages
 /// Orders"): the admin drives the single lifecycle one step at a time
 /// (server-enforced) while the operator portals are bypassed. Mutations
-/// persist-then-invalidate (PRES-03); the customer keeps receiving
-/// trigger-generated status notifications.
+/// persist-then-invalidate (PRES-03); order/payment changes from any source
+/// refetch the feed, and the customer keeps receiving trigger-generated
+/// status notifications.
 
 @ProviderFor(AdminOrdersController)
 final adminOrdersControllerProvider = AdminOrdersControllerProvider._();
@@ -20,16 +21,18 @@ final adminOrdersControllerProvider = AdminOrdersControllerProvider._();
 /// Admin order oversight + fulfillment (Section 3, spec §8 "manages
 /// Orders"): the admin drives the single lifecycle one step at a time
 /// (server-enforced) while the operator portals are bypassed. Mutations
-/// persist-then-invalidate (PRES-03); the customer keeps receiving
-/// trigger-generated status notifications.
+/// persist-then-invalidate (PRES-03); order/payment changes from any source
+/// refetch the feed, and the customer keeps receiving trigger-generated
+/// status notifications.
 final class AdminOrdersControllerProvider
     extends
         $AsyncNotifierProvider<AdminOrdersController, List<AdminOrderSummary>> {
   /// Admin order oversight + fulfillment (Section 3, spec §8 "manages
   /// Orders"): the admin drives the single lifecycle one step at a time
   /// (server-enforced) while the operator portals are bypassed. Mutations
-  /// persist-then-invalidate (PRES-03); the customer keeps receiving
-  /// trigger-generated status notifications.
+  /// persist-then-invalidate (PRES-03); order/payment changes from any source
+  /// refetch the feed, and the customer keeps receiving trigger-generated
+  /// status notifications.
   AdminOrdersControllerProvider._()
     : super(
         from: null,
@@ -50,13 +53,14 @@ final class AdminOrdersControllerProvider
 }
 
 String _$adminOrdersControllerHash() =>
-    r'f8ac5797b84a284aa2b7d953c3bd5cf334166664';
+    r'fe6b5e6d82a981487b51fcd509c9363aef757e8a';
 
 /// Admin order oversight + fulfillment (Section 3, spec §8 "manages
 /// Orders"): the admin drives the single lifecycle one step at a time
 /// (server-enforced) while the operator portals are bypassed. Mutations
-/// persist-then-invalidate (PRES-03); the customer keeps receiving
-/// trigger-generated status notifications.
+/// persist-then-invalidate (PRES-03); order/payment changes from any source
+/// refetch the feed, and the customer keeps receiving trigger-generated
+/// status notifications.
 
 abstract class _$AdminOrdersController
     extends $AsyncNotifier<List<AdminOrderSummary>> {
