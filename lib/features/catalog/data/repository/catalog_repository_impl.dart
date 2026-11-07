@@ -183,10 +183,12 @@ class CatalogRepositoryImpl implements ICatalogRepository {
         ProductSort.newest => request
             .order('created_at', ascending: false)
             .order('id'),
-        ProductSort.priceAsc => request.order('base_price_minor'),
+        ProductSort.priceAsc =>
+          request.order('base_price_minor', ascending: true),
         ProductSort.priceDesc =>
           request.order('base_price_minor', ascending: false),
-        ProductSort.name => request.order('name'),
+        ProductSort.nameAsc => request.order('name', ascending: true),
+        ProductSort.nameDesc => request.order('name', ascending: false),
       };
       final rows =
           await ordered.range(offset, offset + limit - 1);

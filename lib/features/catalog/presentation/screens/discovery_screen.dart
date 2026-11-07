@@ -226,7 +226,14 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                       value: ProductSort.priceDesc,
                       child: Text('Price: high to low'),
                     ),
-                    PopupMenuItem(value: ProductSort.name, child: Text('Name')),
+                    PopupMenuItem(
+                      value: ProductSort.nameAsc,
+                      child: Text('Name: ascending'),
+                    ),
+                    PopupMenuItem(
+                      value: ProductSort.nameDesc,
+                      child: Text('Name: descending'),
+                    ),
                   ],
                   child: Container(
                     constraints: const BoxConstraints(minHeight: 48),
@@ -301,7 +308,8 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
   static String _sortLabel(ProductSort? sort) => switch (sort) {
         ProductSort.priceAsc => 'Price ↑',
         ProductSort.priceDesc => 'Price ↓',
-        ProductSort.name => 'Name',
+        ProductSort.nameAsc => 'Name ↑',
+        ProductSort.nameDesc => 'Name ↓',
         _ => 'Newest',
       };
 }
