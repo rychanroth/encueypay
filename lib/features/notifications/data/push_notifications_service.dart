@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -20,12 +22,22 @@ import 'repository/notifications_repository_impl.dart';
 class PushNotificationsService {
   PushNotificationsService(this._client, this._repository);
 
+  static const _channel = AndroidNotificationChannel(
+    'order_updates',
+    'Order updates',
+    description: 'Order and payment status updates',
+    importance: Importance.high,
+  );
+
   final SupabaseClient _client;
   final INotificationsRepository _repository;
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _started = false;
   bool _ready = false;
+  bool _localReady = false;
   bool _permissionRequested = false;
   bool _pendingOpen = false;
   PushOpenTarget? _pendingTarget;
@@ -56,6 +68,8 @@ class PushNotificationsService {
       return;
     }
 
+    await _initLocalNotifications(onOpen);
+
     final messaging = FirebaseMessaging.instance;
     _subscriptions.add(messaging.onTokenRefresh.listen((token) {
       unawaited(_registerToken(token));
@@ -69,12 +83,14 @@ class PushNotificationsService {
       }
     }));
     _subscriptions.add(FirebaseMessaging.onMessage.listen((message) {
-      final target = _targetFor(message);
-      onForeground?.call(
-        message.notification?.title ?? 'EncueYPay',
-        message.notification?.body ?? '',
-        target,
-        () => _handleOpen(target, onOpen),
+      unawaited(
+        _presentForeground(
+          title: message.notification?.title ?? 'EncueYPay',
+          body: message.notification?.body ?? '',
+          target: _targetFor(message),
+          onOpen: onOpen,
+          onFallback: onForeground,
+        ),
       );
     }));
     _subscriptions.add(FirebaseMessaging.onMessageOpenedApp.listen((message) {
@@ -100,6 +116,123 @@ class PushNotificationsService {
     // delivered its initial event.
     if (_client.auth.currentUser != null) {
       await _onAuthenticated(onOpen);
+    }
+  }
+
+  /// Foreground messages are not auto-rendered by Android. Show a native
+  /// heads-up notification (dismissible like any system notification) and
+  /// keep the injected SnackBar only as a fallback if the plugin failed.
+  Future<void> _initLocalNotifications(
+    void Function(PushOpenTarget target)? onOpen,
+  ) async {
+    try {
+      const settings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
+      );
+      final initialized = await _localNotifications.initialize(
+        settings: settings,
+        onDidReceiveNotificationResponse: (response) {
+          final target = _targetFromPayload(response.payload);
+          if (target != null) _handleOpen(target, onOpen);
+        },
+      );
+      _localReady = initialized ?? false;
+      if (!_localReady) return;
+
+      final android = _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      await android?.createNotificationChannel(_channel);
+      await android?.requestNotificationsPermission();
+
+      final launch =
+          await _localNotifications.getNotificationAppLaunchDetails();
+      final target = launch?.didNotificationLaunchApp == true
+          ? _targetFromPayload(launch?.notificationResponse?.payload)
+          : null;
+      if (target != null) {
+        if (_client.auth.currentUser == null) {
+          _pendingTarget = target;
+          _pendingOpen = true;
+        } else {
+          _handleOpen(target, onOpen);
+        }
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Local notifications disabled: $error\n$stackTrace');
+      _localReady = false;
+    }
+  }
+
+  Future<void> _presentForeground({
+    required String title,
+    required String body,
+    required PushOpenTarget target,
+    void Function(PushOpenTarget target)? onOpen,
+    void Function(
+      String title,
+      String body,
+      PushOpenTarget target,
+      void Function() onView,
+    )? onFallback,
+  }) async {
+    if (_localReady) {
+      try {
+        await _localNotifications.show(
+          id: _localId(target),
+          title: title,
+          body: body,
+          notificationDetails: NotificationDetails(
+            android: AndroidNotificationDetails(
+              _channel.id,
+              _channel.name,
+              channelDescription: 'Order and payment status updates',
+              importance: Importance.high,
+              priority: Priority.high,
+              autoCancel: true,
+            ),
+          ),
+          payload: _payloadFor(target),
+        );
+        return;
+      } catch (error, stackTrace) {
+        debugPrint('Local notification failed: $error\n$stackTrace');
+      }
+    }
+    onFallback?.call(title, body, target, () => _handleOpen(target, onOpen));
+  }
+
+  int _localId(PushOpenTarget target) {
+    final key = target.notificationId ?? target.orderId;
+    return key != null
+        ? key.hashCode & 0x7fffffff
+        : DateTime.now().millisecondsSinceEpoch.remainder(1 << 31);
+  }
+
+  String _payloadFor(PushOpenTarget target) => jsonEncode({
+        'order_id': target.orderId ?? '',
+        'notification_id': target.notificationId ?? '',
+      });
+
+  PushOpenTarget? _targetFromPayload(String? payload) {
+    if (payload == null || payload.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(payload);
+      if (decoded is! Map) return null;
+      String? value(String key) {
+        final raw = decoded[key];
+        return raw is String && raw.isNotEmpty ? raw : null;
+      }
+
+      final target = PushOpenTarget(
+        orderId: value('order_id'),
+        notificationId: value('notification_id'),
+      );
+      return target.hasOrder || target.notificationId != null ? target : null;
+    } catch (error, stackTrace) {
+      debugPrint('Push payload parse failed: $error\n$stackTrace');
+      return null;
     }
   }
 

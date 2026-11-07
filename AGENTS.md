@@ -123,9 +123,10 @@ resuming it. If a handoff contradicts this file, this file wins.
   is a derived cache, never a pricing fallback.
 - **UX/visual:** `docs/HANDOFF-UX-VISUAL.md` — implementation and motion pass complete;
   only device visual QA remains (compact/expanded, light/dark, large text).
-- **Push/FCM:** code complete, migration `20261102000009` applied, `push-dispatch`
-  deployed. Awaiting `FCM_SERVICE_ACCOUNT`, the `notifications` INSERT webhook with a
-  secret key, and a physical-device test (`docs/PROTOTYPE_SETUP.md` Phase 7 / A.6).
+- **Push/FCM:** `docs/HANDOFF-FCM.md` — hosted pipeline verified 2026-11-07
+  (background tray + tap open); foreground now shows a native local notification.
+  The service-role `device_tokens` grant fix is in `20261107000001`. Remaining:
+  iOS platform config, admin/new-order and promo notifications.
 - **KHQR:** `docs/HANDOFF-KHQR.md` — working end-to-end (hosted functions + PayWay
   callback live, 2026-11-03); production credentials remain a launch checklist item.
 - `FEATURE_VERIFICATION_MATRIX.md` is a 2026-10-07 audit and is stale; trust the contract

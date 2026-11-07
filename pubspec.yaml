@@ -69,6 +69,12 @@ dependencies:
   flutter_map: ^8.3.2
   latlong2: ^0.10.1
   share_plus: ^13.3.1
+
+  # Native foreground push (Section 8E; user-approved 2026-11-07 per
+  # GLOBAL-04). FCM still delivers the message; this renders the heads-up
+  # notification while the app is foregrounded.
+  flutter_local_notifications: ^22.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

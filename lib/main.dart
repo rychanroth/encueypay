@@ -54,6 +54,10 @@ Future<void> main() async {
         ..showSnackBar(
           SnackBar(
             content: Text(body.isEmpty ? title : '$title\n$body'),
+            // Fallback only (native notifications are preferred): finite
+            // duration and an explicit close affordance.
+            duration: const Duration(seconds: 6),
+            showCloseIcon: true,
             action: SnackBarAction(
               label: target.hasOrder ? 'View order' : 'View',
               onPressed: onView,
