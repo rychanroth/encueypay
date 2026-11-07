@@ -18,7 +18,10 @@ class DashboardController extends _$DashboardController {
   @override
   Future<DashboardSummary> build() async {
     final repository = ref.watch(dashboardRepositoryProvider);
-    final subscription = repository.watchDashboardChanges().listen((result) {
+    final subscription = repository
+        .watchDashboardChanges()
+        .skipInitialSnapshot()
+        .listen((result) {
       if (result is StreamData) _scheduleRefresh();
     });
     ref.onDispose(() {

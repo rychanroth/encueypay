@@ -22,7 +22,10 @@ class OrdersController extends _$OrdersController {
   @override
   Future<OrderHistoryState> build() async {
     final repository = ref.watch(ordersRepositoryProvider);
-    final subscription = repository.watchMyOrderChanges().listen((result) {
+    final subscription = repository
+        .watchMyOrderChanges()
+        .skipInitialSnapshot()
+        .listen((result) {
       if (result is StreamData) _scheduleRefresh();
     });
     ref.onDispose(() {
