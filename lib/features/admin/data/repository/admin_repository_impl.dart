@@ -503,7 +503,7 @@ class AdminRepositoryImpl implements IAdminRepository {
             'users(full_name), payments(method, status), '
             'order_items(product_name, variant_name, quantity, '
             'unit_price_minor, discount_minor, line_total_minor, '
-            'products(product_images(storage_path, sort_order)))',
+            'products(product_images(id, storage_path, sort_order)))',
           )
           .order('created_at', ascending: false)
           .limit(50);
