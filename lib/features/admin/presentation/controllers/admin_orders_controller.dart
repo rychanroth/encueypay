@@ -59,4 +59,13 @@ class AdminOrdersController extends _$AdminOrdersController {
     });
   }
 
+  /// Records the cash payment for a delivered COD order.
+  Future<void> markCodPaid(String orderId) async {
+    final current = state.value ?? const <AdminOrderSummary>[];
+    state = await AsyncValue.guard(() async {
+      await ref.read(adminRepositoryProvider).markCodPaid(orderId);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
 }

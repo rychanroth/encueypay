@@ -579,6 +579,11 @@ class AdminRepositoryImpl implements IAdminRepository {
     });
   }
 
+  @override
+  Future<void> markCodPaid(String orderId) {
+    return _rpc('admin_mark_cod_paid', {'p_order_id': orderId});
+  }
+
 
 
   @override

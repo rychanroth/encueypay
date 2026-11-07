@@ -66,6 +66,15 @@ class AdminOrderDetailScreen extends ConsumerWidget {
                     child: const Text('Cancel order'),
                   ),
                 ),
+              if (order.canMarkCodPaid)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: FilledButton.icon(
+                    onPressed: () => _markCodPaid(context, ref, order.id),
+                    icon: const Icon(Icons.payments_outlined),
+                    label: const Text('Mark cash payment received'),
+                  ),
+                ),
               const SizedBox(height: 16),
               Text('Items',
                   style: theme.textTheme.titleSmall
@@ -155,6 +164,34 @@ class _Row extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _markCodPaid(
+  BuildContext context,
+  WidgetRef ref,
+  String orderId,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Mark cash payment received?'),
+      content: const Text(
+        'This records the cash payment for this delivered order.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Mark paid'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  await ref.read(adminOrdersControllerProvider.notifier).markCodPaid(orderId);
 }
 
 Future<void> _cancel(

@@ -107,6 +107,9 @@ abstract interface class IAdminRepository {
     String? reason,
   });
 
+  /// Records a cash-on-delivery payment after the order is delivered.
+  Future<void> markCodPaid(String orderId);
+
   // -------------------------------------------------------- audit/report
   Future<List<AuditEntry>> fetchAuditLogs();
 

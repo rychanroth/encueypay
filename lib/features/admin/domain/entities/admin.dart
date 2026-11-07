@@ -190,6 +190,14 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
   bool get cancellable =>
       status == AdminOrderStatus.pending ||
       status == AdminOrderStatus.confirmed;
+
+  /// Cash is collected on delivery, so the admin can only record it after
+  /// the order reaches the terminal delivered state.
+  bool get canMarkCodPaid =>
+      status == AdminOrderStatus.delivered &&
+      paymentMethod == 'cod' &&
+      paymentStatus != null &&
+      paymentStatus != 'transaction_verified';
 }
 
 /// Historical order line for the admin view (§19 snapshots).
