@@ -33,7 +33,10 @@
     }
   },
   "pages": [
-    { "id": "01", "name": "01 · Foundations & Components", "file": "design", "pageId": "0:1", "nodeIds": [] },
+    { "id": "01", "name": "01 · Foundations & Components", "file": "design", "pageId": "0:1", "nodeIds": [
+      { "id": "4:34", "name": "Button", "variants": 16 },
+      { "id": "4:53", "name": "Card", "variants": 6 }
+    ] },
     { "id": "02", "name": "02 · Screens", "file": "design", "pageId": "2:4", "nodeIds": [] },
     { "id": "03", "name": "03 · Motion & Contracts", "file": "design", "pageId": "2:5", "nodeIds": [] }
   ],
@@ -42,6 +45,7 @@
     "pixelScreens": 15,
     "wireScreens": 15,
     "components": 19,
+    "componentsBuilt": 2,
     "colorVariablesPerCollection": 36,
     "colorCollections": 2,
     "floatVariables": 13,
@@ -51,8 +55,8 @@
   },
   "substitutions": {
     "font": null,
-    "icons": null,
-    "notes": "Starter plan limits: 1 variable mode and 3 pages per file. Light/dark is therefore implemented as two collections (Color, Color Dark) with identical variable names rather than two modes in one collection. Pages are 3 with sections/frames inside.",
+    "icons": "Material Symbols (Apache-2.0), imported as an icon component set",
+    "notes": "Starter plan limits: 1 variable mode and 3 pages per file. Light/dark is therefore implemented as two collections (Color, Color Dark) with identical variable names rather than two modes in one collection. Pages are 3 with sections/frames inside. v1 is light-mode and compact-only; Color Dark and expanded breakpoints are deferred.",
     "starterLimits": {
       "variableModesPerCollection": 1,
       "pagesPerFile": 3,
@@ -74,6 +78,11 @@
       "at": "2026-11-08",
       "event": "foundations-built",
       "detail": "P1: 3 pages, 36 color variables in Color (Light) + 36 in Color Dark, 13 float variables (space/radius/size), 13 text styles, 3 effect styles. Plus Jakarta Sans confirmed available (Regular/Medium/SemiBold/Bold/ExtraBold)."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "components-pilot",
+      "detail": "P2 pilot: Button set (4 variants x 4 states, node 4:34) and Card set (2x3, node 4:53). Variants laid out in grids after combineAsVariants. Visual QA passed on a 460x264 render."
     }
   ]
 }

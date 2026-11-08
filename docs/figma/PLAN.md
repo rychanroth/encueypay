@@ -53,7 +53,7 @@ diagrams in FigJam stay editable without polluting the design canvas. **Do not**
 
 | Tier | Screens | Rules |
 |---|---|---|
-| **Pixel** (15) | login, home, discovery, productDetail, notifications, cart, checkout, orderPlaced, orders, orderDetail, profile, adminDashboard, adminProducts, adminOrders, adminReports | Component instances only; real copy/prices from the app; light **and** dark; compact + one expanded variant for home/productDetail/checkout/adminDashboard |
+| **Pixel** (15) | login, home, discovery, productDetail, notifications, cart, checkout, orderPlaced, orders, orderDetail, profile, adminDashboard, adminProducts, adminOrders, adminReports | Component instances only; real copy/prices from the app; **light only** (dark deferred); compact 390×844 only (expanded deferred) |
 | **Wire** (14 + notFound) | reviewCompose, profileEdit, addresses, addressEdit, wishlist, settings, adminProductForm, adminBrands, adminCategories, adminPromotions, adminArchivedCoupons, adminAudit, adminSettings, adminOrderDetail, notFound | Auto-layout blocks + labels + nav; light only; no detached components |
 
 Wire screens exist to complete the inventory. They are **not** a promise of visual
@@ -148,11 +148,10 @@ looked up by name and updated in place. `setPluginData` is banned, so names +
 
 ## 9. Open decisions
 
-1. **Icon source** — the repo bundles no SVGs. Options: import Material Symbols
-   (Apache-2.0) as components, or render text glyphs. Needs approval before download.
-2. **Expanded variants** — proposed only for home, productDetail, checkout,
-   adminDashboard. Confirm or drop.
-3. **Dark mode for wire screens** — currently light-only. Confirm.
+**Resolved decisions (2026-11-08):**
 
-**Resolved:** file placement — both files were created in the account's drafts
-(`sf2EOTYc8LBadE7LpIu8kR`, `2O145eRxj0Ta11iwIMwuEH`).
+- **Icons:** import **Material Symbols** (Apache-2.0) as an icon component set. Do not invent custom icons.
+- **Expanded variants:** deferred. v1 is compact-only (390×844); medium/expanded frames are a later pass.
+- **Dark mode:** light-first. `Color Dark` variables stay in the file for a later pass, but v1 screens and components are authored in light mode only.
+- **File placement:** both files created in the account's drafts
+  (`sf2EOTYc8LBadE7LpIu8kR`, `2O145eRxj0Ta11iwIMwuEH`).
