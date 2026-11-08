@@ -17,10 +17,10 @@ the metered Figma MCP.
 **18 component sets**, **30 screens** (15 pixel + 15 wire), **9 FigJam diagrams**,
 page 03 motion/contracts. Two local plugins run it all unmetered.
 
-**Pending:** one rebuild pass after two project-wide fixes (see §4a), then the
-`audit-screens` report. Nothing else is planned.
+**Pending:** a final `P4 · cards` + `P6 · page 03` re-run after `92ec37c`, then the
+`audit-screens` report, then the freeze. Nothing else is planned.
 
-**Next action:** run the batches in §5 Step 1, then `Audit · screens`.
+**Next action:** `P4 · cards` → `P6 · page 03` → `Audit · screens`, then §5 Step 4.
 
 ---
 
@@ -130,20 +130,44 @@ Drawn as titled panels rather than sections, so each exports self-describing.
 
 ## 4. What is NOT done
 
-### a. One rebuild pass is pending
+### a. Rebuild pass — run; three fixes await a final P4 + P6 re-run
 
-Two project-wide fixes are written and bundled but **the affected frames have not
-been rebuilt yet**, so the file still shows the old geometry:
+Two project-wide fixes shipped in `11adafd` and all seven batches were rebuilt on
+2026-11-08 in the documented order (P4 · cards → S1 → S2 → S3 → S4 → S5 · wire ×15
+→ P6 · page 03), each reporting `done:` with no warnings. P2b / P3 / P5 pin their
+own axes and were skipped.
+
+The rebuild then exposed three defects that a re-run cannot repair on its own,
+because the builders re-apply them on every run — fixed in `92ec37c`:
+the cancelled tracking card instanced the in-flight timeline instead of the terminal
+callout, ProductCard's unsaved heart painted the instance rather than its vectors, and
+page 03 appended a second heading and subtitle. Only `P4 · cards` and `P6 · page 03`
+are affected by those fixes, so those two need one more run each.
+
+What the rebuild itself applied (shipped in `11adafd`):
 
 1. **Auto-layout hug fix.** `autolayout()` now hugs both axes by default. Enabling
    `layoutMode` leaves both axes `FIXED` at the frame's 100×100 birth size, so every
    helper that only set width (`chipRow`, `markRow`, `lineItem`, `feeRow`, `countRow`,
    `headRow`, `heroRow`, `menuRowFilled`, `screenSearchField`, `docCard`, …) rendered
-   100 tall. ~82 auto-layout call sites were affected; wireframe bands are pinned
-   deliberately and are unaffected.
-2. **Wire widgets.** The wire tier now renders by `kind` (field, textarea, picker,
+   100 tall. ~82 call sites were affected; wireframe bands pin their axes deliberately
+   and are unaffected.
+2. **Wire widgets.** The wire tier renders by `kind` (field, textarea, picker,
    primary/outline button, toggle, stepper, chips, segmented, stars, list row, media
-   grid, notice, summary, FAB) instead of one uniform band.
+   grid, notice, summary, FAB) instead of one uniform band. It executed for the first
+   time on 2026-11-08 (`done: S5 — 15 wire screens`, no warnings) but has still never
+   been inspected — §4f item 2.
+
+**Expected signature of the final `P4 · cards` run** — this is the check that the
+fix landed, so compare against the 2026-11-08 log:
+
+- `OrderTrackingCard` — the two `State=Cancelled` rows shrink (both were 377 because
+  they embedded a 322-tall in-flight track; they should land near 110 = 32 pad +
+  ~18 order id + 4 gap + 56 banner) and the set's total height drops with them. The
+  four InFlight/Delivered rows stay byte-identical (139, 465, 377, 377).
+- `KhqrCard` 1090×452, `OrderStatusTimeline` 1058×418, `ProductCard` 1146×2312 —
+  unchanged to the pixel.
+- Any other drift means the fix over-reached; stop and compare against `92ec37c`.
 
 ### b. Known defect: screens are region-accurate, widget-incomplete
 
@@ -183,7 +207,8 @@ Accepted as a snapshot limitation. Two honest remedies if it ever matters:
 ### f. Known debris / unverified (2026-11-08, answered from source on disk)
 
 Written after re-reading `docs/figma/plugin/src/` and `plugin-figjam/src/`. Nothing
-was rebuilt to produce these answers.
+was rebuilt to produce these answers. Items 1, 3 and 4 were subsequently fixed in
+`92ec37c` and are marked inline; the rest stand as accepted snapshot defects.
 
 **1. Did any explicit height compensate for a too-short row? — None.**
 
@@ -237,21 +262,19 @@ Duplicates that the sweep cannot catch are listed in (4), items 1–2.
 
 **4. Known wrong in the current file, beyond §4c.**
 
-1. **Page 03 duplicates on every re-run.** `85-page03.js:109–110` removes only the
-   three named cards; the heading (`85:112`) and subtitle (`85:117`) are top-level
-   text nodes named by their characters, so each run appends another pair.
+1. **Page 03 duplicates on every re-run.** *Fixed in `92ec37c`: the sweep now also
+   removes top-level `TEXT`, and the pair is named `Contracts · title` /
+   `Contracts · subtitle`. Any duplicates already in the file are removed by that
+   same sweep on the next run.*
 2. **FigJam anchors accumulate.** `00-kit.js:107–118` creates a 1×1 rectangle named
    `anchor` for each arrow endpoint; `20-flows-b.js:144–157` cleans only panel names.
    Re-running Flows B leaves roughly two anchors and their connectors per message
    (~40 per sequence diagram).
-3. **ProductCard's unsaved wishlist heart is not recoloured.**
-   `60-p4-cards.js:441–444` paints the *instance frame* (`heart.fills`) while
-   `icon()` was called with `colorName = null`, so the vectors keep
-   `color/on-surface`. The heart renders dark on dark imagery instead of white.
-4. **OrderTrackingCard always instances one timeline variant.**
-   `60-p4-cards.js:332` looks up `StageState=Current, Terminal=InFlight` for every
-   card state, so Delivered and Cancelled cards also show a "Current" step at Packed
-   (and Cancelled shows a forward track the app does not render).
+3. **ProductCard's unsaved wishlist heart is not recoloured.** *Fixed in `92ec37c`:
+   the vectors are recoloured, which is what `icon()` does when given a colour.*
+4. **OrderTrackingCard always instances one timeline variant.** *Fixed in `92ec37c`:
+   `Cancelled` now instances `Terminal=Cancelled` (the banner the app renders) and
+   fits it to the 310 content box. `Delivered` keeps `StageState=Current` — see 9.*
 5. **The navigation map contradicts `flows.json`.** `10-flows-a.js` `NAV_ADMIN` puts
    `adminArchivedCoupons` beside `adminPromotions` (flows.json nests it underneath)
    and omits `adminSettingsAccount` from the admin-account branch.
@@ -262,6 +285,12 @@ Duplicates that the sweep cannot catch are listed in (4), items 1–2.
    `audit-screens` runs. Unknown today for every screen.
 8. **ProductCard leaves ~23 px empty.** Fixed 268 height, image 142, metadata hugging
    ~103 — cosmetic, not a defect in the app.
+9. **`Delivered` cannot be represented by the timeline component.** The component
+   pins its `Current` row at index 3 (`60-p4-cards.js`, `focus = 3` = "Packed"), and
+   the app puts `current` on the last stage for a delivered order
+   (`order_status_timeline.dart:78-87`). So the Delivered card shows Packed as the
+   active step. A fix means a `Focus=…` dimension over 7 positions × 3 states —
+   exactly the per-state expansion §1 declines — so it is recorded, not fixed.
 
 **5. Manifest freeze intent (not executed).**
 
@@ -395,16 +424,19 @@ ff97b30 feat(figma): build NavigationBar and finish the component sets
 060ee6d docs(figma): run builds as a local unmetered plugin
 1e2115b docs(figma): add resumable handoff and index it
 0a8bd1e feat(web): make Google sign-in and the app build work on web   ← external
+11adafd docs(figma): record the snapshot decision and the pending rebuild pass
+c21352f docs(figma): add known debris and unverified items to the handoff
+92ec37c fix(figma): correct the cancelled tracking card, the unsaved heart and page-03 re-runs
 ```
-
-*(The 2026-11-08 sizing fix, wire rewrite, page 03 and audit batch are in `11adafd`.)*
 
 ---
 
 ## 9. First message for a fresh session
 
 > Read `docs/HANDOFF-FIGMA.md` and `docs/figma/RESUME.md`. The Figma work is a
-> finished **snapshot**, not a live mirror. Only §5 Step 1–2 remain: rebuild the
-> seven batches, then run `Audit · screens`. Do not start a per-state pass, Code
+> finished **snapshot**, not a live mirror. Only §5 Step 1–2 remain: re-run
+> `P4 · cards` and `P6 · page 03` (the other five batches are already rebuilt, and
+> three defects were fixed in `92ec37c`), then run `Audit · screens` and freeze
+> (§5 Step 4). Do not start a per-state pass, Code
 > Connect, or a new mirroring effort without an explicit decision — and for demo
 > visuals, capture the running app instead.

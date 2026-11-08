@@ -1,6 +1,6 @@
 # Figma resume state
 
-**Status:** snapshot complete. One rebuild pass pending; nothing else planned.
+**Status:** snapshot complete. Final `P4` + `P6` re-run pending; nothing else planned.
 
 ## What changed on 2026-11-08 (late)
 
@@ -16,24 +16,28 @@ The mirror is finished and **frozen**:
 
 ## The only work left
 
-Two project-wide fixes are written and bundled but the frames have not been rebuilt:
+All seven batches were rebuilt on 2026-11-08 (`done:` for each, no warnings). The
+rebuild exposed three defects that every run re-applies, fixed in `92ec37c`
+(`HANDOFF-FIGMA.md` §4f item 4):
 
-1. **Auto-layout hug.** `autolayout()` now hugs both axes. Before this, any frame
-   that only set its width stayed 100 tall (chip rows, "Mark all read", checkout
-   line items, dashboard rows, page-03 cards…). Wireframe bands stay fixed on
-   purpose.
-2. **Wire widgets.** The wire tier now draws by `kind` — field, textarea, picker,
-   buttons, toggle, stepper, chips, segmented, stars, list row, media, notice,
-   summary, FAB — instead of one uniform band.
+1. **Cancelled tracking card** instanced the in-flight timeline, so a cancelled order
+   showed a forward track instead of the app's terminal callout.
+2. **ProductCard's unsaved heart** painted the instance, not the vector, so it stayed
+   dark on dark imagery.
+3. **Page 03** appended a second heading and subtitle on every run.
 
 Run, in this order:
 
 ```
-P4 · cards → S1 → S2 → S3 → S4 → S5 · wire ×15 → P6 · page 03
+P4 · cards → P6 · page 03 → Audit · screens
 ```
 
-then `Audit · screens` and paste its log. P2b / P3 / P5 pin their own axes and are
-unaffected.
+then paste the audit log. §4a lists the geometry the final P4 run must print — the
+two `State=Cancelled` rows shrink, everything else stays identical.
+
+P2b / P3 / P5 pin their own axes and are unaffected. FigJam is not re-run: its
+anchor accumulation (§4f item 2) and the nav-map / ERD gaps (items 5–6) are recorded
+as accepted snapshot defects.
 
 ## Known limitation (accepted)
 
