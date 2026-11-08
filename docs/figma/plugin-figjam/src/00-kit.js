@@ -103,6 +103,45 @@ function fjConnect(from, to, label) {
   }
 }
 
+/** Invisible 1x1 anchor so a connector can span two arbitrary points. */
+function fjPoint(x, y) {
+  const r = figma.createRectangle();
+  r.resize(1, 1);
+  r.x = x;
+  r.y = y;
+  r.fills = [];
+  r.strokes = [];
+  r.name = "anchor";
+  return r;
+}
+
+/** Straight arrow between two points (sequence messages). */
+function fjArrowBetween(x1, y1, x2, y2, label) {
+  const a = fjPoint(x1, y1);
+  const b = fjPoint(x2, y2);
+  try {
+    const c = figma.createConnector();
+    c.connectorStart = { endpointNodeId: a.id, magnet: "AUTO" };
+    c.connectorEnd = { endpointNodeId: b.id, magnet: "AUTO" };
+    c.connectorLineType = "STRAIGHT";
+    try {
+      c.connectorEndStrokeCap = "ARROW_EQUILATERAL";
+    } catch (e) {}
+    c.strokes = [fjPaint(FJ.muted)];
+    c.strokeWeight = 1.5;
+    if (label) {
+      try {
+        c.text.characters = label;
+        c.text.fontSize = 11;
+      } catch (e) {}
+    }
+    return c;
+  } catch (e) {
+    warn(`arrow failed: ${(e && e.message) || e}`);
+    return null;
+  }
+}
+
 /** Diagram backdrop + title (stands in for a FigJam section). */
 async function fjPanel(x, y, width, height, title) {
   const bg = figma.createRectangle();

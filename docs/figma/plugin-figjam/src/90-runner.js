@@ -2,6 +2,7 @@
 
 const BATCHES = {
   "flows-a": batchFlowsA,
+  "flows-b": batchFlowsB,
 };
 
 const HTML = `
@@ -25,6 +26,7 @@ const HTML = `
 <body>
   <div class="bar">
     <button data-batch="flows-a">Flows A · nav + lifecycles</button>
+    <button data-batch="flows-b">Flows B · sequences</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>
