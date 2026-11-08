@@ -1,3 +1,4 @@
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/order.dart';
 
@@ -31,10 +32,10 @@ abstract interface class IOrdersRepository {
   Future<void> cancelOrder(String orderId);
 
   /// Uploads a bank-transfer proof to Storage and transitions the payment
-  /// server-side (§20.2). [fileName] preserves the original extension.
+  /// server-side (§20.2). [proof] carries the original name so its extension
+  /// is preserved.
   Future<void> submitPaymentProof({
     required String orderId,
-    required String filePath,
-    required String fileName,
+    required PickedFile proof,
   });
 }

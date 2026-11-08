@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/picked_file.dart';
 import '../../data/repository/profile_repository_impl.dart';
 import '../../domain/entities/user_profile.dart';
 
@@ -37,11 +38,11 @@ class ProfileController extends _$ProfileController {
   /// Uploads a new avatar and refetches the profile. Returns the failure (or
   /// null on success) instead of replacing the loaded profile with an error
   /// surface — a bad upload must not wipe the screen (PRES-03, UX brief §4).
-  Future<Object?> updateAvatar({required String filePath}) async {
+  Future<Object?> updateAvatar({required PickedFile image}) async {
     final result = await AsyncValue.guard(
       () => ref
           .read(profileRepositoryProvider)
-          .updateMyAvatar(filePath: filePath),
+          .updateMyAvatar(image: image),
     );
     if (result.hasError) return result.error;
     ref.invalidateSelf(); // re-run build() for the new URL (PRES-03)

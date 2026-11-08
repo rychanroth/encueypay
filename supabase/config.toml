@@ -164,7 +164,13 @@ site_url = "env(SUPABASE_URL)"
 additional_redirect_urls = [
     "env(SUPABASE_URL)",
     "io.supabase.encueypay://login-callback/",
-    "io.supabase.encueypay://*"
+    "io.supabase.encueypay://*",
+    # Web dev: the app's own origin is the OAuth return URL (no custom
+    # scheme in a browser). Pin the port with --web-port=8080 so this
+    # allow-list entry stays valid; add the deployed origin in the
+    # dashboard for hosted builds.
+    "http://localhost:8080",
+    "http://127.0.0.1:8080"
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

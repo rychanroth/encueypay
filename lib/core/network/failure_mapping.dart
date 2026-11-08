@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../domain/failures.dart';
+import 'network_error_matcher.dart';
 
 /// DATA-05 error mapping, implemented once.
 ///
@@ -25,6 +24,7 @@ import '../domain/failures.dart';
 /// }
 /// ```
 Failure mapRepositoryError(Object error, [StackTrace? stackTrace]) {
+  if (isTransportError(error)) return const NetworkFailure();
   switch (error) {
     case final PostgrestException e:
       return ServerFailure(e.message);
@@ -36,8 +36,6 @@ Failure mapRepositoryError(Object error, [StackTrace? stackTrace]) {
       return ServerFailure(
         e.reasonPhrase ?? e.details?.toString() ?? 'Edge function failed',
       );
-    case final SocketException _:
-      return const NetworkFailure();
     default:
       if (kDebugMode) {
         debugPrint(

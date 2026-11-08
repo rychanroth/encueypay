@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +6,7 @@ import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../controllers/admin_categories_controller.dart';
@@ -56,7 +55,7 @@ class _AdminProductFormScreenState
   late final List<AdminProductImageRef> _images = List.of(
     widget.product?.images ?? const <AdminProductImageRef>[],
   );
-  final List<String> _imageDrafts = <String>[];
+  final List<PickedFile> _imageDrafts = <PickedFile>[];
   final List<AdminProductImageRef> _removedImages = <AdminProductImageRef>[];
   bool _saving = false;
   final _nameFocus = FocusNode();
@@ -129,15 +128,19 @@ class _AdminProductFormScreenState
 
   Future<void> _pickImage() async {
     final file = await FilePicker.pickFile(type: FileType.image);
-    if (!mounted) return;
-    if (file == null || file.path == null) return;
+    if (!mounted || file == null) return;
     if (_images.length + _imageDrafts.length >= _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Up to $_maxImages images per product')),
       );
       return;
     }
-    setState(() => _imageDrafts.add(file.path!));
+    final picked = PickedFile(
+      bytes: await file.readAsBytes(),
+      fileName: file.name,
+    );
+    if (!mounted) return;
+    setState(() => _imageDrafts.add(picked));
   }
 
   Future<void> _save() async {
@@ -160,7 +163,7 @@ class _AdminProductFormScreenState
       if (row.archived) continue;
       final variantName = row.name.text.trim();
       final priceText = row.price.text.trim();
-      final hasImage = row.localPath != null || row.imagePath != null;
+      final hasImage = row.imagePick != null || row.imagePath != null;
       final isNew = row.id == null;
       if (isNew && variantName.isEmpty && priceText.isEmpty && !hasImage) {
         continue;
@@ -181,7 +184,7 @@ class _AdminProductFormScreenState
         name: variantName,
         priceMinor: variantPrice,
         imagePath: row.imagePath,
-        imageLocalPath: row.localPath,
+        imagePick: row.imagePick,
       ));
     }
     var invalid = false;
@@ -229,12 +232,12 @@ class _AdminProductFormScreenState
       if (widget.product == null) {
         await controller.createWithImages(
           draft: draft,
-          imageFilePaths: List.of(_imageDrafts),
+          imagePicks: List.of(_imageDrafts),
         );
       } else {
         await controller.updateWithImages(
           draft: draft,
-          newImageFilePaths: List.of(_imageDrafts),
+          newImagePicks: List.of(_imageDrafts),
         );
       }
       final hasError =
@@ -371,15 +374,15 @@ class _AdminProductFormScreenState
                 child: Row(
                   children: [
                     _VariantImageTile(
-                      localPath: row.localPath,
+                      imagePick: row.imagePick,
                       existingUrl: row.existingUrl,
                       enabled: !row.archived,
-                      onPicked: (path) => setState(() {
-                        row.localPath = path;
+                      onPicked: (pick) => setState(() {
+                        row.imagePick = pick;
                         _variantError = null;
                       }),
                       onCleared: () => setState(() {
-                        row.localPath = null;
+                        row.imagePick = null;
                         row.imagePath = null;
                         _variantError = null;
                       }),
@@ -548,7 +551,7 @@ class _AdminProductFormScreenState
                 ),
               for (var i = 0; i < _imageDrafts.length; i++)
                 _ImageTile(
-                  file: _imageDrafts[i],
+                  pick: _imageDrafts[i],
                   onRemove: () => setState(() => _imageDrafts.removeAt(i)),
                 ),
             ],
@@ -572,10 +575,10 @@ class _AdminProductFormScreenState
 }
 
 class _ImageTile extends StatelessWidget {
-  const _ImageTile({this.url, this.file, required this.onRemove});
+  const _ImageTile({this.url, this.pick, required this.onRemove});
 
   final String? url;
-  final String? file;
+  final PickedFile? pick;
   final VoidCallback onRemove;
 
   @override
@@ -589,8 +592,8 @@ class _ImageTile extends StatelessWidget {
             height: 88,
             child: url != null
                 ? Image.network(url!, fit: BoxFit.cover)
-                : file != null
-                    ? Image.file(File(file!), fit: BoxFit.cover)
+                : pick != null
+                    ? Image.memory(pick!.bytes, fit: BoxFit.cover)
                     : const SizedBox.shrink(),
           ),
         ),
@@ -617,7 +620,7 @@ class _ImageTile extends StatelessWidget {
 /// server-side; non-null rows update the existing variant in place, and
 /// [archived] marks them for the server's archive-on-sync (never deletion —
 /// historical orders reference their rows). [imagePath] is the existing
-/// storage path (sent back on save), and [localPath] a fresh pick that
+/// storage path (sent back on save), and [imagePick] a fresh pick that
 /// replaces it on save.
 class _VariantRow {
   _VariantRow({this.id, this.imagePath, this.existingUrl});
@@ -629,7 +632,7 @@ class _VariantRow {
   final String? existingUrl;
 
   String? imagePath;
-  String? localPath;
+  PickedFile? imagePick;
 
   final TextEditingController name = TextEditingController();
   final TextEditingController price = TextEditingController();
@@ -644,23 +647,23 @@ class _VariantRow {
 /// existing URL over a placeholder) — tap to pick, badge to clear.
 class _VariantImageTile extends StatelessWidget {
   const _VariantImageTile({
-    required this.localPath,
+    required this.imagePick,
     required this.existingUrl,
     required this.enabled,
     required this.onPicked,
     required this.onCleared,
   });
 
-  final String? localPath;
+  final PickedFile? imagePick;
   final String? existingUrl;
   final bool enabled;
-  final ValueChanged<String> onPicked;
+  final ValueChanged<PickedFile> onPicked;
   final VoidCallback onCleared;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasImage = localPath != null || existingUrl != null;
+    final hasImage = imagePick != null || existingUrl != null;
     return Stack(
       children: [
         InkWell(
@@ -668,7 +671,13 @@ class _VariantImageTile extends StatelessWidget {
           onTap: enabled
               ? () async {
                   final file = await FilePicker.pickFile(type: FileType.image);
-                  if (file?.path != null) onPicked(file!.path!);
+                  if (file == null) return;
+                  onPicked(
+                    PickedFile(
+                      bytes: await file.readAsBytes(),
+                      fileName: file.name,
+                    ),
+                  );
                 }
               : null,
           child: Container(
@@ -680,8 +689,8 @@ class _VariantImageTile extends StatelessWidget {
               border: Border.all(color: theme.colorScheme.outlineVariant),
               color: theme.colorScheme.surfaceContainerLowest,
             ),
-            child: localPath != null
-                ? Image.file(File(localPath!), fit: BoxFit.cover)
+            child: imagePick != null
+                ? Image.memory(imagePick!.bytes, fit: BoxFit.cover)
                 : existingUrl != null
                     ? Image.network(existingUrl!, fit: BoxFit.cover)
                     : Icon(Icons.add_photo_alternate_outlined,

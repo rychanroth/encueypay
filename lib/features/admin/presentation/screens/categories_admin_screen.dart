@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_categories_controller.dart';
@@ -22,20 +23,20 @@ class CategoriesAdminScreen extends ConsumerWidget {
   /// declared outside the dialog.
   Future<String?> _resolveImagePath(
     WidgetRef ref, {
-    required String? pickedLocalPath,
+    required PickedFile? pickedImage,
     required String? existingPath,
   }) async {
-    if (pickedLocalPath != null) {
+    if (pickedImage != null) {
       return ref
           .read(adminCategoriesControllerProvider.notifier)
-          .uploadImage(filePath: pickedLocalPath);
+          .uploadImage(image: pickedImage);
     }
     return existingPath;
   }
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
-    String? pickedLocalPath;
+    PickedFile? pickedImage;
     // 2-level taxonomy (§2c): a new category may nest under a top-level
     // parent; parent products aggregate in Discovery automatically.
     final topLevelCategories =
@@ -63,7 +64,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 CatalogImagePickField(
                   label: 'Category image (optional)',
-                  onPicked: (path) => pickedLocalPath = path,
+                  onPicked: (pick) => pickedImage = pick,
                 ),
                 const SizedBox(height: 12),
                 SearchablePickerField(
@@ -105,7 +106,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
     try {
       imagePath = await _resolveImagePath(
         ref,
-        pickedLocalPath: pickedLocalPath,
+        pickedImage: pickedImage,
         existingPath: null,
       );
     } on Failure catch (error) {
@@ -130,7 +131,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
     AdminCategory category,
   ) async {
     final nameController = TextEditingController(text: category.name);
-    String? pickedLocalPath;
+    PickedFile? pickedImage;
     // Parent options: top-level categories only, excluding the category
     // itself. Picking none promotes back to top-level.
     final topLevelCategories =
@@ -161,7 +162,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
                   label: 'Category image (optional)',
                   existingUrl: category.imageUrl,
                   existingPath: category.imagePath,
-                  onPicked: (path) => pickedLocalPath = path,
+                  onPicked: (pick) => pickedImage = pick,
                 ),
                 const SizedBox(height: 12),
                 SearchablePickerField(
@@ -203,7 +204,7 @@ class CategoriesAdminScreen extends ConsumerWidget {
     try {
       imagePath = await _resolveImagePath(
         ref,
-        pickedLocalPath: pickedLocalPath,
+        pickedImage: pickedImage,
         existingPath: category.imagePath,
       );
     } on Failure catch (error) {

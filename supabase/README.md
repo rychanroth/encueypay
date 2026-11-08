@@ -102,6 +102,29 @@ Gotchas (each of these has cost us a debugging session):
 - Mobile OAuth sign-in additionally needs the platform deep-link config —
   already wired in this repo (Android intent-filter + iOS URL scheme).
 
+### Web (Chrome) OAuth
+
+A browser cannot open a custom scheme back into the app, so web takes the
+other branch in `auth_repository_impl.dart`: `redirectTo` becomes the page
+the app is served from, and `supabase_flutter` exchanges the `?code=` in
+that URL itself (it skips the mobile deep-link listener on web).
+
+```bash
+flutter run -d chrome --web-port=8080 \
+  --dart-define-from-file=config/.env
+```
+
+- **Pin the port.** Flutter otherwise picks a random port per run, which
+  would not match the redirect allow-list. `http://localhost:8080` and
+  `http://127.0.0.1:8080` are already in `config.toml`'s
+  `additional_redirect_urls`; add the deployed origin via **Auth → URL
+  Configuration** for hosted builds.
+- **Google Cloud Console needs no change** — Google still calls
+  `SUPABASE_REDIRECT_URI` (`127.0.0.1:54321` locally,
+  `https://<ref>.supabase.co/auth/v1/callback` hosted).
+- **No `adb reverse`** — the browser and the local stack share the dev
+  machine.
+
 ## Testing with multiple roles
 
 1. **Create users** — either sign up in the app (email/password or Google;

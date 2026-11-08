@@ -1,4 +1,4 @@
-import 'package:flutter/services.dart' show PlatformException;
+import 'package:flutter/services.dart' show MissingPluginException, PlatformException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -137,6 +137,11 @@ class LocationRepositoryImpl implements ILocationRepository {
       ]);
       if (line1 == null && city == null) return null;
       return LocatedAddress(line1: line1 ?? '', city: city);
+    } on MissingPluginException catch (error, stackTrace) {
+      // Platforms without a geocoding plugin (web) have no placemark source;
+      // the prefill is best-effort, so fall back to manual entry.
+      logSuppressedError(error, stackTrace);
+      return null;
     } on PlatformException catch (error, stackTrace) {
       // Coarse fixes and rural coordinates often have no resolvable
       // address — deliberate best-effort swallow for an optional prefill.

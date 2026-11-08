@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
@@ -162,14 +161,14 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   @override
   Future<void> submitPaymentProof({
     required String orderId,
-    required String filePath,
-    required String fileName,
+    required PickedFile proof,
   }) async {
     try {
-      final bytes = await File(filePath).readAsBytes();
       final path = '$_uid/$orderId/'
-          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      await _client.storage.from('payment_proofs').uploadBinary(path, bytes);
+          '${DateTime.now().millisecondsSinceEpoch}_${proof.fileName}';
+      await _client.storage
+          .from('payment_proofs')
+          .uploadBinary(path, proof.bytes);
       await _client.rpc('submit_payment_proof', params: {
         'p_order_id': orderId,
         'p_path': path,

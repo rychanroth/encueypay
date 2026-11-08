@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/picked_file.dart';
 import '../../data/repository/admin_repository_impl.dart';
 import '../../domain/entities/admin.dart';
 
@@ -34,10 +35,10 @@ class AdminBrandsController extends _$AdminBrandsController {
   /// Uploads brand imagery into `catalog_assets` and returns the stored
   /// path (DESIGN.md imagery pipeline). Errors surface as [Failure]s for
   /// the caller to render — the widget shows them via snackbar.
-  Future<String> uploadImage({required String filePath}) {
+  Future<String> uploadImage({required PickedFile image}) {
     return ref
         .read(adminRepositoryProvider)
-        .uploadCatalogImage(filePath: filePath);
+        .uploadCatalogImage(image: image);
   }
 
   // Named `edit`, not `update`: Riverpod's generated async notifier already

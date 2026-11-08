@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/picked_file.dart';
 import '../../data/repository/promotions_repository_impl.dart';
 import '../../domain/entities/promotion.dart';
 
@@ -23,8 +24,7 @@ class AdminSalesController extends _$AdminSalesController {
     DateTime? endsAt,
     String? brandId,
     String? categoryId,
-    String? filePath,
-    String? fileName,
+    PickedFile? image,
   }) async {
     final current = state.value ?? const <ManagedSale>[];
     state = await AsyncValue.guard(() async {
@@ -38,8 +38,7 @@ class AdminSalesController extends _$AdminSalesController {
             endsAt: endsAt,
             brandId: brandId,
             categoryId: categoryId,
-            filePath: filePath,
-            fileName: fileName,
+            image: image,
           );
       ref.invalidateSelf();
       return current;
@@ -136,16 +135,14 @@ class AdminBannersController extends _$AdminBannersController {
   Future<void> createBanner({
     required String name,
     required String description,
-    required String filePath,
-    required String fileName,
+    required PickedFile image,
   }) async {
     final current = state.value ?? const <ManagedBanner>[];
     state = await AsyncValue.guard(() async {
       await ref.read(promotionsRepositoryProvider).createBanner(
             name: name,
             description: description,
-            filePath: filePath,
-            fileName: fileName,
+            image: image,
           );
       ref.invalidateSelf();
       return current;

@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/promotion.dart';
@@ -46,12 +45,11 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   /// (the sale/banner RPCs store URLs, not bare paths). The path is kept
   /// separately so a rejected sale write can clean up the orphan object.
   Future<({String path, String url})> _uploadPromoAsset({
-    required String filePath,
-    required String fileName,
+    required PickedFile image,
   }) async {
-    final bytes = await File(filePath).readAsBytes();
-    final path = '$_uid/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-    await _client.storage.from('promo_assets').uploadBinary(path, bytes);
+    final path =
+        '$_uid/${DateTime.now().millisecondsSinceEpoch}_${image.fileName}';
+    await _client.storage.from('promo_assets').uploadBinary(path, image.bytes);
     return (
       path: path,
       url: _client.storage.from('promo_assets').getPublicUrl(path),
@@ -155,16 +153,12 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     DateTime? endsAt,
     String? brandId,
     String? categoryId,
-    String? filePath,
-    String? fileName,
+    PickedFile? image,
   }) async {
     ({String path, String url})? uploaded;
     try {
-      if (filePath != null && fileName != null) {
-        uploaded = await _uploadPromoAsset(
-          filePath: filePath,
-          fileName: fileName,
-        );
+      if (image != null) {
+        uploaded = await _uploadPromoAsset(image: image);
       }
       await _client.rpc('admin_create_sale', params: {
         'p_name': name,
@@ -231,14 +225,14 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   Future<void> createBanner({
     required String name,
     required String description,
-    required String filePath,
-    required String fileName,
+    required PickedFile image,
   }) async {
     try {
-      final bytes = await File(filePath).readAsBytes();
       final path = '$_uid/'
-          '${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      await _client.storage.from('promo_assets').uploadBinary(path, bytes);
+          '${DateTime.now().millisecondsSinceEpoch}_${image.fileName}';
+      await _client.storage
+          .from('promo_assets')
+          .uploadBinary(path, image.bytes);
       final url = _client.storage.from('promo_assets').getPublicUrl(path);
       await _client.rpc('admin_create_banner', params: {
         'p_name': name,

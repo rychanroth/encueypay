@@ -39,7 +39,7 @@ final class ProfileControllerProvider
   ProfileController create() => ProfileController();
 }
 
-String _$profileControllerHash() => r'75cb2306f93f58034afb3d3fb2262e05196ee245';
+String _$profileControllerHash() => r'f961b4d4739dd8218a46a2e250e52ffe50204ccc';
 
 /// Plain one-shot fetch + mutation — controllers MAY call the repository
 /// directly for fetches (DOMAIN-03). Mutations follow PRES-03.

@@ -6,6 +6,7 @@ import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
@@ -28,10 +29,15 @@ class OrderDetailScreen extends ConsumerWidget {
       type: FileType.custom,
       allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
     );
-    if (file == null || file.path == null) return;
+    if (file == null) return;
     final uploaded = await ref
         .read(orderDetailControllerProvider(orderId).notifier)
-        .uploadProof(filePath: file.path!, fileName: file.name);
+        .uploadProof(
+          proof: PickedFile(
+            bytes: await file.readAsBytes(),
+            fileName: file.name,
+          ),
+        );
     if (!uploaded || !context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

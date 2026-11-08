@@ -1,3 +1,4 @@
+import '../../../../core/domain/picked_file.dart';
 import '../../domain/entities/promotion.dart';
 
 /// Admin surface for sales, coupon codes and banners (spec §58 Promotions
@@ -32,8 +33,7 @@ abstract interface class IPromotionsRepository {
     DateTime? endsAt,
     String? brandId,
     String? categoryId,
-    String? filePath,
-    String? fileName,
+    PickedFile? image,
   });
 
   /// Sale kill switch: deactivates the sale (chips, struck prices and
@@ -57,8 +57,7 @@ abstract interface class IPromotionsRepository {
   Future<void> createBanner({
     required String name,
     required String description,
-    required String filePath,
-    required String fileName,
+    required PickedFile image,
   });
 
   Future<void> moderateBanner({

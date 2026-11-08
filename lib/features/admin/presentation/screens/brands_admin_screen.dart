@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
@@ -16,7 +17,7 @@ class BrandsAdminScreen extends ConsumerWidget {
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
-    String? pickedLocalPath;
+    PickedFile? pickedImage;
     final created = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -38,7 +39,7 @@ class BrandsAdminScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               CatalogImagePickField(
                 label: 'Logo image (optional)',
-                onPicked: (path) => pickedLocalPath = path,
+                onPicked: (pick) => pickedImage = pick,
               ),
             ],
           ),
@@ -68,7 +69,7 @@ class BrandsAdminScreen extends ConsumerWidget {
     try {
       imagePath = await _resolveImagePath(
         ref,
-        pickedLocalPath: pickedLocalPath,
+        pickedImage: pickedImage,
         existingPath: null,
       );
     } on Failure catch (error) {
@@ -94,13 +95,13 @@ class BrandsAdminScreen extends ConsumerWidget {
   /// declared outside the dialog.
   Future<String?> _resolveImagePath(
     WidgetRef ref, {
-    required String? pickedLocalPath,
+    required PickedFile? pickedImage,
     required String? existingPath,
   }) async {
-    if (pickedLocalPath != null) {
+    if (pickedImage != null) {
       return ref
           .read(adminBrandsControllerProvider.notifier)
-          .uploadImage(filePath: pickedLocalPath);
+          .uploadImage(image: pickedImage);
     }
     return existingPath;
   }
@@ -114,7 +115,7 @@ class BrandsAdminScreen extends ConsumerWidget {
     final descriptionController = TextEditingController(
       text: brand.description,
     );
-    String? pickedLocalPath;
+    PickedFile? pickedImage;
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -137,7 +138,7 @@ class BrandsAdminScreen extends ConsumerWidget {
                 label: 'Logo image (optional)',
                 existingUrl: brand.imageUrl,
                 existingPath: brand.imagePath,
-                onPicked: (path) => pickedLocalPath = path,
+                onPicked: (pick) => pickedImage = pick,
               ),
             ],
           ),
@@ -167,7 +168,7 @@ class BrandsAdminScreen extends ConsumerWidget {
     try {
       imagePath = await _resolveImagePath(
         ref,
-        pickedLocalPath: pickedLocalPath,
+        pickedImage: pickedImage,
         existingPath: brand.imagePath,
       );
     } on Failure catch (error) {

@@ -1717,7 +1717,7 @@ mixin _$AdminProductVariantDraft {
 
  String? get id; String get name;/// Required for authored variants. The form never sends the null-price
 /// single-price placeholder (the server manages it).
- int? get priceMinor; String? get imagePath; String? get imageLocalPath;
+ int? get priceMinor; String? get imagePath; PickedFile? get imagePick;
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1728,16 +1728,16 @@ $AdminProductVariantDraftCopyWith<AdminProductVariantDraft> get copyWith => _$Ad
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductVariantDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.imageLocalPath, imageLocalPath) || other.imageLocalPath == imageLocalPath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductVariantDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.imagePick, imagePick) || other.imagePick == imagePick));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,priceMinor,imagePath,imageLocalPath);
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor,imagePath,imagePick);
 
 @override
 String toString() {
-  return 'AdminProductVariantDraft(id: $id, name: $name, priceMinor: $priceMinor, imagePath: $imagePath, imageLocalPath: $imageLocalPath)';
+  return 'AdminProductVariantDraft(id: $id, name: $name, priceMinor: $priceMinor, imagePath: $imagePath, imagePick: $imagePick)';
 }
 
 
@@ -1748,7 +1748,7 @@ abstract mixin class $AdminProductVariantDraftCopyWith<$Res>  {
   factory $AdminProductVariantDraftCopyWith(AdminProductVariantDraft value, $Res Function(AdminProductVariantDraft) _then) = _$AdminProductVariantDraftCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, int? priceMinor, String? imagePath, String? imageLocalPath
+ String? id, String name, int? priceMinor, String? imagePath, PickedFile? imagePick
 });
 
 
@@ -1765,14 +1765,14 @@ class _$AdminProductVariantDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? priceMinor = freezed,Object? imagePath = freezed,Object? imageLocalPath = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? priceMinor = freezed,Object? imagePath = freezed,Object? imagePick = freezed,}) {
   return _then(AdminProductVariantDraft(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
 as int?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
-as String?,imageLocalPath: freezed == imageLocalPath ? _self.imageLocalPath : imageLocalPath // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,imagePick: freezed == imagePick ? _self.imagePick : imagePick // ignore: cast_nullable_to_non_nullable
+as PickedFile?,
   ));
 }
 
@@ -1857,10 +1857,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  int? priceMinor,  String? imagePath,  String? imageLocalPath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  int? priceMinor,  String? imagePath,  PickedFile? imagePick)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminProductVariantDraft() when $default != null:
-return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imageLocalPath);case _:
+return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imagePick);case _:
   return orElse();
 
 }
@@ -1878,10 +1878,10 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.image
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  int? priceMinor,  String? imagePath,  String? imageLocalPath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  int? priceMinor,  String? imagePath,  PickedFile? imagePick)  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductVariantDraft():
-return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imageLocalPath);case _:
+return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imagePick);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1898,10 +1898,10 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.image
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  int? priceMinor,  String? imagePath,  String? imageLocalPath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  int? priceMinor,  String? imagePath,  PickedFile? imagePick)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductVariantDraft() when $default != null:
-return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imageLocalPath);case _:
+return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.imagePick);case _:
   return null;
 
 }
@@ -1913,7 +1913,7 @@ return $default(_that.id,_that.name,_that.priceMinor,_that.imagePath,_that.image
 
 
 class _AdminProductVariantDraft implements AdminProductVariantDraft {
-  const _AdminProductVariantDraft({this.id, required this.name, this.priceMinor, this.imagePath, this.imageLocalPath});
+  const _AdminProductVariantDraft({this.id, required this.name, this.priceMinor, this.imagePath, this.imagePick});
   
 
 @override final  String? id;
@@ -1922,7 +1922,7 @@ class _AdminProductVariantDraft implements AdminProductVariantDraft {
 /// single-price placeholder (the server manages it).
 @override final  int? priceMinor;
 @override final  String? imagePath;
-@override final  String? imageLocalPath;
+@override final  PickedFile? imagePick;
 
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1934,16 +1934,16 @@ _$AdminProductVariantDraftCopyWith<_AdminProductVariantDraft> get copyWith => __
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductVariantDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.imageLocalPath, imageLocalPath) || other.imageLocalPath == imageLocalPath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductVariantDraft&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.priceMinor, priceMinor) || other.priceMinor == priceMinor)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath)&&(identical(other.imagePick, imagePick) || other.imagePick == imagePick));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,priceMinor,imagePath,imageLocalPath);
+int get hashCode => Object.hash(runtimeType,id,name,priceMinor,imagePath,imagePick);
 
 @override
 String toString() {
-  return 'AdminProductVariantDraft(id: $id, name: $name, priceMinor: $priceMinor, imagePath: $imagePath, imageLocalPath: $imageLocalPath)';
+  return 'AdminProductVariantDraft(id: $id, name: $name, priceMinor: $priceMinor, imagePath: $imagePath, imagePick: $imagePick)';
 }
 
 
@@ -1954,7 +1954,7 @@ abstract mixin class _$AdminProductVariantDraftCopyWith<$Res> implements $AdminP
   factory _$AdminProductVariantDraftCopyWith(_AdminProductVariantDraft value, $Res Function(_AdminProductVariantDraft) _then) = __$AdminProductVariantDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, int? priceMinor, String? imagePath, String? imageLocalPath
+ String? id, String name, int? priceMinor, String? imagePath, PickedFile? imagePick
 });
 
 
@@ -1971,14 +1971,14 @@ class __$AdminProductVariantDraftCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductVariantDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? priceMinor = freezed,Object? imagePath = freezed,Object? imageLocalPath = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? priceMinor = freezed,Object? imagePath = freezed,Object? imagePick = freezed,}) {
   return _then(_AdminProductVariantDraft(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,priceMinor: freezed == priceMinor ? _self.priceMinor : priceMinor // ignore: cast_nullable_to_non_nullable
 as int?,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
-as String?,imageLocalPath: freezed == imageLocalPath ? _self.imageLocalPath : imageLocalPath // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,imagePick: freezed == imagePick ? _self.imagePick : imagePick // ignore: cast_nullable_to_non_nullable
+as PickedFile?,
   ));
 }
 

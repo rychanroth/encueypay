@@ -145,6 +145,10 @@ same result). Notes:
    (the app sends exactly this as `redirectTo` on mobile OAuth —
    `auth_repository_impl.dart` `_oauthRedirect`).
 
+   For a web build, also add the origin it is served from (the browser
+   returns there instead of a custom scheme), e.g. `https://app.example.com`
+   or `http://localhost:8080` for local `flutter run -d chrome`.
+
 No app code change: the Android intent-filter / iOS URL scheme are already
 wired, and the hosted auth server bridges Google's callback to the deep
 link itself.

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/picked_file.dart';
 import '../../data/repository/admin_repository_impl.dart';
 import '../../domain/entities/admin.dart';
 
@@ -31,10 +32,10 @@ class AdminCategoriesController extends _$AdminCategoriesController {
 
   /// Uploads category imagery into `catalog_assets` and returns the stored
   /// path (DESIGN.md imagery pipeline).
-  Future<String> uploadImage({required String filePath}) {
+  Future<String> uploadImage({required PickedFile image}) {
     return ref
         .read(adminRepositoryProvider)
-        .uploadCatalogImage(filePath: filePath);
+        .uploadCatalogImage(image: image);
   }
 
   Future<void> rename({

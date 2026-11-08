@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/user_profile.dart';
@@ -44,12 +45,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _changePhoto() async {
     if (_uploadingAvatar) return;
     final file = await FilePicker.pickFile(type: FileType.image);
-    if (!mounted || file == null || file.path == null) return;
+    if (!mounted || file == null) return;
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _uploadingAvatar = true);
     final error = await ref
         .read(profileControllerProvider.notifier)
-        .updateAvatar(filePath: file.path!);
+        .updateAvatar(
+          image: PickedFile(
+            bytes: await file.readAsBytes(),
+            fileName: file.name,
+          ),
+        );
     if (!mounted) return;
     setState(() => _uploadingAvatar = false);
     messenger

@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/domain/picked_file.dart';
 import '../../data/repository/admin_repository_impl.dart';
 import '../../domain/entities/admin.dart';
 
@@ -74,28 +75,28 @@ class AdminProductsController extends _$AdminProductsController {
   /// paths. Returns the new product id (the caller navigates or resets).
   Future<void> createWithImages({
     required AdminProductDraft draft,
-    required List<String> imageFilePaths,
+    required List<PickedFile> imagePicks,
   }) async {
     final current = state.value ?? const <AdminProductSummary>[];
     state = await AsyncValue.guard(() async {
       final repo = ref.read(adminRepositoryProvider);
       final resolvedVariants = <AdminProductVariantDraft>[];
       for (final variant in draft.variants) {
-        final local = variant.imageLocalPath;
-        if (local == null) {
+        final pick = variant.imagePick;
+        if (pick == null) {
           resolvedVariants.add(variant);
           continue;
         }
-        final imagePath = await repo.uploadVariantImage(filePath: local);
+        final imagePath = await repo.uploadVariantImage(image: pick);
         resolvedVariants.add(
-          variant.copyWith(imagePath: imagePath, imageLocalPath: null),
+          variant.copyWith(imagePath: imagePath, imagePick: null),
         );
       }
       final productId = await repo.createProduct(
         draft.copyWith(variants: resolvedVariants),
       );
-      for (final path in imageFilePaths) {
-        await repo.addProductImage(productId: productId, filePath: path);
+      for (final pick in imagePicks) {
+        await repo.addProductImage(productId: productId, image: pick);
       }
       ref.invalidateSelf();
       return current;
@@ -104,26 +105,26 @@ class AdminProductsController extends _$AdminProductsController {
 
   Future<void> updateWithImages({
     required AdminProductDraft draft,
-    required List<String> newImageFilePaths,
+    required List<PickedFile> newImagePicks,
   }) async {
     final current = state.value ?? const <AdminProductSummary>[];
     state = await AsyncValue.guard(() async {
       final repo = ref.read(adminRepositoryProvider);
       final resolvedVariants = <AdminProductVariantDraft>[];
       for (final variant in draft.variants) {
-        final local = variant.imageLocalPath;
-        if (local == null) {
+        final pick = variant.imagePick;
+        if (pick == null) {
           resolvedVariants.add(variant);
           continue;
         }
-        final imagePath = await repo.uploadVariantImage(filePath: local);
+        final imagePath = await repo.uploadVariantImage(image: pick);
         resolvedVariants.add(
-          variant.copyWith(imagePath: imagePath, imageLocalPath: null),
+          variant.copyWith(imagePath: imagePath, imagePick: null),
         );
       }
       await repo.updateProduct(draft.copyWith(variants: resolvedVariants));
-      for (final path in newImageFilePaths) {
-        await repo.addProductImage(productId: draft.id!, filePath: path);
+      for (final pick in newImagePicks) {
+        await repo.addProductImage(productId: draft.id!, image: pick);
       }
       ref.invalidateSelf();
       return current;

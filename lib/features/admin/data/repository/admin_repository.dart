@@ -1,3 +1,4 @@
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/admin.dart';
 
@@ -27,7 +28,7 @@ abstract interface class IAdminRepository {
   /// Uploads brand/category imagery into the public `catalog_assets` bucket
   /// (DESIGN.md imagery pipeline) and returns the stored path (or an
   /// http(s) reference passthrough). Admin-write RLS applies.
-  Future<String> uploadCatalogImage({required String filePath});
+  Future<String> uploadCatalogImage({required PickedFile image});
 
   Future<void> deleteCategory({required String categoryId});
 
@@ -75,17 +76,17 @@ abstract interface class IAdminRepository {
 
   /// Uploads the file into `product_images` under the owning business's path
   /// convention, then registers the reference via the admin RPC. The file
-  /// name is derived from [filePath].
+  /// name is derived from [image].
   Future<void> addProductImage({
     required String productId,
-    required String filePath,
+    required PickedFile image,
   });
 
   /// Uploads a variant image pick into `product_images` (variants/ folder)
   /// and returns the storage path — the variant row references it directly
   /// (no product_images row; the customer-facing embed resolves the public
   /// URL).
-  Future<String> uploadVariantImage({required String filePath});
+  Future<String> uploadVariantImage({required PickedFile image});
 
   Future<void> removeProductImage({
     required String imageId,

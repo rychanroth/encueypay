@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../../core/domain/picked_file.dart';
+
 part 'admin.freezed.dart';
 
 @freezed
@@ -135,9 +137,9 @@ abstract class AdminProductDraft with _$AdminProductDraft {
 /// One variant row authored in the product form. [id] is null for new rows
 /// (fresh authoring on create or edit); non-null rows update the existing
 /// variant in place. [imagePath] is the variant's existing storage path
-/// (kept on save when no fresh pick replaces it); [imageLocalPath] is a
-/// fresh pick awaiting upload — the controller uploads it and resolves the
-/// final path before the RPC call.
+/// (kept on save when no fresh pick replaces it); [imagePick] is a fresh pick
+/// awaiting upload — the controller uploads it and resolves the final path
+/// before the RPC call.
 @freezed
 abstract class AdminProductVariantDraft with _$AdminProductVariantDraft {
   const factory AdminProductVariantDraft({
@@ -148,7 +150,7 @@ abstract class AdminProductVariantDraft with _$AdminProductVariantDraft {
     /// single-price placeholder (the server manages it).
     int? priceMinor,
     String? imagePath,
-    String? imageLocalPath,
+    PickedFile? imagePick,
   }) = _AdminProductVariantDraft;
 }
 

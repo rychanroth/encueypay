@@ -37,7 +37,7 @@ final class AdminSalesControllerProvider
 }
 
 String _$adminSalesControllerHash() =>
-    r'5450201cec8e435fa4a132422cd769abb6e4e9f7';
+    r'b6f5238314b2408f3c359c17c5576055ba05d6b6';
 
 /// Admin sales management (Section 9): the group-pricing layer.
 
@@ -145,7 +145,7 @@ final class AdminBannersControllerProvider
 }
 
 String _$adminBannersControllerHash() =>
-    r'2bf24b75db6b3304c561391a5848a09b3542e119';
+    r'f7cf2d94f0c5a8504b034992f56dc63e203693d6';
 
 /// Banner moderation list (Section 5b — banners are their own table).
 

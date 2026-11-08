@@ -1,4 +1,5 @@
 import '../../domain/entities/user_profile.dart';
+import '../../../../core/domain/picked_file.dart';
 
 /// Profile contract for the profile feature (DATA-03).
 abstract interface class IProfileRepository {
@@ -10,7 +11,7 @@ abstract interface class IProfileRepository {
     required String phone,
   });
 
-  /// Uploads [filePath] to the public `avatars` bucket under the caller's
+  /// Uploads [image] to the public `avatars` bucket under the caller's
   /// `{uid}/` folder and stores the resolved public URL on the user row.
-  Future<void> updateMyAvatar({required String filePath});
+  Future<void> updateMyAvatar({required PickedFile image});
 }

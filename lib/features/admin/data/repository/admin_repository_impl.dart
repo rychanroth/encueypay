@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
@@ -58,12 +58,13 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<String> uploadCatalogImage({required String filePath}) async {
+  Future<String> uploadCatalogImage({required PickedFile image}) async {
     try {
-      final fileName = filePath.split(Platform.pathSeparator).last;
+      final fileName = image.fileName;
       final path = 'catalog/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      final bytes = await File(filePath).readAsBytes();
-      await _client.storage.from('catalog_assets').uploadBinary(path, bytes);
+      await _client.storage
+          .from('catalog_assets')
+          .uploadBinary(path, image.bytes);
       return path;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
@@ -431,18 +432,19 @@ class AdminRepositoryImpl implements IAdminRepository {
   @override
   Future<void> addProductImage({
     required String productId,
-    required String filePath,
+    required PickedFile image,
   }) async {
     try {
       // The storage path's first segment must be the owning business id —
       // Images live under the product's own folder (single-seller
       // convention); admins may write any folder in the bucket.
-      final fileName = filePath.split(Platform.pathSeparator).last;
-      final bytes = await File(filePath).readAsBytes();
+      final fileName = image.fileName;
       // Single-seller convention: images live under the product's own folder.
       final path =
           '$productId/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      await _client.storage.from('product_images').uploadBinary(path, bytes);
+      await _client.storage
+          .from('product_images')
+          .uploadBinary(path, image.bytes);
       await _client.rpc('admin_add_product_image', params: {
         'p_product_id': productId,
         'p_storage_path': path,
@@ -455,16 +457,17 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<String> uploadVariantImage({required String filePath}) async {
+  Future<String> uploadVariantImage({required PickedFile image}) async {
     try {
-      final fileName = filePath.split(Platform.pathSeparator).last;
-      final bytes = await File(filePath).readAsBytes();
+      final fileName = image.fileName;
       // Variant images live in their own folder of the public bucket — the
       // variant row references the path directly (no product_images row;
       // the customer embed resolves the public URL).
       final path =
           'variants/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      await _client.storage.from('product_images').uploadBinary(path, bytes);
+      await _client.storage
+          .from('product_images')
+          .uploadBinary(path, image.bytes);
       return path;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);

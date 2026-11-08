@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../domain/entities/user_profile.dart';
@@ -60,16 +59,15 @@ class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   @override
-  Future<void> updateMyAvatar({required String filePath}) async {
+  Future<void> updateMyAvatar({required PickedFile image}) async {
     try {
-      final fileName = filePath.split(Platform.pathSeparator).last;
+      final fileName = image.fileName;
       // {uid}/... matches the avatars bucket RLS: users write only their
       // own folder. The public URL is what the users row stores, matching
       // the OAuth-provided avatar convention.
       final path =
           '$_uid/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-      final bytes = await File(filePath).readAsBytes();
-      await _client.storage.from('avatars').uploadBinary(path, bytes);
+      await _client.storage.from('avatars').uploadBinary(path, image.bytes);
       final url = _client.storage.from('avatars').getPublicUrl(path);
       await _client
           .from('users')

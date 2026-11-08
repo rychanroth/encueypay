@@ -6,6 +6,7 @@ import '../../../../core/presentation/widgets/async_value_widget.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/domain/picked_file.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/promotion.dart';
@@ -71,7 +72,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
     var scope = SaleScope.platform;
     String? brandId;
     String? categoryId;
-    PlatformFile? bannerFile;
+    PickedFile? bannerPick;
     DateTime? startsAt;
     DateTime? endsAt;
     // Await the scope options BEFORE opening the dialog — a ref.read inside
@@ -210,21 +211,24 @@ class AdminPromotionsScreen extends ConsumerWidget {
                         onPressed: () async {
                           final file = await FilePicker.pickFile(
                               type: FileType.image);
-                          if (file != null) {
-                            setDialogState(() => bannerFile = file);
-                          }
+                          if (file == null) return;
+                          final pick = PickedFile(
+                            bytes: await file.readAsBytes(),
+                            fileName: file.name,
+                          );
+                          setDialogState(() => bannerPick = pick);
                         },
                         icon: const Icon(Icons.image_outlined, size: 18),
-                        label: Text(bannerFile == null
+                        label: Text(bannerPick == null
                             ? 'Attach banner image'
-                            : bannerFile!.name),
+                            : bannerPick!.fileName),
                       ),
-                      if (bannerFile != null)
+                      if (bannerPick != null)
                         IconButton(
                           tooltip: 'Remove banner image',
                           icon: const Icon(Icons.close, size: 18),
                           onPressed: () =>
-                              setDialogState(() => bannerFile = null),
+                              setDialogState(() => bannerPick = null),
                         ),
                     ],
                   ),
@@ -294,8 +298,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
           endsAt: endsAt,
           brandId: scope == SaleScope.brand ? brandId : null,
           categoryId: scope == SaleScope.category ? categoryId : null,
-          filePath: bannerFile?.path,
-          fileName: bannerFile?.name,
+          image: bannerPick,
         );
   }
 
@@ -480,7 +483,12 @@ class AdminPromotionsScreen extends ConsumerWidget {
   /// Display-only banner: inert imagery with no sale behind it.
   Future<void> _createDisplayBanner(BuildContext context, WidgetRef ref) async {
     final file = await FilePicker.pickFile(type: FileType.image);
-    if (file == null || file.path == null || !context.mounted) return;
+    if (file == null || !context.mounted) return;
+    final image = PickedFile(
+      bytes: await file.readAsBytes(),
+      fileName: file.name,
+    );
+    if (!context.mounted) return;
     final name = TextEditingController();
     final submitted = await showDialog<bool>(
       context: context,
@@ -507,8 +515,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
     await ref.read(adminBannersControllerProvider.notifier).createBanner(
           name: name.text.trim(),
           description: '',
-          filePath: file.path!,
-          fileName: file.name,
+          image: image,
         );
   }
 

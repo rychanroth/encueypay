@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,11 +18,34 @@ final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   return AuthRepositoryImpl(ref.watch(supabaseClientProvider));
 });
 
-/// Deep link the OAuth provider redirects back to (mobile). Must be
+/// Deep link the OAuth provider redirects back to on mobile/desktop. Must be
 /// registered in the dashboard (Auth → URL Configuration → Redirect URLs)
 /// and in the platform manifests (Android intent-filter / iOS URL scheme).
 /// The SDK subscribes to the deep links itself — no app-side listener.
+///
+/// Web cannot use a custom scheme: the browser returns to the page the app
+/// is served from (the SDK then exchanges the `?code=` in that URL), so
+/// [_webOauthRedirect] reports that origin instead.
 const _oauthRedirect = 'io.supabase.encueypay://login-callback/';
+
+/// Where the browser returns after Google on web: the app's own URL with the
+/// query and fragment stripped (hash routing keeps the route in a `#/...`
+/// fragment, which must not leak into `redirectTo`). Rebuilt explicitly
+/// because `Uri.replace` treats null arguments as "keep the current value".
+/// The path is preserved so a sub-path deployment still returns correctly.
+String get _webOauthRedirect {
+  final base = Uri.base;
+  // Root deployments return to the bare origin, matching the allow-list
+  // entry (Supabase compares exact URLs). A sub-path deployment keeps its
+  // path so the app, not the host root, receives the code.
+  final path = base.path == '/' ? '' : base.path;
+  return Uri(
+    scheme: base.scheme,
+    host: base.host,
+    port: base.port,
+    path: path,
+  ).toString();
+}
 
 class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl(this._client);
@@ -96,7 +120,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final launched = await _client.auth
           .signInWithOAuth(
             OAuthProvider.google,
-            redirectTo: _oauthRedirect,
+            redirectTo: kIsWeb ? _webOauthRedirect : _oauthRedirect,
           )
           .timeout(const Duration(seconds: 20));
       if (!launched) {
