@@ -292,6 +292,7 @@ async function simplifiedTimeline(labels, currentIndex) {
 
 async function buildOrderTrackingCard(parent, log) {
   const variants = [];
+  const CARD_W = 342;
   const states = ["InFlight", "Delivered", "Cancelled"];
   const details = ["Simplified", "ExactStatus"];
   const headlines = {
@@ -327,13 +328,28 @@ async function buildOrderTrackingCard(parent, log) {
         exact.fills = [];
         autolayout(exact, { dir: "VERTICAL", gap: 0 });
         c.appendChild(exact);
-        // Reuse the timeline component instance.
+        // Reuse the timeline component instance. A cancelled order shows the
+        // terminal banner, not a forward track — matching OrderStatusTimeline,
+        // which replaces the stages with a callout
+        // (lib/features/orders/presentation/widgets/order_status_timeline.dart).
+        // The stage axis is inert for Terminal=Cancelled (all three variants
+        // draw the same banner), so keep Current and vary only the terminal.
+        const terminal = state === "Cancelled" ? "Cancelled" : "InFlight";
         const tlComp = CTX.page.findOne(
-          (n) => n.type === "COMPONENT" && n.name === "StageState=Current, Terminal=InFlight"
+          (n) => n.type === "COMPONENT" && n.name === `StageState=Current, Terminal=${terminal}`
         );
         if (tlComp) {
           const inst = tlComp.createInstance();
           exact.appendChild(inst);
+          if (terminal === "Cancelled") {
+            // The banner is authored at 326 wide; the card's content box is
+            // CARD_W - 2*16 pad, so fit it rather than bleed to the border.
+            try {
+              inst.resize(CARD_W - 32, inst.height);
+            } catch (e) {
+              warn("could not fit the cancelled banner to the card's content box");
+            }
+          }
         } else {
           warn("OrderStatusTimeline instance not found; card renders without the exact track");
         }
@@ -343,7 +359,7 @@ async function buildOrderTrackingCard(parent, log) {
         c.appendChild(await text("Show exact status", "labelLarge", "color/primary"));
       }
 
-      fixedWidth(c, 342);
+      fixedWidth(c, CARD_W);
       logVariant(c, log);
       variants.push(c);
     }
@@ -441,7 +457,13 @@ async function buildProductCard(parent, log) {
           const heart = icon(wishlisted === "Yes" ? "favorite" : "favorite_border", wishlisted === "Yes" ? "color/error" : null);
           if (heart) {
             image.appendChild(heart);
-            if (wishlisted !== "Yes") heart.fills = [literal("#FFFFFF")];
+            // Recolour the vectors: an instance's own `fills` do not paint over
+            // the child vector's fill, so the unsaved heart stayed on-surface.
+            if (wishlisted !== "Yes") {
+              heart.findAll((n) => n.type === "VECTOR").forEach((v) => {
+                v.fills = [literal("#FFFFFF")];
+              });
+            }
             heart.x = W - 32;
             heart.y = 8;
           }

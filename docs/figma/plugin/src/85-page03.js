@@ -107,10 +107,15 @@ async function storyboardStep(parent, index, caption) {
 async function batchContracts(log) {
   const page = await contractsPage();
   const own = ["Motion · tokens", "Motion · storyboard", "Contracts · invariants"];
-  page.children.filter((n) => own.includes(n.name)).forEach((n) => n.remove());
+  // The heading and subtitle are page children, not part of any docCard, so a
+  // re-run used to append a second copy at the same (80, 40). Sweep them too.
+  page.children
+    .filter((n) => own.includes(n.name) || n.type === "TEXT")
+    .forEach((n) => n.remove());
 
   const title = await text("Motion & cross-cutting contracts", "headlineMedium", "color/on-surface");
   page.appendChild(title);
+  title.name = "Contracts · title";
   title.x = 80;
   title.y = 40;
 
@@ -120,6 +125,7 @@ async function batchContracts(log) {
     "color/on-surface-variant"
   );
   page.appendChild(sub);
+  sub.name = "Contracts · subtitle";
   sub.x = 80;
   sub.y = 84;
 
