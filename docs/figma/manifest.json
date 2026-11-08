@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "status": "planned",
+  "sourceCommit": "81dc7a7",
+  "generatedAt": "2026-11-08",
+  "figmaAccount": {
+    "handle": "rychanroth",
+    "email": "rychanroth2009@gmail.com",
+    "planKey": "team::1556872439110631612",
+    "plan": "Ry Chanroth's team",
+    "tier": "starter",
+    "seat": "View",
+    "readQuotaPerMonth": 20,
+    "codeLayersEnabled": true
+  },
+  "files": {
+    "design": {
+      "fileName": "EncueYPay — Product Spec (as-built)",
+      "editorType": "design",
+      "fileKey": null,
+      "url": null,
+      "status": "not-created",
+      "pageIds": {}
+    },
+    "flows": {
+      "fileName": "EncueYPay — Flows & Data",
+      "editorType": "figjam",
+      "fileKey": null,
+      "url": null,
+      "status": "not-created",
+      "pageIds": {}
+    }
+  },
+  "pages": [
+    { "id": "00", "name": "00 · Cover & Index", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "01", "name": "01 · Foundations", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "02", "name": "02 · Components", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "03", "name": "03 · Customer", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "04", "name": "04 · Admin", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "05", "name": "05 · States & Edge Cases", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "06", "name": "06 · Motion Storyboard", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "07", "name": "07 · Contracts", "file": "design", "pageId": null, "nodeIds": [] },
+    { "id": "F1", "name": "Flows & Data", "file": "flows", "pageId": null, "nodeIds": [] }
+  ],
+  "counts": {
+    "screens": 30,
+    "pixelScreens": 15,
+    "wireScreens": 15,
+    "components": 19,
+    "colorVariables": 36,
+    "textStyles": 13,
+    "diagrams": 9
+  },
+  "substitutions": {
+    "font": null,
+    "icons": null,
+    "notes": "Record any font or icon substitution here at P1. Null means the canonical value was used."
+  },
+  "history": [
+    {
+      "at": "2026-11-08",
+      "event": "spec-extracted",
+      "detail": "tokens/components/screens/flows generated from code + handoff at 81dc7a7; no Figma writes performed."
+    }
+  ]
+}

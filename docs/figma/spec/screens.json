@@ -1,0 +1,350 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "screens",
+  "sourceCommit": "81dc7a7",
+  "source": "docs/DEVELOPER-HANDOFF.md §4 (as-built), cross-checked against lib/core/router and lib/features/**/*_screen.dart",
+  "figma": {
+    "customerPage": "03 · Customer",
+    "adminPage": "04 · Admin",
+    "framePrefix": "Screen/",
+    "naming": "Screen/<routeName>/<state>  e.g. Screen/cart/loaded",
+    "frameSize": { "width": 390, "height": 844 },
+    "note": "Compact frames are authored at 390x844 with a 72dp bottom bar and a 56dp app bar. Medium/expanded variants are produced only for the pixel tier and only after the compact pass is approved."
+  },
+  "tiers": {
+    "pixel": "Built from component instances, real copy, real prices, light + dark. Target: visually indistinguishable from the running app.",
+    "wire": "Auto-layout blocks with labels and navigation; light mode only. Purpose: complete the inventory, not to look final."
+  },
+  "screens": [
+    {
+      "id": "login",
+      "route": "login",
+      "path": "/login",
+      "file": "lib/features/auth/presentation/screens/login_screen.dart",
+      "shell": "outside",
+      "tier": "pixel",
+      "sections": ["wallet icon 56dp", "EncueYPay headline", "subtitle", "full name (sign-up only)", "email", "password + visibility", "forgot password", "inline error", "primary submit", "mode toggle", "or divider", "Google button"],
+      "states": ["signin", "signup", "loading", "error", "reset-dialog"],
+      "notes": "Form capped at 400dp. Sign-up reveals the full-name field and changes the CTA copy."
+    },
+    {
+      "id": "home",
+      "route": "home",
+      "path": "/home",
+      "file": "lib/features/catalog/presentation/screens/home_screen.dart",
+      "shell": "customer tab 1",
+      "tier": "pixel",
+      "sections": ["AppBar title + notifications + avatar", "search pill", "Featured banner carousel 148dp + dots", "Shop by category 4:3 cards", "Top brands rail 108dp", "New arrivals grid"],
+      "states": ["loaded", "loading", "partial-error", "no-products", "image-fallback"],
+      "notes": "Banner autoplays every 5s only when >= 2 banners. Section errors are inline, not full-page."
+    },
+    {
+      "id": "productDetail",
+      "route": "productDetail",
+      "path": "/home/product/:id",
+      "file": "lib/features/catalog/presentation/screens/product_detail_screen.dart",
+      "shell": "nested under Home",
+      "tier": "pixel",
+      "sections": ["image pager 260dp + dots + KHQR badge", "variant thumbnail rail 64dp", "brand tag", "product name", "rating + count", "stock line", "dual-currency price", "sale chip", "store promises card", "description", "reviews", "related rail 140dp", "fixed bottom bar: wishlist + Add to Cart"],
+      "states": ["loaded", "loading", "error", "archived", "out-of-stock", "no-reviews", "variant-sheet", "sale-detail-sheet"],
+      "notes": "Archived and out-of-stock keep the page browsable with a disabled CTA."
+    },
+    {
+      "id": "notifications",
+      "route": "notifications",
+      "path": "/home/notifications",
+      "file": "lib/features/notifications/presentation/screens/notifications_screen.dart",
+      "shell": "nested under Home",
+      "tier": "pixel",
+      "sections": ["AppBar + Mark all read", "Today group", "Yesterday group", "Earlier group", "notification card: icon, title, content, time, unread dot, order row"],
+      "states": ["loaded", "empty", "loading", "stream-error"],
+      "notes": "Stream errors must not render the empty state."
+    },
+    {
+      "id": "discovery",
+      "route": "discovery",
+      "path": "/discovery?kind=&id=&name=&image=&q=",
+      "file": "lib/features/catalog/presentation/screens/discovery_screen.dart",
+      "shell": "customer tab 2",
+      "tier": "pixel",
+      "sections": ["search field", "dimension banner (removable)", "category chips (parents + children)", "brand chips", "result count + sort menu", "product grid", "pagination spinner", "empty state"],
+      "states": ["loaded", "filtered-deep-link", "empty", "loading", "error", "pagination"],
+      "notes": "Deep-link params seed filters; the remove affordance clears to unfiltered."
+    },
+    {
+      "id": "cart",
+      "route": "cart",
+      "path": "/cart",
+      "file": "lib/features/cart/presentation/screens/cart_screen.dart",
+      "shell": "customer tab 3",
+      "tier": "pixel",
+      "sections": ["AppBar + clear cart", "line card 64dp image: name, variant, unit x qty, line total, pill stepper, delete", "floating dock: total USD + KHR + Checkout"],
+      "states": ["loaded", "empty", "loading", "error", "sale-line", "mutation-failed", "clear-confirm"],
+      "notes": "Dock needs 148dp list bottom padding. Removal animates only after server-confirmed refetch."
+    },
+    {
+      "id": "checkout",
+      "route": "checkout",
+      "path": "/cart/checkout",
+      "file": "lib/features/checkout/presentation/screens/checkout_screen.dart",
+      "shell": "nested under Cart",
+      "tier": "pixel",
+      "sections": ["order items", "delivery address radio list + add", "delivery fee + COD/KHQR radio", "coupon input + applied/rejected tiles", "order note", "summary", "fixed bar: total + Place order"],
+      "states": ["loaded", "no-address", "empty-cart", "placing", "placement-error", "coupon-rejected", "preview-error"],
+      "notes": "Max content width 720dp. Single-page checkout; the multi-step wizard in docs/DESIGN.md is retired and must not be drawn."
+    },
+    {
+      "id": "orderPlaced",
+      "route": "orderPlaced",
+      "path": "/cart/checkout/placed/:id",
+      "file": "lib/features/checkout/presentation/screens/order_placed_screen.dart",
+      "shell": "nested under Cart",
+      "tier": "pixel",
+      "sections": ["status body", "compact order summary card", "View order details", "Back to Home"],
+      "states": ["cod-thanks", "qr-pending", "qr-verified", "qr-create-error", "payment-load-error", "saving-image-error"],
+      "notes": "Title switches between 'Complete payment' and 'Order summary'. Verified is the only paid state."
+    },
+    {
+      "id": "orders",
+      "route": "orders",
+      "path": "/orders",
+      "file": "lib/features/orders/presentation/screens/orders_screen.dart",
+      "shell": "customer tab 4",
+      "tier": "pixel",
+      "sections": ["filter chips All/Active/Completed/Cancelled", "date-range chip + clear", "order card: id, badge, date/item count, USD + KHR, Track Order, Leave Review", "pagination spinner"],
+      "states": ["loaded", "empty", "loading", "error", "filtered", "pagination"],
+      "notes": "Realtime refresh preserves filters and the loaded window."
+    },
+    {
+      "id": "reviewCompose",
+      "route": "reviewCompose",
+      "path": "/orders/review",
+      "file": "lib/features/reviews/presentation/screens/review_compose_screen.dart",
+      "shell": "nested under Orders",
+      "tier": "wire",
+      "sections": ["product name", "5 star buttons 36dp", "4-line text field", "submit", "read-only notice"],
+      "states": ["empty", "typed", "submitting", "error"],
+      "notes": "Router extra is (orderItemId, productId, productName)."
+    },
+    {
+      "id": "orderDetail",
+      "route": "orderDetail",
+      "path": "/orders/:id",
+      "file": "lib/features/orders/presentation/screens/order_detail_screen.dart",
+      "shell": "nested under Orders",
+      "tier": "pixel",
+      "sections": ["header id/status/date", "tracking card", "cancellation reason", "items", "payment + legacy proof upload", "shipping details", "totals", "delivered review list", "cancel order"],
+      "states": ["loaded", "loading", "error", "cancelled", "qr-paid", "proof-uploaded", "cancel-confirm"],
+      "notes": "No courier/ETA/warranty content. QR-paid orders are not cancellable."
+    },
+    {
+      "id": "profile",
+      "routes": ["profile", "adminAccount"],
+      "paths": ["/profile", "/admin/dashboard/account"],
+      "file": "lib/features/profile/presentation/screens/profile_screen.dart",
+      "shell": "customer tab 5 / admin nested",
+      "tier": "pixel",
+      "sections": ["identity card 64dp avatar + camera badge", "customer overview panel", "Edit profile", "Addresses", "Wishlist", "Settings", "Sign out"],
+      "states": ["customer-loaded", "admin-loaded", "loading", "error", "avatar-uploading", "signout-confirm"],
+      "notes": "Admin variant hides the customer overview, addresses, and wishlist."
+    },
+    {
+      "id": "profileEdit",
+      "routes": ["profileEdit", "adminProfileEdit"],
+      "paths": ["/profile/edit", "/admin/dashboard/account/edit"],
+      "file": "lib/features/profile/presentation/screens/profile_edit_screen.dart",
+      "shell": "nested under Profile / Account",
+      "tier": "wire",
+      "sections": ["full name (required)", "phone (optional)", "save"],
+      "states": ["prefilled", "saving", "error", "loading"],
+      "notes": "Late fetch must never overwrite typing."
+    },
+    {
+      "id": "addresses",
+      "route": "addresses",
+      "path": "/profile/addresses",
+      "file": "lib/features/profile/presentation/screens/addresses_screen.dart",
+      "shell": "nested under Profile",
+      "tier": "wire",
+      "sections": ["address cards: default star, label, recipient, line, set default, delete", "FAB Add", "empty state"],
+      "states": ["loaded", "empty", "loading", "error", "delete-confirm"],
+      "notes": "One default per user is enforced by a partial unique index + RPC."
+    },
+    {
+      "id": "addressEdit",
+      "routes": ["addressEdit", "checkoutAddressEdit"],
+      "paths": ["/profile/addresses/edit", "/cart/checkout/address/edit"],
+      "file": "lib/features/profile/presentation/screens/address_edit_screen.dart",
+      "shell": "nested under Profile / Cart",
+      "tier": "wire",
+      "sections": ["contact", "use my current location", "verification map", "province/district/commune/village", "street/house", "additional details", "save"],
+      "states": ["new", "editing", "locating", "geo-error", "permission-denied", "partial-hierarchy", "saving"],
+      "notes": "One frame covers both routes; only the app bar title and pop destination differ (Add address vs Edit address). New addresses require all four admin codes; detected hierarchy fills only empty fields."
+    },
+    {
+      "id": "wishlist",
+      "route": "wishlist",
+      "path": "/profile/wishlist",
+      "file": "lib/features/wishlist/presentation/screens/wishlist_screen.dart",
+      "shell": "nested under Profile",
+      "tier": "wire",
+      "sections": ["ProductCard grid 2/3/4", "empty state + Browse products"],
+      "states": ["loaded", "empty", "loading", "error", "mutation-failed"],
+      "notes": "Uses the synthetic product mapping, so the card must tolerate missing brand/rating."
+    },
+    {
+      "id": "settings",
+      "routes": ["settings", "adminSettingsAccount"],
+      "paths": ["/profile/settings", "/admin/dashboard/account/settings"],
+      "file": "lib/features/profile/presentation/screens/settings_screen.dart",
+      "shell": "nested under Profile / Account",
+      "tier": "wire",
+      "sections": ["Theme label", "System/Light/Dark segmented button"],
+      "states": ["system", "light", "dark"],
+      "notes": "The only setting. No account, notification, or language settings exist."
+    },
+    {
+      "id": "adminDashboard",
+      "route": "adminDashboard",
+      "path": "/admin/dashboard",
+      "file": "lib/features/admin/presentation/screens/admin_dashboard_screen.dart",
+      "shell": "admin tab 1",
+      "tier": "pixel",
+      "sections": ["KPI hero: total sales, orders/customers, 7-day momentum", "stock alert card", "14-day bar chart", "top 3 sellers", "quick links"],
+      "states": ["loaded", "loading", "error", "no-trend", "zero-sales-day"],
+      "notes": "Quick links: Reports, Categories, Promotions, Account, Audit logs, Platform settings."
+    },
+    {
+      "id": "adminAudit",
+      "route": "adminAudit",
+      "path": "/admin/dashboard/audit",
+      "file": "lib/features/admin/presentation/screens/audit_logs_screen.dart",
+      "shell": "nested under Dashboard",
+      "tier": "wire",
+      "sections": ["audit rows: action, target type/id prefix, timestamp"],
+      "states": ["loaded", "empty", "loading", "error"],
+      "notes": "Latest 100 entries."
+    },
+    {
+      "id": "adminSettings",
+      "route": "adminSettings",
+      "path": "/admin/dashboard/settings",
+      "file": "lib/features/admin/presentation/screens/platform_settings_screen.dart",
+      "shell": "nested under Dashboard",
+      "tier": "wire",
+      "sections": ["delivery fee", "platform commission %", "payment account", "save"],
+      "states": ["prefilled", "saving", "validation-error", "loading", "error"],
+      "notes": "Delivery fee parse >= 0; commission 0-100."
+    },
+    {
+      "id": "adminCategories",
+      "route": "adminCategories",
+      "path": "/admin/dashboard/categories",
+      "file": "lib/features/admin/presentation/screens/categories_admin_screen.dart",
+      "shell": "nested under Dashboard",
+      "tier": "wire",
+      "sections": ["category rows with image, name, parent/child indent, edit/delete", "create action"],
+      "states": ["loaded", "empty", "loading", "error", "create-dialog", "delete-confirm"],
+      "notes": "Parent must be top-level; no self-parent; 2 levels max."
+    },
+    {
+      "id": "adminPromotions",
+      "route": "adminPromotions",
+      "path": "/admin/dashboard/promotions",
+      "file": "lib/features/promotions/presentation/screens/admin_promotions_screen.dart",
+      "shell": "nested under Dashboard",
+      "tier": "wire",
+      "sections": ["AppBar + Refresh / New sale / New coupon / New banner", "sales list with active switch", "coupons header + Archived link", "coupon tiles", "banners list"],
+      "states": ["loaded", "empty", "loading", "error", "create-sale", "create-coupon", "delete-confirm", "reject-confirm"],
+      "notes": "Percent discount <= 100; branded campaign requires a brand."
+    },
+    {
+      "id": "adminArchivedCoupons",
+      "route": "adminArchivedCoupons",
+      "path": "/admin/dashboard/promotions/archive",
+      "file": "lib/features/promotions/presentation/screens/archived_coupons_screen.dart",
+      "shell": "nested under Promotions",
+      "tier": "wire",
+      "sections": ["explanatory copy", "archived coupon tiles"],
+      "states": ["loaded", "empty", "loading", "error"],
+      "notes": "Read-only."
+    },
+    {
+      "id": "adminProducts",
+      "route": "adminProducts",
+      "path": "/admin/products",
+      "file": "lib/features/admin/presentation/screens/admin_products_screen.dart",
+      "shell": "admin tab 2",
+      "tier": "pixel",
+      "sections": ["AppBar + Brands action", "search field", "filter chips All/LowStock/OutOfStock", "product row 48dp: name, unavailable badge, meta, [- stock +], overflow", "FAB Add"],
+      "states": ["loaded", "loading", "empty-filter", "busy", "error", "archived"],
+      "notes": "Low stock <= 5. Archived rows show Restore, not Archive."
+    },
+    {
+      "id": "adminProductForm",
+      "route": "adminProductForm",
+      "path": "/admin/products/form",
+      "file": "lib/features/admin/presentation/screens/admin_product_form_screen.dart",
+      "shell": "nested under Products",
+      "tier": "wire",
+      "sections": ["name", "description", "variant note", "product-wide stock", "variants list", "category picker", "brand picker", "images max 8", "create/save"],
+      "states": ["create", "edit", "validation-error", "image-limit", "upload-error", "busy"],
+      "notes": "Removed existing variants archive rather than delete; the last variant cannot be archived."
+    },
+    {
+      "id": "adminBrands",
+      "route": "adminBrands",
+      "path": "/admin/products/brands",
+      "file": "lib/features/admin/presentation/screens/brands_admin_screen.dart",
+      "shell": "nested under Products",
+      "tier": "wire",
+      "sections": ["brand rows: logo, name, description/status, edit/archive/restore/delete", "FAB/add dialog"],
+      "states": ["loaded", "empty", "loading", "error", "create-dialog", "delete-confirm"],
+      "notes": "Deleting a brand leaves products with a null brand."
+    },
+    {
+      "id": "adminOrders",
+      "route": "adminOrders",
+      "path": "/admin/orders",
+      "file": "lib/features/admin/presentation/screens/admin_orders_screen.dart",
+      "shell": "admin tab 3",
+      "tier": "pixel",
+      "sections": ["order rows: customer, total, timestamp, item count, payment status, lifecycle chip"],
+      "states": ["loaded", "empty", "loading", "error", "stream-error"],
+      "notes": "Latest 50 fetched; realtime refresh."
+    },
+    {
+      "id": "adminOrderDetail",
+      "route": "adminOrderDetail",
+      "path": "/admin/orders/:id",
+      "file": "lib/features/admin/presentation/screens/admin_order_detail_screen.dart",
+      "shell": "nested under Orders",
+      "tier": "wire",
+      "sections": ["summary card", "next transition button", "cancel order", "mark cash received", "items"],
+      "states": ["loaded", "loading", "error", "cancelled", "cod-paid"],
+      "notes": "Illegal transitions are blocked server-side; a cancellation reason is required."
+    },
+    {
+      "id": "adminReports",
+      "route": "adminReports",
+      "path": "/admin/reports",
+      "file": "lib/features/admin/presentation/screens/admin_reports_screen.dart",
+      "shell": "admin tab 4",
+      "tier": "pixel",
+      "sections": ["preset chips 7D/15D/30D/MTD/Custom", "date label", "KPI grid", "payment split bar", "best sellers", "top categories", "brand revenue", "purchase frequency", "stock summary"],
+      "states": ["loaded", "loading", "error", "empty-sections", "custom-range"],
+      "notes": "KPI cards must fit narrow widths; zero payment split is hidden."
+    },
+    {
+      "id": "notFound",
+      "route": null,
+      "path": "unmatched",
+      "file": "lib/core/router/presentation/not_found_screen.dart",
+      "shell": "errorBuilder",
+      "tier": "wire",
+      "sections": ["centered message including the attempted path", "back action"],
+      "states": ["default"],
+      "notes": "Rendered by GoRouter errorBuilder; no route name."
+    }
+  ]
+}

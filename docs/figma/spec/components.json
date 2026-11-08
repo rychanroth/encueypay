@@ -1,0 +1,344 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "components",
+  "sourceCommit": "81dc7a7",
+  "figmaPage": "02 · Components",
+  "rules": {
+    "buildOrder": "Foundations -> this page -> screens. Screens may only contain instances, never detached copies.",
+    "naming": "Component names are exact strings from this file. Variant property names are Title Case.",
+    "tokensOnly": "Every fill, stroke, radius, padding and text style binds to a variable/style from tokens.json.",
+    "stateCoverage": "A component is done when every axis combination listed here exists and is named."
+  },
+  "components": [
+    {
+      "id": "encue-button",
+      "figmaName": "Button",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/encue_button.dart",
+      "axes": {
+        "Variant": ["Primary", "Secondary", "Outline", "Destructive"],
+        "State": ["Default", "Pressed", "Focused", "Disabled"]
+      },
+      "spec": {
+        "minHeight": 48,
+        "minWidth": 64,
+        "radius": "r8",
+        "paddingX": "lg",
+        "typography": "labelLarge",
+        "iconSize": 18,
+        "expandDefault": true,
+        "loading": "caller-supplied spinner in place of label"
+      },
+      "notes": "Primary uses color/primary + color/on-primary; destructive uses color/error. Outline uses 1dp color/outline-variant."
+    },
+    {
+      "id": "filled-button-theme",
+      "figmaName": "Button/Filled (theme recipe)",
+      "kind": "THEME_RECIPE",
+      "code": "lib/core/presentation/theme/app_theme.dart",
+      "axes": { "State": ["Default", "Pressed", "Focused", "Disabled"] },
+      "spec": {
+        "minSize": [64, 48],
+        "paddingX": 24,
+        "radius": "r8",
+        "typography": "labelLarge"
+      },
+      "notes": "Not a separate component: the global FilledButtonTheme equals Button/Primary. Documented so reviewers do not expect a second button family."
+    },
+    {
+      "id": "encue-card",
+      "figmaName": "Card",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/encue_card.dart",
+      "axes": {
+        "Elevation": ["Flat", "Elevated"],
+        "Interaction": ["Static", "Tappable", "LongPressable"]
+      },
+      "spec": {
+        "radius": "r16",
+        "border": "1dp color/outline-variant",
+        "padding": "md",
+        "elevatedShadow": "level1"
+      },
+      "notes": "Dark mode stays flat even for Elevated (shadow reads as mud on obsidian)."
+    },
+    {
+      "id": "product-card",
+      "figmaName": "ProductCard",
+      "kind": "COMPONENT_SET",
+      "code": "lib/features/catalog/presentation/widgets/product_card.dart",
+      "axes": {
+        "Availability": ["InStock", "LowStock", "OutOfStock", "Archived"],
+        "Promo": ["None", "Sale", "New"],
+        "Wishlisted": ["No", "Yes"],
+        "Loading": ["No", "Yes"]
+      },
+      "spec": {
+        "radius": "r16",
+        "imageRatio": 0.62,
+        "imageFill": "flex remaining height",
+        "pills": ["NEW", "brand", "availability"],
+        "titleStyle": "titleSmall",
+        "priceStyle": "priceHighlight",
+        "ratingIconSize": 18,
+        "disabledBehavior": "remains tappable to explain unavailability"
+      },
+      "notes": "Wishlist heart is a 48dp target overlaid top-right. Skeleton variant mirrors the final geometry."
+    },
+    {
+      "id": "status-badge",
+      "figmaName": "StatusBadge",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/status_badge.dart",
+      "axes": {
+        "Status": ["Pending", "Confirmed", "Processing", "Packed", "Shipped", "OutForDelivery", "Delivered", "Cancelled", "Refunded", "Unknown"],
+        "Density": ["Default", "Dense"]
+      },
+      "spec": {
+        "radius": "r8",
+        "typography": "labelSmall",
+        "iconSize": 12,
+        "paddingDefault": [8, 4],
+        "paddingDense": [6, 2]
+      },
+      "notes": "Light uses the pair verbatim. Dark derives: alphaBlend(fg @18%, surface-container-lowest) + lerp(fg, white, 0.45). The dark variants must be computed by the builder, not hand-picked."
+    },
+    {
+      "id": "khqr-card",
+      "figmaName": "KhqrCard",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/khqr_card.dart",
+      "axes": { "State": ["PendingPayload", "Ready", "Verified"] },
+      "spec": {
+        "radius": "r16",
+        "shadow": "level3",
+        "headerHeight": 56,
+        "headerFill": "brand/khqr-red",
+        "bodyFill": "brand/khqr-surface",
+        "qrSize": 220,
+        "priceStyle": "priceHighlight",
+        "captionStyle": "bodySmall"
+      },
+      "notes": "Red 'KHQR / BAKONG' header, merchant name, USD + KHR, 220dp QR. Payload resolves server-side; never render a fake QR."
+    },
+    {
+      "id": "monogram-image",
+      "figmaName": "MonogramImage",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/monogram_image.dart",
+      "axes": { "State": ["Loading", "Loaded", "Error", "Empty"] },
+      "spec": {
+        "deterministicAccentPair": "derived from entity name hash",
+        "initials": "first letters of name",
+        "fadeMs": 180
+      },
+      "notes": "Represents the fallback only; Loaded is a placeholder frame where a network image would sit."
+    },
+    {
+      "id": "price-text",
+      "figmaName": "PriceText",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/price_text.dart",
+      "axes": {
+        "Mode": ["UsdOnly", "UsdAndKhr", "Sale"],
+        "Emphasis": ["Default", "Highlight"]
+      },
+      "spec": {
+        "usdStyle": "priceHighlight",
+        "khrStyle": "bodySmall",
+        "khrPrefix": "≈",
+        "peg": "4100 KHR/USD",
+        "tabularFigures": true
+      },
+      "notes": "Sale shows original struck through plus discounted price. Integer minor units only; never imply float math."
+    },
+    {
+      "id": "async-value",
+      "figmaName": "AsyncValue",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/async_value_widget.dart",
+      "axes": { "State": ["Loading", "Error", "Data"] },
+      "spec": {
+        "transition": "240ms in / 200ms out cross-fade",
+        "keepPriorData": true,
+        "errorAction": "Retry"
+      },
+      "notes": "Error state must preserve the page chrome (AppBar, dock); only the content slot swaps."
+    },
+    {
+      "id": "empty-state",
+      "figmaName": "EmptyState",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/async_value_widget.dart",
+      "axes": { "Action": ["None", "Primary"] },
+      "spec": {
+        "iconCircle": 72,
+        "titleStyle": "titleMedium",
+        "bodyStyle": "bodyMedium",
+        "gap": "sm"
+      },
+      "notes": "Copy comes from the screen spec; the component only owns geometry."
+    },
+    {
+      "id": "skeleton",
+      "figmaName": "Skeleton",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/widgets/async_value_widget.dart",
+      "axes": {
+        "Shape": ["Block", "Line", "ListView", "Grid"],
+        "Density": ["Compact", "Regular"]
+      },
+      "spec": {
+        "pulse": "opacity 0.45 <-> 1.0, 1200ms reverse, easeInOut",
+        "radius": "r12 for blocks; matches final content shape"
+      },
+      "notes": "Known gap: skeletons ignore reduced motion."
+    },
+    {
+      "id": "order-status-timeline",
+      "figmaName": "OrderStatusTimeline",
+      "kind": "COMPONENT_SET",
+      "code": "lib/features/orders/presentation/widgets/order_status_timeline.dart",
+      "axes": {
+        "StageState": ["Done", "Current", "Upcoming"],
+        "Terminal": ["InFlight", "Cancelled"]
+      },
+      "spec": {
+        "stages": 7,
+        "connector": "1dp vertical line, done segments primary",
+        "currentPulse": "opacity 0.55<->1.0 + scale 0.9<->1.0, 1400ms reverse",
+        "reducedMotion": "freeze at full opacity"
+      },
+      "notes": "Stages: pending, confirmed, processing, packed, shipped, out_for_delivery, delivered."
+    },
+    {
+      "id": "order-tracking-card",
+      "figmaName": "OrderTrackingCard",
+      "kind": "COMPONENT_SET",
+      "code": "lib/features/orders/presentation/widgets/order_tracking_card.dart",
+      "axes": {
+        "State": ["InFlight", "Delivered", "Cancelled"],
+        "Detail": ["Simplified", "ExactStatus"]
+      },
+      "spec": {
+        "simplifiedStages": ["Placed", "Preparing", "OnItsWay", "Delivered"],
+        "toggleLabel": "exact status"
+      },
+      "notes": "No courier, ETA, or fabricated tracking data anywhere in this component."
+    },
+    {
+      "id": "navigation-bar",
+      "figmaName": "NavigationBar",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/router/branches/",
+      "axes": {
+        "Role": ["Customer", "Admin"],
+        "State": ["Selected", "Unselected"],
+        "CartBadge": ["None", "Count"]
+      },
+      "spec": {
+        "height": 72,
+        "iconSize": 24,
+        "labelStyle": "labelMedium",
+        "indicator": "color/primary-container",
+        "customerOrder": ["Home", "Discover", "Cart", "Orders", "Profile"],
+        "adminOrder": ["Dashboard", "Products", "Orders", "Reports"]
+      },
+      "notes": "Tab order here is normative: branch order in core/router must match."
+    },
+    {
+      "id": "app-bar",
+      "figmaName": "AppBar",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/theme/app_theme.dart",
+      "axes": {
+        "Leading": ["None", "Back"],
+        "Trailing": ["None", "Action", "Avatar", "ActionAndAvatar"]
+      },
+      "spec": {
+        "height": 56,
+        "elevation": 0,
+        "surfaceTint": "transparent",
+        "centerTitle": false,
+        "titleStyle": "titleLarge",
+        "paddingX": "md"
+      },
+      "notes": "Flat surface background; no tint or scroll-under elevation."
+    },
+    {
+      "id": "inputs",
+      "figmaName": "Input",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/theme/app_theme.dart",
+      "axes": {
+        "Type": ["Text", "Password", "Search", "Dropdown"],
+        "State": ["Enabled", "Focused", "Error", "Disabled"]
+      },
+      "spec": {
+        "radius": "r12",
+        "fill": "color/surface-container-lowest",
+        "border": "1dp color/on-surface-variant",
+        "focusedBorder": "1.6dp color/primary",
+        "errorBorder": "1.6dp color/error",
+        "padding": [16, 14],
+        "hintStyle": "bodyMedium"
+      },
+      "notes": "Password includes a visibility toggle; Search includes a leading search icon and clear affordance."
+    },
+    {
+      "id": "dialogs",
+      "figmaName": "Dialog",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/theme/app_theme.dart",
+      "axes": { "Type": ["Default", "DestructiveConfirm"] },
+      "spec": {
+        "radius": "r24",
+        "fill": "color/surface-container-lowest",
+        "barrier": "overlay/dialog-barrier",
+        "titleStyle": "titleLarge",
+        "bodyStyle": "bodyMedium",
+        "maxWidth": 400
+      },
+      "notes": "Destructive confirm places the error-colored action on the right."
+    },
+    {
+      "id": "bottom-sheets",
+      "figmaName": "BottomSheet",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/theme/app_theme.dart",
+      "axes": { "Behavior": ["Default", "ScrollControlled"], "Header": ["Text", "TextAndHandle"] },
+      "spec": {
+        "radiusTop": "r24",
+        "fill": "color/surface-container-lowest",
+        "dragHandle": true,
+        "safeAreaBottom": true
+      },
+      "notes": "Drag handle is always on. Content padding follows md; primary action sits above safe area."
+    },
+    {
+      "id": "snackbar",
+      "figmaName": "Snackbar",
+      "kind": "COMPONENT_SET",
+      "code": "lib/core/presentation/theme/app_theme.dart",
+      "axes": { "Tone": ["Info", "Error", "Action"] },
+      "spec": {
+        "radius": "r12",
+        "behavior": "floating",
+        "fill": "color/inverse-surface in light; surface-container-dark in dark",
+        "textStyle": "bodyMedium",
+        "durationMs": 6000
+      },
+      "notes": "6000ms matters for the foreground-push fallback; do not shorten it."
+    }
+  ],
+  "deferred": [
+    {
+      "id": "icon-set",
+      "reason": "No SVG icon set is bundled; the app uses Material Icons. Import Material Symbols (Apache-2.0) as a separate icon component set, or render text glyphs. Do not invent custom icons."
+    },
+    {
+      "id": "charts",
+      "reason": "Admin dashboard bars and reports use ad-hoc painted widgets, not a shared component. Model as a screen-local frame until a component exists in code."
+    }
+  ]
+}

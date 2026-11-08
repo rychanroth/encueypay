@@ -1,0 +1,320 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "flows",
+  "sourceCommit": "81dc7a7",
+  "source": "docs/DEVELOPER-HANDOFF.md §1.4, §4.1, §6.2, §6.7, §7",
+  "figma": {
+    "board": "EncueYPay — Flows & Data",
+    "kind": "FIGJAM",
+    "layout": "One section per diagram, 120px gutters, left-to-right flow. Each section carries a caption with the source commit and the doc section it mirrors.",
+    "tool": "use_figma",
+    "doNotUse": "generate_diagram — it creates a new file per call, which breaks the Starter file budget."
+  },
+  "diagrams": {
+    "navigation": {
+      "title": "Navigation map",
+      "kind": "tree",
+      "root": {
+        "id": "login",
+        "label": "login\n/login\noutside shell",
+        "children": []
+      },
+      "sections": [
+        {
+          "id": "customer-shell",
+          "label": "Customer shell — 5 tabs",
+          "root": {
+            "id": "home",
+            "label": "home\n/home\ntab 1",
+            "children": [
+              { "id": "productDetail", "label": "productDetail\n/home/product/:id" },
+              { "id": "notifications", "label": "notifications\n/home/notifications" }
+            ]
+          },
+          "siblings": [
+            { "id": "discovery", "label": "discovery\n/discovery\ntab 2" },
+            {
+              "id": "cart",
+              "label": "cart\n/cart\ntab 3",
+              "children": [
+                { "id": "checkout", "label": "checkout\n/cart/checkout", "children": [
+                  { "id": "checkoutAddressEdit", "label": "checkoutAddressEdit\n/cart/checkout/address/edit" },
+                  { "id": "orderPlaced", "label": "orderPlaced\n/cart/checkout/placed/:id" }
+                ] }
+              ]
+            },
+            {
+              "id": "orders",
+              "label": "orders\n/orders\ntab 4",
+              "children": [
+                { "id": "orderDetail", "label": "orderDetail\n/orders/:id" },
+                { "id": "reviewCompose", "label": "reviewCompose\n/orders/review" }
+              ]
+            },
+            {
+              "id": "profile",
+              "label": "profile\n/profile\ntab 5",
+              "children": [
+                { "id": "profileEditCustomer", "label": "profileEdit\n/profile/edit" },
+                { "id": "addresses", "label": "addresses\n/profile/addresses", "children": [
+                  { "id": "addressEdit", "label": "addressEdit\n/profile/addresses/edit" }
+                ] },
+                { "id": "wishlist", "label": "wishlist\n/profile/wishlist" },
+                { "id": "settingsCustomer", "label": "settings\n/profile/settings" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "admin-shell",
+          "label": "Admin shell — 4 tabs",
+          "root": {
+            "id": "adminDashboard",
+            "label": "adminDashboard\n/admin/dashboard\ntab 1",
+            "children": [
+              { "id": "adminAudit", "label": "adminAudit\n/admin/dashboard/audit" },
+              { "id": "adminSettings", "label": "adminSettings\n/admin/dashboard/settings" },
+              { "id": "adminCategories", "label": "adminCategories\n/admin/dashboard/categories" },
+              { "id": "adminPromotions", "label": "adminPromotions\n/admin/dashboard/promotions", "children": [
+                { "id": "adminArchivedCoupons", "label": "adminArchivedCoupons\n/.../promotions/archive" }
+              ] },
+              { "id": "adminAccount", "label": "profile (admin)\n/admin/dashboard/account", "children": [
+                { "id": "adminProfileEdit", "label": "profileEdit\n/.../account/edit" },
+                { "id": "adminSettingsAccount", "label": "settings\n/.../account/settings" }
+              ] }
+            ]
+          },
+          "siblings": [
+            { "id": "adminProducts", "label": "adminProducts\n/admin/products\ntab 2", "children": [
+              { "id": "adminProductForm", "label": "adminProductForm\n/admin/products/form" },
+              { "id": "adminBrands", "label": "adminBrands\n/admin/products/brands" }
+            ] },
+            { "id": "adminOrders", "label": "adminOrders\n/admin/orders\ntab 3", "children": [
+              { "id": "adminOrderDetail", "label": "adminOrderDetail\n/admin/orders/:id" }
+            ] },
+            { "id": "adminReports", "label": "adminReports\n/admin/reports\ntab 4" }
+          ]
+        }
+      ],
+      "excluded": [
+        { "id": "dashboard", "reason": "AppRoutes.dashboard constant exists but is not mounted." },
+        { "id": "business", "reason": "Dormant role; falls back to customer tabs." },
+        { "id": "driver", "reason": "Dormant role; falls back to customer tabs." }
+      ]
+    },
+    "orderLifecycle": {
+      "title": "Order lifecycle",
+      "kind": "state",
+      "initial": "pending",
+      "terminal": ["delivered", "cancelled"],
+      "nodes": [
+        { "id": "pending", "label": "pending", "badge": "#FFFBEB/#B45309" },
+        { "id": "confirmed", "label": "confirmed", "badge": "#EFF6FF/#1D4ED8" },
+        { "id": "processing", "label": "processing", "badge": "#EEF2FF/#4338CA" },
+        { "id": "packed", "label": "packed", "badge": "#F0F9FF/#0369A1" },
+        { "id": "shipped", "label": "shipped", "badge": "#ECFEFF/#0E7490" },
+        { "id": "out_for_delivery", "label": "out_for_delivery", "badge": "#F0FDFA/#0F766E" },
+        { "id": "delivered", "label": "delivered", "badge": "#ECFDF5/#047857" },
+        { "id": "cancelled", "label": "cancelled", "badge": "#FFF1F2/#BE123C" }
+      ],
+      "edges": [
+        { "from": "pending", "to": "confirmed", "label": "admin_transition_order", "guard": "one step forward" },
+        { "from": "confirmed", "to": "processing", "label": "admin_transition_order" },
+        { "from": "processing", "to": "packed", "label": "admin_transition_order" },
+        { "from": "packed", "to": "shipped", "label": "admin_transition_order" },
+        { "from": "shipped", "to": "out_for_delivery", "label": "admin_transition_order" },
+        { "from": "out_for_delivery", "to": "delivered", "label": "admin_transition_order" },
+        { "from": "pending", "to": "cancelled", "label": "cancel_order / admin_transition_order", "guard": "reason required; stock restored" },
+        { "from": "confirmed", "to": "cancelled", "label": "cancel_order / admin_transition_order", "guard": "paid QR blocked for customer" }
+      ],
+      "excluded": [
+        { "id": "returned", "reason": "Legacy enum value; returns/refunds were removed." }
+      ],
+      "customerLabels": {
+        "pending": "Order placed",
+        "confirmed": "Preparing",
+        "processing": "Preparing",
+        "packed": "Preparing",
+        "shipped": "On its way",
+        "out_for_delivery": "On its way",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      }
+    },
+    "paymentLifecycle": {
+      "title": "Payment lifecycle",
+      "kind": "state",
+      "initial": "pending",
+      "nodes": [
+        { "id": "pending", "label": "pending" },
+        { "id": "awaiting_payment_verification", "label": "awaiting_payment_verification\n(legacy bank transfer)" },
+        { "id": "transaction_verified", "label": "transaction_verified" }
+      ],
+      "edges": [
+        { "from": "pending", "to": "awaiting_payment_verification", "label": "submit_payment_proof", "guard": "bank_transfer only" },
+        { "from": "pending", "to": "transaction_verified", "label": "confirm_qr_payment", "guard": "PayWay webhook, HMAC verified" },
+        { "from": "pending", "to": "transaction_verified", "label": "admin_mark_cod_paid", "guard": "COD + delivered" }
+      ],
+      "excluded": [
+        { "id": "refund_required", "reason": "Legacy; no refund flow." },
+        { "id": "refunded", "reason": "Legacy; no refund flow." }
+      ],
+      "note": "verified is the only paid state the UI may render. A client-side success must never set it."
+    },
+    "authSequence": {
+      "title": "Authentication and role routing",
+      "kind": "sequence",
+      "participants": ["User", "LoginScreen", "Supabase Auth", "users table", "authController", "Router"],
+      "messages": [
+        { "from": "User", "to": "LoginScreen", "label": "email + password / Google" },
+        { "from": "LoginScreen", "to": "Supabase Auth", "label": "signInWithPassword | signUp | signInWithOAuth" },
+        { "from": "Supabase Auth", "to": "LoginScreen", "label": "session (or deep link io.supabase.encueypay://login-callback/)" },
+        { "from": "Supabase Auth", "to": "authController", "label": "onAuthStateChange stream" },
+        { "from": "authController", "to": "users table", "label": "select by auth id" },
+        { "from": "users table", "to": "authController", "label": "AppUser (fallback: metadata full_name)" },
+        { "from": "authController", "to": "Router", "label": "emit AppUser" },
+        { "from": "Router", "to": "User", "label": "defaultRouteForRole(role)" }
+      ]
+    },
+    "checkoutSequence": {
+      "title": "Checkout and atomic placement",
+      "kind": "sequence",
+      "participants": ["CheckoutScreen", "CheckoutRepository", "validate_coupon", "preview_order_totals", "create_order_from_cart", "Tables", "Cart"],
+      "messages": [
+        { "from": "CheckoutScreen", "to": "CheckoutRepository", "label": "apply code" },
+        { "from": "CheckoutRepository", "to": "validate_coupon", "label": "p_code" },
+        { "from": "validate_coupon", "to": "CheckoutRepository", "label": "valid, message, discount_minor" },
+        { "from": "CheckoutScreen", "to": "CheckoutRepository", "label": "address + method + codes + note" },
+        { "from": "CheckoutRepository", "to": "preview_order_totals", "label": "p_codes[]" },
+        { "from": "preview_order_totals", "to": "CheckoutScreen", "label": "server-priced totals" },
+        { "from": "CheckoutRepository", "to": "create_order_from_cart", "label": "place order" },
+        { "from": "create_order_from_cart", "to": "Tables", "label": "lock stock, re-price, insert order/items/payment/coupons" },
+        { "from": "create_order_from_cart", "to": "Cart", "label": "clear cart" },
+        { "from": "create_order_from_cart", "to": "CheckoutScreen", "label": "order id" },
+        { "from": "CheckoutScreen", "to": "CheckoutScreen", "label": "goNamed(orderPlaced, :id)" }
+      ],
+      "invariants": [
+        "The client never computes the charge.",
+        "Placement is atomic: order + items + payment + coupons, or nothing.",
+        "A failure keeps the user on the page with notes/coupons/address intact."
+      ]
+    },
+    "khqrSequence": {
+      "title": "KHQR payment verification",
+      "kind": "sequence",
+      "participants": ["OrderPlacedScreen", "payway-create", "PayWay API", "payments", "payway-webhook", "Realtime"],
+      "messages": [
+        { "from": "OrderPlacedScreen", "to": "payway-create", "label": "{ orderId }" },
+        { "from": "payway-create", "to": "PayWay API", "label": "create transaction" },
+        { "from": "PayWay API", "to": "payway-create", "label": "qrPayload" },
+        { "from": "payway-create", "to": "payments", "label": "register_qr_payment(order_id, payload)" },
+        { "from": "payway-create", "to": "OrderPlacedScreen", "label": "{ configured, qrPayload } or soft failure { reason, code, message }" },
+        { "from": "OrderPlacedScreen", "to": "OrderPlacedScreen", "label": "render KhqrCard(pending)" },
+        { "from": "PayWay API", "to": "payway-webhook", "label": "tran_id, status=0, amount, apv + HMAC-SHA512 header" },
+        { "from": "payway-webhook", "to": "payway-webhook", "label": "verify HMAC over ascending-key values" },
+        { "from": "payway-webhook", "to": "payments", "label": "confirm_qr_payment(order_id, reference)" },
+        { "from": "payments", "to": "Realtime", "label": "UPDATE status=transaction_verified" },
+        { "from": "Realtime", "to": "OrderPlacedScreen", "label": "verified state" }
+      ],
+      "invariants": [
+        "The QR screen waits for a server-side confirmation; it never infers payment.",
+        "A signature failure must not confirm.",
+        "Soft failures render a retry card, not a fake QR."
+      ]
+    },
+    "dataModel": {
+      "title": "Data model (ERD)",
+      "kind": "erd",
+      "entities": [
+        { "id": "users", "key": "id uuid PK", "note": "= auth.users.id" },
+        { "id": "addresses", "key": "id, user_id FK, is_default" },
+        { "id": "device_tokens", "key": "id, user_id FK, token unique" },
+        { "id": "notifications", "key": "id, recipient_id, order_id FK" },
+        { "id": "audit_logs", "key": "id, actor, action, target_type, target_id" },
+        { "id": "categories", "key": "id, parent_id FK categories" },
+        { "id": "brands", "key": "id, name unique, status" },
+        { "id": "products", "key": "id, category_id FK, brand_id FK, base_price_minor, stock" },
+        { "id": "product_variants", "key": "id, product_id FK, price_minor NOT NULL" },
+        { "id": "product_images", "key": "id, product_id FK, storage_path, sort_order" },
+        { "id": "carts", "key": "id, user_id unique" },
+        { "id": "cart_items", "key": "id, cart_id FK, product_variant_id FK, quantity" },
+        { "id": "wishlists", "key": "id, user_id unique" },
+        { "id": "wishlist_items", "key": "id, wishlist_id FK, product_id FK" },
+        { "id": "orders", "key": "id, customer_id FK, shipping snapshot, totals, status" },
+        { "id": "order_items", "key": "id, order_id FK, product_id, variant_id, snapshot copy" },
+        { "id": "payments", "key": "id, order_id FK one-per-order, method, status" },
+        { "id": "order_coupons", "key": "id, order_id FK, coupon_id FK" },
+        { "id": "coupons", "key": "id, code unique, discount, window" },
+        { "id": "sales", "key": "id, scope, brand_id FK, category_id FK, discount" },
+        { "id": "banners", "key": "id, sale_id FK, image_path, status" },
+        { "id": "reviews", "key": "id, order_item_id unique FK, product_id, rating 1-5" }
+      ],
+      "relations": [
+        { "from": "users", "to": "addresses", "card": "1:N" },
+        { "from": "users", "to": "carts", "card": "1:1" },
+        { "from": "users", "to": "wishlists", "card": "1:1" },
+        { "from": "users", "to": "orders", "card": "1:N" },
+        { "from": "users", "to": "notifications", "card": "1:N" },
+        { "from": "users", "to": "device_tokens", "card": "1:N" },
+        { "from": "carts", "to": "cart_items", "card": "1:N" },
+        { "from": "product_variants", "to": "cart_items", "card": "1:N" },
+        { "from": "products", "to": "product_variants", "card": "1:N" },
+        { "from": "products", "to": "product_images", "card": "1:N" },
+        { "from": "categories", "to": "products", "card": "1:N" },
+        { "from": "categories", "to": "categories", "card": "self parent" },
+        { "from": "brands", "to": "products", "card": "1:N" },
+        { "from": "orders", "to": "order_items", "card": "1:N" },
+        { "from": "orders", "to": "payments", "card": "1:1" },
+        { "from": "orders", "to": "order_coupons", "card": "1:N" },
+        { "from": "coupons", "to": "order_coupons", "card": "1:N" },
+        { "from": "products", "to": "order_items", "card": "snapshot" },
+        { "from": "wishlists", "to": "wishlist_items", "card": "1:N" },
+        { "from": "products", "to": "wishlist_items", "card": "1:N" },
+        { "from": "products", "to": "reviews", "card": "1:N" },
+        { "from": "order_items", "to": "reviews", "card": "1:0..1" },
+        { "from": "sales", "to": "banners", "card": "1:N" },
+        { "from": "brands", "to": "sales", "card": "1:N scope" },
+        { "from": "categories", "to": "sales", "card": "1:N scope" }
+      ],
+      "dropped": ["businesses", "business_orders", "deliveries", "pickup_stops", "role_applications", "return_requests", "return_items"]
+    },
+    "permissionMatrix": {
+      "title": "Permission matrix",
+      "kind": "matrix",
+      "columns": ["Customer", "Admin"],
+      "rows": [
+        { "capability": "Public catalog/category/brand/banner reads", "customer": true, "admin": true },
+        { "capability": "Own profile, addresses, wishlist, cart, orders, payments, notifications", "customer": true, "admin": "own account" },
+        { "capability": "Add/update/remove cart lines", "customer": true, "admin": false },
+        { "capability": "Validate coupon / preview totals / place order", "customer": true, "admin": false },
+        { "capability": "Cancel own order", "customer": "pending/confirmed", "admin": "via transition" },
+        { "capability": "Submit review", "customer": "delivered item, once", "admin": false },
+        { "capability": "Product/variant/image CRUD", "customer": false, "admin": true },
+        { "capability": "Category/brand CRUD", "customer": false, "admin": true },
+        { "capability": "Sale/coupon/banner create/toggle/moderate", "customer": false, "admin": true },
+        { "capability": "Order status transition / cancel", "customer": false, "admin": true },
+        { "capability": "Mark COD paid", "customer": false, "admin": "delivered COD only" },
+        { "capability": "Reports, KPIs, audit log, platform settings", "customer": false, "admin": true }
+      ],
+      "note": "The UI is not a security boundary; is_admin() in RPCs and RLS is."
+    },
+    "providerMap": {
+      "title": "State ownership and refresh paths",
+      "kind": "graph",
+      "layers": [
+        { "layer": "core", "nodes": ["supabaseClientProvider", "appRouterProvider", "themeControllerProvider"] },
+        { "layer": "auth", "nodes": ["authControllerProvider", "loginControllerProvider"] },
+        { "layer": "catalog", "nodes": ["productsControllerProvider", "productDetailControllerProvider", "homeProductsProvider", "homeBannersProvider", "categoriesProvider", "brandsProvider", "activeSalesProvider", "deliveryFeeMinorProvider"] },
+        { "layer": "cart/checkout", "nodes": ["cartControllerProvider", "checkoutControllerProvider"] },
+        { "layer": "orders", "nodes": ["ordersControllerProvider", "orderDetailControllerProvider", "reviewControllerProvider"] },
+        { "layer": "profile", "nodes": ["profileControllerProvider", "addressesControllerProvider", "dashboardControllerProvider"] },
+        { "layer": "admin", "nodes": ["adminKpisProvider", "adminProductsProvider", "adminOrdersProvider", "adminReportsProvider", "promotionsControllerProvider"] }
+      ],
+      "rules": [
+        "Mutations: AsyncValue.guard then ref.invalidateSelf(); no optimistic writes.",
+        "Orders/dashboard/notifications subscribe to realtime streams and keep last data on stream error.",
+        "Router rebuilds structurally only on a role change."
+      ]
+    }
+  }
+}
