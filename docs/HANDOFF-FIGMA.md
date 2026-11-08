@@ -447,6 +447,8 @@ c21352f docs(figma): add known debris and unverified items to the handoff
 795467f docs(figma): record the rebuild run, the three fixes and the freeze signature
 c109b14 fix(figma): measure real screen overflow in the audit batch
 7ed8008 fix(figma): audit against the nav bar, not the viewport
+741fe5d feat(figma): add a read-only registry batch for the freeze
+292df90 chore(figma): freeze the snapshot in manifest.json
 ```
 
 ---
