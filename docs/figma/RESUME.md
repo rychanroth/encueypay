@@ -8,7 +8,7 @@ The mirror is finished and **frozen**:
 
 - 18 component sets, 30 screens (15 pixel + 15 wire), 9 FigJam diagrams, page 03.
 - Two local development plugins replaced the metered MCP:
-  `docs/figma/plugin/` (design, 13 batches) and `docs/figma/plugin-figjam/`
+  `docs/figma/plugin/` (design, 14 batches) and `docs/figma/plugin-figjam/`
   (board, 3 batches).
 - Decisions recorded in `docs/HANDOFF-FIGMA.md` §1: Figma is a **snapshot**, not a
   twin; no per-state screens; no Code Connect; demo visuals come from capturing the

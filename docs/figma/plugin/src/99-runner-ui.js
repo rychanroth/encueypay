@@ -16,6 +16,7 @@ const BATCHES = {
   "s5-wire": batchWire,
   "p6-contracts": batchContracts,
   "audit-screens": batchAuditScreens,
+  registry: batchRegistry,
 };
 
 async function run(batch) {
@@ -82,6 +83,7 @@ const HTML = `
     <button data-batch="s5-wire">S5 · wire ×15</button>
     <button data-batch="p6-contracts">P6 · page 03</button>
     <button data-batch="audit-screens">Audit · screens</button>
+    <button data-batch="registry">Registry · ids</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>

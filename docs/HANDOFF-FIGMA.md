@@ -63,7 +63,7 @@ real overflow, then the freeze. Nothing else is planned.
 | Resume note | `docs/figma/RESUME.md` |
 | Node/ID registry | `docs/figma/manifest.json` |
 | Extracted spec | `docs/figma/spec/{tokens,components,screens,flows}.json` |
-| **Design plugin (runnable path)** | `docs/figma/plugin/` — 13 batches |
+| **Design plugin (runnable path)** | `docs/figma/plugin/` — 14 batches |
 | **FigJam plugin** | `docs/figma/plugin-figjam/` — 3 batches |
 | Original MCP payload (record only) | `docs/figma/build/p2-icons-fix.js` |
 | Brand system | `docs/brand/BRAND.md` |
@@ -121,7 +121,7 @@ Drawn as titled panels rather than sections, so each exports self-describing.
 
 ### Tooling
 
-- `docs/figma/plugin/` — 13 batches, UI, per-variant logging, warnings, rebuild by
+- `docs/figma/plugin/` — 14 batches, UI, per-variant logging, warnings, rebuild by
   `node docs/figma/plugin/build.js`.
 - `docs/figma/plugin-figjam/` — separate plugin (`editorType: ["figjam"]`), 3 batches.
 - Both are **development plugins**: unmetered, local, shared by sending the folder.
