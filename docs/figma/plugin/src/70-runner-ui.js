@@ -8,6 +8,7 @@ const BATCHES = {
   "p2b-overlays": batchOverlays,
   "p3-atoms": batchAtoms,
   "p4-cards": batchCards,
+  "p5-nav": batchNavigation,
 };
 
 async function run(batch) {
@@ -66,6 +67,7 @@ const HTML = `
     <button data-batch="p2b-overlays">P2b · overlays</button>
     <button data-batch="p3-atoms">P3 · atoms</button>
     <button data-batch="p4-cards">P4 · cards</button>
+    <button data-batch="p5-nav">P5 · nav</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>

@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit directly.
- * Sources: docs/figma/plugin/src/*.js (8 files)
+ * Sources: docs/figma/plugin/src/*.js (10 files)
  * Rebuild: node docs/figma/plugin/build.js
  */
 
@@ -61,6 +61,73 @@ const FALLBACK = {
 };
 
 const WEIGHT_STYLE = { 400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold" };
+
+// ===== 05-extra-icons.js =====
+// ===== extra icons (Material Symbols, Apache-2.0) =====
+// The first 18 icons were imported through the MCP before the quota ran out.
+// These five are needed by NavigationBar; their path data is inlined here so the
+// plugin can build the components itself (figma.createNodeFromSvg) with no
+// upload call. Source: github.com/google/material-design-icons, symbols/web.
+
+const EXTRA_ICONS = {
+  home: "M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z",
+  explore:
+    "m260-260 300-140 140-300-300 140-140 300Zm220-180q-17 0-28.5-11.5T440-480q0-17 11.5-28.5T480-520q17 0 28.5 11.5T520-480q0 17-11.5 28.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z",
+  receipt_long:
+    "M240-80q-50 0-85-35t-35-85v-120h120v-560l60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60 60 60 60-60v680q0 50-35 85t-85 35H240Zm480-80q17 0 28.5-11.5T760-200v-560H320v440h360v120q0 17 11.5 28.5T720-160ZM360-600v-80h240v80H360Zm0 120v-80h240v80H360Zm320-120q-17 0-28.5-11.5T640-640q0-17 11.5-28.5T680-680q17 0 28.5 11.5T720-640q0 17-11.5 28.5T680-600Zm0 120q-17 0-28.5-11.5T640-520q0-17 11.5-28.5T680-560q17 0 28.5 11.5T720-520q0 17-11.5 28.5T680-480ZM240-160h360v-80H200v40q0 17 11.5 28.5T240-160Zm-40 0v-80 80Z",
+  dashboard:
+    "M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z",
+  inventory_2:
+    "M200-80q-33 0-56.5-23.5T120-160v-451q-18-11-29-28.5T80-680v-120q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v120q0 23-11 40.5T840-611v451q0 33-23.5 56.5T760-80H200Zm0-520v440h560v-440H200Zm-40-80h640v-120H160v120Zm200 280h240v-80H360v80Zm120 20Z",
+  bar_chart: "M640-160v-280h160v280H640Zm-240 0v-640h160v640H400Zm-240 0v-440h160v440H160Z",
+};
+
+function svgFor(d) {
+  return (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960">' +
+    '<path d="' + d + '"/></svg>'
+  );
+}
+
+/** Create any missing Icon/<name> components from inlined Material Symbols. */
+async function ensureExtraIcons(log) {
+  const page = CTX.page;
+  const onSurface = solid("color/on-surface");
+  const names = Object.keys(EXTRA_ICONS);
+  let created = 0;
+  let col = 0;
+
+  for (const name of names) {
+    const existing = page.findOne((n) => n.type === "COMPONENT" && n.name === "Icon/" + name);
+    if (existing) continue;
+
+    const comp = figma.createComponent();
+    comp.name = "Icon/" + name;
+    comp.fills = [];
+    comp.clipsContent = false;
+    safeResize(comp, 24, 24);
+
+    const art = figma.createNodeFromSvg(svgFor(EXTRA_ICONS[name]));
+    if (Math.abs(art.width - 24) > 0.5) {
+      try {
+        art.rescale(24 / art.width);
+      } catch (e) {}
+    }
+    art.fills = [];
+    art.findAll((n) => n.type === "VECTOR").forEach((v) => (v.fills = [onSurface]));
+    comp.appendChild(art);
+    art.x = 0;
+    art.y = 0;
+
+    // Park it beside the imported icon grid (they end at y≈2136).
+    comp.x = 80 + col * 56;
+    comp.y = 2180;
+    col = (col + 1) % 6;
+    created++;
+  }
+
+  log(`extra icons created: ${created}/${names.length} (${names.join(", ")})`);
+}
 
 // ===== 10-core.js =====
 // ---------------------------------------------------------------------------
@@ -1720,6 +1787,109 @@ async function batchCards(log) {
   return `P4 cards — ${built.length} sets`;
 }
 
+// ===== 65-p5-navigation.js =====
+// ===== batch: p5-nav =====
+// NavigationBar as tab items (Role x State x CartBadge = 8), not whole bars:
+// "State" and "CartBadge" are per-tab properties, so a bar is composed from
+// item instances in the screen builders. Widths follow the tab counts —
+// 390/5 = 78 (customer) and 390/4 = 97 (admin).
+
+async function buildNavigationBar(parent, log) {
+  await ensureExtraIcons(log);
+
+  const variants = [];
+  const roles = [
+    { role: "Customer", glyph: "shopping_cart", label: "Cart", width: 78 },
+    { role: "Admin", glyph: "receipt_long", label: "Orders", width: 97 },
+  ];
+  const states = ["Selected", "Unselected"];
+  const badges = ["None", "Count"];
+  const GW = 64;
+  const GH = 32;
+
+  for (const r of roles) {
+    for (const state of states) {
+      for (const badge of badges) {
+        const c = figma.createComponent();
+        c.name = `Role=${r.role}, State=${state}, CartBadge=${badge}`;
+        parent.appendChild(c);
+        autolayout(c, { dir: "VERTICAL", gap: 4, pad: [8, 0, 0, 0], cross: "CENTER" });
+        c.fills = [];
+
+        // indicator pill
+        const pill = figma.createFrame();
+        pill.fills = state === "Selected" ? [solid("color/primary-container")] : [];
+        pill.cornerRadius = 16;
+        pill.clipsContent = false;
+        safeResize(pill, GW, GH);
+        c.appendChild(pill);
+
+        const glyph = icon(
+          r.glyph,
+          state === "Selected" ? "color/on-primary-container" : "color/on-surface-variant"
+        );
+        if (glyph) {
+          pill.appendChild(glyph);
+          glyph.x = (GW - 24) / 2;
+          glyph.y = (GH - 24) / 2;
+        }
+
+        if (badge === "Count") {
+          const b = figma.createFrame();
+          b.fills = [solid("color/error")];
+          b.cornerRadius = 8;
+          b.clipsContent = false;
+          autolayout(b, { dir: "VERTICAL", cross: "CENTER" });
+          b.primaryAxisAlignItems = "CENTER";
+          b.counterAxisAlignItems = "CENTER";
+          b.primaryAxisSizingMode = "FIXED";
+          b.counterAxisSizingMode = "FIXED";
+          safeResize(b, 16, 16);
+          pill.appendChild(b);
+          b.x = GW - 22;
+          b.y = -4;
+
+          const count = await text("3", "labelSmall", null);
+          count.fontSize = 9;
+          count.fills = [literal("#FFFFFF")];
+          b.appendChild(count);
+        }
+
+        c.appendChild(
+          await text(
+            r.label,
+            "labelMedium",
+            state === "Selected" ? "color/on-surface" : "color/on-surface-variant"
+          )
+        );
+
+        c.counterAxisSizingMode = "FIXED";
+        c.primaryAxisSizingMode = "FIXED";
+        safeResize(c, r.width, 72);
+        logVariant(c, log);
+        variants.push(c);
+      }
+    }
+  }
+
+  const set = figma.combineAsVariants(variants, parent);
+  set.name = "NavigationBar";
+  grid(set, variants, 4, 24, 24);
+  log(`NavigationBar: ${variants.length} variants, ${Math.round(set.width)}x${Math.round(set.height)}`);
+  log("note: tab items, not whole bars — compose a bar from instances and pick State=Selected for the active tab");
+  return set;
+}
+
+async function batchNavigation(log) {
+  const parent = parentFor();
+  clearOrphans(parent);
+  clearOld(parent, "NavigationBar");
+  const set = await buildNavigationBar(parent, log);
+  placeBelow(parent, set);
+  parent.appendChild(set);
+  return "P5 nav — 1 set";
+}
+
 // ===== 70-runner-ui.js =====
 // ---------------------------------------------------------------------------
 // runner
@@ -1731,6 +1901,7 @@ const BATCHES = {
   "p2b-overlays": batchOverlays,
   "p3-atoms": batchAtoms,
   "p4-cards": batchCards,
+  "p5-nav": batchNavigation,
 };
 
 async function run(batch) {
@@ -1789,6 +1960,7 @@ const HTML = `
     <button data-batch="p2b-overlays">P2b · overlays</button>
     <button data-batch="p3-atoms">P3 · atoms</button>
     <button data-batch="p4-cards">P4 · cards</button>
+    <button data-batch="p5-nav">P5 · nav</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>

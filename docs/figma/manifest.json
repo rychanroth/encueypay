@@ -49,7 +49,7 @@
     "pixelScreens": 15,
     "wireScreens": 15,
     "components": 19,
-    "componentsBuilt": 17,
+    "componentsBuilt": 18,
     "brandAssets": 3,
     "illustrations": 11,
     "colorVariablesPerCollection": 36,
@@ -113,7 +113,13 @@
     {
       "at": "2026-11-08",
       "event": "p3-p4-built",
+      "event_note": "see p3-p4-built and p5-nav-built",
       "detail": "Atoms: PriceText 6, StatusBadge 20, Skeleton 8, EmptyState 2, AsyncValue 3, MonogramImage 4. Cards: KhqrCard 3, OrderStatusTimeline 6, OrderTrackingCard 6, ProductCard 48 (full cartesian product). Geometry taken from the widget sources where components.json was silent. 17 of 18 real sets done; NavigationBar remains. Plugin sources split into src/*.js with build.js assembling the flat code.js."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "p5-nav-built",
+      "detail": "NavigationBar (8 tab items: Role x State x CartBadge) completes the 18 component sets. Six extra Material Symbols (home, explore, receipt_long, dashboard, inventory_2, bar_chart) were created in-plugin with figma.createNodeFromSvg from inlined path data, so no upload call was needed. Next: 30 screens on page 02."
     }
   ]
 }

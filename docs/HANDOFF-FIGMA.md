@@ -100,6 +100,9 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 - PriceText (6), StatusBadge (20), Skeleton (8), EmptyState (2), AsyncValue (3),
   MonogramImage (4) — atoms built from the Dart sources.
 - KhqrCard (3), OrderStatusTimeline (6), OrderTrackingCard (6), ProductCard (48).
+- NavigationBar (8, tab items) — the last set. 6 extra Material Symbols
+  (`home`, `explore`, `receipt_long`, `dashboard`, `inventory_2`, `bar_chart`)
+  were created in-plugin from inlined path data.
 
 ---
 
@@ -107,17 +110,16 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ### Figma — immediate
 
-1. **1 component set remains:** NavigationBar. (`filled-button-theme` is a
-   doc-only recipe, not a set.)
-   (`filled-button-theme` is a doc-only recipe, not a set.)
-3. **Screens: 0 of 30** (15 pixel, 15 wire). Page 02.
-4. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,
+1. **Components complete:** 18 real sets built (plus the `filled-button-theme`
+   doc-only recipe). Nothing is on the screens page yet.
+2. **Screens: 0 of 30** (15 pixel, 15 wire). Page 02.
+3. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,
    checkout, KHQR, sequences, ERD, permissions, state ownership).
-5. **Material Symbols:** 18 `Icon/*` components exist; not yet grouped into a
-   documented icon set/section.
-6. **Code Connect** mapping — best-effort; Flutter is not an official template
+4. **Material Symbols:** 24 `Icon/*` components exist (18 imported + 6 created
+   in-plugin); still not grouped into a documented icon section.
+5. **Code Connect** mapping — best-effort; Flutter is not an official template
    target.
-7. **Motion storyboard + contracts** on page 03.
+6. **Motion storyboard + contracts** on page 03.
 
 ### App / platform
 
