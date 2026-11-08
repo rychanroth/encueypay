@@ -93,8 +93,10 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 - 3 pages, 36+36 color variables, 13 floats, 13 text styles, 3 effect styles.
 - Brand board with 11 illustrations.
 - Button (16 variants), Card (6).
-- 18 Material Symbols SVGs uploaded as **loose frames** on page 01.
-- Input (16) and AppBar (8) built but **not correct**.
+- 18 Material Symbols SVGs imported as vectors into `Icon/*` components.
+- Input (16) at 320×56 and AppBar (8) at 390×56 — fixed and re-gridded.
+- Snackbar (3), Dialog (2), BottomSheet (4) — built from `components.json`,
+  token-bound, text styles linked.
 
 ---
 
@@ -102,18 +104,15 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ### Figma — immediate
 
-1. **Run the local build plugin** (`docs/figma/plugin/`, see §5). Fixes wrong
-   glyphs + widths with no MCP metering.
-2. **14 component sets remain:**
+1. **11 component sets remain:**
    ProductCard, StatusBadge, KhqrCard, MonogramImage, PriceText, AsyncValue,
-   EmptyState, Skeleton, OrderStatusTimeline, OrderTrackingCard, NavigationBar,
-   Dialog, BottomSheet, Snackbar.
+   EmptyState, Skeleton, OrderStatusTimeline, OrderTrackingCard, NavigationBar.
    (`filled-button-theme` is a doc-only recipe, not a set.)
 3. **Screens: 0 of 30** (15 pixel, 15 wire). Page 02.
 4. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,
    checkout, KHQR, sequences, ERD, permissions, state ownership).
-5. **Material Symbols:** 18 icons uploaded, not converted into a documented
-   icon section/components.
+5. **Material Symbols:** 18 `Icon/*` components exist; not yet grouped into a
+   documented icon set/section.
 6. **Code Connect** mapping — best-effort; Flutter is not an official template
    target.
 7. **Motion storyboard + contracts** on page 03.

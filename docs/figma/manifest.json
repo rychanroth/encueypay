@@ -49,7 +49,7 @@
     "pixelScreens": 15,
     "wireScreens": 15,
     "components": 19,
-    "componentsBuilt": 4,
+    "componentsBuilt": 7,
     "brandAssets": 3,
     "illustrations": 11,
     "colorVariablesPerCollection": 36,
@@ -104,6 +104,11 @@
       "at": "2026-11-08",
       "event": "build-path-changed",
       "detail": "Confirmed the Starter quota still blocks use_figma (whoami: Starter/View). Evaluated the REST API and rejected it for building: read-only apart from comments, variables and dev resources. Adopted a local development plugin at docs/figma/plugin/ (flat code.js, no UI, no bundler) which runs the same Plugin API code unmetered; figma-linux supports development-plugin import. User installs it once; P2a fix is the first batch."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "p2a-p2b-built",
+      "detail": "Local plugin run. P2a: 18 icons replaced, Input 1352x296, AppBar 1632x136. P2b: Snackbar (3), Dialog (2), BottomSheet (4), token-bound to space/* and radius/* floats and linked to Type/* text styles. New sets are top-level on page 01 below AppBar (no S · Components section exists); locate by name. Plugin API constraints recorded in plugin/README.md."
     }
   ]
 }

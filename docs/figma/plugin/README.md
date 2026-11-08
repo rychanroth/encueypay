@@ -53,10 +53,30 @@ dialog's file-type filter to *All files*.
 
 ## Adding batches
 
-Keep one flat `code.js`. When more batches land, add a `ui.html` selector in this
-same folder (flat, no subdirectories) and dispatch by command name. Do not ship a
-bundler — figma-linux's loader is the fragile part, and a single unbundled file
-avoids it entirely.
+`code.js` is one flat file with a `BATCHES` map and a small UI. Add a `batchXxx(log)`
+function, register it, add a `<button data-batch="xxx">`. The runner wraps every
+batch in try/catch, collects warnings and reports them in the log pane.
+
+Rules learned the hard way:
+
+| Rule | Why |
+|---|---|
+| `await node.setTextStyleIdAsync(id)` | `documentAccess: "dynamic-page"` bans the sync `textStyleId` setter |
+| Assign `fontName` **before** `characters` | a new text node is born "Inter Regular"; writing characters first fails with "unloaded font" |
+| Set `textAutoResize` **before** `resize()` | resizing a `WIDTH_AND_HEIGHT` text node throws |
+| Set hug sizing (`primaryAxisSizingMode = "AUTO"`) **last** | a `resize()` after it re-fixes the axis |
+| Size grid rows by the tallest cell in the row | stepping by each variant's own height drifts rows apart |
+| Bind variables **after** setting the literal | assigning a literal to a bound field unlinks the variable |
+| Sweep orphan variants before `combineAsVariants` | a failed run leaves loose `Tone=`/`Type=` components that break the next combine |
+
+Judgement calls made in P2b (confirm or correct):
+
+- Snackbar tones differ by leading icon (`check_circle` / `error`) and, for
+  `Action`, by a trailing `labelLarge` action; `components.json` does not specify
+  a per-tone fill.
+- Dialog copy is placeholder ("Discard changes?", "Delete this product?").
+- `components.json` says the drag handle is always on, but the axis is
+  `Header=[Text, TextAndHandle]`; `Text` therefore renders without the handle.
 
 ## Relationship to the other files
 

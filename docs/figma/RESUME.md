@@ -50,12 +50,15 @@ text for icons. Use the imported SVG vectors.
 
 ## After the fix
 
-- Convert the 18 `Icon/*` components into a documented icon section.
-- P2 batch 2b: Snackbar (3), Dialog (2), BottomSheet (4).
-- Then screens, then FigJam, then page 03.
+Done: 18 icons replaced, Input 320×56, AppBar 390×56, Snackbar (3), Dialog (2),
+BottomSheet (4) — token-bound and text-style linked.
 
-Each batch is added to the same plugin as a new command in the flat `code.js`;
-do not reintroduce a bundler or subfolders (see plugin README).
+Next: 11 sets remain (ProductCard, StatusBadge, KhqrCard, MonogramImage,
+PriceText, AsyncValue, EmptyState, Skeleton, OrderStatusTimeline,
+OrderTrackingCard, NavigationBar), then screens, then FigJam, then page 03.
+
+Each batch is a function in the same plugin file; see `plugin/README.md` for the
+Plugin API rules that cost a run each.
 
 ## Quota facts (updated)
 
