@@ -1,8 +1,9 @@
 {
   "schemaVersion": "1.0",
-  "status": "planned",
+  "status": "foundations-built",
   "sourceCommit": "81dc7a7",
   "generatedAt": "2026-11-08",
+  "sessionId": "3c99d509-1931-4c41-9308-5a8c0f15db0f",
   "figmaAccount": {
     "handle": "rychanroth",
     "email": "rychanroth2009@gmail.com",
@@ -17,50 +18,62 @@
     "design": {
       "fileName": "EncueYPay — Product Spec (as-built)",
       "editorType": "design",
-      "fileKey": null,
-      "url": null,
-      "status": "not-created",
+      "fileKey": "sf2EOTYc8LBadE7LpIu8kR",
+      "url": "https://www.figma.com/design/sf2EOTYc8LBadE7LpIu8kR",
+      "status": "created",
       "pageIds": {}
     },
     "flows": {
       "fileName": "EncueYPay — Flows & Data",
       "editorType": "figjam",
-      "fileKey": null,
-      "url": null,
-      "status": "not-created",
+      "fileKey": "2O145eRxj0Ta11iwIMwuEH",
+      "url": "https://www.figma.com/board/2O145eRxj0Ta11iwIMwuEH",
+      "status": "created",
       "pageIds": {}
     }
   },
   "pages": [
-    { "id": "00", "name": "00 · Cover & Index", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "01", "name": "01 · Foundations", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "02", "name": "02 · Components", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "03", "name": "03 · Customer", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "04", "name": "04 · Admin", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "05", "name": "05 · States & Edge Cases", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "06", "name": "06 · Motion Storyboard", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "07", "name": "07 · Contracts", "file": "design", "pageId": null, "nodeIds": [] },
-    { "id": "F1", "name": "Flows & Data", "file": "flows", "pageId": null, "nodeIds": [] }
+    { "id": "01", "name": "01 · Foundations & Components", "file": "design", "pageId": "0:1", "nodeIds": [] },
+    { "id": "02", "name": "02 · Screens", "file": "design", "pageId": "2:4", "nodeIds": [] },
+    { "id": "03", "name": "03 · Motion & Contracts", "file": "design", "pageId": "2:5", "nodeIds": [] }
   ],
   "counts": {
     "screens": 30,
     "pixelScreens": 15,
     "wireScreens": 15,
     "components": 19,
-    "colorVariables": 36,
+    "colorVariablesPerCollection": 36,
+    "colorCollections": 2,
+    "floatVariables": 13,
     "textStyles": 13,
+    "effectStyles": 3,
     "diagrams": 9
   },
   "substitutions": {
     "font": null,
     "icons": null,
-    "notes": "Record any font or icon substitution here at P1. Null means the canonical value was used."
+    "notes": "Starter plan limits: 1 variable mode and 3 pages per file. Light/dark is therefore implemented as two collections (Color, Color Dark) with identical variable names rather than two modes in one collection. Pages are 3 with sections/frames inside.",
+    "starterLimits": {
+      "variableModesPerCollection": 1,
+      "pagesPerFile": 3,
+      "collaborativeFiles": 3
+    }
   },
   "history": [
     {
       "at": "2026-11-08",
       "event": "spec-extracted",
       "detail": "tokens/components/screens/flows generated from code + handoff at 81dc7a7; no Figma writes performed."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "files-created",
+      "detail": "Design file sf2EOTYc8LBadE7LpIu8kR and FigJam board 2O145eRxj0Ta11iwIMwuEH created on plan team::1556872439110631612; session 3c99d509-1931-4c41-9308-5a8c0f15db0f."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "foundations-built",
+      "detail": "P1: 3 pages, 36 color variables in Color (Light) + 36 in Color Dark, 13 float variables (space/radius/size), 13 text styles, 3 effect styles. Plus Jakarta Sans confirmed available (Regular/Medium/SemiBold/Bold/ExtraBold)."
     }
   ]
 }

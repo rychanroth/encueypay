@@ -27,24 +27,26 @@ Three facts drive the design:
 
 ### File A — Figma Design: `EncueYPay — Product Spec (as-built)`
 
+**Starter caps this file at 3 pages and 1 variable mode per collection.** The original
+8-page layout was collapsed to 3 pages plus internal sections; light/dark is two
+collections instead of two modes.
+
 | # | Page | Contents |
 |---|---|---|
-| 00 | Cover & Index | Snapshot, precedence, evidence legend, page links, source commit |
-| 01 | Foundations | Color variables (Light/Dark modes), 13 text styles, spacing/radius numbers, 3 effect styles, layout grids |
-| 02 | Components | 19 component sets from `components.json`, all axes |
-| 03 | Customer | 17 customer screens (11 pixel, 6 wire), compact 390×844 |
-| 04 | Admin | 12 admin screens (4 pixel, 8 wire); shared account screens live on page 03 |
-| 05 | States & Edge Cases | Cross-cutting matrix: loading/empty/error/offline/reduced-motion/large-text |
-| 06 | Motion Storyboard | Annotated frames for the 9 highest-value animations; 3 prototype links |
-| 07 | Contracts | Notes-only: invariants, API surface, enum drift, dropped domains |
+| 01 | Foundations & Components | Cover/index block, color variables (`Color` = Light, `Color Dark` = Dark), 13 text styles, spacing/radius numbers, 3 effect styles, then 19 component sets in sections |
+| 02 | Screens | Customer (11 pixel + 6 wire) and Admin (4 pixel + 8 wire) in labeled sections; states live beside their screen |
+| 03 | Motion & Contracts | Motion storyboard frames, cross-cutting states, invariants/API notes |
+
+Page IDs are recorded in `manifest.json`. Sections are named `S · Customer`,
+`S · Admin`, `S · Components`, `S · Foundations` so any frame can be located by name.
 
 ### File B — FigJam: `EncueYPay — Flows & Data`
 
 Sections: Navigation map · Order lifecycle · Payment lifecycle · Auth sequence ·
 Checkout sequence · KHQR verification · ERD · Permission matrix · State ownership.
 
-**Why two files:** two is inside the Starter budget (historically 3), and diagrams in
-FigJam stay editable without polluting the design canvas. **Do not** use
+**Why two files:** two is inside the Starter budget (3 collaborative files), and
+diagrams in FigJam stay editable without polluting the design canvas. **Do not** use
 `generate_diagram` — it creates a new file per call, which would blow the budget.
 
 ## 3. Fidelity tiers
@@ -74,18 +76,27 @@ Each phase ends with a commit of the spec/scripts/manifest — not of `lib/`.
 
 | Phase | Work | Tool calls | Done when |
 |---|---|---:|---|
-| **P0 Preflight** | `whoami` (done), `create_new_file` ×2, `create_session` | 3 writes | Both file keys + URLs recorded in `manifest.json`; Starter file cap confirmed |
-| **P1 Foundations** | Create color collection + modes, text styles, number variables, effect styles, grids | 1 `use_figma` | Variable/style counts equal `tokens.json`; dark mode toggles every semantic surface |
-| **P2 Components** | 19 sets in 3 batches (button/card/input → catalog/commerce → state/chrome) | 3 `use_figma` | Every axis combination exists; `Card/Elevated` swaps to `Card/Flat` without detaching |
-| **P3 Customer pixel** | 11 screens, 3–4 per call: shells → commerce → detail/profile | 5 `use_figma` | Instances only; frame names match `screens.json`; loading/empty/error variants exist |
-| **P4 Admin pixel + wire** | 4 admin pixel screens then 8 wire admin screens | 4 `use_figma` | Same checks; admin tab order matches `NavigationBar` |
-| **P5 Customer wire** | 6 wire customer screens + notFound | 2 `use_figma` | Inventory complete; every `screens.json` id has a frame |
-| **P6 FigJam** | 9 diagrams on one board | 2 `use_figma` | Node/edge counts match `flows.json`; each section captioned with the source section |
-| **P7 Annotation + sync** | Cross-cutting matrix, motion storyboard, Code Connect best-effort | 2 `use_figma` + 1 `add_code_connect_map` | Page 05/06 complete; mapping recorded or explicitly marked unsupported |
-| **P8 QA** | One `get_metadata` per page (2 calls), one screenshot of a representative frame | ≤4 reads | No raw hex; no duplicate frames on re-run; manifest updated |
+| **P0 Preflight** | `whoami`, `create_new_file` ×2, `create_session` | 3 writes | ✅ Files created; keys in `manifest.json` |
+| **P1 Foundations** | Pages, `Color`/`Color Dark` collections, floats, text styles, effect styles | 1 `use_figma` | ✅ 36×2 colors, 13 floats, 13 text styles, 3 effects; fonts confirmed |
+| **P2 Components** | 19 sets in 3 batches, page 01 section `S · Components` | 3 `use_figma` | Every axis combination exists; `Card/Elevated` swaps to `Card/Flat` without detaching |
+| **P3 Customer pixel** | 11 screens, 3–4 per call, page 02 section `S · Customer` | 5 `use_figma` | Instances only; frame names match `screens.json`; loading/empty/error variants exist |
+| **P4 Admin pixel + wire** | 4 admin pixel then 8 wire, page 02 section `S · Admin` | 4 `use_figma` | Same checks; admin tab order matches `NavigationBar` |
+| **P5 Customer wire** | 6 wire customer screens + notFound, page 02 | 2 `use_figma` | Inventory complete; every `screens.json` id has a frame |
+| **P6 FigJam** | 9 diagrams on the FigJam board | 2 `use_figma` | Node/edge counts match `flows.json`; each section captioned with the source section |
+| **P7 Annotation + sync** | Cross-cutting matrix + motion storyboard on page 03; Code Connect best-effort | 2 `use_figma` + 1 `add_code_connect_map` | Page 03 complete; mapping recorded or marked unsupported |
+| **P8 QA** | One `get_metadata` per page, one screenshot | ≤4 reads | No raw hex; no duplicate frames on re-run; manifest updated |
 
 **Budget:** ~19–22 write calls, ≤6 read calls, 2 files. Comfortably inside the
 View-seat read quota **only if** verification is batched.
+
+### Starter constraints (discovered at P0/P1)
+
+| Limit | Impact | Workaround |
+|---|---|---|
+| 1 variable mode per collection | No Light/Dark modes in one collection | `Color` (Light) + `Color Dark` collections with identical names; frames bind to the right set |
+| 3 pages per file | Cannot use the original 8-page map | 3 pages with named sections inside |
+| 3 collaborative files | Budget for Design + FigJam only | Diagrams drawn on the single FigJam board, never `generate_diagram` |
+| 20 read calls/month (View seat) | No iterative screenshot loop | Batch writes; verify with write-return evidence |
 
 ## 6. Non-negotiable agent protocol
 
@@ -142,4 +153,6 @@ looked up by name and updated in place. `setPluginData` is banned, so names +
 2. **Expanded variants** — proposed only for home, productDetail, checkout,
    adminDashboard. Confirm or drop.
 3. **Dark mode for wire screens** — currently light-only. Confirm.
-4. **Figma file naming/placement** — draft vs. team project. No project id was supplied.
+
+**Resolved:** file placement — both files were created in the account's drafts
+(`sf2EOTYc8LBadE7LpIu8kR`, `2O145eRxj0Ta11iwIMwuEH`).
