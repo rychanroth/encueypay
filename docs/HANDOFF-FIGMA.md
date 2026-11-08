@@ -18,11 +18,11 @@ splash, login lockup, empty-state wiring; in Figma: 3 pages, foundations,
 brand board, Button, Card.
 
 **Broken/paused:** `Input` and `AppBar` exist in Figma but contain wrong icon
-glyphs and hug their content. The fix call was blocked by the Figma MCP Starter
+glyphs and hug their content. The MCP fix was blocked by the Figma MCP Starter
 quota before it ran.
 
-**Next action:** after quota returns, run `docs/figma/build/p2-icons-fix.js`
-through `use_figma`. Everything else follows from there.
+**Next action:** install `docs/figma/plugin/` as a development plugin and run it —
+it performs the same fix with **no MCP metering**. See §5.
 
 ---
 
@@ -50,7 +50,8 @@ through `use_figma`. Everything else follows from there.
 | Resume note | `docs/figma/RESUME.md` |
 | Node/ID registry | `docs/figma/manifest.json` |
 | Extracted spec | `docs/figma/spec/{tokens,components,screens,flows}.json` |
-| Fix script | `docs/figma/build/p2-icons-fix.js` |
+| Fix script (MCP payload, kept as record) | `docs/figma/build/p2-icons-fix.js` |
+| **Local build plugin (the runnable path)** | `docs/figma/plugin/` |
 | Brand system | `docs/brand/BRAND.md` |
 | Brand sources | `docs/brand/source/` (mark, app icon, 11 illustrations, 18 icons) |
 | Bundled assets | `assets/brand/`, `assets/illustrations/` (+ `dark/`) |
@@ -101,7 +102,8 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ### Figma — immediate
 
-1. **Run `p2-icons-fix.js`** (see §5). Fixes wrong glyphs + widths.
+1. **Run the local build plugin** (`docs/figma/plugin/`, see §5). Fixes wrong
+   glyphs + widths with no MCP metering.
 2. **14 component sets remain:**
    ProductCard, StatusBadge, KhqrCard, MonogramImage, PriceText, AsyncValue,
    EmptyState, Skeleton, OrderStatusTimeline, OrderTrackingCard, NavigationBar,
@@ -134,46 +136,41 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ## 5. Exact resume procedure
 
-**Step 0 — check quota.** `whoami` is exempt. If `use_figma` still returns
-*"You've reached the Figma MCP tool call limit on the Starter plan"*, stop and
-wait or upgrade to a Full/Dev seat (~200/day).
+**Step 0 — use the local plugin, not the MCP.** `use_figma` is metered against
+the Figma plan (~20 calls/month on Starter) and that quota is spent. The same
+Plugin API code runs unmetered as a development plugin.
 
-**Step 1 — load the skills.** Before any `use_figma` call:
+Install once: open the design file in the Figma desktop app or `figma-linux`,
+then **Plugins → Development → Import plugin from manifest…** →
+`docs/figma/plugin/manifest.json`. Run it from **Plugins → Development →
+EncueYPay Mirror**.
 
-- `skill://figma/figma-use/SKILL.md`
-- `skill://figma/figma-generate-library/SKILL.md`
+Loader constraints (figma-linux): flat `main` filename, no dashes, no `ui.html`,
+no bundler. Already satisfied — do not regress them.
 
-**Step 2 — run the fix.** Read `docs/figma/build/p2-icons-fix.js` and send its
-contents as the `code` argument:
+Expected toast: `P2a fix done — icons 18/18 · Input 1352x296 · AppBar 1632x136`.
 
-```js
-use_figma({
-  fileKey: "sf2EOTYc8LBadE7LpIu8kR",
-  sessionId: "3c99d509-1931-4c41-9308-5a8c0f15db0f",
-  skillNames: "resource:figma-use,resource:figma-generate-library",
-  description: "Fix icon glyphs and Input/AppBar widths",
-  code: /* contents of docs/figma/build/p2-icons-fix.js */,
-})
-```
-
-Expected: `replaced: 18`, Input `w: 1352`, AppBar `w: 1632`.
-
-**Step 3 — verify.** Screenshot `12:94` and `12:135`; expect a magnifier in
+**Step 1 — verify.** Screenshot `12:94` and `12:135`; expect a magnifier in
 Search, an eye in Password, a chevron in Dropdown, 4-column grids.
 
-**Step 4 — batch 2b.** Build Snackbar (3), Dialog (2), BottomSheet (4) using
-`docs/figma/spec/components.json` as the source. Same pattern: components →
-`combineAsVariants` → **manual grid layout** → screenshot.
+**Step 2 — batch 2b.** Build Snackbar (3), Dialog (2), BottomSheet (4) using
+`docs/figma/spec/components.json` as the source, added as a new command in the
+same flat `code.js`. Same pattern: components → `combineAsVariants` → **manual
+grid layout** → verify.
 
-**Step 5 — screens.** Start with the 15 pixel screens on page 02, in this order:
+`build/p2-icons-fix.js` is kept as the record of the original MCP payload;
+`plugin/code.js` is its runnable twin. Keep them in step, or delete the former if
+it stops earning its keep.
+
+**Step 3 — screens.** Start with the 15 pixel screens on page 02, in this order:
 login, home, productDetail, cart, checkout, orderPlaced, orders, orderDetail,
 profile, discovery, notifications, adminDashboard, adminProducts, adminOrders,
 adminReports. Wire screens after.
 
-**Step 6 — FigJam.** One board, 9 sections, `use_figma` only. **Do not** use
+**Step 4 — FigJam.** One board, 9 sections, `use_figma` only. **Do not** use
 `generate_diagram` — it creates a new file per call.
 
-**Step 7 — QA.** One screenshot per set/screen; no per-frame loops (read quota).
+**Step 5 — QA.** One screenshot per set/screen; no per-frame loops (read quota).
 
 ---
 
@@ -181,7 +178,8 @@ adminReports. Wire screens after.
 
 | Gotcha | Rule |
 |---|---|
-| Starter quota | ~20 non-exempt calls/month. Only `add_code_connect_map`, `create_new_file`, `generate_figma_design`, `whoami` are exempt. `use_figma` and `upload_assets` count. |
+| Starter quota | All `use_figma` runs count (~20/month); only `add_code_connect_map`, `create_new_file`, `generate_figma_design`, `whoami` are exempt. **Use the local plugin** (`docs/figma/plugin/`) for building — it is not metered. |
+| REST API (PAT) | Read-only for nodes — comments, variables and dev resources are the only writes. Good for inspection/exports, useless for building components or screens. |
 | 1 variable mode | Light/dark is two collections (`Color`, `Color Dark`), same names. |
 | 3 pages | 3 pages + sections/frames inside. |
 | Font codepoints | Figma's "Material Icons" ≠ Flutter's bundled font. `0xE567` is `search` in Flutter, `add_location` in Figma. **Never use glyph text**; use SVG symbols. |
@@ -240,5 +238,6 @@ dcd9c2c feat(brand): add identity v1 and import assets into Figma
 ## 9. First message for a fresh session
 
 > Read `docs/HANDOFF-FIGMA.md` and `docs/figma/RESUME.md`. Resume at §5 Step 0.
-> The Figma file is mid-operation: run `docs/figma/build/p2-icons-fix.js`
-> before building anything else. Do not use font glyphs for icons.
+> The Figma file is mid-operation: run the local plugin in `docs/figma/plugin/`
+> (Plugins → Development → EncueYPay Mirror) before building anything else. Do not
+> use font glyphs for icons, and do not route builds through the metered MCP.

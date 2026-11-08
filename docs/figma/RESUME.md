@@ -1,8 +1,34 @@
 # Figma resume state
 
-**Blocked:** Figma MCP Starter quota exhausted on 2026-11-08.
-`use_figma` returns: *"You've reached the Figma MCP tool call limit on the
-Starter plan."* The last write did **not** execute.
+**Status:** unblocked — the MCP quota is no longer on the critical path.
+**Blocked only by:** a click. The builders now run as a local development plugin.
+
+## What changed (2026-11-08)
+
+`use_figma` is metered against the Figma plan (~20 calls/month on Starter) and the
+quota is spent. That meter covers the *transport*, not the capability: the same
+Plugin API code runs unmetered as a **local development plugin**.
+
+`docs/figma/plugin/` is that plugin. `figma-linux` supports development-plugin
+import (its extension loader), so no Figma desktop licence is needed.
+
+REST API was evaluated and rejected for this job: it is read-only apart from
+comments, variables, and dev resources. It cannot create components, variant
+sets, or screens.
+
+## The call to make next (manual, ~30s)
+
+1. Open https://www.figma.com/design/sf2EOTYc8LBadE7LpIu8kR in figma-linux.
+2. Figma menu → Plugins → Development → **Import plugin from manifest…**
+   → select `docs/figma/plugin/manifest.json`.
+3. Run **Plugins → Development → EncueYPay Mirror**.
+
+Expected: `P2a fix done — icons 18/18 · Input 1352x296 · AppBar 1632x136`.
+
+Then verify `12:94` and `12:135`: magnifier in Search, eye in Password, chevron in
+Dropdown, 4-column grids.
+
+Details and loader constraints: `docs/figma/plugin/README.md`.
 
 ## What is already in the file
 
@@ -12,36 +38,33 @@ Starter plan."* The last write did **not** execute.
   `arrow_back`, `notifications_none`, `more_vert`, `info`, `error`,
   `check_circle`, `warning`, `refresh`, `chevron_right`, `favorite`,
   `favorite_border`, `shopping_cart`, `arrow_drop_down`, `person`.
-- `Input` component set (16 variants) and `AppBar` set (8 variants) exist but
-  are **not yet correct**: they contain the wrong font glyphs in the icon
-  components, and their frames hug (~135 / content width) instead of 320 / 390.
-
-## The one call to run next
-
-Run `docs/figma/build/p2-icons-fix.js` through `use_figma` on file
-`sf2EOTYc8LBadE7LpIu8kR`. It:
-
-1. Replaces the font glyphs inside `Icon/<name>` with the imported vectors
-   (bound to `color/on-surface`).
-2. Sets Input to a fixed 320×56 and AppBar to 390×56.
-3. Re-grids both sets.
-
-Then take one screenshot of each set to verify. Expected: magnifier in the
-Search field, eye in Password, chevron in Dropdown, and 4-column grids.
+- `Input` (16 variants) and `AppBar` (8) exist but are **not yet correct**: wrong
+  font glyphs in the icon components, and frames that hug (~135) instead of
+  320 / 390. The plugin fixes both and re-grids.
 
 ## Why the font approach failed
 
-Figma's "Material Icons" font is a different release than Flutter's bundled
-font. `0xE567` is `search` in Flutter but `add_location` in Figma. Do not use
-codepoint text for icons. Use the imported SVG vectors.
+Figma's "Material Icons" font is a different release than Flutter's bundled font.
+`0xE567` is `search` in Flutter but `add_location` in Figma. Never use codepoint
+text for icons. Use the imported SVG vectors.
 
 ## After the fix
 
 - Convert the 18 `Icon/*` components into a documented icon section.
-- Continue P2 batch 2b: Snackbar, Dialog, BottomSheet.
-- Then screens.
+- P2 batch 2b: Snackbar (3), Dialog (2), BottomSheet (4).
+- Then screens, then FigJam, then page 03.
 
-## Quota options
+Each batch is added to the same plugin as a new command in the flat `code.js`;
+do not reintroduce a bundler or subfolders (see plugin README).
 
-- Starter/View is ~20 tool calls per month. Wait for the reset, or
-- upgrade to a Full/Dev seat (200/day, 10/min) for the remaining build.
+## Quota facts (updated)
+
+| Action | Metered? |
+|---|---|
+| `whoami`, `add_code_connect_map`, `create_new_file`, `generate_figma_design` | exempt |
+| `use_figma`, `upload_assets`, reads/screenshots | counted, ~20/month on Starter |
+| Local development plugin runs | **not metered** |
+| REST API with a PAT | rate-limited per minute, not per month; read-only for nodes |
+
+Starter still caps the *file*: 3 pages, 1 variable mode per collection. That is an
+authored-work constraint, not a build-path one.

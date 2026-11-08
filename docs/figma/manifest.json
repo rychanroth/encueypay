@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "status": "blocked-mcp-quota",
+  "status": "active-local-plugin",
   "sourceCommit": "81dc7a7",
   "generatedAt": "2026-11-08",
   "sessionId": "3c99d509-1931-4c41-9308-5a8c0f15db0f",
@@ -99,6 +99,11 @@
       "at": "2026-11-08",
       "event": "p2a-partial-blocked",
       "detail": "Built Input (16) 12:94 and AppBar (8) 12:135 plus 18 icon components. Font-codepoint glyphs were wrong (Figma Material Icons release differs from Flutter's). Uploaded 18 official Material Symbols SVGs as loose frames. The fix call (docs/figma/build/p2-icons-fix.js) was blocked by the Starter MCP quota before executing. See RESUME.md."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "build-path-changed",
+      "detail": "Confirmed the Starter quota still blocks use_figma (whoami: Starter/View). Evaluated the REST API and rejected it for building: read-only apart from comments, variables and dev resources. Adopted a local development plugin at docs/figma/plugin/ (flat code.js, no UI, no bundler) which runs the same Plugin API code unmetered; figma-linux supports development-plugin import. User installs it once; P2a fix is the first batch."
     }
   ]
 }
