@@ -11,6 +11,7 @@ const BATCHES = {
   "p5-nav": batchNavigation,
   "s1-auth-home": batchAuthHome,
   "s2-customer-a": batchCustomerA,
+  "s3-customer-b": batchCustomerB,
 };
 
 async function run(batch) {
@@ -72,6 +73,7 @@ const HTML = `
     <button data-batch="p5-nav">P5 · nav</button>
     <button data-batch="s1-auth-home">S1 · login+home</button>
     <button data-batch="s2-customer-a">S2 · detail+cart</button>
+    <button data-batch="s3-customer-b">S3 · checkout+orders</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>
