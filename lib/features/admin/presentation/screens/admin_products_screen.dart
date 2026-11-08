@@ -7,6 +7,7 @@ import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/admin.dart';
@@ -124,7 +125,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
               loading: const SkeletonListView(crossAxisCount: 1),
               data: (_) => filtered.isEmpty
                   ? const EmptyStateView(
-                      icon: Icons.inventory_2_outlined,
+                      illustration: AppIllustrations.noProducts,
                       title: 'No products match',
                       description: 'Adjust the filter or add a product.',
                     )

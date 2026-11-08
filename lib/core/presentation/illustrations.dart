@@ -43,6 +43,11 @@ abstract final class AppIllustrations {
     dark: 'assets/illustrations/dark/no-notifications.png',
   );
 
+  static const noAddresses = AppIllustration(
+    light: 'assets/illustrations/no-addresses.png',
+    dark: 'assets/illustrations/dark/no-addresses.png',
+  );
+
   static const noProducts = AppIllustration(
     light: 'assets/illustrations/no-products.png',
     dark: 'assets/illustrations/dark/no-products.png',
@@ -61,5 +66,10 @@ abstract final class AppIllustrations {
   static const verified = AppIllustration(
     light: 'assets/illustrations/verified.png',
     dark: 'assets/illustrations/dark/verified.png',
+  );
+
+  static const orderPlaced = AppIllustration(
+    light: 'assets/illustrations/order-placed.png',
+    dark: 'assets/illustrations/dark/order-placed.png',
   );
 }

@@ -131,7 +131,7 @@ A single, calm line-art voice used for empty, error, and success states.
 | Gradients | never |
 | Motif | a dashed baseline at y=132 on empty/neutral states |
 
-**Inventory (v1):** empty cart, no orders, empty wishlist, no search results, no notifications, no products, offline, error, verified.
+**Inventory (v1):** empty cart, no orders, empty wishlist, no search results, no notifications, no addresses, no products, offline, error, verified, order placed.
 
 Every illustration ships a **light and dark export**. `AppIllustration.resolve(brightness)` picks the right file at build time; there are no runtime color filters. Source: `docs/brand/source/illustrations/` (with `dark/` mirrors).
 

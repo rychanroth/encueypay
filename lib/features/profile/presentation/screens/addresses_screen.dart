@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/illustrations.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/router/app_routes.dart';
@@ -72,7 +73,7 @@ class AddressesScreen extends ConsumerWidget {
         data: (addresses) {
           if (addresses.isEmpty) {
             return EmptyStateView(
-              icon: Icons.location_on_outlined,
+              illustration: AppIllustrations.noAddresses,
               title: 'No addresses yet',
               description: 'Add a delivery address to place an order.',
               actionLabel: 'Add address',

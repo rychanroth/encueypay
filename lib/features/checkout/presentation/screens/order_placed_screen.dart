@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
@@ -249,8 +250,13 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                   final money = Money(payment.amountMinor);
                   return _animatedBody(context, 'verified', Column(
                     children: [
-                      const Icon(Icons.check_circle_outline,
-                          size: 72, color: AppColors.accentEmerald),
+                      Image.asset(
+                        AppIllustrations.verified.resolve(theme.brightness),
+                        width: 80,
+                        height: 80,
+                        excludeFromSemantics: true,
+                        filterQuality: FilterQuality.medium,
+                      ),
                       const SizedBox(height: 16),
                       Text('Thank you!',
                           textAlign: TextAlign.center,
@@ -295,8 +301,13 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
                   // store's confirmation, not a payment.
                   return _animatedBody(context, 'cod', Column(
                     children: [
-                      const Icon(Icons.check_circle_outline,
-                          size: 72, color: AppColors.accentEmerald),
+                      Image.asset(
+                        AppIllustrations.orderPlaced.resolve(theme.brightness),
+                        width: 80,
+                        height: 80,
+                        excludeFromSemantics: true,
+                        filterQuality: FilterQuality.medium,
+                      ),
                       const SizedBox(height: 16),
                       Text('Thank you!',
                           textAlign: TextAlign.center,

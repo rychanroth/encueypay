@@ -83,10 +83,12 @@ class AsyncErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.cloud_off_outlined,
-              size: 40,
-              color: theme.colorScheme.onSurfaceVariant,
+            Image.asset(
+              AppIllustrations.error.resolve(theme.brightness),
+              width: 80,
+              height: 80,
+              excludeFromSemantics: true,
+              filterQuality: FilterQuality.medium,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(

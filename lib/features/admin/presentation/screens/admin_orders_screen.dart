@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/illustrations.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
@@ -47,7 +48,7 @@ class AdminOrdersScreen extends ConsumerWidget {
         data: (orders) {
           if (orders.isEmpty) {
             return const EmptyStateView(
-              icon: Icons.receipt_long_outlined,
+              illustration: AppIllustrations.noOrders,
               title: 'No orders yet',
               description: 'Customer orders will appear here.',
             );

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/domain/failures.dart';
 
+import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
@@ -545,9 +546,10 @@ class _HomeProductsGrid extends ConsumerWidget {
       ),
       data: (products) {
         if (products.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('No products yet.'),
+          return const EmptyStateView(
+            illustration: AppIllustrations.noProducts,
+            title: 'No products yet',
+            description: 'New arrivals will appear here.',
           );
         }
         return StaggeredGrid(
