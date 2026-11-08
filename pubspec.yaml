@@ -107,6 +107,7 @@ flutter:
     - assets/geo/provinces/
     - assets/brand/
     - assets/illustrations/
+    - assets/illustrations/dark/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

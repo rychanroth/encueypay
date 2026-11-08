@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/domain/failures.dart';
 
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/status_badge.dart';
@@ -118,7 +119,7 @@ class OrdersScreen extends ConsumerWidget {
               Expanded(
                 child: orders.isEmpty
                     ? const EmptyStateView(
-                        icon: Icons.receipt_long_outlined,
+                        illustration: AppIllustrations.noOrders,
                         title: 'No orders match',
                         description:
                             'Orders you place will appear here with live '

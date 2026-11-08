@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="errorTitle">
+  <title id="errorTitle">Something went wrong</title>
+  <g fill="none" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 34l46 82H34z"/>
+    <path d="M80 62v26" stroke="#FB7185"/>
+    <circle cx="80" cy="100" r="3" fill="#FB7185" stroke="none"/>
+  </g>
+</svg>

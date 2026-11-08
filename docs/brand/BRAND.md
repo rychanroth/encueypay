@@ -133,7 +133,7 @@ A single, calm line-art voice used for empty, error, and success states.
 
 **Inventory (v1):** empty cart, no orders, empty wishlist, no search results, no notifications, no products, offline, error, verified.
 
-Source: `docs/brand/source/illustrations/`.
+Every illustration ships a **light and dark export**. `AppIllustration.resolve(brightness)` picks the right file at build time; there are no runtime color filters. Source: `docs/brand/source/illustrations/` (with `dark/` mirrors).
 
 ## 9. Photography
 

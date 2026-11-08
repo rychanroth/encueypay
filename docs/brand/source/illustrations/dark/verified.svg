@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="verifiedTitle">
+  <title id="verifiedTitle">Payment verified</title>
+  <g fill="none" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="80" cy="80" r="42"/>
+    <path d="M60 82l14 14 26-30" stroke="#34D399"/>
+  </g>
+</svg>

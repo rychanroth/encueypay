@@ -29,6 +29,8 @@ Rules:
 - Wordmark is **text**, not an asset: Plus Jakarta Sans ExtraBold, −3% tracking.
 - Export with a transparent background unless the asset is an app icon.
 - Illustration exports: 80dp (1x), 160 (2x), 240 (3x).
+- Every illustration also ships a dark export under `dark/`; swap the ink to
+  `#F8FAFC`, the baseline to `#27354F`, and accents to their 300/400 tints.
 - The app icon has no rounded corners and no transparency.
 - Verify every export on both `#F8FAFC` and `#090D16`.
 

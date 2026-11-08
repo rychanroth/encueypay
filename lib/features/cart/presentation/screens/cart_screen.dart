@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
@@ -103,7 +104,7 @@ class CartScreen extends ConsumerWidget {
         data: (items) {
           if (items.isEmpty) {
             return const EmptyStateView(
-              icon: Icons.shopping_cart_outlined,
+              illustration: AppIllustrations.emptyCart,
               title: 'Your cart is empty',
               description: 'Discover products and add them to your bag.',
             );

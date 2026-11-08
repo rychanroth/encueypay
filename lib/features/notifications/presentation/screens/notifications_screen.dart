@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/router/app_routes.dart';
@@ -85,7 +86,7 @@ class NotificationsScreen extends ConsumerWidget {
           }
           if (state.items.isEmpty) {
             return const EmptyStateView(
-              icon: Icons.notifications_none_outlined,
+              illustration: AppIllustrations.noNotifications,
               title: 'No notifications yet',
               description:
                   'Order updates and payment alerts will appear here.',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/failures.dart';
+import '../illustrations.dart';
 import '../motion.dart';
 import '../theme/app_dimensions.dart';
 
@@ -112,6 +113,7 @@ class EmptyStateView extends StatelessWidget {
     required this.title,
     this.description,
     this.icon = Icons.inbox_outlined,
+    this.illustration,
     this.actionLabel,
     this.onAction,
   });
@@ -119,6 +121,10 @@ class EmptyStateView extends StatelessWidget {
   final String title;
   final String? description;
   final IconData icon;
+
+  /// When set, the ledger-line illustration replaces the icon plate.
+  final AppIllustration? illustration;
+
   final String? actionLabel;
   final VoidCallback? onAction;
 
@@ -131,19 +137,28 @@ class EmptyStateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainer,
-                shape: BoxShape.circle,
+            if (illustration != null)
+              Image.asset(
+                illustration!.resolve(theme.brightness),
+                width: 80,
+                height: 80,
+                excludeFromSemantics: true,
+                filterQuality: FilterQuality.medium,
+              )
+            else
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 32,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               title,
