@@ -92,6 +92,7 @@ Rules learned the hard way:
 | Size grid rows by the tallest cell in the row | stepping by each variant's own height drifts rows apart |
 | Bind variables **after** setting the literal | assigning a literal to a bound field unlinks the variable |
 | Hug with `layoutSizingHorizontal/Vertical = "HUG"` | that API takes `FIXED`/`HUG`/`FILL`; `"AUTO"` is only valid for `primaryAxisSizingMode`/`counterAxisSizingMode` |
+| Append before `layoutSizing* = "FILL"` | the setter throws unless the node is already a child of an auto-layout frame |
 | Sweep orphan variants before `combineAsVariants` | a failed run leaves loose `Tone=`/`Type=` components that break the next combine |
 
 Judgement calls made in P2b (confirm or correct):

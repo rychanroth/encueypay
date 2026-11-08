@@ -19,6 +19,10 @@ const FAMILY = "Plus Jakarta Sans";
 
 /** Typography, copied from docs/figma/spec/tokens.json (figmaName is Type/<name>). */
 const TYPE = {
+  displayLarge: { size: 32, weight: 800, lh: 38.4, ls: -0.8 },
+  headlineMedium: { size: 24, weight: 700, lh: 30, ls: -0.5 },
+  headlineSmall: { size: 22, weight: 700, lh: 27.5, ls: -0.4 },
+  bodyLarge: { size: 16, weight: 400, lh: 24, ls: 0 },
   titleLarge: { size: 20, weight: 600, lh: 26, ls: -0.3 },
   titleMedium: { size: 16, weight: 600, lh: 21.6, ls: -0.2 },
   bodyMedium: { size: 14, weight: 400, lh: 20.3, ls: 0 },
