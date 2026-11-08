@@ -17,10 +17,10 @@ the metered Figma MCP.
 **18 component sets**, **30 screens** (15 pixel + 15 wire), **9 FigJam diagrams**,
 page 03 motion/contracts. Two local plugins run it all unmetered.
 
-**Pending:** a final `P4 · cards` + `P6 · page 03` re-run after `92ec37c`, then the
-`audit-screens` report, then the freeze. Nothing else is planned.
+**Pending:** one `Audit · screens` run with the corrected batch (`c109b14`) to record
+real overflow, then the freeze. Nothing else is planned.
 
-**Next action:** `P4 · cards` → `P6 · page 03` → `Audit · screens`, then §5 Step 4.
+**Next action:** `Audit · screens`, then §5 Step 4.
 
 ---
 
@@ -130,21 +130,28 @@ Drawn as titled panels rather than sections, so each exports self-describing.
 
 ## 4. What is NOT done
 
-### a. Rebuild pass — run; three fixes await a final P4 + P6 re-run
+### a. Rebuild pass — done and verified
 
 Two project-wide fixes shipped in `11adafd` and all seven batches were rebuilt on
 2026-11-08 in the documented order (P4 · cards → S1 → S2 → S3 → S4 → S5 · wire ×15
 → P6 · page 03), each reporting `done:` with no warnings. P2b / P3 / P5 pin their
 own axes and were skipped.
 
-The rebuild then exposed three defects that a re-run cannot repair on its own,
-because the builders re-apply them on every run — fixed in `92ec37c`:
-the cancelled tracking card instanced the in-flight timeline instead of the terminal
-callout, ProductCard's unsaved heart painted the instance rather than its vectors, and
-page 03 appended a second heading and subtitle. Only `P4 · cards` and `P6 · page 03`
-are affected by those fixes, so those two need one more run each.
+The rebuild then exposed three defects that a re-run cannot repair on its own, because
+the builders re-apply them on every run — fixed in `92ec37c`: the cancelled tracking
+card instanced the in-flight timeline instead of the terminal callout, ProductCard's
+unsaved heart painted the instance rather than its vectors, and page 03 appended a
+second heading and subtitle. `P4 · cards` and `P6 · page 03` were re-run afterwards and
+the result matches the prediction, so the fixes are confirmed on the canvas:
 
-What the rebuild itself applied (shipped in `11adafd`):
+- `OrderTrackingCard` — both `State=Cancelled` rows went 377 → **111** and the set
+  1283 → **1017** tall; the four InFlight/Delivered rows are unchanged (139, 465,
+  377, 377).
+- `KhqrCard` **1090×452**, `OrderStatusTimeline` **1058×418**, `ProductCard`
+  **1146×2312** — unchanged to the pixel.
+- Page 03 — one heading; the duplicate from the first run was swept by the new sweep.
+
+What the rebuild applied (shipped in `11adafd`):
 
 1. **Auto-layout hug fix.** `autolayout()` now hugs both axes by default. Enabling
    `layoutMode` leaves both axes `FIXED` at the frame's 100×100 birth size, so every
@@ -157,17 +164,6 @@ What the rebuild itself applied (shipped in `11adafd`):
    grid, notice, summary, FAB) instead of one uniform band. It executed for the first
    time on 2026-11-08 (`done: S5 — 15 wire screens`, no warnings) but has still never
    been inspected — §4f item 2.
-
-**Expected signature of the final `P4 · cards` run** — this is the check that the
-fix landed, so compare against the 2026-11-08 log:
-
-- `OrderTrackingCard` — the two `State=Cancelled` rows shrink (both were 377 because
-  they embedded a 322-tall in-flight track; they should land near 110 = 32 pad +
-  ~18 order id + 4 gap + 56 banner) and the set's total height drops with them. The
-  four InFlight/Delivered rows stay byte-identical (139, 465, 377, 377).
-- `KhqrCard` 1090×452, `OrderStatusTimeline` 1058×418, `ProductCard` 1146×2312 —
-  unchanged to the pixel.
-- Any other drift means the fix over-reached; stop and compare against `92ec37c`.
 
 ### b. Known defect: screens are region-accurate, widget-incomplete
 
@@ -281,8 +277,12 @@ Duplicates that the sweep cannot catch are listed in (4), items 1–2.
 6. **The ERD shows 23 of 25 relations.** `30-flows-c.js` omits
    `categories → categories` (self parent) and `products → order_items` (snapshot).
 7. **Screen overflow is silent.** `screenFrame` sets `clipsContent = true` and content
-   frames are sized to the viewport, so anything beyond 844 is invisible until
-   `audit-screens` runs. Unknown today for every screen.
+   frames are pinned to the viewport, so anything past 844 is invisible. *The first
+   audit could not see it either:* it measured the frame's direct children, which are
+   always the same 56 + 716 + 72 scaffold, so all 30 screens reported `content 844` /
+   `fits` — a measurement of the scaffold, not the content. Rewritten in `c109b14`
+   to measure required height recursively; the real numbers are pending the next
+   `Audit · screens` run.
 8. **ProductCard leaves ~23 px empty.** Fixed 268 height, image 142, metadata hugging
    ~103 — cosmetic, not a defect in the app.
 9. **`Delivered` cannot be represented by the timeline component.** The component
@@ -329,17 +329,22 @@ Intended, and deliberately not done yet:
 Run a dev plugin by clicking its name (or `Ctrl+/`); the three items on the row
 (Publish / Remove / Reveal) are management, not execution.
 
-**Step 1 — rebuild in this order** (the fix only affects frames rebuilt after it):
+**Step 1 — rebuild in this order** (the fix only affects frames rebuilt after it).
+*Status: done on 2026-11-08 for all seven batches; the three §4a defects were fixed
+afterwards, so only `P4 · cards` and `P6 · page 03` need repeating if the file is ever
+rebuilt again.*
 
 1. `P4 · cards` 2. `S1 · login+home` 3. `S2 · detail+cart` 4. `S3 · checkout+orders`
 5. `S4 · profile+admin` 6. `S5 · wire ×15` 7. `P6 · page 03`
 
 P2b / P3 / P5 pin their own axes, so they are unaffected — skip them.
 
-**Step 2 — `Audit · screens`** (read-only). Prints per screen: frame size, content
-extent, `fits` or `CLIPPED Npx`, plus a count of oversized row frames. That list is
-the real answer to "which screens need more than one viewport", and the input for
-any per-screen work.
+**Step 2 — `Audit · screens`** (read-only). Prints per screen: frame size, the height
+it needs, `fits` or `CLIPPED Npx`, horizontal overflow, and the frame that loses the
+most (`worst <frame> <w>x<h> → <needed>`). It measures required height recursively —
+auto-layout as padded sum + gaps, absolute as child bottom — because the scaffold's
+direct children always add up to 844 and hid the overflow entirely (§4f item 7). That
+list is the real answer to "which screens need more than one viewport".
 
 **Step 3 — fix by screen, never by helper.** If a screen is flagged, adjust that
 screen's content or spacing. Do not re-tune shared helpers.
@@ -427,6 +432,8 @@ ff97b30 feat(figma): build NavigationBar and finish the component sets
 11adafd docs(figma): record the snapshot decision and the pending rebuild pass
 c21352f docs(figma): add known debris and unverified items to the handoff
 92ec37c fix(figma): correct the cancelled tracking card, the unsaved heart and page-03 re-runs
+795467f docs(figma): record the rebuild run, the three fixes and the freeze signature
+c109b14 fix(figma): measure real screen overflow in the audit batch
 ```
 
 ---

@@ -1,6 +1,7 @@
 # Figma resume state
 
-**Status:** snapshot complete. Final `P4` + `P6` re-run pending; nothing else planned.
+**Status:** snapshot complete and verified. One corrected `Audit · screens` run, then
+freeze.
 
 ## What changed on 2026-11-08 (late)
 
@@ -16,24 +17,24 @@ The mirror is finished and **frozen**:
 
 ## The only work left
 
-All seven batches were rebuilt on 2026-11-08 (`done:` for each, no warnings). The
-rebuild exposed three defects that every run re-applies, fixed in `92ec37c`
-(`HANDOFF-FIGMA.md` §4f item 4):
+All seven batches were rebuilt on 2026-11-08 and verified: the three defects the
+rebuild exposed (fixed in `92ec37c`, `HANDOFF-FIGMA.md` §4f item 4) are confirmed on
+the canvas — `OrderTrackingCard` 1283 → 1017 tall with both `State=Cancelled` rows at
+111, everything else unchanged to the pixel.
 
-1. **Cancelled tracking card** instanced the in-flight timeline, so a cancelled order
-   showed a forward track instead of the app's terminal callout.
-2. **ProductCard's unsaved heart** painted the instance, not the vector, so it stayed
-   dark on dark imagery.
-3. **Page 03** appended a second heading and subtitle on every run.
+The audit batch was also rewritten (`c109b14`) after its first run reported
+`30 screens · 0 clipped`: it had measured the screen's direct children, which are
+always the same 56 + 716 + 72 scaffold, so it could not see overflow inside the
+pinned content box (§4f item 7).
 
-Run, in this order:
+Run, once, then paste the log:
 
 ```
-P4 · cards → P6 · page 03 → Audit · screens
+Audit · screens
 ```
 
-then paste the audit log. §4a lists the geometry the final P4 run must print — the
-two `State=Cancelled` rows shrink, everything else stays identical.
+The corrected batch prints, per screen, the height it actually needs and the frame
+that loses the most. Then freeze (`HANDOFF-FIGMA.md` §5 Step 4).
 
 P2b / P3 / P5 pin their own axes and are unaffected. FigJam is not re-run: its
 anchor accumulation (§4f item 2) and the nav-map / ERD gaps (items 5–6) are recorded
