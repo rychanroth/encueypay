@@ -103,6 +103,9 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 - NavigationBar (8, tab items) — the last set. 6 extra Material Symbols
   (`home`, `explore`, `receipt_long`, `dashboard`, `inventory_2`, `bar_chart`)
   were created in-plugin from inlined path data.
+- All 30 screens on page 02 (15 pixel, 15 wire).
+- FigJam board: 9 of 9 diagrams, drawn by the separate `plugin-figjam/` dev
+  plugin.
 
 ---
 
@@ -110,18 +113,13 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ### Figma — immediate
 
-1. **Components complete:** 18 real sets built (plus the `filled-button-theme`
-   doc-only recipe).
-2. **Screens complete for the canonical state:** 30 frames on page 02
-   (15 pixel, 15 wire). The per-state variants in `screens.json` (~90) are a
-   separate pass.
-3. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,
-   checkout, KHQR, sequences, ERD, permissions, state ownership).
-4. **Material Symbols:** 24 `Icon/*` components exist (18 imported + 6 created
+1. **Per-state screens:** the canonical `loaded` state exists for all 30
+   screens; the state variants listed in `screens.json` (~90) are a separate pass.
+2. **Material Symbols:** 24 `Icon/*` components exist (18 imported + 6 created
    in-plugin); still not grouped into a documented icon section.
-5. **Code Connect** mapping — best-effort; Flutter is not an official template
+3. **Code Connect** mapping — best-effort; Flutter is not an official template
    target.
-6. **Motion storyboard + contracts** on page 03.
+4. **Motion storyboard + contracts** on page 03 — the last canvas deliverable.
 
 ### App / platform
 

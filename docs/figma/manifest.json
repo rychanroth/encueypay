@@ -58,7 +58,8 @@
     "floatVariables": 13,
     "textStyles": 13,
     "effectStyles": 3,
-    "diagrams": 9
+    "diagrams": 9,
+    "diagramsBuilt": 9
   },
   "substitutions": {
     "font": null,
@@ -127,6 +128,11 @@
       "at": "2026-11-08",
       "event": "screens-built",
       "detail": "All 30 compact screens on page 02: 15 pixel (component instances, real copy) in S · Customer and S · Admin, plus 15 wireframes driven from screens.json sections. Screens are the canonical loaded state per screen; the per-state variants listed in screens.json (about 90) remain a separate pass."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "figjam-built",
+      "detail": "All 9 diagrams drawn on the FigJam board by a separate dev plugin (docs/figma/plugin-figjam/, editorType figjam): navigation, order lifecycle, payment lifecycle, auth/checkout/KHQR sequences, ERD (22 entities, 23 relations), permission matrix, state ownership. Panels are titled backdrops rather than FigJam sections so each exports self-describing; connectors proved supported."
     }
   ]
 }
