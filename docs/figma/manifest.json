@@ -1,9 +1,17 @@
 {
   "schemaVersion": "1.0",
-  "status": "active-local-plugin",
-  "sourceCommit": "81dc7a7",
+  "status": "frozen-snapshot",
+  "frozenAt": "2026-11-08",
+  "specCommit": "81dc7a7",
+  "builtAtCommit": "92ec37c",
   "generatedAt": "2026-11-08",
-  "sessionId": "3c99d509-1931-4c41-9308-5a8c0f15db0f",
+  "notes": {
+    "commits": "spec/*.json was extracted at 81dc7a7 from code; no Figma writes were made then. The canvas was generated later by the local plugin: S1-S5 from 11adafd's bundle, P4 and P6 re-run from 92ec37c. 92ec37c touched only 60-p4-cards.js and 85-page03.js, so the S1-S5 frames are unaffected by the split.",
+    "components": "counts.components (19) is the count in spec/components.json; componentsBuilt (18) is the number of component sets on page 01. The 19th entry is the doc-only `filled-button-theme` recipe, not a missing set.",
+    "screens": "Screen content derives from screens.json's region summaries, not from the *_screen.dart sources, so screens are region-accurate and widget-incomplete. This is accepted for the snapshot; see HANDOFF-FIGMA.md §4b.",
+    "audit": "Screen overflow was measured with the corrected audit batch (7ed8008): content is hidden on productDetail 465px, home 107, adminReports 67, discovery 51, checkout 32; the other 25 fit. productDetail (+274) and orderDetail (+44) are wide because horizontal rails are drawn at natural width and the app scrolls them. No per-screen fixes are planned.",
+    "figjam": "The board is frozen too. Known and accepted: page-03-style anchor rects accumulate if Flows B is ever re-run, the navigation map flattens adminArchivedCoupons and omits adminSettingsAccount, and the ERD carries 23 of 25 relations. Board page ids were not dumped."
+  },
   "figmaAccount": {
     "handle": "rychanroth",
     "email": "rychanroth2009@gmail.com",
@@ -21,7 +29,7 @@
       "fileKey": "sf2EOTYc8LBadE7LpIu8kR",
       "url": "https://www.figma.com/design/sf2EOTYc8LBadE7LpIu8kR",
       "status": "created",
-      "pageIds": {}
+      "pageIds": { "01": "0:1", "02": "2:4", "03": "2:5" }
     },
     "flows": {
       "fileName": "EncueYPay — Flows & Data",
@@ -37,12 +45,61 @@
       { "id": "8:82", "name": "Brand — Board v1" },
       { "id": "4:34", "name": "Button", "variants": 16 },
       { "id": "4:53", "name": "Card", "variants": 6 },
-      { "id": "12:94", "name": "Input", "variants": 16, "status": "needs p2-icons-fix.js" },
-      { "id": "12:135", "name": "AppBar", "variants": 8, "status": "needs p2-icons-fix.js" },
-      { "name": "Icon/*", "count": 18, "status": "SVGs uploaded as loose frames; run p2-icons-fix.js" }
+      { "id": "12:94", "name": "Input", "variants": 16 },
+      { "id": "12:135", "name": "AppBar", "variants": 8 },
+      { "id": "19:217", "name": "Snackbar", "variants": 3 },
+      { "id": "19:230", "name": "Dialog", "variants": 2 },
+      { "id": "19:245", "name": "BottomSheet", "variants": 4 },
+      { "id": "19:356", "name": "PriceText", "variants": 6 },
+      { "id": "19:397", "name": "StatusBadge", "variants": 20 },
+      { "id": "19:428", "name": "Skeleton", "variants": 8 },
+      { "id": "19:447", "name": "EmptyState", "variants": 2 },
+      { "id": "19:461", "name": "AsyncValue", "variants": 3 },
+      { "id": "19:469", "name": "MonogramImage", "variants": 4 },
+      { "id": "19:3125", "name": "NavigationBar", "variants": 8 },
+      { "id": "21:6803", "name": "KhqrCard", "variants": 3 },
+      { "id": "21:6956", "name": "OrderStatusTimeline", "variants": 6 },
+      { "id": "21:7171", "name": "OrderTrackingCard", "variants": 6 },
+      { "id": "21:7862", "name": "ProductCard", "variants": 48 },
+      { "name": "Icon/*", "count": 24, "note": "18 imported Material Symbols + 6 created in-plugin; not a set, not grouped into a section — locate by name" }
     ] },
-    { "id": "02", "name": "02 · Screens", "file": "design", "pageId": "2:4", "nodeIds": [] },
-    { "id": "03", "name": "03 · Motion & Contracts", "file": "design", "pageId": "2:5", "nodeIds": [] }
+    { "id": "02", "name": "02 · Screens", "file": "design", "pageId": "2:4", "nodeIds": [
+      { "id": "21:5156", "name": "Screen/login/signin" },
+      { "id": "21:5190", "name": "Screen/home/loaded" },
+      { "id": "21:5300", "name": "Screen/productDetail/loaded" },
+      { "id": "21:5379", "name": "Screen/cart/loaded" },
+      { "id": "21:5462", "name": "Screen/discovery/loaded" },
+      { "id": "21:5582", "name": "Screen/notifications/loaded" },
+      { "id": "21:5631", "name": "Screen/checkout/loaded" },
+      { "id": "21:5698", "name": "Screen/orderPlaced/qr-pending" },
+      { "id": "21:5722", "name": "Screen/orders/loaded" },
+      { "id": "21:5800", "name": "Screen/orderDetail/loaded" },
+      { "id": "21:5869", "name": "Screen/profile/customer-loaded" },
+      { "id": "21:5948", "name": "Screen/adminDashboard/loaded" },
+      { "id": "21:6035", "name": "Screen/adminProducts/loaded" },
+      { "id": "21:6126", "name": "Screen/adminOrders/loaded" },
+      { "id": "21:6186", "name": "Screen/adminReports/loaded" },
+      { "id": "21:6293", "name": "Screen/reviewCompose/wire" },
+      { "id": "21:6332", "name": "Screen/profileEdit/wire" },
+      { "id": "21:6345", "name": "Screen/addresses/wire" },
+      { "id": "21:6369", "name": "Screen/addressEdit/wire" },
+      { "id": "21:6415", "name": "Screen/wishlist/wire" },
+      { "id": "21:6433", "name": "Screen/settings/wire" },
+      { "id": "21:6449", "name": "Screen/notFound/wire" },
+      { "id": "21:6460", "name": "Screen/adminProductForm/wire" },
+      { "id": "21:6498", "name": "Screen/adminBrands/wire" },
+      { "id": "21:6517", "name": "Screen/adminCategories/wire" },
+      { "id": "21:6546", "name": "Screen/adminPromotions/wire" },
+      { "id": "21:6578", "name": "Screen/adminArchivedCoupons/wire" },
+      { "id": "21:6600", "name": "Screen/adminAudit/wire" },
+      { "id": "21:6623", "name": "Screen/adminSettings/wire" },
+      { "id": "21:6638", "name": "Screen/adminOrderDetail/wire" }
+    ] },
+    { "id": "03", "name": "03 · Motion & Contracts", "file": "design", "pageId": "2:5", "nodeIds": [
+      { "id": "21:7865", "name": "Motion · tokens" },
+      { "id": "21:7899", "name": "Motion · storyboard" },
+      { "id": "21:7931", "name": "Contracts · invariants" }
+    ] }
   ],
   "counts": {
     "screens": 30,
@@ -133,6 +190,11 @@
       "at": "2026-11-08",
       "event": "figjam-built",
       "detail": "All 9 diagrams drawn on the FigJam board by a separate dev plugin (docs/figma/plugin-figjam/, editorType figjam): navigation, order lifecycle, payment lifecycle, auth/checkout/KHQR sequences, ERD (22 entities, 23 relations), permission matrix, state ownership. Panels are titled backdrops rather than FigJam sections so each exports self-describing; connectors proved supported."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "frozen",
+      "detail": "Frozen as a snapshot, not a live mirror: code + docs/architecture-contract.md are authoritative and this file is a projection pinned to specCommit 81dc7a7 / builtAtCommit 92ec37c. Decisions recorded in HANDOFF-FIGMA.md §1: no per-state screens (~90 declined), no Code Connect, no dark-mode or expanded-breakpoint variants, demo visuals captured from the running app instead of the board. Canvas state: 18 component sets (Button 16, Card 6, Input 16, AppBar 8, Snackbar 3, Dialog 2, BottomSheet 4, PriceText 6, StatusBadge 20, Skeleton 8, EmptyState 2, AsyncValue 3, MonogramImage 4, NavigationBar 8, KhqrCard 3, OrderStatusTimeline 6, OrderTrackingCard 6, ProductCard 48), 24 Icon/* components, 30 screens on page 02, page 03 motion/contracts, 9 FigJam diagrams. Rebuilt 2026-11-08 after the auto-layout hug fix and the wire-widget rewrite; three defects the rebuild exposed (cancelled tracking card, unsaved heart fill, page-03 heading accumulation) fixed in 92ec37c. Accepted defects: screens are region-accurate but widget-incomplete (screen content came from screens.json summaries, no *_screen.dart was read); measured overflow is recorded in notes.audit; the timeline component cannot represent Delivered; FigJam nav map and ERD gaps stand. No further build events are appended to this manifest — future UI belongs in the app and the contract."
     }
   ]
 }

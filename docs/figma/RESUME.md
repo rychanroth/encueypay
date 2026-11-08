@@ -1,20 +1,25 @@
 # Figma resume state
 
-**Status:** snapshot complete and measured. Freeze only (§5 Step 4).
+**Status:** frozen snapshot (2026-11-08). Nothing to run.
 
 ## What changed on 2026-11-08 (late)
 
 The mirror is finished and **frozen**:
 
-- 18 component sets, 30 screens (15 pixel + 15 wire), 9 FigJam diagrams, page 03.
+- 18 component sets (169 variants), 30 screens (15 pixel + 15 wire), 9 FigJam
+  diagrams, page 03 motion/contracts.
 - Two local development plugins replaced the metered MCP:
   `docs/figma/plugin/` (design, 14 batches) and `docs/figma/plugin-figjam/`
   (board, 3 batches).
 - Decisions recorded in `docs/HANDOFF-FIGMA.md` §1: Figma is a **snapshot**, not a
   twin; no per-state screens; no Code Connect; demo visuals come from capturing the
   running app.
+- Pinned in `docs/figma/manifest.json`: `status: frozen-snapshot`,
+  `specCommit 81dc7a7` split from `builtAtCommit 92ec37c`, the three page ids, all 18
+  set ids, all 30 `Screen/*` ids, the three page-03 anchors, the measured overflow
+  and one `frozen` history event.
 
-## The only work left
+## Build and measurement record
 
 All seven batches were rebuilt on 2026-11-08 and verified: the three defects the
 rebuild exposed (fixed in `92ec37c`, `HANDOFF-FIGMA.md` §4f item 4) are confirmed on
@@ -35,8 +40,6 @@ The audit batch took two corrections before it was honest (`c109b14`, `7ed8008`;
 Everything else fits. `productDetail` (+274) and `orderDetail` (+44) are wide because
 their horizontal rails are drawn at natural width — the app scrolls those, so it is
 by design. No per-screen work is planned (§1).
-
-Remaining step: the freeze (`HANDOFF-FIGMA.md` §5 Step 4).
 
 P2b / P3 / P5 pin their own axes and are unaffected. FigJam is not re-run: its
 anchor accumulation (§4f item 2) and the nav-map / ERD gaps (items 5–6) are recorded

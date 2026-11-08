@@ -1,8 +1,8 @@
 # Handoff — Figma mirror & brand system
 
-**Status:** built; **frozen as a snapshot** (see §1). One rebuild pass still pending.
+**Status:** built, measured and **frozen as a snapshot** (2026-11-08). Nothing outstanding.
 **Updated:** 2026-11-08
-**Repo HEAD:** `11adafd` (sizing fix, wire rewrite, page 03 and the audit batch are in it)
+**Pinned:** `specCommit 81dc7a7` · `builtAtCommit 92ec37c` (see `manifest.json`)
 **Read first:** `AGENTS.md`, `docs/architecture-contract.md` §12, then this file.
 
 ---
@@ -15,12 +15,13 @@ the metered Figma MCP.
 
 **Done:** brand system v1 (in the app); in Figma: 3 pages, foundations, brand board,
 **18 component sets**, **30 screens** (15 pixel + 15 wire), **9 FigJam diagrams**,
-page 03 motion/contracts. Two local plugins run it all unmetered.
+page 03 motion/contracts, and a recorded overflow measurement. Two local plugins run
+it all unmetered.
 
-**Pending:** one `Audit · screens` run with the corrected batch (`c109b14`) to record
-real overflow, then the freeze. Nothing else is planned.
+**Pending:** nothing. The file is frozen; node ids, counts and accepted defects are
+pinned in `docs/figma/manifest.json`.
 
-**Next action:** `Audit · screens`, then §5 Step 4.
+**Next action:** none — do not rebuild. Future UI belongs in the app and the contract.
 
 ---
 
@@ -356,8 +357,12 @@ drawn last, so content pushed under it is invisible even though it is above 844.
 **Step 3 — fix by screen, never by helper.** If a screen is flagged, adjust that
 screen's content or spacing. Do not re-tune shared helpers.
 
-**Step 4 — freeze.** Record the pinned `sourceCommit` in `manifest.json`, note the
-decisions in §1, and stop. Future UI belongs in the app and the contract, not here.
+**Step 4 — freeze.** *Done 2026-11-08.* `manifest.json` now carries
+`status: frozen-snapshot`, `specCommit 81dc7a7` split from `builtAtCommit 92ec37c`,
+the three page ids, all 18 set ids with variant counts, all 30 `Screen/*` ids, the
+three page-03 anchors, a reconciled `components 19 / componentsBuilt 18`, the measured
+overflow and a single `frozen` history event. The decisions live in §1. Stop here:
+future UI belongs in the app and the contract, not in this file.
 
 **If fidelity work is ever commissioned:** read that screen's `.dart` first, inventory
 its widgets, rebuild from the inventory, and name nodes after their Flutter widgets
@@ -449,9 +454,9 @@ c109b14 fix(figma): measure real screen overflow in the audit batch
 ## 9. First message for a fresh session
 
 > Read `docs/HANDOFF-FIGMA.md` and `docs/figma/RESUME.md`. The Figma work is a
-> finished **snapshot**, not a live mirror. Only §5 Step 1–2 remain: re-run
-> `P4 · cards` and `P6 · page 03` (the other five batches are already rebuilt, and
-> three defects were fixed in `92ec37c`), then run `Audit · screens` and freeze
-> (§5 Step 4). Do not start a per-state pass, Code
-> Connect, or a new mirroring effort without an explicit decision — and for demo
-> visuals, capture the running app instead.
+> **frozen snapshot**, not a live mirror: built, rebuilt, measured and pinned in
+> `docs/figma/manifest.json` (`specCommit 81dc7a7`, `builtAtCommit 92ec37c`). There is
+> nothing to run — do not rebuild the file, do not start a per-state pass, Code
+> Connect or a new mirroring effort without an explicit decision, and for demo
+> visuals capture the running app instead (§7). If fidelity is ever commissioned, read
+> that screen's `.dart` first (§5).
