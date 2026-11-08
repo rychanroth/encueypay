@@ -2,7 +2,7 @@
 
 **Status:** built; **frozen as a snapshot** (see §1). One rebuild pass still pending.
 **Updated:** 2026-11-08
-**Repo HEAD:** `055eb4b` (working tree also carries the sizing fix + wire rewrite, uncommitted at time of writing)
+**Repo HEAD:** `11adafd` (sizing fix, wire rewrite, page 03 and the audit batch are in it)
 **Read first:** `AGENTS.md`, `docs/architecture-contract.md` §12, then this file.
 
 ---
@@ -180,6 +180,112 @@ Accepted as a snapshot limitation. Two honest remedies if it ever matters:
 - **Trademark clearance** and alternative logo explorations.
 - **Photography** pipeline enforcement.
 
+### f. Known debris / unverified (2026-11-08, answered from source on disk)
+
+Written after re-reading `docs/figma/plugin/src/` and `plugin-figjam/src/`. Nothing
+was rebuilt to produce these answers.
+
+**1. Did any explicit height compensate for a too-short row? — None.**
+
+The only `minHeight` in either plugin is `plugin/src/40-p2b-overlays.js:60`
+(`c.minHeight = 56`), added during P2b so the text-only `Tone=Action` snackbar
+matched the icon tones. That predates any knowledge of the 100-tall behaviour and is
+not a row compensation.
+
+Every other literal height is an element's own size, all set before the bug was
+diagnosed: banner 148 (`71:219`), category card 128 (`71:251`), brand rail 108
+(`71:260`), promises card 96 (`72:131`), review card 76 (`72:157`), checkout summary
+96 (`73:113`), placed summary 76 (`73:195`), KPI 76 (`74:30`), profile menu list 176
+(`74:115`), dashboard hero 132 (`74:162`), stock alert 64 (`74:183`), chart card 168
+(`74:194`), quick link 56 (`74:250`), page-03 card 200 (`85:26`), storyboard tile 96
+(`85:79`). Compensation was impossible in principle: no render was ever inspected
+between the bug and the fix.
+
+**2. After the wire-widget rewrite, was any rendered wire screen inspected? — None.**
+
+No screenshot, no eyeball, no run. The rewrite (kinds, `WIRE_H`, the 17 renderers in
+`75-screens-wire.js`) exists only as code and has never executed in Figma. Every
+claim about how it looks is a description of the code path, not an observation. The
+only observed wire tier is the *pre-rewrite* one (uniform bands), and the human
+looked at that, not the agent. The rewrite is therefore wholly unverified, including
+whether `wireSegmented`/`wireMedia` size correctly and whether `wireStars`' 1.4×
+instance rescale distorts.
+
+**3. Batches that threw, and their debris.**
+
+Threw at least once: `p2b-overlays` (unloaded Inter font before `characters`),
+`p3-atoms` (`float(undefined)` on `SPACE.xl`), `p4-cards` (three: missing
+`RADIUS.r16`, nested `[[]]` fills in `simplifiedTimeline`, invalid
+`layoutSizingVertical = "AUTO"`), `s1-auth-home` (two: `layoutSizing* = "FILL"`
+before parenting, unknown type `headlineMedium`), `s2-customer-a`
+(`appendChild(...).fills` assigned on null).
+
+Debris control, per code: `clearOrphans` (`10-core.js`) sweeps direct children of the
+parent whose component name matches
+`/^(Tone|Type|Behavior|Mode|Status|Shape|Action|State)=/` and runs at the *start* of
+`batchOverlays`, `batchAtoms`, `batchCards`, `batchNavigation`; `clearOld` removes a
+previously combined set by name; every screen batch deletes its own `Screen/*` frames
+by name before building.
+
+Consequence: each throwing batch was subsequently re-run successfully, and that run
+swept its own leftovers — so by code, **no orphan variants and no duplicate
+`Screen/*` frames should remain**, with two caveats: this is unverified against the
+file (no canvas access), and `clearOrphans` covers only those eight prefixes. The
+in-plugin icons (`Icon/home` …) are *not* swept; they are idempotent (skipped when
+present), so a failure mid-`p5-nav` would leave extra icons rather than duplicates.
+Duplicates that the sweep cannot catch are listed in (4), items 1–2.
+
+**4. Known wrong in the current file, beyond §4c.**
+
+1. **Page 03 duplicates on every re-run.** `85-page03.js:109–110` removes only the
+   three named cards; the heading (`85:112`) and subtitle (`85:117`) are top-level
+   text nodes named by their characters, so each run appends another pair.
+2. **FigJam anchors accumulate.** `00-kit.js:107–118` creates a 1×1 rectangle named
+   `anchor` for each arrow endpoint; `20-flows-b.js:144–157` cleans only panel names.
+   Re-running Flows B leaves roughly two anchors and their connectors per message
+   (~40 per sequence diagram).
+3. **ProductCard's unsaved wishlist heart is not recoloured.**
+   `60-p4-cards.js:441–444` paints the *instance frame* (`heart.fills`) while
+   `icon()` was called with `colorName = null`, so the vectors keep
+   `color/on-surface`. The heart renders dark on dark imagery instead of white.
+4. **OrderTrackingCard always instances one timeline variant.**
+   `60-p4-cards.js:332` looks up `StageState=Current, Terminal=InFlight` for every
+   card state, so Delivered and Cancelled cards also show a "Current" step at Packed
+   (and Cancelled shows a forward track the app does not render).
+5. **The navigation map contradicts `flows.json`.** `10-flows-a.js` `NAV_ADMIN` puts
+   `adminArchivedCoupons` beside `adminPromotions` (flows.json nests it underneath)
+   and omits `adminSettingsAccount` from the admin-account branch.
+6. **The ERD shows 23 of 25 relations.** `30-flows-c.js` omits
+   `categories → categories` (self parent) and `products → order_items` (snapshot).
+7. **Screen overflow is silent.** `screenFrame` sets `clipsContent = true` and content
+   frames are sized to the viewport, so anything beyond 844 is invisible until
+   `audit-screens` runs. Unknown today for every screen.
+8. **ProductCard leaves ~23 px empty.** Fixed 268 height, image 142, metadata hugging
+   ~103 — cosmetic, not a defect in the app.
+
+**5. Manifest freeze intent (not executed).**
+
+Current on disk: `status: "active-local-plugin"`, `sourceCommit: "81dc7a7"`,
+`sessionId: 3c99d509-…` (the retired MCP session), 12 history entries, and
+`pages[0].nodeIds` still listing only the brand board, Button, Card, Input, AppBar and
+`Icon/*` — no new sets, no screens, no page-02/03 nodes.
+
+Intended, and deliberately not done yet:
+
+- `status` → a frozen marker (e.g. `frozen-snapshot`), so no future session reads it
+  as an active build.
+- **Split the commit field.** `81dc7a7` is the *spec-extraction* commit and must stay
+  attached to `spec/*.json`; the mirror's screens were built later, from region
+  summaries rather than from the screen sources. One field cannot honestly represent
+  both, so the intent was `specCommit: 81dc7a7` plus `builtAtCommit` for the actual
+  generation commit, with a note that screen content derives from summaries.
+- Append one `frozen` history event recording that decision set, then stop appending
+  build events.
+- Populate `pages[].nodeIds` with the 18 set names, the 30 frame names and the
+  page-02/03 anchors, because `PLAN.md` §6 forbids rediscovering nodes by screenshot.
+- Reconcile `counts.components: 19` against `componentsBuilt: 18` — the extra entry is
+  the doc-only `filled-button-theme` recipe, not a missing set.
+
 ---
 
 ## 5. Exact resume procedure
@@ -291,8 +397,7 @@ ff97b30 feat(figma): build NavigationBar and finish the component sets
 0a8bd1e feat(web): make Google sign-in and the app build work on web   ← external
 ```
 
-*(The 2026-11-08 sizing fix, wire rewrite, page 03 and audit batch follow as one
-commit; add its hash here when it lands.)*
+*(The 2026-11-08 sizing fix, wire rewrite, page 03 and audit batch are in `11adafd`.)*
 
 ---
 
