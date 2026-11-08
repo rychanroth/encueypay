@@ -53,30 +53,38 @@ async function batchAuditScreens(log) {
   const frames = page.findAll((n) => n.type === "FRAME" && n.name.startsWith("Screen/"));
   frames.sort((a, b) => a.name.localeCompare(b.name));
 
-  let clipped = 0;
+  let hiding = 0;
   let wideCount = 0;
 
   for (const f of frames) {
-    let needs = f.height;
+    // The nav bar is opaque, full width, and appended last, so it covers whatever
+    // the content box pushes under it. The visible floor is its top edge, not 844.
+    const nav = f.children.find((c) => c.name === "NavigationBar");
+    const limitY = nav ? nav.y : f.height;
+
+    let contentBottom = 0;
     let wide = 0;
     f.children.forEach((c) => {
-      needs = Math.max(needs, c.y + requiredHeight(c));
+      if (c === nav) return;
+      contentBottom = Math.max(contentBottom, c.y + requiredHeight(c));
       wide = Math.max(wide, c.x + requiredWidth(c) - f.width);
     });
 
-    const over = Math.round(needs - f.height);
-    if (over > 0) clipped++;
+    const hidden = Math.round(contentBottom - limitY);
+    if (hidden > 0) hiding++;
     if (wide > 0) wideCount++;
 
     const acc = { over: 0, name: "", needs: 0 };
-    f.children.forEach((c) => worstClip(c, acc));
+    f.children.forEach((c) => {
+      if (c !== nav) worstClip(c, acc);
+    });
 
     log(
       [
         f.name,
         `${Math.round(f.width)}x${Math.round(f.height)}`,
-        `needs ${Math.round(needs)}`,
-        over > 0 ? `CLIPPED ${over}px` : "fits",
+        `content ${Math.round(contentBottom)}`,
+        hidden > 0 ? `HIDDEN ${hidden}px` : "fits",
         wide > 0 ? `wide ${Math.round(wide)}px` : "",
         acc.over > 0 ? `worst ${acc.name} → ${Math.round(acc.needs)}` : "",
       ]
@@ -86,6 +94,6 @@ async function batchAuditScreens(log) {
   }
 
   log("");
-  log(`${frames.length} screens · ${clipped} clipped vertically · ${wideCount} wide`);
-  return `audit — ${frames.length} screens, ${clipped} clipped`;
+  log(`${frames.length} screens · ${hiding} hiding content · ${wideCount} wide`);
+  return `audit — ${frames.length} screens, ${hiding} hiding content`;
 }
