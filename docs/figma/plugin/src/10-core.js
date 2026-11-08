@@ -227,12 +227,15 @@ function icon(name, colorName) {
   }
   const inst = comp.createInstance();
   inst.resize(24, 24);
-  try {
-    inst.findAll((n) => n.type === "VECTOR").forEach((v) => {
-      v.fills = [solid(colorName)];
-    });
-  } catch (e) {
-    warn(`could not recolor Icon/${name}`);
+  // colorName may be null when the caller recolours afterwards.
+  if (colorName) {
+    try {
+      inst.findAll((n) => n.type === "VECTOR").forEach((v) => {
+        v.fills = [solid(colorName)];
+      });
+    } catch (e) {
+      warn(`could not recolor Icon/${name}`);
+    }
   }
   return inst;
 }

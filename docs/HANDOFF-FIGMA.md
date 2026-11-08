@@ -99,6 +99,7 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
   token-bound, text styles linked.
 - PriceText (6), StatusBadge (20), Skeleton (8), EmptyState (2), AsyncValue (3),
   MonogramImage (4) — atoms built from the Dart sources.
+- KhqrCard (3), OrderStatusTimeline (6), OrderTrackingCard (6), ProductCard (48).
 
 ---
 
@@ -106,8 +107,8 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ### Figma — immediate
 
-1. **5 component sets remain:**
-   ProductCard, KhqrCard, OrderStatusTimeline, OrderTrackingCard, NavigationBar.
+1. **1 component set remains:** NavigationBar. (`filled-button-theme` is a
+   doc-only recipe, not a set.)
    (`filled-button-theme` is a doc-only recipe, not a set.)
 3. **Screens: 0 of 30** (15 pixel, 15 wire). Page 02.
 4. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,

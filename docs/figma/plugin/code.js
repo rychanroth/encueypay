@@ -292,12 +292,15 @@ function icon(name, colorName) {
   }
   const inst = comp.createInstance();
   inst.resize(24, 24);
-  try {
-    inst.findAll((n) => n.type === "VECTOR").forEach((v) => {
-      v.fills = [solid(colorName)];
-    });
-  } catch (e) {
-    warn(`could not recolor Icon/${name}`);
+  // colorName may be null when the caller recolours afterwards.
+  if (colorName) {
+    try {
+      inst.findAll((n) => n.type === "VECTOR").forEach((v) => {
+        v.fills = [solid(colorName)];
+      });
+    } catch (e) {
+      warn(`could not recolor Icon/${name}`);
+    }
   }
   return inst;
 }
@@ -1249,7 +1252,7 @@ async function buildKhqrCard(parent, log) {
     header.primaryAxisAlignItems = "SPACE_BETWEEN";
     c.appendChild(header);
     header.layoutSizingHorizontal = "FILL";
-    header.layoutSizingVertical = "AUTO";
+    header.layoutSizingVertical = "HUG";
 
     const word = await text("KHQR", "titleLarge", null);
     word.fills = [literal("#FFFFFF")];
@@ -1267,7 +1270,7 @@ async function buildKhqrCard(parent, log) {
     autolayout(body, { dir: "VERTICAL", gap: 4, pad: [24, 24, 24, 24], cross: "CENTER" });
     c.appendChild(body);
     body.layoutSizingHorizontal = "FILL";
-    body.layoutSizingVertical = "AUTO";
+    body.layoutSizingVertical = "HUG";
 
     body.appendChild(await text("EncueYPay Prototype", "titleMedium", "color/on-surface"));
     body.appendChild(await text("$18.00", "priceHighlight", "color/on-surface"));
@@ -1375,16 +1378,18 @@ async function buildOrderStatusTimeline(parent, log) {
         banner.fills = [solid("color/error-container")];
         banner.cornerRadius = 12;
         autolayout(banner, { dir: "HORIZONTAL", gap: 8, pad: [16, 16, 16, 16], cross: "CENTER" });
-        banner.primaryAxisSizingMode = "FIXED";
-        banner.counterAxisSizingMode = "AUTO";
-        fixedWidth(banner, 326);
         c.appendChild(banner);
+        // Horizontal frame: width is the primary axis, so FILL it from the
+        // component (fixedWidth only works on vertical layouts).
+        banner.layoutSizingHorizontal = "FILL";
+        banner.layoutSizingVertical = "HUG";
 
         const glyph = icon("error", "color/on-error-container");
         if (glyph) banner.appendChild(glyph);
         banner.appendChild(
           await text("This order was cancelled.", "bodyMedium", "color/on-error-container")
         );
+        fixedWidth(c, 326);
         logVariant(c, log);
         variants.push(c);
         continue;
@@ -1459,7 +1464,11 @@ async function simplifiedTimeline(labels, currentIndex) {
     const current = i === currentIndex;
     const dotColor = done ? "color/tertiary" : current ? "color/primary" : "color/on-surface-variant";
     const dot = figma.createFrame();
-    dot.fills = [done ? solid("color/tertiary") : current ? solid("color/primary") : []];
+    dot.fills = done
+      ? [solid("color/tertiary")]
+      : current
+        ? [solid("color/primary")]
+        : [];
     dot.cornerRadius = 8;
     dot.strokes = [solid(dotColor)];
     dot.strokeWeight = 2;

@@ -51,11 +51,10 @@ text for icons. Use the imported SVG vectors.
 ## After the fix
 
 Done: 18 icons replaced, Input 320×56, AppBar 390×56, Snackbar (3), Dialog (2),
-BottomSheet (4) — token-bound and text-style linked.
+BottomSheet (4), atoms (6 sets, 43 variants), cards (4 sets, 63 variants) —
+token-bound and text-style linked. 17 of 18 real sets exist.
 
-Next: 11 sets remain (ProductCard, StatusBadge, KhqrCard, MonogramImage,
-PriceText, AsyncValue, EmptyState, Skeleton, OrderStatusTimeline,
-OrderTrackingCard, NavigationBar), then screens, then FigJam, then page 03.
+Next: NavigationBar, then screens. Then FigJam, then page 03.
 
 Each batch is a function in the same plugin file; see `plugin/README.md` for the
 Plugin API rules that cost a run each.

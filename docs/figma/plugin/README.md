@@ -91,6 +91,7 @@ Rules learned the hard way:
 | Set hug sizing (`primaryAxisSizingMode = "AUTO"`) **last** | a `resize()` after it re-fixes the axis |
 | Size grid rows by the tallest cell in the row | stepping by each variant's own height drifts rows apart |
 | Bind variables **after** setting the literal | assigning a literal to a bound field unlinks the variable |
+| Hug with `layoutSizingHorizontal/Vertical = "HUG"` | that API takes `FIXED`/`HUG`/`FILL`; `"AUTO"` is only valid for `primaryAxisSizingMode`/`counterAxisSizingMode` |
 | Sweep orphan variants before `combineAsVariants` | a failed run leaves loose `Tone=`/`Type=` components that break the next combine |
 
 Judgement calls made in P2b (confirm or correct):
