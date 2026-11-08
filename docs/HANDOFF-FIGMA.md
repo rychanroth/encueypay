@@ -97,6 +97,8 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 - Input (16) at 320×56 and AppBar (8) at 390×56 — fixed and re-gridded.
 - Snackbar (3), Dialog (2), BottomSheet (4) — built from `components.json`,
   token-bound, text styles linked.
+- PriceText (6), StatusBadge (20), Skeleton (8), EmptyState (2), AsyncValue (3),
+  MonogramImage (4) — atoms built from the Dart sources.
 
 ---
 
@@ -104,9 +106,8 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ### Figma — immediate
 
-1. **11 component sets remain:**
-   ProductCard, StatusBadge, KhqrCard, MonogramImage, PriceText, AsyncValue,
-   EmptyState, Skeleton, OrderStatusTimeline, OrderTrackingCard, NavigationBar.
+1. **5 component sets remain:**
+   ProductCard, KhqrCard, OrderStatusTimeline, OrderTrackingCard, NavigationBar.
    (`filled-button-theme` is a doc-only recipe, not a set.)
 3. **Screens: 0 of 30** (15 pixel, 15 wire). Page 02.
 4. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,
