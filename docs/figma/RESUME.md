@@ -1,7 +1,6 @@
 # Figma resume state
 
-**Status:** snapshot complete and verified. One corrected `Audit · screens` run, then
-freeze.
+**Status:** snapshot complete and measured. Freeze only (§5 Step 4).
 
 ## What changed on 2026-11-08 (late)
 
@@ -22,19 +21,22 @@ rebuild exposed (fixed in `92ec37c`, `HANDOFF-FIGMA.md` §4f item 4) are confirm
 the canvas — `OrderTrackingCard` 1283 → 1017 tall with both `State=Cancelled` rows at
 111, everything else unchanged to the pixel.
 
-The audit batch was also rewritten (`c109b14`) after its first run reported
-`30 screens · 0 clipped`: it had measured the screen's direct children, which are
-always the same 56 + 716 + 72 scaffold, so it could not see overflow inside the
-pinned content box (§4f item 7).
+The audit batch took two corrections before it was honest (`c109b14`, `7ed8008`;
+`HANDOFF-FIGMA.md` §4f item 7). Measured result, nav-bar floor:
 
-Run, once, then paste the log:
+| Screen | Hidden |
+|---|---|
+| `productDetail` | 465 px |
+| `home` | 107 px |
+| `adminReports` | 67 px |
+| `discovery` | 51 px |
+| `checkout` | 32 px |
 
-```
-Audit · screens
-```
+Everything else fits. `productDetail` (+274) and `orderDetail` (+44) are wide because
+their horizontal rails are drawn at natural width — the app scrolls those, so it is
+by design. No per-screen work is planned (§1).
 
-The corrected batch prints, per screen, the height it actually needs and the frame
-that loses the most. Then freeze (`HANDOFF-FIGMA.md` §5 Step 4).
+Remaining step: the freeze (`HANDOFF-FIGMA.md` §5 Step 4).
 
 P2b / P3 / P5 pin their own axes and are unaffected. FigJam is not re-run: its
 anchor accumulation (§4f item 2) and the nav-map / ERD gaps (items 5–6) are recorded

@@ -277,12 +277,18 @@ Duplicates that the sweep cannot catch are listed in (4), items 1–2.
 6. **The ERD shows 23 of 25 relations.** `30-flows-c.js` omits
    `categories → categories` (self parent) and `products → order_items` (snapshot).
 7. **Screen overflow is silent.** `screenFrame` sets `clipsContent = true` and content
-   frames are pinned to the viewport, so anything past 844 is invisible. *The first
-   audit could not see it either:* it measured the frame's direct children, which are
-   always the same 56 + 716 + 72 scaffold, so all 30 screens reported `content 844` /
-   `fits` — a measurement of the scaffold, not the content. Rewritten in `c109b14`
-   to measure required height recursively; the real numbers are pending the next
-   `Audit · screens` run.
+   frames are pinned to the viewport, so anything past the visible floor is invisible.
+   Two audit versions were blind to it before the batch was honest:
+   `c109b14` measured required height recursively — the first version read the
+   scaffold's direct children, which always add up to 844, so all 30 screens reported
+   `fits`; `7ed8008` moved the floor to the nav bar's top edge (772), because the bar
+   is opaque and drawn last and had swallowed `discovery` (+51) and `adminReports`
+   (+67) as "fits".
+   **Measured 2026-11-08** (nav bar floor): `productDetail` 465px hidden, `home` 107,
+   `adminReports` 67, `discovery` 51, `checkout` 32; everything else fits. Wide:
+   `productDetail` 274, `orderDetail` 44 — both horizontal rails, which the app
+   scrolls, so widen-by-design rather than a defect. No per-screen work is planned
+   (§1).
 8. **ProductCard leaves ~23 px empty.** Fixed 268 height, image 142, metadata hugging
    ~103 — cosmetic, not a defect in the app.
 9. **`Delivered` cannot be represented by the timeline component.** The component
@@ -339,12 +345,13 @@ rebuilt again.*
 
 P2b / P3 / P5 pin their own axes, so they are unaffected — skip them.
 
-**Step 2 — `Audit · screens`** (read-only). Prints per screen: frame size, the height
-it needs, `fits` or `CLIPPED Npx`, horizontal overflow, and the frame that loses the
-most (`worst <frame> <w>x<h> → <needed>`). It measures required height recursively —
-auto-layout as padded sum + gaps, absolute as child bottom — because the scaffold's
-direct children always add up to 844 and hid the overflow entirely (§4f item 7). That
-list is the real answer to "which screens need more than one viewport".
+**Step 2 — `Audit · screens`** (read-only). Prints per screen: frame size, content
+bottom, `fits` or `HIDDEN Npx`, horizontal overflow, and the frame that loses the most
+(`worst <frame> <w>x<h> → <needed>`). Two corrections were needed to make it honest,
+both recorded in §4f item 7: it measures required height recursively (auto-layout as
+padded sum + gaps, absolute as child bottom) instead of reading the scaffold's direct
+children, and it compares against the **nav bar's top edge** — the bar is opaque and
+drawn last, so content pushed under it is invisible even though it is above 844.
 
 **Step 3 — fix by screen, never by helper.** If a screen is flagged, adjust that
 screen's content or spacing. Do not re-tune shared helpers.
@@ -434,6 +441,7 @@ c21352f docs(figma): add known debris and unverified items to the handoff
 92ec37c fix(figma): correct the cancelled tracking card, the unsaved heart and page-03 re-runs
 795467f docs(figma): record the rebuild run, the three fixes and the freeze signature
 c109b14 fix(figma): measure real screen overflow in the audit batch
+7ed8008 fix(figma): audit against the nav bar, not the viewport
 ```
 
 ---
