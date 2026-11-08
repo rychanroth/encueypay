@@ -129,6 +129,9 @@ resuming it. If a handoff contradicts this file, this file wins.
   iOS platform config, admin/new-order and promo notifications.
 - **KHQR:** `docs/HANDOFF-KHQR.md` — working end-to-end (hosted functions + PayWay
   callback live, 2026-11-03); production credentials remain a launch checklist item.
+- **Figma mirror:** `docs/HANDOFF-FIGMA.md` — brand system v1 landed; Figma
+  foundations + brand board + Button/Card done. Paused on the Starter MCP quota
+  with Input/AppBar mid-fix: run `docs/figma/build/p2-icons-fix.js` first.
 - `FEATURE_VERIFICATION_MATRIX.md` is a 2026-10-07 audit and is stale; trust the contract
   and current code over it.
 
