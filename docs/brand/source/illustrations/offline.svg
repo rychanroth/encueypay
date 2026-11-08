@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="offlineTitle">
+  <title id="offlineTitle">No connection</title>
+  <g fill="none" stroke="#0F172A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52 96a16 16 0 010-32 24 24 0 0146-8 18 18 0 016 40H52z"/>
+    <path d="M40 38l80 80" stroke="#E11D48"/>
+  </g>
+</svg>

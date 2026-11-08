@@ -33,7 +33,7 @@ collections instead of two modes.
 
 | # | Page | Contents |
 |---|---|---|
-| 01 | Foundations & Components | Cover/index block, color variables (`Color` = Light, `Color Dark` = Dark), 13 text styles, spacing/radius numbers, 3 effect styles, then 19 component sets in sections |
+| 01 | Foundations & Components | Brand board (mark, app icon, 9 illustrations), color variables (`Color` = Light, `Color Dark` = Dark), 13 text styles, spacing/radius numbers, 3 effect styles, then 19 component sets in sections |
 | 02 | Screens | Customer (11 pixel + 6 wire) and Admin (4 pixel + 8 wire) in labeled sections; states live beside their screen |
 | 03 | Motion & Contracts | Motion storyboard frames, cross-cutting states, invariants/API notes |
 

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="emptyCartTitle">
+  <title id="emptyCartTitle">Empty cart</title>
+  <g fill="none" stroke="#0F172A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 38h12l10 44h58l10-30H46"/>
+    <circle cx="64" cy="102" r="6"/>
+    <circle cx="100" cy="102" r="6"/>
+    <path d="M26 132h108" stroke="#E2E8F0" stroke-dasharray="6 8"/>
+  </g>
+</svg>

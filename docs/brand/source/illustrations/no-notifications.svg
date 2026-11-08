@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="noNotificationsTitle">
+  <title id="noNotificationsTitle">No notifications</title>
+  <g fill="none" stroke="#0F172A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 30c-15 0-26 12-26 27v20l-10 13h72l-10-13V57c0-15-11-27-26-27z"/>
+    <path d="M70 104a10 10 0 0020 0"/>
+    <path d="M26 132h108" stroke="#E2E8F0" stroke-dasharray="6 8"/>
+  </g>
+</svg>

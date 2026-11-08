@@ -34,6 +34,7 @@
   },
   "pages": [
     { "id": "01", "name": "01 · Foundations & Components", "file": "design", "pageId": "0:1", "nodeIds": [
+      { "id": "8:82", "name": "Brand — Board v1" },
       { "id": "4:34", "name": "Button", "variants": 16 },
       { "id": "4:53", "name": "Card", "variants": 6 }
     ] },
@@ -46,6 +47,8 @@
     "wireScreens": 15,
     "components": 19,
     "componentsBuilt": 2,
+    "brandAssets": 3,
+    "illustrations": 9,
     "colorVariablesPerCollection": 36,
     "colorCollections": 2,
     "floatVariables": 13,
@@ -83,6 +86,11 @@
       "at": "2026-11-08",
       "event": "components-pilot",
       "detail": "P2 pilot: Button set (4 variants x 4 states, node 4:34) and Card set (2x3, node 4:53). Variants laid out in grids after combineAsVariants. Visual QA passed on a 460x264 render."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "brand-v1",
+      "detail": "Brand system v1: BRAND.md, Ledger E mark, app icon + adaptive foreground, 9 ledger-line illustrations. Imported into Figma and composed as Brand — Board v1 (node 8:82). 9 illustrations under 160x160, exported from SVG sources in docs/brand/source/."
     }
   ]
 }
