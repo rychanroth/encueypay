@@ -51,11 +51,35 @@ All learned from figma-linux's extension loader:
 If the manifest file picker filters `.json` oddly (older builds did), switch the
 dialog's file-type filter to *All files*.
 
+## File layout
+
+`code.js` is **generated** — never edit it. Edit `src/` and rebuild:
+
+```bash
+node docs/figma/plugin/build.js      # concatenates src/*.js -> code.js
+node --check docs/figma/plugin/code.js
+```
+
+| Source | Contents |
+|---|---|
+| `src/00-header.js` | doc comment, typography table, colour fallbacks |
+| `src/10-core.js` | file context, tokens, text/rect/icon primitives, layout + grid helpers |
+| `src/20-inspect.js` | `inspect` batch |
+| `src/30-p2a-icons.js` | icon fix + Input/AppBar sizing |
+| `src/40-p2b-overlays.js` | Snackbar, Dialog, BottomSheet; **RADIUS/SPACE maps live here** |
+| `src/50-p3-atoms.js` | PriceText, StatusBadge, Skeleton, EmptyState, AsyncValue, MonogramImage |
+| `src/60-p4-cards.js` | KhqrCard, OrderStatusTimeline, OrderTrackingCard, ProductCard |
+| `src/70-runner-ui.js` | `BATCHES` registry, runner, plugin UI |
+
+Why split sources but ship one file: the Figma runtime cannot `import`, and
+figma-linux's loader rejects subfolder paths (`dist/code.js`) and dashes in
+filenames. Concatenation keeps both sides happy — no bundler, no transpile, and
+`code.js` stays a single flat script.
+
 ## Adding batches
 
-`code.js` is one flat file with a `BATCHES` map and a small UI. Add a `batchXxx(log)`
-function, register it, add a `<button data-batch="xxx">`. The runner wraps every
-batch in try/catch, collects warnings and reports them in the log pane.
+Add a `src/NN-*.js` with `batchXxx(log)`, register it in `BATCHES`
+(`src/70-runner-ui.js`), add a `<button data-batch="xxx">`, rebuild.
 
 Rules learned the hard way:
 
