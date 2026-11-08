@@ -8,7 +8,7 @@
   "notes": {
     "commits": "spec/*.json was extracted at 81dc7a7 from code; no Figma writes were made then. The canvas was generated later by the local plugin: S1-S5 from 11adafd's bundle, P4 and P6 re-run from 92ec37c. 92ec37c touched only 60-p4-cards.js and 85-page03.js, so the S1-S5 frames are unaffected by the split.",
     "components": "counts.components (19) is the count in spec/components.json; componentsBuilt (18) is the number of component sets on page 01. The 19th entry is the doc-only `filled-button-theme` recipe, not a missing set.",
-    "screens": "Screen content derives from screens.json's region summaries, not from the *_screen.dart sources, so screens are region-accurate and widget-incomplete. This is accepted for the snapshot; see HANDOFF-FIGMA.md §4b.",
+    "screens": "Screen content derives from screens.json's region summaries, not from the *_screen.dart sources, so screens are region-accurate and widget-incomplete. This is accepted for the snapshot; see docs/figma/PLAN.md §5.",
     "audit": "Screen overflow was measured with the corrected audit batch (7ed8008): content is hidden on productDetail 465px, home 107, adminReports 67, discovery 51, checkout 32; the other 25 fit. productDetail (+274) and orderDetail (+44) are wide because horizontal rails are drawn at natural width and the app scrolls them. No per-screen fixes are planned.",
     "figjam": "The board is frozen too. Known and accepted: page-03-style anchor rects accumulate if Flows B is ever re-run, the navigation map flattens adminArchivedCoupons and omits adminSettingsAccount, and the ERD carries 23 of 25 relations. Board page ids were not dumped."
   },
@@ -157,7 +157,7 @@
     {
       "at": "2026-11-08",
       "event": "p2a-partial-blocked",
-      "detail": "Built Input (16) 12:94 and AppBar (8) 12:135 plus 18 icon components. Font-codepoint glyphs were wrong (Figma Material Icons release differs from Flutter's). Uploaded 18 official Material Symbols SVGs as loose frames. The fix call (docs/figma/build/p2-icons-fix.js) was blocked by the Starter MCP quota before executing. See RESUME.md."
+      "detail": "Built Input (16) 12:94 and AppBar (8) 12:135 plus 18 icon components. Font-codepoint glyphs were wrong (Figma Material Icons release differs from Flutter's). Uploaded 18 official Material Symbols SVGs as loose frames. The fix call (docs/figma/build/p2-icons-fix.js) was blocked by the Starter MCP quota before executing."
     },
     {
       "at": "2026-11-08",
@@ -194,7 +194,7 @@
     {
       "at": "2026-11-08",
       "event": "frozen",
-      "detail": "Frozen as a snapshot, not a live mirror: code + docs/architecture-contract.md are authoritative and this file is a projection pinned to specCommit 81dc7a7 / builtAtCommit 92ec37c. Decisions recorded in HANDOFF-FIGMA.md §1: no per-state screens (~90 declined), no Code Connect, no dark-mode or expanded-breakpoint variants, demo visuals captured from the running app instead of the board. Canvas state: 18 component sets (Button 16, Card 6, Input 16, AppBar 8, Snackbar 3, Dialog 2, BottomSheet 4, PriceText 6, StatusBadge 20, Skeleton 8, EmptyState 2, AsyncValue 3, MonogramImage 4, NavigationBar 8, KhqrCard 3, OrderStatusTimeline 6, OrderTrackingCard 6, ProductCard 48), 24 Icon/* components, 30 screens on page 02, page 03 motion/contracts, 9 FigJam diagrams. Rebuilt 2026-11-08 after the auto-layout hug fix and the wire-widget rewrite; three defects the rebuild exposed (cancelled tracking card, unsaved heart fill, page-03 heading accumulation) fixed in 92ec37c. Accepted defects: screens are region-accurate but widget-incomplete (screen content came from screens.json summaries, no *_screen.dart was read); measured overflow is recorded in notes.audit; the timeline component cannot represent Delivered; FigJam nav map and ERD gaps stand. No further build events are appended to this manifest — future UI belongs in the app and the contract."
+      "detail": "Frozen as a snapshot, not a live mirror: code + docs/architecture-contract.md are authoritative and this file is a projection pinned to specCommit 81dc7a7 / builtAtCommit 92ec37c. Decisions recorded in docs/figma/PLAN.md §3: no per-state screens (~90 declined), no Code Connect, no dark-mode or expanded-breakpoint variants, demo visuals captured from the running app instead of the board. Canvas state: 18 component sets (Button 16, Card 6, Input 16, AppBar 8, Snackbar 3, Dialog 2, BottomSheet 4, PriceText 6, StatusBadge 20, Skeleton 8, EmptyState 2, AsyncValue 3, MonogramImage 4, NavigationBar 8, KhqrCard 3, OrderStatusTimeline 6, OrderTrackingCard 6, ProductCard 48), 24 Icon/* components, 30 screens on page 02, page 03 motion/contracts, 9 FigJam diagrams. Rebuilt 2026-11-08 after the auto-layout hug fix and the wire-widget rewrite; three defects the rebuild exposed (cancelled tracking card, unsaved heart fill, page-03 heading accumulation) fixed in 92ec37c. Accepted defects: screens are region-accurate but widget-incomplete (screen content came from screens.json summaries, no *_screen.dart was read); measured overflow is recorded in notes.audit; the timeline component cannot represent Delivered; FigJam nav map and ERD gaps stand. No further build events are appended to this manifest — future UI belongs in the app and the contract."
     }
   ]
 }

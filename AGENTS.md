@@ -129,11 +129,11 @@ resuming it. If a handoff contradicts this file, this file wins.
   iOS platform config, admin/new-order and promo notifications.
 - **KHQR:** `docs/HANDOFF-KHQR.md` — working end-to-end (hosted functions + PayWay
   callback live, 2026-11-03); production credentials remain a launch checklist item.
-- **Figma mirror:** `docs/HANDOFF-FIGMA.md` — **snapshot complete and frozen**:
-  18 component sets, 30 screens, 9 FigJam diagrams, page 03, two unmetered local
-  dev plugins (`docs/figma/plugin/`, `docs/figma/plugin-figjam/`). One rebuild pass
-  remains (§5 Step 1–2). Do not restart a standing mirror; demo visuals come from
-  capturing the app.
+- **Figma mirror:** **frozen snapshot** — record in `docs/figma/PLAN.md`, pinned ids
+  and commits in `docs/figma/manifest.json`. 18 component sets, 30 screens, 9 FigJam
+  diagrams, page 03, two unmetered local dev plugins (`docs/figma/plugin/`,
+  `docs/figma/plugin-figjam/`). Nothing to rebuild or resume; do not restart a standing
+  mirror, and for demo visuals capture the running app instead.
 - `FEATURE_VERIFICATION_MATRIX.md` is a 2026-10-07 audit and is stale; trust the contract
   and current code over it.
 
