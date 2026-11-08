@@ -46,6 +46,7 @@
   ],
   "counts": {
     "screens": 30,
+    "screensBuilt": 30,
     "pixelScreens": 15,
     "wireScreens": 15,
     "components": 19,
@@ -119,7 +120,13 @@
     {
       "at": "2026-11-08",
       "event": "p5-nav-built",
+      "event_note2": "see p5-nav-built",
       "detail": "NavigationBar (8 tab items: Role x State x CartBadge) completes the 18 component sets. Six extra Material Symbols (home, explore, receipt_long, dashboard, inventory_2, bar_chart) were created in-plugin with figma.createNodeFromSvg from inlined path data, so no upload call was needed. Next: 30 screens on page 02."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "screens-built",
+      "detail": "All 30 compact screens on page 02: 15 pixel (component instances, real copy) in S · Customer and S · Admin, plus 15 wireframes driven from screens.json sections. Screens are the canonical loaded state per screen; the per-state variants listed in screens.json (about 90) remain a separate pass."
     }
   ]
 }

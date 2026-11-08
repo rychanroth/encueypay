@@ -51,10 +51,11 @@ text for icons. Use the imported SVG vectors.
 ## After the fix
 
 Done: 18 icons replaced, Input 320×56, AppBar 390×56, Snackbar (3), Dialog (2),
-BottomSheet (4), atoms (6 sets, 43 variants), cards (4 sets, 63 variants) —
-token-bound and text-style linked. 17 of 18 real sets exist.
+BottomSheet (4), atoms (6 sets, 43 variants), cards (4 sets, 63 variants),
+NavigationBar (8). All 30 screens on page 02: 15 pixel, 15 wire.
 
-Next: NavigationBar, then screens. Then FigJam, then page 03.
+Next: FigJam (9 diagrams), page 03 (motion + contracts), Code Connect, and the
+per-state screen variants if wanted.
 
 Each batch is a function in the same plugin file; see `plugin/README.md` for the
 Plugin API rules that cost a run each.

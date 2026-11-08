@@ -111,8 +111,10 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 ### Figma — immediate
 
 1. **Components complete:** 18 real sets built (plus the `filled-button-theme`
-   doc-only recipe). Nothing is on the screens page yet.
-2. **Screens: 0 of 30** (15 pixel, 15 wire). Page 02.
+   doc-only recipe).
+2. **Screens complete for the canonical state:** 30 frames on page 02
+   (15 pixel, 15 wire). The per-state variants in `screens.json` (~90) are a
+   separate pass.
 3. **FigJam: 0 of 9 diagrams** (navigation, order/payment lifecycles, auth,
    checkout, KHQR, sequences, ERD, permissions, state ownership).
 4. **Material Symbols:** 24 `Icon/*` components exist (18 imported + 6 created
