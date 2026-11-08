@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/widgets/brand_lockup.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/login_controller.dart';
 import '../widgets/auth_error_snackbar.dart';
@@ -149,17 +150,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 56,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'EncueYPay',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                    const BrandLockup(
+                      layout: BrandLockupLayout.stacked,
+                      markSize: 64,
+                      wordmarkSize: 32,
                     ),
                     const SizedBox(height: 4),
                     Text(
