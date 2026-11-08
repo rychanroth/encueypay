@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit directly.
- * Sources: docs/figma/plugin/src/*.js (16 files)
+ * Sources: docs/figma/plugin/src/*.js (18 files)
  * Rebuild: node docs/figma/plugin/build.js
  */
 
@@ -390,6 +390,10 @@ function autolayout(node, opts) {
   if (opts.cross === "CENTER") {
     node.counterAxisAlignItems = "CENTER";
   }
+  // Enabling layoutMode leaves both axes FIXED at the frame's birth size
+  // (100x100), so every frame that does not explicitly pin an axis renders
+  // 100 tall. Hug by default; callers pin afterwards when a size is intended.
+  hugBoth(node);
 }
 
 /** Auto-layout hugs nothing by default: a new component stays 100x100 until the
@@ -1928,21 +1932,6 @@ function screenFrame(name) {
   f.fills = [solid("color/surface")];
   f.clipsContent = true;
   safeResize(f, SCREEN_W, SCREEN_H);
-  return f;
-}
-
-/** Section band used by wire screens to label regions. */
-function wireBlock(label, height, opts) {
-  const o = opts || {};
-  const f = figma.createFrame();
-  f.fills = o.fill === false ? [] : [solid("color/surface-container")];
-  f.cornerRadius = 12;
-  f.strokes = [solid("color/outline-variant")];
-  f.strokeWeight = 1;
-  f.clipsContent = true;
-  autolayout(f, { dir: "VERTICAL", pad: [12, 12, 12, 12] });
-  f.counterAxisSizingMode = "FIXED";
-  safeResize(f, o.width || SCREEN_W - 32, height);
   return f;
 }
 
@@ -3894,73 +3883,492 @@ async function batchProfileAdmin(log) {
 
 // ===== 75-screens-wire.js =====
 // ===== batch: s5-wire =====
-// The 15 wireframe screens. Data-driven: each entry lists the regions from
-// screens.json with a height. Wire screens exist to complete the inventory —
-// they are not a promise of visual fidelity (PLAN §3).
+// The 15 wireframe screens. Each region declares a KIND, so the drawing shows
+// what the widget is — field, picker, primary/outline button, toggle, stepper,
+// chips, segmented control, media grid, list row, notice, summary — instead of
+// one uniform band. Wire tier: no component instances, light only.
+
+const WIRE_H = {
+  heading: 28,
+  labels: 18,
+  field: 56,
+  textarea: 96,
+  picker: 56,
+  button: 48,
+  buttonOutline: 48,
+  toggle: 40,
+  stepper: 32,
+  chips: 34,
+  segmented: 40,
+  stars: 36,
+  listRow: 72,
+  media: 110,
+  notice: 56,
+  summary: 96,
+  fab: 56,
+};
 
 const WIRE_SCREENS = [
   {
     id: "reviewCompose", title: "Write a review", section: "customer", back: true,
-    blocks: [["Product name + thumbnail", 64], ["5 star buttons 36dp", 56], ["Review text (4 lines)", 120], ["Submit", 48], ["Read-only notice", 44]],
+    blocks: [
+      ["listRow", "Coffee grinder · Order #4F2A9C81"],
+      ["heading", "Your rating"],
+      ["stars", ""],
+      ["textarea", "Tell others what you think"],
+      ["button", "Submit review"],
+      ["notice", "Reviews are read-only after submitting"],
+    ],
   },
   {
     id: "profileEdit", title: "Edit profile", section: "customer", back: true,
-    blocks: [["Full name (required)", 56], ["Phone (optional)", 56], ["Save", 48]],
+    blocks: [
+      ["field", "Full name (required)"],
+      ["field", "Phone (optional)"],
+      ["button", "Save"],
+    ],
   },
   {
     id: "addresses", title: "Addresses", section: "customer", back: true,
-    blocks: [["Address card · default star, label, recipient, line", 92], ["Address card · set default / delete", 92], ["FAB: Add address", 48], ["Empty state", 120]],
+    blocks: [
+      ["listRow", "Home · default · Sokha Chan"],
+      ["listRow", "Office · Dara Kim"],
+      ["buttonOutline", "Add address"],
+      ["notice", "Empty state: one default per account, enforced by the server"],
+    ],
   },
   {
     id: "addressEdit", title: "Add address", section: "customer", back: true,
-    blocks: [["Contact name + phone", 56], ["Use my current location", 44], ["Verification map", 140], ["Province / district / commune / village", 56], ["Street / house number", 56], ["Additional details", 56], ["Save", 48]],
+    blocks: [
+      ["field", "Contact name"],
+      ["field", "Phone number"],
+      ["buttonOutline", "Use my current location"],
+      ["media", "Verification map"],
+      ["picker", "Province"],
+      ["picker", "District"],
+      ["picker", "Commune"],
+      ["picker", "Village"],
+      ["field", "Street / house number"],
+      ["textarea", "Additional details"],
+      ["button", "Save address"],
+    ],
   },
   {
     id: "wishlist", title: "Wishlist", section: "customer", back: true,
-    blocks: [["ProductCard grid (2 columns)", 260], ["Empty state + Browse products", 140]],
+    blocks: [
+      ["media", "Product card grid (2 columns)"],
+      ["notice", "Empty: browse products"],
+    ],
   },
   {
     id: "settings", title: "Settings", section: "customer", back: true,
-    blocks: [["Theme", 24], ["System / Light / Dark segmented", 48]],
+    blocks: [
+      ["heading", "Appearance"],
+      ["labels", "Theme"],
+      ["segmented", "System|Light|Dark"],
+    ],
   },
   {
     id: "notFound", title: "Page not found", section: "customer", back: false,
-    blocks: [["Centered message with the attempted path", 140], ["Back action", 48]],
+    blocks: [
+      ["notice", "Page not found: /unknown/path"],
+      ["buttonOutline", "Back"],
+    ],
   },
 
   {
     id: "adminProductForm", title: "Add product", section: "admin", back: true,
-    blocks: [["Name", 56], ["Description", 96], ["Variant note", 44], ["Product-wide stock", 56], ["Variants list", 120], ["Category picker", 56], ["Brand picker", 56], ["Images (max 8)", 72], ["Create", 48]],
+    blocks: [
+      ["field", "Name"],
+      ["textarea", "Description"],
+      ["labels", "Variant note: price lives on the variant, not the product"],
+      ["field", "Product-wide stock"],
+      ["listRow", "Variants · Walnut $18.00"],
+      ["picker", "Category"],
+      ["picker", "Brand"],
+      ["media", "Images (max 8)"],
+      ["button", "Create product"],
+    ],
   },
   {
     id: "adminBrands", title: "Brands", section: "admin", back: true,
-    blocks: [["Brand row · logo, name, status, actions", 84], ["Brand row · archived, restore", 84], ["Add brand", 48]],
+    blocks: [
+      ["listRow", "Kirirom · active"],
+      ["listRow", "Angkor · archived"],
+      ["button", "Add brand"],
+    ],
   },
   {
     id: "adminCategories", title: "Categories", section: "admin", back: true,
-    blocks: [["Category row · top level", 76], ["Child category row · indented", 76], ["Grandchild blocked (2 levels max)", 44], ["Create category", 48]],
+    blocks: [
+      ["listRow", "Coffee"],
+      ["listRow", "↳ Beans (child)"],
+      ["listRow", "Gear"],
+      ["notice", "Two levels maximum — a child cannot become a parent"],
+      ["button", "Create category"],
+    ],
   },
   {
     id: "adminPromotions", title: "Promotions", section: "admin", back: true,
-    blocks: [["Refresh / New sale / New coupon / New banner", 72], ["Sales list · active switch", 120], ["Coupons header + Archived link", 32], ["Coupon tiles", 120], ["Banners list", 120]],
+    blocks: [
+      ["chips", "Sales|Coupons|Banners"],
+      ["listRow", "Sale · 30% off · active"],
+      ["heading", "Coupons"],
+      ["listRow", "COFFEE10 · 10%"],
+      ["listRow", "Banner · New season"],
+      ["button", "New sale"],
+    ],
   },
   {
     id: "adminArchivedCoupons", title: "Archived coupons", section: "admin", back: true,
-    blocks: [["Explanatory copy", 72], ["Archived coupon tiles (read-only)", 200]],
+    blocks: [
+      ["notice", "Read-only: archived coupons cannot be reissued"],
+      ["listRow", "OLD10 · expired"],
+      ["listRow", "SUMMER · expired"],
+    ],
   },
   {
     id: "adminAudit", title: "Audit logs", section: "admin", back: true,
-    blocks: [["Audit row · action, target, timestamp", 64], ["Audit row · action, target, timestamp", 64], ["Audit row · action, target, timestamp", 64], ["Latest 100 entries", 44]],
+    blocks: [
+      ["listRow", "update · products · 12:04"],
+      ["listRow", "transition_order · orders · 11:52"],
+      ["listRow", "create_coupon · coupons · 09:31"],
+      ["labels", "Latest 100 entries"],
+    ],
   },
   {
     id: "adminSettings", title: "Platform settings", section: "admin", back: true,
-    blocks: [["Delivery fee", 56], ["Platform commission %", 56], ["Payment account", 56], ["Save", 48]],
+    blocks: [
+      ["field", "Delivery fee"],
+      ["field", "Platform commission %"],
+      ["field", "Payment account"],
+      ["button", "Save settings"],
+    ],
   },
   {
     id: "adminOrderDetail", title: "Order #8A11BE20", section: "admin", back: true,
-    blocks: [["Summary card", 120], ["Next transition button", 48], ["Cancel order (reason required)", 48], ["Mark cash received", 48], ["Items", 140]],
+    blocks: [
+      ["summary", ""],
+      ["button", "Advance to shipped"],
+      ["buttonOutline", "Cancel order"],
+      ["button", "Mark cash received"],
+      ["listRow", "Items · 3"],
+    ],
   },
 ];
+
+// -- primitives ------------------------------------------------------------
+
+function wireBox(width, height, opts) {
+  const o = opts || {};
+  const f = figma.createFrame();
+  f.fills = o.fill === false ? [] : [solid(o.fill || "color/surface-container-lowest")];
+  if (o.stroke !== false) {
+    f.strokes = [solid(o.stroke || "color/outline-variant")];
+    f.strokeWeight = 1;
+  }
+  f.cornerRadius = o.radius == null ? 12 : o.radius;
+  f.clipsContent = o.clip !== false;
+  autolayout(f, {
+    dir: o.dir || "HORIZONTAL",
+    gap: o.gap == null ? 8 : o.gap,
+    pad: o.pad || [14, 14, 14, 14],
+    cross: o.cross || "CENTER",
+  });
+  f.counterAxisSizingMode = "FIXED";
+  f.primaryAxisSizingMode = "FIXED";
+  safeResize(f, width, height);
+  return f;
+}
+
+async function wireField(content, label, kind) {
+  const tall = kind === "textarea";
+  const box = wireBox(SCREEN_W - 32, tall ? WIRE_H.textarea : WIRE_H.field, {
+    dir: "VERTICAL",
+    cross: "MIN",
+    pad: [10, 12, 10, 12],
+    gap: 2,
+  });
+  box.primaryAxisSizingMode = "FIXED";
+  content.appendChild(box);
+  box.appendChild(await text(label, "bodyMedium", "color/on-surface-variant"));
+  if (tall) {
+    box.appendChild(await text("", "bodySmall", "color/on-surface-variant"));
+  }
+  return box;
+}
+
+async function wirePicker(content, label) {
+  const box = wireBox(SCREEN_W - 32, WIRE_H.picker, { dir: "HORIZONTAL" });
+  content.appendChild(box);
+  const t = await text(label, "bodyMedium", "color/on-surface-variant");
+  t.layoutGrow = 1;
+  box.appendChild(t);
+  const chev = icon("arrow_drop_down", "color/on-surface-variant");
+  if (chev) box.appendChild(chev);
+  return box;
+}
+
+async function wireButton(content, label, primary) {
+  const box = wireBox(SCREEN_W - 32, WIRE_H.button, {
+    dir: "HORIZONTAL",
+    fill: primary ? "color/primary" : false,
+    stroke: primary ? false : "color/outline-variant",
+    radius: 8,
+    pad: [14, 16, 14, 16],
+  });
+  box.primaryAxisAlignItems = "CENTER";
+  content.appendChild(box);
+  box.appendChild(await text(label, "labelLarge", primary ? "color/on-primary" : "color/on-surface"));
+  return box;
+}
+
+async function wireToggle(content, label) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", cross: "CENTER" });
+  content.appendChild(row);
+  fill(row);
+  const t = await text(label, "bodyMedium", "color/on-surface");
+  t.layoutGrow = 1;
+  row.appendChild(t);
+
+  const track = figma.createFrame();
+  track.fills = [solid("color/primary")];
+  track.cornerRadius = 999;
+  track.primaryAxisSizingMode = "FIXED";
+  track.counterAxisSizingMode = "FIXED";
+  safeResize(track, 40, 22);
+  row.appendChild(track);
+  const knob = figma.createFrame();
+  knob.fills = [literal("#FFFFFF")];
+  knob.cornerRadius = 9;
+  knob.primaryAxisSizingMode = "FIXED";
+  knob.counterAxisSizingMode = "FIXED";
+  safeResize(knob, 18, 18);
+  track.appendChild(knob);
+  knob.x = 20;
+  knob.y = 2;
+  return row;
+}
+
+async function wireStepper(content, label) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", cross: "CENTER" });
+  content.appendChild(row);
+  fill(row);
+  const t = await text(label, "bodyMedium", "color/on-surface");
+  t.layoutGrow = 1;
+  row.appendChild(t);
+
+  const step = wireBox(88, 32, { radius: 999, pad: [4, 10, 4, 10], gap: 10 });
+  row.appendChild(step);
+  step.appendChild(await text("−", "labelLarge", "color/on-surface"));
+  step.appendChild(await text("3", "labelLarge", "color/on-surface"));
+  step.appendChild(await text("+", "labelLarge", "color/on-surface"));
+  return row;
+}
+
+async function wireChips(content, spec) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", gap: 8 });
+  content.appendChild(row);
+  const labels = spec.split("|");
+  for (let i = 0; i < labels.length; i++) {
+    row.appendChild(await chipAsync(labels[i], i === 0));
+  }
+  return row;
+}
+
+async function wireSegmented(content, spec) {
+  const labels = spec.split("|");
+  const box = wireBox(SCREEN_W - 32, WIRE_H.segmented, {
+    fill: "color/surface-container",
+    stroke: false,
+    radius: 8,
+    pad: [4, 4, 4, 4],
+    gap: 4,
+  });
+  content.appendChild(box);
+  for (let i = 0; i < labels.length; i++) {
+    const seg = figma.createFrame();
+    seg.fills = i === 0 ? [solid("color/surface-container-lowest")] : [];
+    seg.cornerRadius = 6;
+    autolayout(seg, { dir: "HORIZONTAL", pad: [6, 8, 6, 8] });
+    seg.primaryAxisAlignItems = "CENTER";
+    seg.layoutGrow = 1;
+    box.appendChild(seg);
+    seg.appendChild(
+      await text(labels[i], "labelMedium", i === 0 ? "color/on-surface" : "color/on-surface-variant")
+    );
+  }
+  return box;
+}
+
+async function wireStars(content) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", gap: 8 });
+  content.appendChild(row);
+  for (let i = 0; i < 5; i++) {
+    const star = icon("favorite_border", i < 4 ? "color/primary" : "color/on-surface-variant");
+    if (star) {
+      try {
+        star.rescale(1.4);
+      } catch (e) {}
+      row.appendChild(star);
+    }
+  }
+  return row;
+}
+
+async function wireListRow(content, label) {
+  const box = wireBox(SCREEN_W - 32, WIRE_H.listRow, { dir: "HORIZONTAL", pad: [12, 12, 12, 12] });
+  content.appendChild(box);
+  const t = await text(label, "bodyMedium", "color/on-surface");
+  t.layoutGrow = 1;
+  box.appendChild(t);
+  const chev = icon("chevron_right", "color/on-surface-variant");
+  if (chev) box.appendChild(chev);
+  return box;
+}
+
+async function wireMedia(content, label) {
+  const wrap = figma.createFrame();
+  wrap.fills = [];
+  autolayout(wrap, { dir: "VERTICAL", gap: 6 });
+  content.appendChild(wrap);
+  wrap.appendChild(await text(label, "labelMedium", "color/on-surface-variant"));
+
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", gap: 8 });
+  wrap.appendChild(row);
+  for (let i = 0; i < 3; i++) {
+    const tile = wireBox(96, 76, { fill: "color/surface-container", stroke: false, pad: [0, 0, 0, 0] });
+    row.appendChild(tile);
+    tile.layoutGrow = 1;
+    safeResize(tile, 96, 76);
+  }
+  return wrap;
+}
+
+async function wireNotice(content, label) {
+  const box = wireBox(SCREEN_W - 32, WIRE_H.notice, {
+    fill: "color/primary-container",
+    stroke: false,
+    pad: [12, 12, 12, 12],
+  });
+  content.appendChild(box);
+  const glyph = icon("info", "color/on-primary-container");
+  if (glyph) box.appendChild(glyph);
+  const t = await text(label, "bodySmall", "color/on-primary-container");
+  t.layoutGrow = 1;
+  box.appendChild(t);
+  return box;
+}
+
+async function wireSummary(content) {
+  const box = wireBox(SCREEN_W - 32, WIRE_H.summary, {
+    dir: "VERTICAL",
+    cross: "MIN",
+    pad: [12, 12, 12, 12],
+    gap: 4,
+  });
+  content.appendChild(box);
+  for (const [k, v] of [
+    ["Subtotal", "$48.00"],
+    ["Delivery", "$1.50"],
+    ["Total", "$49.50"],
+  ]) {
+    const row = figma.createFrame();
+    row.fills = [];
+    autolayout(row, { dir: "HORIZONTAL" });
+    box.appendChild(row);
+    fill(row);
+    row.primaryAxisAlignItems = "SPACE_BETWEEN";
+    row.appendChild(await text(k, k === "Total" ? "titleSmall" : "bodySmall", "color/on-surface"));
+    row.appendChild(await text(v, k === "Total" ? "priceHighlight" : "bodySmall", "color/on-surface"));
+  }
+  return box;
+}
+
+async function wireFab(content) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL" });
+  content.appendChild(row);
+  fill(row);
+  row.primaryAxisAlignItems = "MAX";
+
+  const fab = figma.createFrame();
+  fab.fills = [solid("color/primary")];
+  fab.cornerRadius = 28;
+  fab.primaryAxisSizingMode = "FIXED";
+  fab.counterAxisSizingMode = "FIXED";
+  safeResize(fab, 56, 56);
+  row.appendChild(fab);
+  const h = figma.createRectangle();
+  h.resize(20, 2);
+  h.cornerRadius = 1;
+  h.fills = [literal("#FFFFFF")];
+  fab.appendChild(h);
+  h.x = 18;
+  h.y = 27;
+  const v = figma.createRectangle();
+  v.resize(2, 20);
+  v.cornerRadius = 1;
+  v.fills = [literal("#FFFFFF")];
+  fab.appendChild(v);
+  v.x = 27;
+  v.y = 18;
+  return row;
+}
+
+async function renderWireBlock(content, kind, label) {
+  switch (kind) {
+    case "heading":
+      content.appendChild(await text(label, "titleMedium", "color/on-surface"));
+      return;
+    case "labels":
+      content.appendChild(await text(label, "labelMedium", "color/on-surface-variant"));
+      return;
+    case "field":
+    case "textarea":
+      return wireField(content, label, kind);
+    case "picker":
+      return wirePicker(content, label);
+    case "button":
+      return wireButton(content, label, true);
+    case "buttonOutline":
+      return wireButton(content, label, false);
+    case "toggle":
+      return wireToggle(content, label);
+    case "stepper":
+      return wireStepper(content, label);
+    case "chips":
+      return wireChips(content, label);
+    case "segmented":
+      return wireSegmented(content, label);
+    case "stars":
+      return wireStars(content);
+    case "listRow":
+      return wireListRow(content, label);
+    case "media":
+      return wireMedia(content, label);
+    case "notice":
+      return wireNotice(content, label);
+    case "summary":
+      return wireSummary(content);
+    case "fab":
+      return wireFab(content);
+    default:
+      warn(`unknown wire kind: ${kind}`);
+      return wireListRow(content, label);
+  }
+}
 
 async function buildWireScreen(section, spec) {
   const f = screenFrame(`Screen/${spec.id}/wire`);
@@ -3984,24 +4392,8 @@ async function buildWireScreen(section, spec) {
   fixedWidth(content, SCREEN_W);
   safeResize(content, SCREEN_W, SCREEN_H - APPBAR_H);
 
-  for (const [label, height] of spec.blocks) {
-    const block = wireBlock(label, height);
-    content.appendChild(block);
-    fill(block);
-
-    block.appendChild(await text(label, "labelMedium", "color/on-surface-variant"));
-
-    // Placeholder rules so the region reads as "content lives here".
-    const bars = Math.max(0, Math.min(3, Math.floor((height - 48) / 22)));
-    for (let i = 0; i < bars; i++) {
-      const bar = figma.createRectangle();
-      bar.cornerRadius = 4;
-      bar.fills = [solid("color/outline-variant")];
-      block.appendChild(bar);
-      bar.layoutSizingHorizontal = "FILL";
-      bar.layoutSizingVertical = "FIXED";
-      safeResize(bar, 10, 8);
-    }
+  for (const [kind, label] of spec.blocks) {
+    await renderWireBlock(content, kind, label);
   }
 
   return f;
@@ -4027,6 +4419,246 @@ async function batchWire(log) {
   return `S5 — ${count} wire screens`;
 }
 
+// ===== 85-page03.js =====
+// ===== batch: p6-contracts =====
+// Page 03: motion tokens, a four-step storyboard, and the cross-cutting
+// contracts. Text-forward by design — this page documents, it does not draw app
+// surfaces.
+
+async function contractsPage() {
+  await context();
+  const page = figma.root.children.find((p) => p.name === "03 · Motion & Contracts");
+  if (!page) throw new Error('Page "03 · Motion & Contracts" not found.');
+  await figma.setCurrentPageAsync(page);
+  return page;
+}
+
+function docCard(x, y, width, title) {
+  const c = figma.createFrame();
+  c.name = title;
+  c.fills = [solid("color/surface-container-lowest")];
+  c.strokes = [solid("color/outline-variant")];
+  c.strokeWeight = 1;
+  c.cornerRadius = 16;
+  c.clipsContent = false;
+  autolayout(c, { dir: "VERTICAL", gap: 10, pad: [20, 20, 20, 20] });
+  c.x = x;
+  c.y = y;
+  c.counterAxisSizingMode = "FIXED";
+  safeResize(c, width, 200);
+  return c;
+}
+
+async function kvRow(parent, key, value) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", gap: 12 });
+  parent.appendChild(row);
+  fill(row);
+  const k = await text(key, "labelMedium", "color/on-surface-variant");
+  k.textAutoResize = "HEIGHT";
+  safeResize(k, 120, k.height);
+  row.appendChild(k);
+  const v = await text(value, "bodyMedium", "color/on-surface");
+  v.textAutoResize = "HEIGHT";
+  v.layoutGrow = 1;
+  row.appendChild(v);
+  return row;
+}
+
+async function bullet(parent, chars) {
+  const row = figma.createFrame();
+  row.fills = [];
+  autolayout(row, { dir: "HORIZONTAL", gap: 8 });
+  parent.appendChild(row);
+  fill(row);
+  const dot = figma.createEllipse();
+  dot.resize(5, 5);
+  dot.fills = [solid("color/on-surface-variant")];
+  row.appendChild(dot);
+  const t = await text(chars, "bodyMedium", "color/on-surface");
+  t.textAutoResize = "HEIGHT";
+  t.layoutGrow = 1;
+  row.appendChild(t);
+  return row;
+}
+
+async function storyboardStep(parent, index, caption) {
+  const col = figma.createFrame();
+  col.fills = [];
+  autolayout(col, { dir: "VERTICAL", gap: 6, cross: "CENTER" });
+  parent.appendChild(col);
+  col.layoutGrow = 1;
+
+  const tile = figma.createFrame();
+  tile.fills = [solid("color/surface-container")];
+  tile.cornerRadius = 12;
+  autolayout(tile, { dir: "VERTICAL", cross: "CENTER" });
+  tile.primaryAxisAlignItems = "CENTER";
+  tile.counterAxisAlignItems = "CENTER";
+  tile.primaryAxisSizingMode = "FIXED";
+  tile.counterAxisSizingMode = "FIXED";
+  safeResize(tile, 96, 96);
+  col.appendChild(tile);
+
+  // A button-ish pill whose weight changes per step, so the strip reads as a
+  // progression rather than four identical boxes.
+  const pill = figma.createFrame();
+  pill.cornerRadius = 8;
+  pill.primaryAxisSizingMode = "FIXED";
+  pill.counterAxisSizingMode = "FIXED";
+  safeResize(pill, index === 1 ? 52 : 56, index === 1 ? 26 : 28);
+  pill.fills = [
+    solid(index >= 2 ? "color/primary" : "color/on-surface-variant"),
+  ];
+  try {
+    pill.opacity = index === 2 ? 0.7 : 1;
+  } catch (e) {}
+  tile.appendChild(pill);
+
+  const step = await text(String(index + 1), "labelMedium", "color/on-surface-variant");
+  col.appendChild(step);
+  const cap = await text(caption, "bodySmall", "color/on-surface-variant");
+  cap.textAutoResize = "HEIGHT";
+  safeResize(cap, 96, cap.height);
+  cap.textAlignHorizontal = "CENTER";
+  col.appendChild(cap);
+  return col;
+}
+
+async function batchContracts(log) {
+  const page = await contractsPage();
+  const own = ["Motion · tokens", "Motion · storyboard", "Contracts · invariants"];
+  page.children.filter((n) => own.includes(n.name)).forEach((n) => n.remove());
+
+  const title = await text("Motion & cross-cutting contracts", "headlineMedium", "color/on-surface");
+  page.appendChild(title);
+  title.x = 80;
+  title.y = 40;
+
+  const sub = await text(
+    "Source: lib/core/presentation/motion.dart and docs/architecture-contract.md. The storyboard is illustrative — do not recreate keyframe timelines here.",
+    "bodyMedium",
+    "color/on-surface-variant"
+  );
+  page.appendChild(sub);
+  sub.x = 80;
+  sub.y = 84;
+
+  // --- motion tokens -------------------------------------------------------
+  const tokens = docCard(80, 140, 520, "Motion · tokens");
+  page.appendChild(tokens);
+  tokens.appendChild(await text("Durations", "titleMedium", "color/on-surface"));
+  await kvRow(tokens, "press", "160 ms — tap feedback");
+  await kvRow(tokens, "enter", "240 ms — content appears");
+  await kvRow(tokens, "exit", "200 ms — content leaves");
+  await kvRow(tokens, "stagger", "360 ms — list reveal");
+
+  tokens.appendChild(await text("Curves", "titleMedium", "color/on-surface"));
+  await kvRow(tokens, "enterCurve", "easeOutCubic");
+  await kvRow(tokens, "exitCurve", "easeInCubic");
+  await kvRow(tokens, "layoutCurve", "easeInOutCubic");
+
+  tokens.appendChild(await text("Reduced motion", "titleMedium", "color/on-surface"));
+  await bullet(tokens, "disableAnimations collapses every duration to zero.");
+  await bullet(tokens, "The order-timeline pulse freezes at opacity 1.0 rather than stopping mid-fade.");
+  await bullet(tokens, "Skeletons ignore reduced motion today — a known gap, not a decision.");
+
+  // --- storyboard ----------------------------------------------------------
+  const board = docCard(640, 140, 520, "Motion · storyboard");
+  page.appendChild(board);
+  board.appendChild(await text("Primary button, tap to settled", "titleMedium", "color/on-surface"));
+
+  const strip = figma.createFrame();
+  strip.fills = [];
+  autolayout(strip, { dir: "HORIZONTAL", gap: 12, cross: "MIN" });
+  board.appendChild(strip);
+  fill(strip);
+
+  await storyboardStep(strip, 0, "Idle");
+  await storyboardStep(strip, 1, "Press\n160 ms");
+  await storyboardStep(strip, 2, "Enter\n240 ms");
+  await storyboardStep(strip, 3, "Settled");
+
+  await bullet(board, "Press dims and scales to 0.98; release returns with easeOutCubic.");
+  await bullet(board, "Screen enter is a 240 ms fade plus an 8 dp rise; exit is 200 ms and does not wait.");
+  await bullet(board, "Lists stagger at 360 ms so rows are read in order.");
+
+  // --- contracts -----------------------------------------------------------
+  const contracts = docCard(1200, 140, 520, "Contracts · invariants");
+  page.appendChild(contracts);
+  contracts.appendChild(await text("Architecture", "titleMedium", "color/on-surface"));
+  await bullet(contracts, "presentation → domain ← data. Features never import features; core never imports features except core/router.");
+  await bullet(contracts, "DTOs never leave data/; mapping happens through <Dto>X.toDomain().");
+  await bullet(contracts, "Failures are mapped once, at the repository boundary, via mapRepositoryError.");
+
+  contracts.appendChild(await text("State", "titleMedium", "color/on-surface"));
+  await bullet(contracts, "Mutations use AsyncValue.guard then ref.invalidateSelf(); there are no optimistic writes.");
+  await bullet(contracts, "Every controller surface shares one loading / empty / error / data vocabulary.");
+
+  contracts.appendChild(await text("Boundaries", "titleMedium", "color/on-surface"));
+  await bullet(contracts, "Route names exist only as AppRoutes constants, used with context.goNamed.");
+  await bullet(contracts, "No local database or cache. shared_preferences stores the theme mode and nothing else.");
+  await bullet(contracts, "The server prices the cart and the order; the client never computes a charge.");
+
+  log("motion tokens, storyboard and contracts written");
+  return "P6 — page 03";
+}
+
+// ===== 90-audit-screens.js =====
+// ===== batch: audit-screens =====
+// Measures every Screen/* frame: does its content fit the 390x844 viewport, or
+// is it silently clipped? Read-only — changes nothing.
+
+async function batchAuditScreens(log) {
+  const page = await screenContext();
+  const frames = page.findAll((n) => n.type === "FRAME" && n.name.startsWith("Screen/"));
+  frames.sort((a, b) => a.name.localeCompare(b.name));
+
+  let clipped = 0;
+  let inflated = 0;
+
+  for (const f of frames) {
+    let maxBottom = 0;
+    let maxRight = 0;
+    f.children.forEach((c) => {
+      maxBottom = Math.max(maxBottom, c.y + c.height);
+      maxRight = Math.max(maxRight, c.x + c.width);
+    });
+
+    const over = Math.round(maxBottom - f.height);
+    if (over > 0) clipped++;
+
+    // A row that still carries far more height than its content suggests.
+    const fatRows = f.findAll(
+      (n) =>
+        n.type === "FRAME" &&
+        n.layoutMode !== "NONE" &&
+        n.height > 90 &&
+        n.children.length <= 2 &&
+        n.children.length > 0
+    );
+    if (fatRows.length) inflated += fatRows.length;
+
+    log(
+      [
+        f.name,
+        `${Math.round(f.width)}x${Math.round(f.height)}`,
+        `content ${Math.round(maxBottom)}`,
+        over > 0 ? `CLIPPED ${over}px` : "fits",
+        maxRight > f.width ? `wide ${Math.round(maxRight - f.width)}px` : "",
+      ]
+        .filter(Boolean)
+        .join("\t")
+    );
+  }
+
+  log("");
+  log(`${frames.length} screens · ${clipped} clipped · ${inflated} oversized row frames`);
+
+  return `audit — ${frames.length} screens, ${clipped} clipped`;
+}
+
 // ===== 99-runner-ui.js =====
 // ---------------------------------------------------------------------------
 // runner
@@ -4044,6 +4676,8 @@ const BATCHES = {
   "s3-customer-b": batchCustomerB,
   "s4-profile-admin": batchProfileAdmin,
   "s5-wire": batchWire,
+  "p6-contracts": batchContracts,
+  "audit-screens": batchAuditScreens,
 };
 
 async function run(batch) {
@@ -4108,6 +4742,8 @@ const HTML = `
     <button data-batch="s3-customer-b">S3 · checkout+orders</button>
     <button data-batch="s4-profile-admin">S4 · profile+admin</button>
     <button data-batch="s5-wire">S5 · wire ×15</button>
+    <button data-batch="p6-contracts">P6 · page 03</button>
+    <button data-batch="audit-screens">Audit · screens</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>

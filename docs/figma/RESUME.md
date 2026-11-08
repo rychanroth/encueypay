@@ -1,73 +1,64 @@
 # Figma resume state
 
-**Status:** unblocked — the MCP quota is no longer on the critical path.
-**Blocked only by:** a click. The builders now run as a local development plugin.
+**Status:** snapshot complete. One rebuild pass pending; nothing else planned.
 
-## What changed (2026-11-08)
+## What changed on 2026-11-08 (late)
 
-`use_figma` is metered against the Figma plan (~20 calls/month on Starter) and the
-quota is spent. That meter covers the *transport*, not the capability: the same
-Plugin API code runs unmetered as a **local development plugin**.
+The mirror is finished and **frozen**:
 
-`docs/figma/plugin/` is that plugin. `figma-linux` supports development-plugin
-import (its extension loader), so no Figma desktop licence is needed.
+- 18 component sets, 30 screens (15 pixel + 15 wire), 9 FigJam diagrams, page 03.
+- Two local development plugins replaced the metered MCP:
+  `docs/figma/plugin/` (design, 13 batches) and `docs/figma/plugin-figjam/`
+  (board, 3 batches).
+- Decisions recorded in `docs/HANDOFF-FIGMA.md` §1: Figma is a **snapshot**, not a
+  twin; no per-state screens; no Code Connect; demo visuals come from capturing the
+  running app.
 
-REST API was evaluated and rejected for this job: it is read-only apart from
-comments, variables, and dev resources. It cannot create components, variant
-sets, or screens.
+## The only work left
 
-## The call to make next (manual, ~30s)
+Two project-wide fixes are written and bundled but the frames have not been rebuilt:
 
-1. Open https://www.figma.com/design/sf2EOTYc8LBadE7LpIu8kR in figma-linux.
-2. Figma menu → Plugins → Development → **Import plugin from manifest…**
-   → select `docs/figma/plugin/manifest.json`.
-3. Run **Plugins → Development → EncueYPay Mirror**.
+1. **Auto-layout hug.** `autolayout()` now hugs both axes. Before this, any frame
+   that only set its width stayed 100 tall (chip rows, "Mark all read", checkout
+   line items, dashboard rows, page-03 cards…). Wireframe bands stay fixed on
+   purpose.
+2. **Wire widgets.** The wire tier now draws by `kind` — field, textarea, picker,
+   buttons, toggle, stepper, chips, segmented, stars, list row, media, notice,
+   summary, FAB — instead of one uniform band.
 
-Expected: `P2a fix done — icons 18/18 · Input 1352x296 · AppBar 1632x136`.
+Run, in this order:
 
-Then verify `12:94` and `12:135`: magnifier in Search, eye in Password, chevron in
-Dropdown, 4-column grids.
+```
+P4 · cards → S1 → S2 → S3 → S4 → S5 · wire ×15 → P6 · page 03
+```
 
-Details and loader constraints: `docs/figma/plugin/README.md`.
+then `Audit · screens` and paste its log. P2b / P3 / P5 pin their own axes and are
+unaffected.
 
-## What is already in the file
+## Known limitation (accepted)
 
-- 3 pages, foundations, brand board (11 illustrations), Button (16), Card (6).
-- 18 Material Symbols SVGs uploaded to page `01 · Foundations & Components`
-  as top-level frames named: `search`, `visibility`, `visibility_off`, `close`,
-  `arrow_back`, `notifications_none`, `more_vert`, `info`, `error`,
-  `check_circle`, `warning`, `refresh`, `chevron_right`, `favorite`,
-  `favorite_border`, `shopping_cart`, `arrow_drop_down`, `person`.
-- `Input` (16 variants) and `AppBar` (8) exist but are **not yet correct**: wrong
-  font glyphs in the icon components, and frames that hug (~135) instead of
-  320 / 390. The plugin fixes both and re-grids.
+Screens are accurate at **region** level and incomplete below it: they were built
+from `screens.json`'s region summaries, and no `*_screen.dart` was read, so widgets
+are **absent**, not misaligned.
 
-## Why the font approach failed
+If fidelity is ever commissioned, do not polish helpers — read that screen's Dart,
+inventory its widgets, rebuild from the inventory, and name nodes after their
+Flutter widgets so a diff can verify completeness. For demo visuals, capture the
+app instead (recipe in `HANDOFF-FIGMA.md` §7).
 
-Figma's "Material Icons" font is a different release than Flutter's bundled font.
-`0xE567` is `search` in Flutter but `add_location` in Figma. Never use codepoint
-text for icons. Use the imported SVG vectors.
-
-## After the fix
-
-Done: 18 icons replaced, Input 320×56, AppBar 390×56, Snackbar (3), Dialog (2),
-BottomSheet (4), atoms (6 sets, 43 variants), cards (4 sets, 63 variants),
-NavigationBar (8). All 30 screens on page 02: 15 pixel, 15 wire.
-
-Next: FigJam (9 diagrams), page 03 (motion + contracts), Code Connect, and the
-per-state screen variants if wanted.
-
-Each batch is a function in the same plugin file; see `plugin/README.md` for the
-Plugin API rules that cost a run each.
-
-## Quota facts (updated)
+## Quota facts
 
 | Action | Metered? |
 |---|---|
-| `whoami`, `add_code_connect_map`, `create_new_file`, `generate_figma_design` | exempt |
-| `use_figma`, `upload_assets`, reads/screenshots | counted, ~20/month on Starter |
-| Local development plugin runs | **not metered** |
-| REST API with a PAT | rate-limited per minute, not per month; read-only for nodes |
+| Local development plugin runs | **no** |
+| `use_figma`, `upload_assets`, MCP reads | yes — ~20/month on Starter |
+| REST API with a PAT | rate-limited per minute; read-only for nodes |
 
-Starter still caps the *file*: 3 pages, 1 variable mode per collection. That is an
-authored-work constraint, not a build-path one.
+Starter still caps the file at 3 pages and 1 variable mode per collection. That is
+an authored-work constraint, not a build-path one.
+
+## Don't restart
+
+Adding a frame later is fine. Rebuilding the mirror for each feature is not — that
+is the maintenance tax documented in the vault note
+`Design handoff — Figma, MCP, Remotion, and single source of truth.md`.

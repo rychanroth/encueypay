@@ -1,28 +1,26 @@
 # Handoff — Figma mirror & brand system
 
-**Status:** paused on an external quota; resumable
+**Status:** built; **frozen as a snapshot** (see §1). One rebuild pass still pending.
 **Updated:** 2026-11-08
-**Repo HEAD:** `0a8bd1e`
+**Repo HEAD:** `055eb4b` (working tree also carries the sizing fix + wire rewrite, uncommitted at time of writing)
 **Read first:** `AGENTS.md`, `docs/architecture-contract.md` §12, then this file.
 
 ---
 
 ## 0. TL;DR
 
-**Goal:** a native Figma mirror of the Flutter app — tokens → components → 30
-screens — plus a separate FigJam board for flows/data, and a brand/asset system
-that is now applied in the running app.
+**Goal:** a Figma projection of the Flutter app — tokens → components → 30 screens —
+plus a FigJam board for flows/data, driven by a local development plugin instead of
+the metered Figma MCP.
 
-**Done:** brand system v1, 11 illustrations (light + dark), platform icons and
-splash, login lockup, empty-state wiring; in Figma: 3 pages, foundations,
-brand board, Button, Card.
+**Done:** brand system v1 (in the app); in Figma: 3 pages, foundations, brand board,
+**18 component sets**, **30 screens** (15 pixel + 15 wire), **9 FigJam diagrams**,
+page 03 motion/contracts. Two local plugins run it all unmetered.
 
-**Broken/paused:** `Input` and `AppBar` exist in Figma but contain wrong icon
-glyphs and hug their content. The MCP fix was blocked by the Figma MCP Starter
-quota before it ran.
+**Pending:** one rebuild pass after two project-wide fixes (see §4a), then the
+`audit-screens` report. Nothing else is planned.
 
-**Next action:** install `docs/figma/plugin/` as a development plugin and run it —
-it performs the same fix with **no MCP metering**. See §5.
+**Next action:** run the batches in §5 Step 1, then `Audit · screens`.
 
 ---
 
@@ -32,13 +30,28 @@ it performs the same fix with **no MCP metering**. See §5.
 - **Deliverable B:** FigJam `EncueYPay — Flows & Data`.
 - **Fidelity:** 15 pixel-near screens, 15 wireframe. **15 / 15 split is fixed.**
 - **Theme:** light-first. Dark components/screens deferred; `Color Dark`
-  variables already exist.
+  variables exist.
 - **Breakpoints:** compact (390×844) only. Medium/expanded deferred.
 - **Icons:** Material Symbols SVGs for design; Material Icons font at runtime.
-- **Brand:** wordmark is **type** (Plus Jakarta Sans ExtraBold, −3%), never a
-  PNG. Mark is the "Ledger E" vector.
+- **Brand:** wordmark is **type** (Plus Jakarta Sans ExtraBold, −3%), never a PNG.
+  Mark is the "Ledger E" vector.
 - **Assets:** no `flutter_svg` (unapproved). SVG source → PNG at 1x/2x/3x.
 - **No new dependencies** without approval (GLOBAL-04).
+
+### Decisions added 2026-11-08 (after the mirror was built)
+
+- **Figma is a snapshot, not a twin.** Code + `docs/architecture-contract.md` are
+  authoritative; this file is a projection pinned to a commit. Do not restart a
+  standing mirror for future features — add a frame only if someone needs it.
+- **No per-state screens.** The canonical `loaded` state exists for all 30; the
+  ~90 state variants in `screens.json` are declined as diminishing returns.
+- **No Code Connect.** Flutter has no official parser target; the mapping would be
+  a node→path record, not a sync.
+- **Demo input comes from the app, not from Figma.** Screenshots / recording of the
+  running web build are complete by construction and cost nothing to regenerate.
+  Remotion consumes those, not the board.
+- **Known and accepted defect:** screen content is region-accurate but incomplete
+  (missing widgets). See §4b for the cause and the only two remedies.
 
 ---
 
@@ -50,13 +63,14 @@ it performs the same fix with **no MCP metering**. See §5.
 | Resume note | `docs/figma/RESUME.md` |
 | Node/ID registry | `docs/figma/manifest.json` |
 | Extracted spec | `docs/figma/spec/{tokens,components,screens,flows}.json` |
-| Fix script (MCP payload, kept as record) | `docs/figma/build/p2-icons-fix.js` |
-| **Local build plugin (the runnable path)** | `docs/figma/plugin/` |
+| **Design plugin (runnable path)** | `docs/figma/plugin/` — 13 batches |
+| **FigJam plugin** | `docs/figma/plugin-figjam/` — 3 batches |
+| Original MCP payload (record only) | `docs/figma/build/p2-icons-fix.js` |
 | Brand system | `docs/brand/BRAND.md` |
 | Brand sources | `docs/brand/source/` (mark, app icon, 11 illustrations, 18 icons) |
 | Bundled assets | `assets/brand/`, `assets/illustrations/` (+ `dark/`) |
 | Component markdown | `docs/figma/components.md` |
-| Vault archive | `.../Agent's responses archive/` |
+| Workflow/SSOT conclusions | vault: `Agent's responses archive/Design handoff — Figma, MCP, Remotion, and single source of truth.md` |
 
 **Figma:**
 
@@ -65,71 +79,102 @@ it performs the same fix with **no MCP metering**. See §5.
 - FigJam: `2O145eRxj0Ta11iwIMwuEH`
   → https://www.figma.com/board/2O145eRxj0Ta11iwIMwuEH
 - Plan: `team::1556872439110631612` (Starter, View seat)
-- Session: `3c99d509-1931-4c41-9308-5a8c0f15db0f`
 - Pages: `01` = `0:1`, `02` = `2:4`, `03` = `2:5`
-- Brand board: `8:82` · Button `4:34` · Card `4:53` · Input `12:94` · AppBar `12:135`
 
 ---
 
 ## 3. What is done
 
-### App / brand
+### Figma — page 01 (18 sets, all of `components.json`)
 
-| Commit | What |
-|---|---|
-| `dcd9c2c` | Brand v1: mark, app icon, adaptive foreground, 9 illustrations |
-| `dd33325` | Bundled assets + Android/iOS/web platform icons |
-| `0c0dd49` | `EmptyStateView` illustration support; cart/orders/wishlist/notifications/discovery |
-| `66ac3c7` | +`no-addresses`, `order-placed`; home/addresses/admin/error/order-placed; Android adaptive icon + splash; iOS LaunchImage |
-| `3ee7b01` | `BrandLockup` + login screen |
-| `0a8bd1e` | **Web support** (landed outside this session): OAuth redirect, PickedFile, conditional dart:io, local web origin. The web QA loop depends on it. |
+Button 16 · Card 6 · Input 16 · AppBar 8 · Snackbar 3 · Dialog 2 · BottomSheet 4 ·
+PriceText 6 · StatusBadge 20 · Skeleton 8 · EmptyState 2 · AsyncValue 3 ·
+MonogramImage 4 · KhqrCard 3 · OrderStatusTimeline 6 · OrderTrackingCard 6 ·
+ProductCard 48 · NavigationBar 8.
 
-Empty states wired: cart, orders, wishlist, notifications, discovery, home,
-addresses, admin products, admin orders, `AsyncErrorView`, order placed
-(QR verified + COD). All have light and dark exports.
+24 `Icon/*` components: 18 imported Material Symbols + 6 created in-plugin from
+inlined path data (`home`, `explore`, `receipt_long`, `dashboard`, `inventory_2`,
+`bar_chart`). Sets live top-level below AppBar; there is no `S · Components`
+section, so locate by name.
 
-### Figma
+### Figma — page 02 (30 screens)
 
-- 3 pages, 36+36 color variables, 13 floats, 13 text styles, 3 effect styles.
-- Brand board with 11 illustrations.
-- Button (16 variants), Card (6).
-- 18 Material Symbols SVGs imported as vectors into `Icon/*` components.
-- Input (16) at 320×56 and AppBar (8) at 390×56 — fixed and re-gridded.
-- Snackbar (3), Dialog (2), BottomSheet (4) — built from `components.json`,
-  token-bound, text styles linked.
-- PriceText (6), StatusBadge (20), Skeleton (8), EmptyState (2), AsyncValue (3),
-  MonogramImage (4) — atoms built from the Dart sources.
-- KhqrCard (3), OrderStatusTimeline (6), OrderTrackingCard (6), ProductCard (48).
-- NavigationBar (8, tab items) — the last set. 6 extra Material Symbols
-  (`home`, `explore`, `receipt_long`, `dashboard`, `inventory_2`, `bar_chart`)
-  were created in-plugin from inlined path data.
-- All 30 screens on page 02 (15 pixel, 15 wire).
-- FigJam board: 9 of 9 diagrams, drawn by the separate `plugin-figjam/` dev
-  plugin.
+- Pixel (15): login, home, productDetail, cart, discovery, notifications, checkout,
+  orderPlaced, orders, orderDetail, profile, adminDashboard, adminProducts,
+  adminOrders, adminReports.
+- Wire (15): reviewCompose, profileEdit, addresses, addressEdit, wishlist, settings,
+  notFound, adminProductForm, adminBrands, adminCategories, adminPromotions,
+  adminArchivedCoupons, adminAudit, adminSettings, adminOrderDetail.
+
+Sections: `S · Customer`, `S · Admin`. Frame names: `Screen/<route>/<state>`.
+
+### Figma — page 03
+
+Motion tokens (durations, curves, reduced-motion), a 4-step storyboard, and the
+cross-cutting contracts.
+
+### FigJam — 9 diagrams
+
+Navigation, order lifecycle, payment lifecycle, auth sequence, checkout sequence,
+KHQR sequence, ERD (22 entities / 23 relations), permission matrix, state ownership.
+Drawn as titled panels rather than sections, so each exports self-describing.
+
+### Tooling
+
+- `docs/figma/plugin/` — 13 batches, UI, per-variant logging, warnings, rebuild by
+  `node docs/figma/plugin/build.js`.
+- `docs/figma/plugin-figjam/` — separate plugin (`editorType: ["figjam"]`), 3 batches.
+- Both are **development plugins**: unmetered, local, shared by sending the folder.
 
 ---
 
 ## 4. What is NOT done
 
-### Figma — immediate
+### a. One rebuild pass is pending
 
-1. **Per-state screens:** the canonical `loaded` state exists for all 30
-   screens; the state variants listed in `screens.json` (~90) are a separate pass.
-2. **Material Symbols:** 24 `Icon/*` components exist (18 imported + 6 created
-   in-plugin); still not grouped into a documented icon section.
-3. **Code Connect** mapping — best-effort; Flutter is not an official template
-   target.
-4. **Motion storyboard + contracts** on page 03 — the last canvas deliverable.
+Two project-wide fixes are written and bundled but **the affected frames have not
+been rebuilt yet**, so the file still shows the old geometry:
 
-### App / platform
+1. **Auto-layout hug fix.** `autolayout()` now hugs both axes by default. Enabling
+   `layoutMode` leaves both axes `FIXED` at the frame's 100×100 birth size, so every
+   helper that only set width (`chipRow`, `markRow`, `lineItem`, `feeRow`, `countRow`,
+   `headRow`, `heroRow`, `menuRowFilled`, `screenSearchField`, `docCard`, …) rendered
+   100 tall. ~82 auto-layout call sites were affected; wireframe bands are pinned
+   deliberately and are unaffected.
+2. **Wire widgets.** The wire tier now renders by `kind` (field, textarea, picker,
+   primary/outline button, toggle, stepper, chips, segmented, stars, list row, media
+   grid, notice, summary, FAB) instead of one uniform band.
 
-- Device QA: empty states in light/dark, splash, adaptive icon (can't run a
-  device here).
+### b. Known defect: screens are region-accurate, widget-incomplete
+
+The 30 screens were generated from `screens.json`, whose `sections` field is a
+**prose summary of regions**, not an inventory. Each entry became one representative
+element, and **no `*_screen.dart` was ever read** — so widgets are absent, not
+merely misaligned. A screen summarised as 11 sections got 11 elements.
+
+Accepted as a snapshot limitation. Two honest remedies if it ever matters:
+
+- Rebuild the 3–5 screens the demo narrates from their real `.dart` files
+  (adds ~1 day of turns plus eyeball verification per batch).
+- Or capture the app instead (§7), which is complete by construction.
+
+**Do not** try to polish helpers to fix this — the input was thin, not the renderer.
+
+### c. Deferred by decision
+
+- Per-state screen variants (~90) — declined.
+- Code Connect mapping — declined.
+- Dark-mode components/screens, medium/expanded breakpoints — deferred.
+- `Icon/*` components not grouped into a documented icon section.
+
+### d. App / platform (outside this effort)
+
+- Device QA: empty states in light/dark, splash, adaptive icon.
 - Desktop launcher icons (macOS/Windows/Linux) not regenerated.
-- Android 12+ splash API not explicitly configured.
-- iOS storyboard still has stale `168×185` metadata (harmless).
+- Android 12+ splash API not configured.
+- iOS storyboard stale `168×185` metadata (harmless).
 
-### Human blockers
+### e. Human blockers
 
 - Official **KHQR/Bakong** and **PayWay** marks + usage rules.
 - **Trademark clearance** and alternative logo explorations.
@@ -139,41 +184,37 @@ addresses, admin products, admin orders, `AsyncErrorView`, order placed
 
 ## 5. Exact resume procedure
 
-**Step 0 — use the local plugin, not the MCP.** `use_figma` is metered against
-the Figma plan (~20 calls/month on Starter) and that quota is spent. The same
-Plugin API code runs unmetered as a development plugin.
+**Step 0 — install both plugins (once).**
 
-Install once: open the design file in the Figma desktop app or `figma-linux`,
-then **Plugins → Development → Import plugin from manifest…** →
-`docs/figma/plugin/manifest.json`. Run it from **Plugins → Development →
-EncueYPay Mirror**.
+- Design file → Plugins → Development → Import from manifest →
+  `docs/figma/plugin/manifest.json` (**EncueYPay Mirror**).
+- Board → same flow with `docs/figma/plugin-figjam/manifest.json`
+  (**EncueYPay Flows**).
 
-Loader constraints (figma-linux): flat `main` filename, no dashes, no `ui.html`,
-no bundler. Already satisfied — do not regress them.
+Run a dev plugin by clicking its name (or `Ctrl+/`); the three items on the row
+(Publish / Remove / Reveal) are management, not execution.
 
-Expected toast: `P2a fix done — icons 18/18 · Input 1352x296 · AppBar 1632x136`.
+**Step 1 — rebuild in this order** (the fix only affects frames rebuilt after it):
 
-**Step 1 — verify.** Screenshot `12:94` and `12:135`; expect a magnifier in
-Search, an eye in Password, a chevron in Dropdown, 4-column grids.
+1. `P4 · cards` 2. `S1 · login+home` 3. `S2 · detail+cart` 4. `S3 · checkout+orders`
+5. `S4 · profile+admin` 6. `S5 · wire ×15` 7. `P6 · page 03`
 
-**Step 2 — batch 2b.** Build Snackbar (3), Dialog (2), BottomSheet (4) using
-`docs/figma/spec/components.json` as the source, added as a new command in the
-same flat `code.js`. Same pattern: components → `combineAsVariants` → **manual
-grid layout** → verify.
+P2b / P3 / P5 pin their own axes, so they are unaffected — skip them.
 
-`build/p2-icons-fix.js` is kept as the record of the original MCP payload;
-`plugin/code.js` is its runnable twin. Keep them in step, or delete the former if
-it stops earning its keep.
+**Step 2 — `Audit · screens`** (read-only). Prints per screen: frame size, content
+extent, `fits` or `CLIPPED Npx`, plus a count of oversized row frames. That list is
+the real answer to "which screens need more than one viewport", and the input for
+any per-screen work.
 
-**Step 3 — screens.** Start with the 15 pixel screens on page 02, in this order:
-login, home, productDetail, cart, checkout, orderPlaced, orders, orderDetail,
-profile, discovery, notifications, adminDashboard, adminProducts, adminOrders,
-adminReports. Wire screens after.
+**Step 3 — fix by screen, never by helper.** If a screen is flagged, adjust that
+screen's content or spacing. Do not re-tune shared helpers.
 
-**Step 4 — FigJam.** One board, 9 sections, `use_figma` only. **Do not** use
-`generate_diagram` — it creates a new file per call.
+**Step 4 — freeze.** Record the pinned `sourceCommit` in `manifest.json`, note the
+decisions in §1, and stop. Future UI belongs in the app and the contract, not here.
 
-**Step 5 — QA.** One screenshot per set/screen; no per-frame loops (read quota).
+**If fidelity work is ever commissioned:** read that screen's `.dart` first, inventory
+its widgets, rebuild from the inventory, and name nodes after their Flutter widgets
+(`Text/name`, `Row/stepper`) so a machine diff can catch what the eye misses.
 
 ---
 
@@ -181,31 +222,40 @@ adminReports. Wire screens after.
 
 | Gotcha | Rule |
 |---|---|
-| Starter quota | All `use_figma` runs count (~20/month); only `add_code_connect_map`, `create_new_file`, `generate_figma_design`, `whoami` are exempt. **Use the local plugin** (`docs/figma/plugin/`) for building — it is not metered. |
-| REST API (PAT) | Read-only for nodes — comments, variables and dev resources are the only writes. Good for inspection/exports, useless for building components or screens. |
-| 1 variable mode | Light/dark is two collections (`Color`, `Color Dark`), same names. |
-| 3 pages | 3 pages + sections/frames inside. |
-| Font codepoints | Figma's "Material Icons" ≠ Flutter's bundled font. `0xE567` is `search` in Flutter, `add_location` in Figma. **Never use glyph text**; use SVG symbols. |
-| `combineAsVariants` | Does not lay out variants; they stack at (0,0). Grid them manually. |
-| Auto-layout sizing | Enabling `layoutMode` makes the frame HUG. Set `layoutSizingHorizontal = "FIXED"` and `resize()` after building children. |
-| Page context | Resets to page 1 each `use_figma` call; call `figma.setCurrentPageAsync` once. |
-| `setPluginData` | Banned by the tool contract. Use names + `manifest.json`. |
-| `generate_figma_design` | Quota-exempt but has no URL param; needs a capture script/browser integration we don't have here. |
-| `generate_diagram` | Creates a new file per call — unusable under the 3-file cap. |
-| No `flutter_svg` | Ship PNG density variants; wordmark stays `Text`; mark can become a `CustomPainter`. |
-| Dark mode | v1 is light-first, but the app has a dark toggle; illustrations ship dark variants. |
+| MCP quota | All `use_figma` runs count (~20/month on Starter). Use the local plugins instead — unmetered. |
+| REST API | Read-only for nodes; only comments, variables, dev resources are writable. Useless for building components or screens. |
+| Editor scope | A dev plugin's `editorType` is fixed at import. Keep design and FigJam plugins separate; changing it forces a re-import. |
+| **Auto-layout default** | `layoutMode` leaves BOTH axes `FIXED` at 100×100. Hug explicitly, or the frame renders 100 tall. |
+| Sizing API values | `layoutSizing*` takes `FIXED`/`HUG`/`FILL`; `"AUTO"` is only for `primaryAxisSizingMode`/`counterAxisSizingMode`. |
+| Parenting order | `layoutSizing* = "FILL"` throws unless the node is already a child of an auto-layout frame. |
+| Hug ordering | Set hug **after** children exist; a later `resize()` re-fixes the axis. |
+| dynamic-page | `setTextStyleIdAsync` — the sync setter is banned under `documentAccess: "dynamic-page"`. |
+| Text creation | Assign `fontName` **before** `characters`; a new text node is born "Inter Regular". |
+| Text resize | Set `textAutoResize` before `resize()`, or the resize throws. |
+| `combineAsVariants` | Does not lay variants out; they stack at (0,0). Grid them manually, row-aware. |
+| Variable binding | Bind **after** setting the literal; assigning a literal to a bound field unlinks it. |
+| Font codepoints | Figma's "Material Icons" ≠ Flutter's bundled font. Never use glyph text; use SVG vectors. |
+| Orphan variants | A failed run leaves loose `Tone=`/`Type=`/`Shape=` components; sweep before combining. |
+| Screens vs source | `screens.json` `sections` is a region summary, not a widget inventory. Read the `.dart` for fidelity work. |
+| Raw hex | Allowed only where the app itself hardcodes it: status badge pairs, monogram accents, brand mark, role badges. |
 
 ---
 
-## 7. Verification commands
+## 7. Verification
 
 ```bash
+node docs/figma/plugin/build.js            # src/*.js -> code.js
+node --check docs/figma/plugin/code.js
+node docs/figma/plugin-figjam/build.js
+node --check docs/figma/plugin-figjam/code.js
+
 flutter analyze
-flutter test                     # 49 tests
+flutter test
 python3 -c "import json,glob; [json.load(open(p)) for p in glob.glob('docs/figma/spec/*.json')]"
 ```
 
-**Visual QA without a device** (works because of `0a8bd1e`):
+**Capture from the running app** (the demo path, and the honest alternative to a
+Figma mirror):
 
 ```bash
 flutter build web --dart-define-from-file=config/.remote
@@ -215,32 +265,41 @@ chromium --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
   --screenshot=/tmp/opencode/login.png http://127.0.0.1:8080/
 ```
 
-Authenticated screens still need a real session; only login is reachable
-without credentials.
+Authenticated screens need a real session; only login is reachable without
+credentials.
 
 ---
 
 ## 8. Commit ledger (this effort)
 
 ```
+055eb4b feat(figjam): complete the board with ERD, permission matrix and state ownership
+702ce21 feat(figjam): add the three sequence diagrams
+2310ea5 refactor(figma): split the FigJam builder into its own plugin
+31c76b3 feat(figma): build the 15 wireframe screens
+653df7b feat(figma): add profile and the four admin pixel screens
+ed0eef0 feat(figma): add checkout, orderPlaced, orders and orderDetail screens
+2df5d3b feat(figma): add productDetail, cart, discovery and notifications screens
+7aad209 feat(figma): add the screens kit and the first two pixel screens
+96d038d feat(figma): build the atom components
+82137d7 feat(figma): build the card components
+ff97b30 feat(figma): build NavigationBar and finish the component sets
+4f1daff feat(figma): build Snackbar, Dialog and BottomSheet
+0b17f59 refactor(figma): split plugin sources and generate the flat bundle
+060ee6d docs(figma): run builds as a local unmetered plugin
+1e2115b docs(figma): add resumable handoff and index it
 0a8bd1e feat(web): make Google sign-in and the app build work on web   ← external
-5139062 docs(figma): record P2a partial build and MCP quota block
-3ee7b01 feat(auth): apply the brand lockup on login
-66ac3c7 feat(ui): complete illustration coverage and platform icons
-0c0dd49 feat(ui): use ledger-line illustrations in empty states
-dd33325 feat(brand): bundle identity assets and regenerate platform icons
-dcd9c2c feat(brand): add identity v1 and import assets into Figma
-5d27f9a docs(figma): lock v1 decisions and log component pilot
-84c5183 docs(figma): record P0/P1 and Starter plan constraints
-2fe313e docs(figma): add markdown rendering of the component spec
-278e1cd docs(figma): extract design spec and phased Figma plan
 ```
+
+*(The 2026-11-08 sizing fix, wire rewrite, page 03 and audit batch follow as one
+commit; add its hash here when it lands.)*
 
 ---
 
 ## 9. First message for a fresh session
 
-> Read `docs/HANDOFF-FIGMA.md` and `docs/figma/RESUME.md`. Resume at §5 Step 0.
-> The Figma file is mid-operation: run the local plugin in `docs/figma/plugin/`
-> (Plugins → Development → EncueYPay Mirror) before building anything else. Do not
-> use font glyphs for icons, and do not route builds through the metered MCP.
+> Read `docs/HANDOFF-FIGMA.md` and `docs/figma/RESUME.md`. The Figma work is a
+> finished **snapshot**, not a live mirror. Only §5 Step 1–2 remain: rebuild the
+> seven batches, then run `Audit · screens`. Do not start a per-state pass, Code
+> Connect, or a new mirroring effort without an explicit decision — and for demo
+> visuals, capture the running app instead.

@@ -254,6 +254,10 @@ function autolayout(node, opts) {
   if (opts.cross === "CENTER") {
     node.counterAxisAlignItems = "CENTER";
   }
+  // Enabling layoutMode leaves both axes FIXED at the frame's birth size
+  // (100x100), so every frame that does not explicitly pin an axis renders
+  // 100 tall. Hug by default; callers pin afterwards when a size is intended.
+  hugBoth(node);
 }
 
 /** Auto-layout hugs nothing by default: a new component stays 100x100 until the

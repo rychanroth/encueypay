@@ -34,21 +34,6 @@ function screenFrame(name) {
   return f;
 }
 
-/** Section band used by wire screens to label regions. */
-function wireBlock(label, height, opts) {
-  const o = opts || {};
-  const f = figma.createFrame();
-  f.fills = o.fill === false ? [] : [solid("color/surface-container")];
-  f.cornerRadius = 12;
-  f.strokes = [solid("color/outline-variant")];
-  f.strokeWeight = 1;
-  f.clipsContent = true;
-  autolayout(f, { dir: "VERTICAL", pad: [12, 12, 12, 12] });
-  f.counterAxisSizingMode = "FIXED";
-  safeResize(f, o.width || SCREEN_W - 32, height);
-  return f;
-}
-
 /** Brand mark, drawn from docs/brand/source/mark.svg (64-unit grid). */
 function brandMark(size) {
   const f = figma.createFrame();

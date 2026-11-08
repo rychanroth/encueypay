@@ -14,6 +14,8 @@ const BATCHES = {
   "s3-customer-b": batchCustomerB,
   "s4-profile-admin": batchProfileAdmin,
   "s5-wire": batchWire,
+  "p6-contracts": batchContracts,
+  "audit-screens": batchAuditScreens,
 };
 
 async function run(batch) {
@@ -78,6 +80,8 @@ const HTML = `
     <button data-batch="s3-customer-b">S3 · checkout+orders</button>
     <button data-batch="s4-profile-admin">S4 · profile+admin</button>
     <button data-batch="s5-wire">S5 · wire ×15</button>
+    <button data-batch="p6-contracts">P6 · page 03</button>
+    <button data-batch="audit-screens">Audit · screens</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>
