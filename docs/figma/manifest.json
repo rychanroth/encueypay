@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "status": "foundations-built",
+  "status": "blocked-mcp-quota",
   "sourceCommit": "81dc7a7",
   "generatedAt": "2026-11-08",
   "sessionId": "3c99d509-1931-4c41-9308-5a8c0f15db0f",
@@ -36,7 +36,10 @@
     { "id": "01", "name": "01 · Foundations & Components", "file": "design", "pageId": "0:1", "nodeIds": [
       { "id": "8:82", "name": "Brand — Board v1" },
       { "id": "4:34", "name": "Button", "variants": 16 },
-      { "id": "4:53", "name": "Card", "variants": 6 }
+      { "id": "4:53", "name": "Card", "variants": 6 },
+      { "id": "12:94", "name": "Input", "variants": 16, "status": "needs p2-icons-fix.js" },
+      { "id": "12:135", "name": "AppBar", "variants": 8, "status": "needs p2-icons-fix.js" },
+      { "name": "Icon/*", "count": 18, "status": "SVGs uploaded as loose frames; run p2-icons-fix.js" }
     ] },
     { "id": "02", "name": "02 · Screens", "file": "design", "pageId": "2:4", "nodeIds": [] },
     { "id": "03", "name": "03 · Motion & Contracts", "file": "design", "pageId": "2:5", "nodeIds": [] }
@@ -46,7 +49,7 @@
     "pixelScreens": 15,
     "wireScreens": 15,
     "components": 19,
-    "componentsBuilt": 2,
+    "componentsBuilt": 4,
     "brandAssets": 3,
     "illustrations": 11,
     "colorVariablesPerCollection": 36,
@@ -91,6 +94,11 @@
       "at": "2026-11-08",
       "event": "brand-v1",
       "detail": "Brand system v1: BRAND.md, Ledger E mark, app icon + adaptive foreground, 9 ledger-line illustrations. Imported into Figma and composed as Brand — Board v1 (node 8:82). 9 illustrations under 160x160, exported from SVG sources in docs/brand/source/."
+    },
+    {
+      "at": "2026-11-08",
+      "event": "p2a-partial-blocked",
+      "detail": "Built Input (16) 12:94 and AppBar (8) 12:135 plus 18 icon components. Font-codepoint glyphs were wrong (Figma Material Icons release differs from Flutter's). Uploaded 18 official Material Symbols SVGs as loose frames. The fix call (docs/figma/build/p2-icons-fix.js) was blocked by the Starter MCP quota before executing. See RESUME.md."
     }
   ]
 }
