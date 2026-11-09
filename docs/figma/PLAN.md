@@ -20,13 +20,15 @@ of the app, not a second source of truth. Do not build UI here first.
 | 03 · Motion & Contracts | `2:5` | Motion tokens, 4-step storyboard, cross-cutting contracts |
 
 **File B — FigJam `EncueYPay — Flows & Data`** · `2O145eRxj0Ta11iwIMwuEH`
-9 titled panels: navigation, order lifecycle, payment lifecycle, auth / checkout /
-KHQR sequences, ERD, permission matrix, state ownership.
+9 diagrams: navigation, order lifecycle, payment lifecycle, auth / checkout / KHQR
+sequences, ERD, permission matrix, state ownership. Each is a **group** named after the
+diagram, containing its fitted backdrop, title, shapes and connectors — so dragging the
+panel drags its contents, and a re-run removes it wholesale (`fjClear`).
 
 **Tooling** — two local **development plugins**, unmetered: `plugin/` (design, 14
-batches incl. `Audit · screens` and `Registry · ids`) and `plugin-figjam/` (3
-batches). Both assemble a flat `code.js` from `src/*.js` via `build.js`; Figma re-reads
-it on every run, so new batches appear without re-importing.
+batches incl. `Audit · screens` and `Registry · ids`) and `plugin-figjam/` (4 batches
+incl. `Reset · clear board`). Both assemble a flat `code.js` from `src/*.js` via
+`build.js`; Figma re-reads it on every run, so new batches appear without re-importing.
 
 **Plan limits (Starter, View seat)** — 3 pages and 1 variable mode per collection,
 hence light/dark as two collections with identical names, and sections instead of
@@ -94,8 +96,11 @@ the app scrolls them — by design. No per-screen fixes are planned.
   represented**; the Delivered card shows Packed as active. Fixing it needs a
   `Focus=…` dimension over 7 positions — a per-state expansion, declined.
 - FigJam: the navigation map flattens `adminArchivedCoupons` and omits
-  `adminSettingsAccount`; the ERD carries 23 of 25 relations; connector "anchor"
-  rectangles accumulate (~2 per arrow) if the sequence batch is ever re-run.
+  `adminSettingsAccount`; the ERD carries 23 of 25 relations.
+- FigJam containers: until 2026-11-09 each diagram was a plain rectangle backdrop with
+  loose neighbours, so it neither hugged its content (sizes were literals) nor carried
+  it when moved. Diagrams are now grouped with content-fitted backdrops; the board
+  needs one `Reset · clear board` + `Flows A/B/C` to replace the legacy drawings.
 
 ## 6. Constraints and gotchas (learned the hard way)
 
@@ -119,7 +124,9 @@ the app scrolls them — by design. No per-screen fixes are planned.
 | Raw hex | Allowed only where the app itself hardcodes it: status badge pairs, monogram accents, brand mark, role badges. |
 | **Pinned boxes hide overflow** | Screen content sits in a content frame pinned to 716 tall at y=56. Anything past it flows under the opaque nav bar (top 772) and is invisible without measuring. |
 | **Measuring** | Measure *required* height recursively (auto-layout = padded sum + gaps, absolute = child bottom) and compare against the **nav bar's top edge**, not 844. Measuring direct children always yields 844. |
-| Re-run pollution | Free-standing text (page-03 heading) and FigJam anchors are not swept by name-based cleanup. Anything added outside a named container needs an explicit sweep. |
+| **No auto-layout in FigJam** | A rectangle is decoration, not a container: dragging it moves nothing. Group the contents (`figma.group`, name the group) or use a section — that is the only way children follow. |
+| FigJam sizing | Panel sizes written as literals never match the drawing. Snapshot `page.children` at panel creation, then fit the backdrop to the bbox of what was added (`fjEnd`). |
+| Re-run pollution | Cleanup is by **name**: groups named after the diagram are removed wholesale. Anything outside a named container (a free-standing heading, a loose connector anchor) survives — sweep it explicitly, or group it. |
 
 ## 7. Verification
 

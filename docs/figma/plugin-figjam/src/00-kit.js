@@ -142,8 +142,12 @@ function fjArrowBetween(x1, y1, x2, y2, label) {
   }
 }
 
-/** Diagram backdrop + title (stands in for a FigJam section). */
+let FJ_BEFORE = null;
+let FJ_PANEL = null;
+
+/** Diagram backdrop + title. Records the page so fjEnd() can group what was added. */
 async function fjPanel(x, y, width, height, title) {
+  FJ_BEFORE = new Set(figma.currentPage.children.map((n) => n.id));
   const bg = figma.createRectangle();
   bg.resize(width, height);
   bg.x = x;
@@ -153,5 +157,80 @@ async function fjPanel(x, y, width, height, title) {
   bg.cornerRadius = 16;
   bg.name = title;
   await fjText(x + 24, y + 20, title, 20, FJ.ink, true);
+  FJ_PANEL = bg;
   return bg;
+}
+
+/**
+ * Close a diagram: fit the backdrop to what was actually drawn, then group backdrop,
+ * title, shapes, lifelines, connectors and anchors into one node named after the
+ * diagram. A group is the only FigJam container that carries its children when moved;
+ * naming it is also what makes a re-run idempotent (fjClear removes it wholesale).
+ */
+async function fjEnd(pad) {
+  const page = figma.currentPage;
+  const bg = FJ_PANEL;
+  const added = page.children.filter((n) => !FJ_BEFORE.has(n.id));
+  const content = added.filter((n) => n !== bg);
+  FJ_PANEL = null;
+  FJ_BEFORE = null;
+  if (!bg || !content.length) return null;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  content.forEach((n) => {
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.width);
+    maxY = Math.max(maxY, n.y + n.height);
+  });
+  if (!isFinite(minX)) return null;
+
+  const p = pad || 24;
+  bg.x = minX - p;
+  bg.y = minY - p;
+  bg.resize(maxX - minX + p * 2, maxY - minY + p * 2);
+
+  const name = bg.name;
+  let group = null;
+  try {
+    group = figma.group([bg].concat(content), page);
+    group.name = name;
+  } catch (e) {
+    // Leave it ungrouped rather than lose the drawing; the next run's area sweep
+    // still cleans it up, because the backdrop carries the diagram name.
+    warn(`could not group "${name}": ${(e && e.message) || e}`);
+  }
+  const w = Math.round((group || bg).width);
+  const h = Math.round((group || bg).height);
+  return { name, w, h };
+}
+
+/**
+ * Remove previously built diagrams by name — grouped (normal) or legacy (a backdrop
+ * rectangle plus loose children positioned inside it).
+ */
+function fjClear(names) {
+  const page = figma.currentPage;
+
+  page.children.filter((n) => n.type === "GROUP" && names.includes(n.name)).forEach((n) => n.remove());
+
+  const legacy = page.children.filter((n) => names.includes(n.name));
+  const boxes = legacy.map((n) => ({ x: n.x, y: n.y, w: n.width, h: n.height }));
+  if (boxes.length) {
+    legacy.forEach((n) => n.remove());
+    // Legacy children are page-level and unnamed, so sweep by position: anything whose
+    // centre sits in a removed backdrop belongs to that diagram.
+    page.children.forEach((n) => {
+      const cx = n.x + n.width / 2;
+      const cy = n.y + n.height / 2;
+      if (boxes.some((b) => cx > b.x - 40 && cx < b.x + b.w + 40 && cy > b.y - 40 && cy < b.y + b.h + 40)) {
+        n.remove();
+      }
+    });
+  }
+
+  page.children.filter((n) => n.name === "anchor").forEach((n) => n.remove());
 }

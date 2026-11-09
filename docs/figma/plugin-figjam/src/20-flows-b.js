@@ -53,12 +53,11 @@ async function fjSequence(x, y, title, participants, messages, log) {
     }
   }
 
-  log(`${title} built`);
-  return width;
+  return { width, title };
 }
 
 async function buildAuthSequence(x, y, log) {
-  return fjSequence(
+  const seq = await fjSequence(
     x,
     y,
     "Authentication and role routing",
@@ -75,10 +74,13 @@ async function buildAuthSequence(x, y, log) {
     ],
     log
   );
+  const g = await fjEnd();
+  log(`authentication built (${g ? g.w + "x" + g.h : "ungrouped"})`);
+  return seq.width;
 }
 
 async function buildCheckoutSequence(x, y, log) {
-  const w = await fjSequence(
+  const seq = await fjSequence(
     x,
     y,
     "Checkout and atomic placement",
@@ -106,11 +108,13 @@ async function buildCheckoutSequence(x, y, log) {
     12,
     FJ.muted
   );
-  return w;
+  const g = await fjEnd();
+  log(`checkout placement built (${g ? g.w + "x" + g.h : "ungrouped"})`);
+  return seq.width;
 }
 
 async function buildKhqrSequence(x, y, log) {
-  const w = await fjSequence(
+  const seq = await fjSequence(
     x,
     y,
     "KHQR payment verification",
@@ -138,7 +142,9 @@ async function buildKhqrSequence(x, y, log) {
     12,
     FJ.muted
   );
-  return w;
+  const g = await fjEnd();
+  log(`KHQR verification built (${g ? g.w + "x" + g.h : "ungrouped"})`);
+  return seq.width;
 }
 
 const PANELS_B = [
@@ -153,9 +159,7 @@ async function batchFlowsB(log) {
   }
   await fjFont();
 
-  figma.currentPage.children
-    .filter((n) => PANELS_B.includes(n.name))
-    .forEach((n) => n.remove());
+  fjClear(PANELS_B);
 
   await buildAuthSequence(0, 1400, log);
   await buildCheckoutSequence(0, 2160, log);

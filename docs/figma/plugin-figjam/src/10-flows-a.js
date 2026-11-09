@@ -51,7 +51,8 @@ async function buildNavigation(x, y, log) {
   await fjNavShell(x + 24, y + 600, "Admin shell — 4 tabs", NAV_ADMIN, 250, 12);
 
   fjConnect(login, customer[0]);
-  log("navigation built");
+  const nav = await fjEnd();
+  log(`navigation built (${nav ? nav.w + "x" + nav.h : "ungrouped"})`);
 }
 
 async function buildOrderLifecycle(x, y, log) {
@@ -95,7 +96,8 @@ async function buildOrderLifecycle(x, y, log) {
     FJ.muted
   );
   await fjText(x + 300, y + 320, "Excluded: returned (legacy — no refund flow exists).", 12, FJ.muted);
-  log("order lifecycle built");
+  const ol = await fjEnd();
+  log(`order lifecycle built (${ol ? ol.w + "x" + ol.h : "ungrouped"})`);
 }
 
 async function buildPaymentLifecycle(x, y, log) {
@@ -136,7 +138,8 @@ async function buildPaymentLifecycle(x, y, log) {
     12,
     FJ.muted
   );
-  log("payment lifecycle built");
+  const pl = await fjEnd();
+  log(`payment lifecycle built (${pl ? pl.w + "x" + pl.h : "ungrouped"})`);
 }
 
 const PANELS = ["Navigation map", "Order lifecycle", "Payment lifecycle"];
@@ -147,9 +150,7 @@ async function batchFlowsA(log) {
   }
   await fjFont();
 
-  figma.currentPage.children
-    .filter((n) => PANELS.includes(n.name))
-    .forEach((n) => n.remove());
+  fjClear(PANELS);
 
   await buildNavigation(0, 0, log);
   await buildOrderLifecycle(1800, 0, log);

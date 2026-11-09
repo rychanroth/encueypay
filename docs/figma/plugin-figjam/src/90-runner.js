@@ -4,7 +4,24 @@ const BATCHES = {
   "flows-a": batchFlowsA,
   "flows-b": batchFlowsB,
   "flows-c": batchFlowsC,
+  reset: batchReset,
 };
+
+/**
+ * Clear the board. The board is generated end to end by this plugin, so there is
+ * nothing to preserve; needed once to drop the pre-grouping diagrams, whose children
+ * are page-level and unnamed (fjClear can only sweep them by position).
+ */
+async function batchReset(log) {
+  if (figma.editorType !== "figjam") {
+    throw new Error("Open the FigJam board (EncueYPay — Flows & Data) and run this there.");
+  }
+  const page = figma.currentPage;
+  const total = page.children.length;
+  page.children.slice().forEach((n) => n.remove());
+  log(`cleared ${total} top-level nodes`);
+  return `reset — ${total} nodes removed`;
+}
 
 const HTML = `
 <!doctype html>
@@ -29,6 +46,7 @@ const HTML = `
     <button data-batch="flows-a">Flows A · nav + lifecycles</button>
     <button data-batch="flows-b">Flows B · sequences</button>
     <button data-batch="flows-c">Flows C · data + permissions</button>
+    <button data-batch="reset">Reset · clear board</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>

@@ -10,7 +10,7 @@
     "components": "counts.components (19) is the count in spec/components.json; componentsBuilt (18) is the number of component sets on page 01. The 19th entry is the doc-only `filled-button-theme` recipe, not a missing set.",
     "screens": "Screen content derives from screens.json's region summaries, not from the *_screen.dart sources, so screens are region-accurate and widget-incomplete. This is accepted for the snapshot; see docs/figma/PLAN.md §5.",
     "audit": "Screen overflow was measured with the corrected audit batch (7ed8008): content is hidden on productDetail 465px, home 107, adminReports 67, discovery 51, checkout 32; the other 25 fit. productDetail (+274) and orderDetail (+44) are wide because horizontal rails are drawn at natural width and the app scrolls them. No per-screen fixes are planned.",
-    "figjam": "The board is frozen too. Known and accepted: page-03-style anchor rects accumulate if Flows B is ever re-run, the navigation map flattens adminArchivedCoupons and omits adminSettingsAccount, and the ERD carries 23 of 25 relations. Board page ids were not dumped."
+    "figjam": "The board is frozen too. Diagrams are groups named after each panel, with the backdrop fitted to the drawn content, so a panel moves its contents and a re-run replaces it wholesale; `Reset · clear board` exists for the pre-2026-11-09 ungrouped drawings and for a clean rebuild. Known and accepted: the navigation map flattens adminArchivedCoupons and omits adminSettingsAccount, and the ERD carries 23 of 25 relations. Board page ids were not dumped."
   },
   "figmaAccount": {
     "handle": "rychanroth",

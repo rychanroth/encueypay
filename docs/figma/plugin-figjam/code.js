@@ -149,8 +149,12 @@ function fjArrowBetween(x1, y1, x2, y2, label) {
   }
 }
 
-/** Diagram backdrop + title (stands in for a FigJam section). */
+let FJ_BEFORE = null;
+let FJ_PANEL = null;
+
+/** Diagram backdrop + title. Records the page so fjEnd() can group what was added. */
 async function fjPanel(x, y, width, height, title) {
+  FJ_BEFORE = new Set(figma.currentPage.children.map((n) => n.id));
   const bg = figma.createRectangle();
   bg.resize(width, height);
   bg.x = x;
@@ -160,7 +164,82 @@ async function fjPanel(x, y, width, height, title) {
   bg.cornerRadius = 16;
   bg.name = title;
   await fjText(x + 24, y + 20, title, 20, FJ.ink, true);
+  FJ_PANEL = bg;
   return bg;
+}
+
+/**
+ * Close a diagram: fit the backdrop to what was actually drawn, then group backdrop,
+ * title, shapes, lifelines, connectors and anchors into one node named after the
+ * diagram. A group is the only FigJam container that carries its children when moved;
+ * naming it is also what makes a re-run idempotent (fjClear removes it wholesale).
+ */
+async function fjEnd(pad) {
+  const page = figma.currentPage;
+  const bg = FJ_PANEL;
+  const added = page.children.filter((n) => !FJ_BEFORE.has(n.id));
+  const content = added.filter((n) => n !== bg);
+  FJ_PANEL = null;
+  FJ_BEFORE = null;
+  if (!bg || !content.length) return null;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  content.forEach((n) => {
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.width);
+    maxY = Math.max(maxY, n.y + n.height);
+  });
+  if (!isFinite(minX)) return null;
+
+  const p = pad || 24;
+  bg.x = minX - p;
+  bg.y = minY - p;
+  bg.resize(maxX - minX + p * 2, maxY - minY + p * 2);
+
+  const name = bg.name;
+  let group = null;
+  try {
+    group = figma.group([bg].concat(content), page);
+    group.name = name;
+  } catch (e) {
+    // Leave it ungrouped rather than lose the drawing; the next run's area sweep
+    // still cleans it up, because the backdrop carries the diagram name.
+    warn(`could not group "${name}": ${(e && e.message) || e}`);
+  }
+  const w = Math.round((group || bg).width);
+  const h = Math.round((group || bg).height);
+  return { name, w, h };
+}
+
+/**
+ * Remove previously built diagrams by name — grouped (normal) or legacy (a backdrop
+ * rectangle plus loose children positioned inside it).
+ */
+function fjClear(names) {
+  const page = figma.currentPage;
+
+  page.children.filter((n) => n.type === "GROUP" && names.includes(n.name)).forEach((n) => n.remove());
+
+  const legacy = page.children.filter((n) => names.includes(n.name));
+  const boxes = legacy.map((n) => ({ x: n.x, y: n.y, w: n.width, h: n.height }));
+  if (boxes.length) {
+    legacy.forEach((n) => n.remove());
+    // Legacy children are page-level and unnamed, so sweep by position: anything whose
+    // centre sits in a removed backdrop belongs to that diagram.
+    page.children.forEach((n) => {
+      const cx = n.x + n.width / 2;
+      const cy = n.y + n.height / 2;
+      if (boxes.some((b) => cx > b.x - 40 && cx < b.x + b.w + 40 && cy > b.y - 40 && cy < b.y + b.h + 40)) {
+        n.remove();
+      }
+    });
+  }
+
+  page.children.filter((n) => n.name === "anchor").forEach((n) => n.remove());
 }
 
 // ===== 10-flows-a.js =====
@@ -217,7 +296,8 @@ async function buildNavigation(x, y, log) {
   await fjNavShell(x + 24, y + 600, "Admin shell — 4 tabs", NAV_ADMIN, 250, 12);
 
   fjConnect(login, customer[0]);
-  log("navigation built");
+  const nav = await fjEnd();
+  log(`navigation built (${nav ? nav.w + "x" + nav.h : "ungrouped"})`);
 }
 
 async function buildOrderLifecycle(x, y, log) {
@@ -261,7 +341,8 @@ async function buildOrderLifecycle(x, y, log) {
     FJ.muted
   );
   await fjText(x + 300, y + 320, "Excluded: returned (legacy — no refund flow exists).", 12, FJ.muted);
-  log("order lifecycle built");
+  const ol = await fjEnd();
+  log(`order lifecycle built (${ol ? ol.w + "x" + ol.h : "ungrouped"})`);
 }
 
 async function buildPaymentLifecycle(x, y, log) {
@@ -302,7 +383,8 @@ async function buildPaymentLifecycle(x, y, log) {
     12,
     FJ.muted
   );
-  log("payment lifecycle built");
+  const pl = await fjEnd();
+  log(`payment lifecycle built (${pl ? pl.w + "x" + pl.h : "ungrouped"})`);
 }
 
 const PANELS = ["Navigation map", "Order lifecycle", "Payment lifecycle"];
@@ -313,9 +395,7 @@ async function batchFlowsA(log) {
   }
   await fjFont();
 
-  figma.currentPage.children
-    .filter((n) => PANELS.includes(n.name))
-    .forEach((n) => n.remove());
+  fjClear(PANELS);
 
   await buildNavigation(0, 0, log);
   await buildOrderLifecycle(1800, 0, log);
@@ -380,12 +460,11 @@ async function fjSequence(x, y, title, participants, messages, log) {
     }
   }
 
-  log(`${title} built`);
-  return width;
+  return { width, title };
 }
 
 async function buildAuthSequence(x, y, log) {
-  return fjSequence(
+  const seq = await fjSequence(
     x,
     y,
     "Authentication and role routing",
@@ -402,10 +481,13 @@ async function buildAuthSequence(x, y, log) {
     ],
     log
   );
+  const g = await fjEnd();
+  log(`authentication built (${g ? g.w + "x" + g.h : "ungrouped"})`);
+  return seq.width;
 }
 
 async function buildCheckoutSequence(x, y, log) {
-  const w = await fjSequence(
+  const seq = await fjSequence(
     x,
     y,
     "Checkout and atomic placement",
@@ -433,11 +515,13 @@ async function buildCheckoutSequence(x, y, log) {
     12,
     FJ.muted
   );
-  return w;
+  const g = await fjEnd();
+  log(`checkout placement built (${g ? g.w + "x" + g.h : "ungrouped"})`);
+  return seq.width;
 }
 
 async function buildKhqrSequence(x, y, log) {
-  const w = await fjSequence(
+  const seq = await fjSequence(
     x,
     y,
     "KHQR payment verification",
@@ -465,7 +549,9 @@ async function buildKhqrSequence(x, y, log) {
     12,
     FJ.muted
   );
-  return w;
+  const g = await fjEnd();
+  log(`KHQR verification built (${g ? g.w + "x" + g.h : "ungrouped"})`);
+  return seq.width;
 }
 
 const PANELS_B = [
@@ -480,9 +566,7 @@ async function batchFlowsB(log) {
   }
   await fjFont();
 
-  figma.currentPage.children
-    .filter((n) => PANELS_B.includes(n.name))
-    .forEach((n) => n.remove());
+  fjClear(PANELS_B);
 
   await buildAuthSequence(0, 1400, log);
   await buildCheckoutSequence(0, 2160, log);
@@ -578,7 +662,8 @@ async function buildErd(x, y, log) {
     12,
     FJ.muted
   );
-  log("ERD built");
+  const g = await fjEnd();
+  log(`ERD built (${g ? g.w + "x" + g.h : "ungrouped"})`);
 }
 
 const MATRIX_ROWS = [
@@ -639,7 +724,8 @@ async function buildMatrix(x, y, log) {
     12,
     FJ.muted
   );
-  log("permission matrix built");
+  const g = await fjEnd();
+  log(`permission matrix built (${g ? g.w + "x" + g.h : "ungrouped"})`);
 }
 
 const LAYERS = [
@@ -693,7 +779,8 @@ async function buildProviderMap(x, y, log) {
     12,
     FJ.muted
   );
-  log("state ownership built");
+  const g = await fjEnd();
+  log(`state ownership built (${g ? g.w + "x" + g.h : "ungrouped"})`);
 }
 
 const PANELS_C = ["Data model (ERD)", "Permission matrix", "State ownership and refresh paths"];
@@ -704,9 +791,7 @@ async function batchFlowsC(log) {
   }
   await fjFont();
 
-  figma.currentPage.children
-    .filter((n) => PANELS_C.includes(n.name))
-    .forEach((n) => n.remove());
+  fjClear(PANELS_C);
 
   await buildErd(1800, 1400, log);
   await buildMatrix(1800, 2160, log);
@@ -722,7 +807,24 @@ const BATCHES = {
   "flows-a": batchFlowsA,
   "flows-b": batchFlowsB,
   "flows-c": batchFlowsC,
+  reset: batchReset,
 };
+
+/**
+ * Clear the board. The board is generated end to end by this plugin, so there is
+ * nothing to preserve; needed once to drop the pre-grouping diagrams, whose children
+ * are page-level and unnamed (fjClear can only sweep them by position).
+ */
+async function batchReset(log) {
+  if (figma.editorType !== "figjam") {
+    throw new Error("Open the FigJam board (EncueYPay — Flows & Data) and run this there.");
+  }
+  const page = figma.currentPage;
+  const total = page.children.length;
+  page.children.slice().forEach((n) => n.remove());
+  log(`cleared ${total} top-level nodes`);
+  return `reset — ${total} nodes removed`;
+}
 
 const HTML = `
 <!doctype html>
@@ -747,6 +849,7 @@ const HTML = `
     <button data-batch="flows-a">Flows A · nav + lifecycles</button>
     <button data-batch="flows-b">Flows B · sequences</button>
     <button data-batch="flows-c">Flows C · data + permissions</button>
+    <button data-batch="reset">Reset · clear board</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>

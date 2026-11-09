@@ -84,7 +84,8 @@ async function buildErd(x, y, log) {
     12,
     FJ.muted
   );
-  log("ERD built");
+  const g = await fjEnd();
+  log(`ERD built (${g ? g.w + "x" + g.h : "ungrouped"})`);
 }
 
 const MATRIX_ROWS = [
@@ -145,7 +146,8 @@ async function buildMatrix(x, y, log) {
     12,
     FJ.muted
   );
-  log("permission matrix built");
+  const g = await fjEnd();
+  log(`permission matrix built (${g ? g.w + "x" + g.h : "ungrouped"})`);
 }
 
 const LAYERS = [
@@ -199,7 +201,8 @@ async function buildProviderMap(x, y, log) {
     12,
     FJ.muted
   );
-  log("state ownership built");
+  const g = await fjEnd();
+  log(`state ownership built (${g ? g.w + "x" + g.h : "ungrouped"})`);
 }
 
 const PANELS_C = ["Data model (ERD)", "Permission matrix", "State ownership and refresh paths"];
@@ -210,9 +213,7 @@ async function batchFlowsC(log) {
   }
   await fjFont();
 
-  figma.currentPage.children
-    .filter((n) => PANELS_C.includes(n.name))
-    .forEach((n) => n.remove());
+  fjClear(PANELS_C);
 
   await buildErd(1800, 1400, log);
   await buildMatrix(1800, 2160, log);
