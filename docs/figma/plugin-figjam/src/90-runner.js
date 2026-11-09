@@ -17,9 +17,14 @@ async function batchReset(log) {
     throw new Error("Open the FigJam board (EncueYPay — Flows & Data) and run this there.");
   }
   const page = figma.currentPage;
-  const total = page.children.length;
-  page.children.slice().forEach((n) => n.remove());
-  log(`cleared ${total} top-level nodes`);
+  const start = page.children.length;
+  let total = 0;
+  // Removal cascades (shapes take their connectors), so sweep passes until empty
+  // instead of walking one stale snapshot.
+  for (let pass = 0; pass < 20 && page.children.length; pass++) {
+    total += fjRemove(page.children.slice());
+  }
+  log(`cleared ${total} of ${start} top-level nodes${page.children.length ? `, ${page.children.length} left` : ""}`);
   return `reset — ${total} nodes removed`;
 }
 

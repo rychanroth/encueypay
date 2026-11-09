@@ -209,28 +209,47 @@ async function fjEnd(pad) {
 }
 
 /**
+ * Remove nodes, tolerating ones already deleted as a side effect. A removed shape
+ * takes its connectors with it, so a snapshot of page children goes stale mid-loop.
+ */
+function fjRemove(nodes) {
+  let n = 0;
+  (nodes || []).forEach((node) => {
+    try {
+      if (!node.removed) {
+        node.remove();
+        n++;
+      }
+    } catch (e) {
+      // already removed with a parent or with a connector endpoint
+    }
+  });
+  return n;
+}
+
+/**
  * Remove previously built diagrams by name — grouped (normal) or legacy (a backdrop
  * rectangle plus loose children positioned inside it).
  */
 function fjClear(names) {
   const page = figma.currentPage;
 
-  page.children.filter((n) => n.type === "GROUP" && names.includes(n.name)).forEach((n) => n.remove());
+  fjRemove(page.children.filter((n) => n.type === "GROUP" && names.includes(n.name)));
 
   const legacy = page.children.filter((n) => names.includes(n.name));
   const boxes = legacy.map((n) => ({ x: n.x, y: n.y, w: n.width, h: n.height }));
   if (boxes.length) {
-    legacy.forEach((n) => n.remove());
+    fjRemove(legacy);
     // Legacy children are page-level and unnamed, so sweep by position: anything whose
     // centre sits in a removed backdrop belongs to that diagram.
-    page.children.forEach((n) => {
-      const cx = n.x + n.width / 2;
-      const cy = n.y + n.height / 2;
-      if (boxes.some((b) => cx > b.x - 40 && cx < b.x + b.w + 40 && cy > b.y - 40 && cy < b.y + b.h + 40)) {
-        n.remove();
-      }
-    });
+    fjRemove(
+      page.children.filter((n) => {
+        const cx = n.x + n.width / 2;
+        const cy = n.y + n.height / 2;
+        return boxes.some((b) => cx > b.x - 40 && cx < b.x + b.w + 40 && cy > b.y - 40 && cy < b.y + b.h + 40);
+      })
+    );
   }
 
-  page.children.filter((n) => n.name === "anchor").forEach((n) => n.remove());
+  fjRemove(page.children.filter((n) => n.name === "anchor"));
 }
