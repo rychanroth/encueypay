@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show MissingPluginException, PlatformException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
@@ -24,16 +27,22 @@ class LocationRepositoryImpl implements ILocationRepository {
   @override
   Future<({double latitude, double longitude})> currentPosition() async {
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) {
-        throw const NetworkFailure(_serviceOffMessage);
-      }
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        throw const NetworkFailure(_permissionMessage);
+      // Web has no separate "location service", and its Permissions API
+      // support varies by browser (Safari throws on the geolocation query).
+      // getCurrentPosition itself raises the browser prompt, so on web go
+      // straight to it and let the browser decide.
+      if (!kIsWeb) {
+        if (!await Geolocator.isLocationServiceEnabled()) {
+          throw const NetworkFailure(_serviceOffMessage);
+        }
+        var permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          throw NetworkFailure(_permissionMessage);
+        }
       }
       // Single-shot, best-effort fix — the result feeds an editable form,
       // not a map.
@@ -45,7 +54,13 @@ class LocationRepositoryImpl implements ILocationRepository {
     } on LocationServiceDisabledException {
       throw const NetworkFailure(_serviceOffMessage);
     } on PermissionDeniedException {
-      throw const NetworkFailure(_permissionMessage);
+      throw NetworkFailure(_permissionMessage);
+    } on PositionUpdateException {
+      // Browser geolocation unavailable — most often an insecure context
+      // (plain http, non-localhost) or no usable fix.
+      throw NetworkFailure(_unavailableMessage);
+    } on TimeoutException {
+      throw const NetworkFailure(_timeoutMessage);
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
@@ -153,10 +168,18 @@ class LocationRepositoryImpl implements ILocationRepository {
   }
 
   @override
-  Future<void> openSettings() => Geolocator.openAppSettings();
+  Future<void> openSettings() async {
+    // Browsers own the site-permission UI; the plugin's app-settings call
+    // throws UnsupportedError on web.
+    if (kIsWeb) return;
+    await Geolocator.openAppSettings();
+  }
 
   @override
-  Future<void> openLocationSettings() => Geolocator.openLocationSettings();
+  Future<void> openLocationSettings() async {
+    if (kIsWeb) return;
+    await Geolocator.openLocationSettings();
+  }
 }
 
 /// "271 Preah Norodom Blvd", whichever of the number/street pair survives.
@@ -183,5 +206,16 @@ String? _firstNonEmpty(List<String?> values) {
 
 const _serviceOffMessage =
     'Location services are disabled. Turn them on to use your current location.';
-const _permissionMessage =
-    'Location permission is needed to use your current location.';
+const _timeoutMessage =
+    'Getting your location timed out. Please try again.';
+
+String get _permissionMessage => kIsWeb
+    ? 'Location access is blocked. Allow it for this site in your browser, '
+        'then try again.'
+    : 'Location permission is needed to use your current location.';
+
+String get _unavailableMessage => kIsWeb
+    ? "Your browser couldn't share a location. Browsers only allow it on "
+        'HTTPS (or localhost), with location enabled for this site.'
+    : "Couldn't get your location. Move somewhere with a clearer signal and "
+        'try again.';

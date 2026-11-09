@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -402,7 +403,9 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         ..showSnackBar(
           SnackBar(
             content: Text(failure.message),
-            action: failure is NetworkFailure
+            // Browsers own the site-permission UI, so there is no app
+            // settings screen to open on web — the message says where to go.
+            action: failure is NetworkFailure && !kIsWeb
                 ? SnackBarAction(
                     label: 'Open settings',
                     onPressed: notifier.openSettings,
