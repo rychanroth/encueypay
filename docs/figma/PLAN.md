@@ -40,6 +40,10 @@ reports them:
 | Permission matrix | 1320×677 |
 | State ownership and refresh paths | 1824×557 |
 
+The navigation map was re-laid-out on 2026-11-09 so each shell is its own card with a
+header rule and its own nested group; the table entry above is from before that change
+and is refreshed by the next `Flows A` run (~1378×1424 expected).
+
 **Tooling** — two local **development plugins**, unmetered: `plugin/` (design, 14
 batches incl. `Audit · screens` and `Registry · ids`) and `plugin-figjam/` (4 batches
 incl. `Reset · clear board`). Both assemble a flat `code.js` from `src/*.js` via
