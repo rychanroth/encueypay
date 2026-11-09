@@ -6,7 +6,6 @@ import '../../../../core/presentation/illustrations.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
-import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/router/app_routes.dart';
 import '../controllers/wishlist_controller.dart';
@@ -67,17 +66,12 @@ class WishlistScreen extends ConsumerWidget {
             );
           }
           if (cardBuilder != null) {
-            final columns = switch (context.screenSize) {
-              ScreenSize.expanded => 4,
-              ScreenSize.medium => 3,
-              ScreenSize.compact => 2,
-            };
             return GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: AppWidths.productCardMax,
+                mainAxisSpacing: AppSpacing.sm,
+                crossAxisSpacing: AppSpacing.sm,
                 childAspectRatio: 0.62,
               ),
               itemCount: items.length,

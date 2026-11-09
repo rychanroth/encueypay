@@ -7,9 +7,9 @@ import '../../../../core/domain/failures.dart';
 
 import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/motion.dart';
-import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/presentation/widgets/staggered_grid.dart';
 import '../../../../core/router/app_routes.dart';
@@ -39,11 +39,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final columns = switch (context.screenSize) {
-      ScreenSize.expanded => 4,
-      ScreenSize.medium => 3,
-      ScreenSize.compact => 2,
-    };
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -58,58 +53,61 @@ class HomeScreen extends ConsumerWidget {
           ?profileAction,
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(28),
-              // Deep-link into the Discover tab (DESIGN.md §5.1.2).
-              onTap: () => context.goNamed(AppRoutes.discovery),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Search products',
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                  ],
+      body: ContentWidth(
+        maxWidth: AppWidths.contentMax,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(28),
+                // Deep-link into the Discover tab (DESIGN.md §5.1.2).
+                onTap: () => context.goNamed(AppRoutes.discovery),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Search products',
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          _SectionTitle('Featured'),
-          const _BannersStrip(),
-          // Section 2c: card-based discovery navigation (assignment §2
-          // "intuitive Search Bar and navigation for rapid discovery") —
-          // categories as an image card grid, brands as a logo rail, both
-          // tapping into the discovery screen. The chips remain in the
-          // products screen's filter bar.
-          _SectionTitle(
-            'Shop by category',
-            actionLabel: 'See all',
-            onAction: () => context.goNamed(AppRoutes.discovery),
-          ),
-          _CategoryCardGrid(),
-          _SectionTitle('Top brands'),
-          _BrandRail(),
-          _SectionTitle(
-            'New arrivals',
-            actionLabel: 'See all',
-            onAction: () => context.goNamed(AppRoutes.discovery),
-          ),
-          _HomeProductsGrid(columns: columns, actionsBuilder: actionsBuilder),
-        ],
+            _SectionTitle('Featured'),
+            const _BannersStrip(),
+            // Section 2c: card-based discovery navigation (assignment §2
+            // "intuitive Search Bar and navigation for rapid discovery") —
+            // categories as an image card grid, brands as a logo rail, both
+            // tapping into the discovery screen. The chips remain in the
+            // products screen's filter bar.
+            _SectionTitle(
+              'Shop by category',
+              actionLabel: 'See all',
+              onAction: () => context.goNamed(AppRoutes.discovery),
+            ),
+            _CategoryCardGrid(),
+            _SectionTitle('Top brands'),
+            _BrandRail(),
+            _SectionTitle(
+              'New arrivals',
+              actionLabel: 'See all',
+              onAction: () => context.goNamed(AppRoutes.discovery),
+            ),
+            _HomeProductsGrid(actionsBuilder: actionsBuilder),
+          ],
+        ),
       ),
     );
   }
@@ -346,29 +344,20 @@ class _CategoryCardGrid extends ConsumerWidget {
         final topLevel =
             categories.where((category) => category.isTopLevel).toList();
         if (topLevel.isEmpty) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: LayoutBuilder(builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final crossAxisCount = width >= 840
-                ? 4
-                : width >= 600
-                    ? 3
-                    : 2;
-            final tileWidth =
-                (width - (crossAxisCount - 1) * 8) / crossAxisCount;
-            return Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final category in topLevel)
-                  SizedBox(
-                    width: tileWidth,
-                    child: _CategoryCard(category: category),
-                  ),
-              ],
-            );
-          }),
+        // Bound each tile's width (RESP-01): extra room becomes more columns,
+        // never a bigger card — the same rule as the product grid.
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: AppWidths.categoryTileMax,
+            mainAxisSpacing: AppSpacing.sm,
+            crossAxisSpacing: AppSpacing.sm,
+            childAspectRatio: 4 / 3,
+          ),
+          itemCount: topLevel.length,
+          itemBuilder: (_, index) => _CategoryCard(category: topLevel[index]),
         );
       },
     );
@@ -526,12 +515,8 @@ class _BrandCard extends StatelessWidget {
 }
 
 class _HomeProductsGrid extends ConsumerWidget {
-  const _HomeProductsGrid({
-    required this.columns,
-    this.actionsBuilder,
-  });
+  const _HomeProductsGrid({this.actionsBuilder});
 
-  final int columns;
   final ProductCardActionsBuilder? actionsBuilder;
 
   @override
@@ -539,7 +524,7 @@ class _HomeProductsGrid extends ConsumerWidget {
     final productsAsync = ref.watch(homeProductsProvider);
     final child = productsAsync.when(
       // Skeleton matches the final grid shape (§4) — no centered spinner.
-      loading: () => _HomeProductsSkeleton(columns: columns),
+      loading: () => const _HomeProductsSkeleton(),
       error: (error, _) => _StripError(
         message: userMessageFor(error),
         onRetry: () => ref.invalidate(homeProductsProvider),
@@ -555,11 +540,11 @@ class _HomeProductsGrid extends ConsumerWidget {
         return StaggeredGrid(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: AppWidths.productCardMax,
+            mainAxisSpacing: AppSpacing.sm,
+            crossAxisSpacing: AppSpacing.sm,
             childAspectRatio: 0.62,
           ),
           itemCount: products.length,
@@ -594,23 +579,22 @@ class _HomeProductsGrid extends ConsumerWidget {
 
 /// Loading skeleton for the Home product shelf — same geometry as the grid.
 class _HomeProductsSkeleton extends StatelessWidget {
-  const _HomeProductsSkeleton({required this.columns});
-
-  final int columns;
+  const _HomeProductsSkeleton();
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: AppWidths.productCardMax,
+        mainAxisSpacing: AppSpacing.sm,
+        crossAxisSpacing: AppSpacing.sm,
         childAspectRatio: 0.62,
       ),
-      itemCount: columns * 2,
+      // Matches the home feed's 8-product limit at any column count.
+      itemCount: 8,
       itemBuilder: (_, _) => const _HomeProductSkeletonCard(),
     );
   }

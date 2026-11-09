@@ -47,6 +47,21 @@ abstract final class AppRadii {
   static const BorderRadius brFull = BorderRadius.all(Radius.circular(full));
 }
 
+/// Layout width tokens (RESP-01). Browsing surfaces cap their content on
+/// large windows instead of stretching edge-to-edge, and card grids bound
+/// each card's width so extra room adds columns rather than bigger cards.
+abstract final class AppWidths {
+  /// Widest centered content column for browsing surfaces on desktop.
+  static const double contentMax = 1200;
+
+  /// Upper bound for one product-grid card; wider windows add columns.
+  static const double productCardMax = 240;
+
+  /// Upper bound for one category discovery tile (aligned with the product
+  /// card bound so both grids share the same column count).
+  static const double categoryTileMax = 240;
+}
+
 abstract final class AppElevation {
   /// Navy-tinted shadow ink shared by all levels (§4.3).
   static const Color shadowInk = Color(0x000F172A);
