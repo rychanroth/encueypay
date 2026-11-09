@@ -7,6 +7,7 @@ import '../../../../core/domain/failures.dart';
 
 import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/motion.dart';
+import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
@@ -38,7 +39,9 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    // Full-screen hero on tablet/desktop; phones keep the inset card banner
+    // and the compact above-the-fold stack (RESP-01).
+    final fullScreenHero = context.screenSize != ScreenSize.compact;
 
     return Scaffold(
       appBar: AppBar(
@@ -52,57 +55,113 @@ class HomeScreen extends ConsumerWidget {
           ?profileAction,
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(28),
-              // Deep-link into the Discover tab (DESIGN.md §5.1.2).
-              onTap: () => context.goNamed(AppRoutes.discovery),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(28),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView(
+            padding: fullScreenHero
+                ? EdgeInsets.zero
+                : const EdgeInsets.symmetric(vertical: 12),
+            children: [
+              if (fullScreenHero)
+                _HeroStage(height: constraints.maxHeight)
+              else ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: _HomeSearchBar(),
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Search products',
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
+                _SectionTitle('Featured'),
+                const _BannersStrip(),
+              ],
+              // Section 2c: card-based discovery navigation (assignment §2
+              // "intuitive Search Bar and navigation for rapid discovery") —
+              // categories as an image card grid, brands as a logo rail, both
+              // tapping into the discovery screen. The chips remain in the
+              // products screen's filter bar.
+              _SectionTitle(
+                'Shop by category',
+                actionLabel: 'See all',
+                onAction: () => context.goNamed(AppRoutes.discovery),
               ),
+              _CategoryCardGrid(),
+              _SectionTitle('Top brands'),
+              _BrandRail(),
+              _SectionTitle(
+                'New arrivals',
+                actionLabel: 'See all',
+                onAction: () => context.goNamed(AppRoutes.discovery),
+              ),
+              _HomeProductsGrid(actionsBuilder: actionsBuilder),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Tappable search field; doubles as the hero's top overlay on wide windows.
+class _HomeSearchBar extends StatelessWidget {
+  const _HomeSearchBar({this.floating = false});
+
+  /// Lifts the field off the hero image with a soft shadow when overlaid.
+  final bool floating;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      borderRadius: BorderRadius.circular(28),
+      // Deep-link into the Discover tab (DESIGN.md §5.1.2).
+      onTap: () => context.goNamed(AppRoutes.discovery),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: floating
+              ? const [BoxShadow(color: Color(0x33000000), blurRadius: 12)]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: 8),
+            Text(
+              'Search products',
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-window hero stage: the banner carousel fills the body, with the
+/// search field floating over its top edge. Scrolling moves past it into the
+/// discovery sections.
+class _HeroStage extends StatelessWidget {
+  const _HeroStage({required this.height});
+
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
+    return SizedBox(
+      height: height,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ColoredBox(color: surface),
+          const _BannersStrip(fullBleed: true),
+          const Positioned(
+            top: AppSpacing.md,
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            child: _HomeSearchBar(floating: true),
           ),
-          _SectionTitle('Featured'),
-          const _BannersStrip(),
-          // Section 2c: card-based discovery navigation (assignment §2
-          // "intuitive Search Bar and navigation for rapid discovery") —
-          // categories as an image card grid, brands as a logo rail, both
-          // tapping into the discovery screen. The chips remain in the
-          // products screen's filter bar.
-          _SectionTitle(
-            'Shop by category',
-            actionLabel: 'See all',
-            onAction: () => context.goNamed(AppRoutes.discovery),
-          ),
-          _CategoryCardGrid(),
-          _SectionTitle('Top brands'),
-          _BrandRail(),
-          _SectionTitle(
-            'New arrivals',
-            actionLabel: 'See all',
-            onAction: () => context.goNamed(AppRoutes.discovery),
-          ),
-          _HomeProductsGrid(actionsBuilder: actionsBuilder),
         ],
       ),
     );
@@ -141,7 +200,11 @@ class _SectionTitle extends StatelessWidget {
 /// with page indicators and a gradient scrim title. Monogram fallback keeps
 /// the tile presentable when imagery is missing or offline.
 class _BannersStrip extends ConsumerStatefulWidget {
-  const _BannersStrip();
+  const _BannersStrip({this.fullBleed = false});
+
+  /// Edge-to-edge hero mode: no side padding, no rounded corners, dots
+  /// overlaid on the image instead of sitting below it.
+  final bool fullBleed;
 
   @override
   ConsumerState<_BannersStrip> createState() => _BannersStripState();
@@ -187,6 +250,145 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
       ),
       data: (banners) {
         if (banners.isEmpty) return const SizedBox.shrink();
+        final pageView = PageView.builder(
+          controller: _pageController,
+          itemCount: banners.length,
+          itemBuilder: (context, index) {
+            final banner = banners[index];
+            // Targeted banners are CTAs (Section 9): tap-through to the
+            // Discovery feed pre-filtered to the configured brand or category
+            // — the same deep-link contract as the home category/brand cards.
+            // Untargeted banners stay inert.
+            final onTap = switch (banner.target) {
+              CatalogBannerTarget.brand ||
+              CatalogBannerTarget.category =>
+                banner.targetId == null
+                    ? null
+                    : () => context.goNamed(
+                          AppRoutes.discovery,
+                          queryParameters: {
+                            'kind': banner.target.name,
+                            'id': banner.targetId!,
+                            'name': banner.targetName ?? banner.name,
+                            'image': banner.imageUrl,
+                          },
+                        ),
+              // Store-wide campaign: the full Discovery feed (every card in
+              // scope carries the discount chip).
+              CatalogBannerTarget.platform => () => context.goNamed(
+                    AppRoutes.discovery,
+                    queryParameters: {
+                      'name': banner.targetName ?? banner.name,
+                      'image': banner.imageUrl,
+                    },
+                  ),
+              CatalogBannerTarget.none => null,
+            };
+            final radius =
+                widget.fullBleed ? BorderRadius.zero : AppRadii.br16;
+            return Padding(
+              padding: widget.fullBleed
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.symmetric(horizontal: 16),
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: radius,
+                child: ClipRRect(
+                  borderRadius: radius,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      MonogramImage(
+                        imageUrl: banner.imageUrl,
+                        name: banner.name,
+                      ),
+                      // Gradient scrim — bottom-weighted title panel.
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            stops: [0.45, 1.0],
+                            colors: [Colors.transparent, Color(0xB30F172A)],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: widget.fullBleed ? AppSpacing.lg : AppSpacing.md,
+                        right: widget.fullBleed ? AppSpacing.lg : AppSpacing.md,
+                        bottom: widget.fullBleed
+                            ? AppSpacing.xxl
+                            : AppSpacing.sm + 2,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                banner.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: (widget.fullBleed
+                                        ? theme.textTheme.headlineSmall
+                                        : theme.textTheme.titleMedium)
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                            ),
+                            if (onTap != null)
+                              const Icon(Icons.arrow_forward_ios,
+                                  size: 14, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+        final indicators = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < banners.length; i++)
+              AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, _) {
+                  final current = _pageController.hasClients
+                      ? (_pageController.page ?? 0).round()
+                      : 0;
+                  final active = current == i;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: active ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? (widget.fullBleed
+                              ? Colors.white
+                              : theme.colorScheme.primary)
+                          : (widget.fullBleed
+                              ? Colors.white54
+                              : theme.colorScheme.surfaceContainerHighest),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  );
+                },
+              ),
+          ],
+        );
+        if (widget.fullBleed) {
+          return Stack(
+            children: [
+              Positioned.fill(child: pageView),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: AppSpacing.md,
+                child: indicators,
+              ),
+            ],
+          );
+        }
         return Column(
           children: [
             LayoutBuilder(
@@ -200,132 +402,11 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
                           AppWidths.bannerMaxHeight,
                         )
                         .toDouble();
-                return SizedBox(
-                  height: height,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: banners.length,
-                    itemBuilder: (context, index) {
-                      final banner = banners[index];
-                      // Targeted banners are CTAs (Section 9): tap-through to
-                      // the Discovery feed pre-filtered to the configured brand
-                      // or category — the same deep-link contract as the home
-                      // category/brand cards. Untargeted banners stay inert.
-                      final onTap = switch (banner.target) {
-                        CatalogBannerTarget.brand ||
-                        CatalogBannerTarget.category =>
-                          banner.targetId == null
-                              ? null
-                              : () => context.goNamed(
-                                    AppRoutes.discovery,
-                                    queryParameters: {
-                                      'kind': banner.target.name,
-                                      'id': banner.targetId!,
-                                      'name': banner.targetName ?? banner.name,
-                                      'image': banner.imageUrl,
-                                    },
-                                  ),
-                        // Store-wide campaign: the full Discovery feed (every
-                        // card in scope carries the discount chip).
-                        CatalogBannerTarget.platform => () => context.goNamed(
-                              AppRoutes.discovery,
-                              queryParameters: {
-                                'name': banner.targetName ?? banner.name,
-                                'image': banner.imageUrl,
-                              },
-                            ),
-                        CatalogBannerTarget.none => null,
-                      };
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: InkWell(
-                          onTap: onTap,
-                          borderRadius: AppRadii.br16,
-                          child: ClipRRect(
-                            borderRadius: AppRadii.br16,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                MonogramImage(
-                                  imageUrl: banner.imageUrl,
-                                  name: banner.name,
-                                ),
-                                // Gradient scrim — bottom-weighted title panel.
-                                const DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      stops: [0.45, 1.0],
-                                      colors: [
-                                        Colors.transparent,
-                                        Color(0xB30F172A)
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: AppSpacing.md,
-                                  right: AppSpacing.md,
-                                  bottom: AppSpacing.sm + 2,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          banner.name,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      if (onTap != null)
-                                        const Icon(Icons.arrow_forward_ios,
-                                            size: 14, color: Colors.white),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
+                return SizedBox(height: height, child: pageView);
               },
             ),
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var i = 0; i < banners.length; i++)
-                  AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, _) {
-                      final current =
-                          _pageController.hasClients
-                              ? (_pageController.page ?? 0).round()
-                              : 0;
-                      final active = current == i;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: active ? 18 : 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: active
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      );
-                    },
-                  ),
-              ],
-            ),
+            indicators,
           ],
         );
       },
