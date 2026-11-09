@@ -65,6 +65,12 @@ abstract final class AppWidths {
   /// Height bounds for the hero banner carousel (compact floor, wide cap).
   static const double bannerMinHeight = 148;
   static const double bannerMaxHeight = 380;
+
+  /// Widest centered column for a detail page's media + info layout.
+  static const double detailMax = 1200;
+
+  /// Square product media on wide layouts (never a stretched 260dp strip).
+  static const double detailImageAspect = 1;
 }
 
 abstract final class AppElevation {

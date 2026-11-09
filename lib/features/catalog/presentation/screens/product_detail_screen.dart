@@ -5,9 +5,11 @@ import '../../../../core/domain/failures.dart';
 
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/motion.dart';
+import '../../../../core/presentation/responsive/screen_size.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
+import '../../../../core/presentation/widgets/content_width.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/active_sale.dart';
@@ -160,303 +162,348 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           final deliveryFeeMinor =
               ref.watch(deliveryFeeMinorProvider).value;
 
-          return Column(
+          // Responsive product page: stacked on phones/tablets, media +
+          // information side by side once the window reaches the expanded
+          // class (RESP-01/02). The centered max width keeps text readable
+          // and stops the media from stretching into a thin banner.
+          final wide = context.screenSize == ScreenSize.expanded;
+          final media = Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  children: [
-                    _ImagePager(
-                      imageUrls: carouselImages,
-                      pageController: _pageController,
-                      currentPage: _page,
-                      onPageChanged: (index) => setState(() => _page = index),
-                    ),
-                    // Variant thumbnails (Section 9): image + name below the
-                    // carousel; selecting one re-leads the carousel.
-                    if (detail.variants.length > 1) ...[
-                      const SizedBox(height: 8),
-                      _VariantThumbnailRow(
-                        variants: detail.variants,
-                        // The effective selection (default preselected) —
-                        // the rail highlights what the page already shows.
-                        selectedId:
-                            _selectedVariantId ?? product.defaultVariantId,
-                        defaultVariantId: product.defaultVariantId,
-                        defaultImageUrl: product.imageUrls.isEmpty
-                            ? null
-                            : product.imageUrls.first,
-                        onSelect: _selectVariant,
-                      ),
-                    ],
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Brand tag card (Section 9): taps through to the
-                          // brand's Discovery feed — same deep-link contract
-                          // as the home brand cards.
-                          if (detail.brandName.isNotEmpty &&
-                              product.brandId != null)
-                            _BrandTag(
-                              brandName: detail.brandName,
-                              onTap: () => context.goNamed(
-                                AppRoutes.discovery,
-                                queryParameters: {
-                                  'kind': 'brand',
-                                  'id': product.brandId!,
-                                  'name': detail.brandName,
-                                },
-                              ),
-                            ),
-                          Text(product.name,
-                              style: theme.textTheme.headlineSmall),
-                          const SizedBox(height: 8),
-                          // Rating row (Section 9): stars + value + count —
-                          // real data from the embedded reviews.
-                          _RatingSummaryRow(detail: detail),
-                          const SizedBox(height: 4),
-                          // Stock line (Section 9): real product-wide stock.
-                          _StockLine(product: product),
-                          const SizedBox(height: 12),
-                          // Dual-currency price (DESIGN.md §1.4): USD
-                          // primary, KHR approximation secondary — the
-                          // selected variant's price once one is selected.
-                          // Percent campaigns strike the original through.
-                          // Cross-fades when the variant changes (§3.3).
-                          AnimatedSwitcher(
-                            duration:
-                                AppMotion.duration(context, AppMotion.press),
-                            switchInCurve: AppMotion.enterCurve,
-                            switchOutCurve: AppMotion.exitCurve,
-                            child: Wrap(
-                              key: ValueKey('$salePagePrice-$pagePriceMinor'),
-                              spacing: 8,
-                              runSpacing: 2,
-                              crossAxisAlignment: WrapCrossAlignment.end,
-                              children: [
-                                Text(
-                                  Money(salePagePrice).formatUsd(),
-                                  style: AppTypography.priceHighlight
-                                      .copyWith(fontSize: 24),
-                                ),
-                                if (sale != null)
-                                  Text(
-                                    Money(pagePriceMinor).formatUsd(),
-                                    style:
-                                        theme.textTheme.bodySmall?.copyWith(
-                                      color: theme
-                                          .colorScheme.onSurfaceVariant,
-                                      decoration:
-                                          TextDecoration.lineThrough,
-                                    ),
-                                  ),
-                                Text(
-                                  '≈ ${Money(salePagePrice).formatKhr()}',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Sale chip (Section 9): real sale data.
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: [
-                                if (sale != null) ...[
-                                  Tooltip(
-                                    message: 'View sale details',
-                                    child: InkWell(
-                                      onTap: () =>
-                                          showSaleDetailSheet(context, sale),
-                                      borderRadius: AppRadii.br8,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.promotionCoral,
-                                          borderRadius: AppRadii.br8,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                                Icons.local_offer_outlined,
-                                                size: 11,
-                                                color: Colors.white),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              sale.chipLabel,
-                                              style: theme
-                                                  .textTheme.labelSmall
-                                                  ?.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            const Icon(
-                                              Icons.info_outline,
-                                              size: 11,
-                                              color: Colors.white,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          // Honest store promises (§2): real platform fee,
-                          // supported payment methods and the single-seller
-                          // identity — no invented warranty/ETA/returns.
-                          _StorePromises(
-                            deliveryFeeMinor: deliveryFeeMinor,
-                          ),
-                          // Description only when the product carries one.
-                          if (product.description.isNotEmpty) ...[
-                            const SizedBox(height: AppSpacing.lg),
-                            const Divider(),
-                            Text('Description',
-                                style: theme.textTheme.titleMedium),
-                            const SizedBox(height: 4),
-                            Text(
-                              product.description,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                          // Reviews (Section 9): always rendered — the empty
-                          // state was previously unreachable because the
-                          // whole section was gated on a non-empty list.
-                          const SizedBox(height: AppSpacing.lg),
-                          const Divider(),
-                          Text(
-                            'Reviews (${detail.reviews.length})'
-                            '${detail.averageRating == null ? '' : ' · ${detail.averageRating!.toStringAsFixed(1)}★'}',
-                            style: theme.textTheme.titleMedium,
-                          ),
-                          if (detail.reviews.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                'No review available.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            )
-                          else
-                            for (final review in detail.reviews)
-                              ReviewCard(review: review),
-                          const SizedBox(height: AppSpacing.lg),
-                        ],
-                      ),
-                    ),
-                    if (state.relatedProducts.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('Related products',
-                            style: theme.textTheme.titleMedium),
-                      ),
-                      const SizedBox(height: 8),
-                      // Tall enough for a full ProductCard (metadata ~110dp,
-                      // image flexes into the remainder) — the old 180dp
-                      // rail overflowed by ~70px.
-                      SizedBox(
-                        height: 220,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: state.relatedProducts.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (context, index) {
-                            final related = state.relatedProducts[index];
-                            return SizedBox(
-                              width: 140,
-                              child: ProductCard(
-                                product: related,
-                                onTap: () => context.pushNamed(
-                                  AppRoutes.productDetail,
-                                  pathParameters: {'id': related.id},
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+              _ImagePager(
+                imageUrls: carouselImages,
+                pageController: _pageController,
+                currentPage: _page,
+                onPageChanged: (index) => setState(() => _page = index),
+                wide: wide,
               ),
-              // Bottom action bar (Section 9): wishlist toggle + the cart
-              // CTA carrying the dual-currency price.
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Row(
+              // Variant thumbnails (Section 9): image + name below the
+              // carousel; selecting one re-leads the carousel.
+              if (detail.variants.length > 1) ...[
+                const SizedBox(height: 8),
+                _VariantThumbnailRow(
+                  variants: detail.variants,
+                  // The effective selection (default preselected) — the rail
+                  // highlights what the page already shows.
+                  selectedId: _selectedVariantId ?? product.defaultVariantId,
+                  defaultVariantId: product.defaultVariantId,
+                  defaultImageUrl: product.imageUrls.isEmpty
+                      ? null
+                      : product.imageUrls.first,
+                  onSelect: _selectVariant,
+                  // The two-column layout already sits inside page padding.
+                  padding: wide
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ],
+            ],
+          );
+          final info = _ProductInfo(
+            detail: detail,
+            product: product,
+            pagePriceMinor: pagePriceMinor,
+            salePagePrice: salePagePrice,
+            sale: sale,
+            deliveryFeeMinor: deliveryFeeMinor,
+          );
+
+          return ContentWidth(
+            maxWidth: AppWidths.detailMax,
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(bottom: 24),
                     children: [
-                      IconButton.outlined(
-                        tooltip: widget.inWishlist
-                            ? 'Remove from wishlist'
-                            : 'Add to wishlist',
-                        onPressed: widget.onToggleWishlist == null
-                            ? null
-                            : () => widget.onToggleWishlist!(product),
-                        icon: Icon(
-                          widget.inWishlist
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: widget.inWishlist
-                              ? AppColors.accentRose
-                              : null,
+                      if (wide)
+                        Padding(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 5, child: media),
+                              const SizedBox(width: AppSpacing.lg),
+                              Expanded(flex: 6, child: info),
+                            ],
+                          ),
+                        )
+                      else ...[
+                        media,
+                        Padding(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          child: info,
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton.icon(
-                          // Disabled products and out-of-stock products cannot
-                          // be purchased (Section 2d); checkout re-validates
-                          // both server-side (§53).
-                          onPressed: product.isPurchasable
-                              ? () => _openVariantSheet(
-                                  product, detail.variants, sale)
-                              : null,
-                          icon: const Icon(Icons.shopping_cart_outlined),
-                          label: AnimatedSwitcher(
-                            duration:
-                                AppMotion.duration(context, AppMotion.press),
-                            switchInCurve: AppMotion.enterCurve,
-                            switchOutCurve: AppMotion.exitCurve,
-                            child: Column(
-                              key: ValueKey(salePagePrice),
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Add to Cart'),
-                                Text(
-                                  '${Money(salePagePrice).formatUsd()}'
-                                  ' · ≈ ${Money(salePagePrice).formatKhr()}',
-                                  style: theme.textTheme.labelSmall,
+                      ],
+                      if (state.relatedProducts.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md),
+                          child: Text('Related products',
+                              style: theme.textTheme.titleMedium),
+                        ),
+                        const SizedBox(height: 8),
+                        // Tall enough for a full ProductCard (metadata
+                        // ~110dp, image flexes into the remainder).
+                        SizedBox(
+                          height: 220,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md),
+                            itemCount: state.relatedProducts.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (context, index) {
+                              final related = state.relatedProducts[index];
+                              return SizedBox(
+                                width: 140,
+                                child: ProductCard(
+                                  product: related,
+                                  onTap: () => context.pushNamed(
+                                    AppRoutes.productDetail,
+                                    pathParameters: {'id': related.id},
+                                  ),
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
-              ),
-            ],
+                // Bottom action bar (Section 9): wishlist toggle + the cart
+                // CTA carrying the dual-currency price.
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: Row(
+                      children: [
+                        IconButton.outlined(
+                          tooltip: widget.inWishlist
+                              ? 'Remove from wishlist'
+                              : 'Add to wishlist',
+                          onPressed: widget.onToggleWishlist == null
+                              ? null
+                              : () => widget.onToggleWishlist!(product),
+                          icon: Icon(
+                            widget.inWishlist
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: widget.inWishlist
+                                ? AppColors.accentRose
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.icon(
+                            // Disabled products and out-of-stock products
+                            // cannot be purchased (Section 2d); checkout
+                            // re-validates both server-side (§53).
+                            onPressed: product.isPurchasable
+                                ? () => _openVariantSheet(
+                                    product, detail.variants, sale)
+                                : null,
+                            icon: const Icon(Icons.shopping_cart_outlined),
+                            label: AnimatedSwitcher(
+                              duration:
+                                  AppMotion.duration(context, AppMotion.press),
+                              switchInCurve: AppMotion.enterCurve,
+                              switchOutCurve: AppMotion.exitCurve,
+                              child: Column(
+                                key: ValueKey(salePagePrice),
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Add to Cart'),
+                                  Text(
+                                    '${Money(salePagePrice).formatUsd()}'
+                                    ' · ≈ ${Money(salePagePrice).formatKhr()}',
+                                    style: theme.textTheme.labelSmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
+    );
+  }
+}
+
+/// Product information column, shared by the stacked (compact/medium) and
+/// two-column (expanded) detail layouts: brand tag, title, rating, stock,
+/// price, sale chip, store promises, description and reviews.
+class _ProductInfo extends StatelessWidget {
+  const _ProductInfo({
+    required this.detail,
+    required this.product,
+    required this.pagePriceMinor,
+    required this.salePagePrice,
+    required this.sale,
+    required this.deliveryFeeMinor,
+  });
+
+  final ProductDetail detail;
+  final Product product;
+  final int pagePriceMinor;
+  final int salePagePrice;
+  final ActiveSale? sale;
+  final int? deliveryFeeMinor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Brand tag card (Section 9): taps through to the brand's Discovery
+        // feed — same deep-link contract as the home brand cards.
+        if (detail.brandName.isNotEmpty && product.brandId != null)
+          _BrandTag(
+            brandName: detail.brandName,
+            onTap: () => context.goNamed(
+              AppRoutes.discovery,
+              queryParameters: {
+                'kind': 'brand',
+                'id': product.brandId!,
+                'name': detail.brandName,
+              },
+            ),
+          ),
+        Text(product.name, style: theme.textTheme.headlineSmall),
+        const SizedBox(height: 8),
+        // Rating row (Section 9): stars + value + count — real data from the
+        // embedded reviews.
+        _RatingSummaryRow(detail: detail),
+        const SizedBox(height: 4),
+        // Stock line (Section 9): real product-wide stock.
+        _StockLine(product: product),
+        const SizedBox(height: 12),
+        // Dual-currency price (DESIGN.md §1.4): USD primary, KHR
+        // approximation secondary — the selected variant's price once one is
+        // selected. Percent campaigns strike the original through. Cross-fades
+        // when the variant changes (§3.3).
+        AnimatedSwitcher(
+          duration: AppMotion.duration(context, AppMotion.press),
+          switchInCurve: AppMotion.enterCurve,
+          switchOutCurve: AppMotion.exitCurve,
+          child: Wrap(
+            key: ValueKey('$salePagePrice-$pagePriceMinor'),
+            spacing: 8,
+            runSpacing: 2,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            children: [
+              Text(
+                Money(salePagePrice).formatUsd(),
+                style: AppTypography.priceHighlight.copyWith(fontSize: 24),
+              ),
+              if (sale != null)
+                Text(
+                  Money(pagePriceMinor).formatUsd(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+              Text(
+                '≈ ${Money(salePagePrice).formatKhr()}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Sale chip (Section 9): real sale data.
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            children: [
+              if (sale != null) ...[
+                Tooltip(
+                  message: 'View sale details',
+                  child: InkWell(
+                    onTap: () => showSaleDetailSheet(context, sale!),
+                    borderRadius: AppRadii.br8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.promotionCoral,
+                        borderRadius: AppRadii.br8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.local_offer_outlined,
+                              size: 11, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            sale!.chipLabel,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.info_outline,
+                              size: 11, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        // Honest store promises (§2): real platform fee, supported payment
+        // methods and the single-seller identity — no invented claims.
+        _StorePromises(deliveryFeeMinor: deliveryFeeMinor),
+        // Description only when the product carries one.
+        if (product.description.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          const Divider(),
+          Text('Description', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(product.description, style: theme.textTheme.bodyMedium),
+        ],
+        // Reviews (Section 9): always rendered — the empty state was
+        // previously unreachable because the whole section was gated on a
+        // non-empty list.
+        const SizedBox(height: AppSpacing.lg),
+        const Divider(),
+        Text(
+          'Reviews (${detail.reviews.length})'
+          '${detail.averageRating == null ? '' : ' · ${detail.averageRating!.toStringAsFixed(1)}★'}',
+          style: theme.textTheme.titleMedium,
+        ),
+        if (detail.reviews.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              'No review available.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          )
+        else
+          for (final review in detail.reviews) ReviewCard(review: review),
+        const SizedBox(height: AppSpacing.lg),
+      ],
     );
   }
 }
@@ -713,6 +760,7 @@ class _VariantThumbnailRow extends StatelessWidget {
     required this.defaultVariantId,
     required this.defaultImageUrl,
     required this.onSelect,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
   });
 
   final List<ProductVariant> variants;
@@ -721,6 +769,10 @@ class _VariantThumbnailRow extends StatelessWidget {
   final String? defaultImageUrl;
   final ValueChanged<ProductVariant> onSelect;
 
+  /// The stacked layout pads to the screen edge; the two-column layout
+  /// already sits inside the page padding.
+  final EdgeInsetsGeometry padding;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -728,7 +780,7 @@ class _VariantThumbnailRow extends StatelessWidget {
       height: 92,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: padding,
         itemCount: variants.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -799,6 +851,7 @@ class _ImagePager extends StatelessWidget {
     required this.pageController,
     required this.currentPage,
     required this.onPageChanged,
+    required this.wide,
   });
 
   final List<String> imageUrls;
@@ -806,98 +859,108 @@ class _ImagePager extends StatelessWidget {
   final int currentPage;
   final ValueChanged<int> onPageChanged;
 
+  /// Expanded layouts show a square, rounded media block beside the info
+  /// column; compact/medium keep the full-bleed 260dp carousel.
+  final bool wide;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (imageUrls.isEmpty) {
-      return Container(
-        height: 260,
-        color: theme.colorScheme.surfaceContainerHighest,
-        child: Icon(Icons.image_outlined,
-            size: 56, color: theme.colorScheme.onSurfaceVariant),
-      );
-    }
-    return SizedBox(
-      height: 260,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          PageView.builder(
-            controller: pageController,
-            itemCount: imageUrls.length,
-            onPageChanged: onPageChanged,
-            itemBuilder: (context, index) => GestureDetector(
-              onTap: () => showProductImageGallery(
-                context,
-                imageUrls: imageUrls,
-                initialIndex: index,
-              ),
-              child: Image.network(
-                imageUrls[index],
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => ColoredBox(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: Icon(Icons.image_outlined,
-                      size: 56, color: theme.colorScheme.onSurfaceVariant),
-                ),
-              ),
-            ),
-          ),
-          // TODO(prototype): hardcoded trust badge from the reference —
-          // the app does settle KHQR, but the badge itself is static.
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
-                borderRadius: AppRadii.br8,
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.qr_code_2, size: 12, color: Colors.white),
-                  SizedBox(width: 4),
-                  Text(
-                    'KHQR Ready',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
+    final placeholder = ColoredBox(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.image_outlined,
+          size: 56, color: theme.colorScheme.onSurfaceVariant),
+    );
+    final content = imageUrls.isEmpty
+        ? placeholder
+        : Stack(
+            fit: StackFit.expand,
+            children: [
+              PageView.builder(
+                controller: pageController,
+                itemCount: imageUrls.length,
+                onPageChanged: onPageChanged,
+                itemBuilder: (context, index) => GestureDetector(
+                  onTap: () => showProductImageGallery(
+                    context,
+                    imageUrls: imageUrls,
+                    initialIndex: index,
+                  ),
+                  child: Image.network(
+                    imageUrls[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => ColoredBox(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(Icons.image_outlined,
+                          size: 56, color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          if (imageUrls.length > 1)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 12,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < imageUrls.length; i++)
-                    Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i == currentPage
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.surfaceContainerHighest,
+              // TODO(prototype): hardcoded trust badge from the reference —
+              // the app does settle KHQR, but the badge itself is static.
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    borderRadius: AppRadii.br8,
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.qr_code_2, size: 12, color: Colors.white),
+                      SizedBox(width: 4),
+                      Text(
+                        'KHQR Ready',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
                       ),
-                    ),
-                ],
+                    ],
+                  ),
+                ),
               ),
-            ),
-        ],
-      ),
-    );
+              if (imageUrls.length > 1)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 12,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = 0; i < imageUrls.length; i++)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: i == currentPage
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.surfaceContainerHighest,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          );
+    if (wide) {
+      return ClipRRect(
+        borderRadius: AppRadii.br16,
+        child: AspectRatio(
+          aspectRatio: AppWidths.detailImageAspect,
+          child: content,
+        ),
+      );
+    }
+    return SizedBox(height: 260, child: content);
   }
 }
