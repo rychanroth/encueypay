@@ -135,10 +135,12 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
       ),
       // --- Sheets & dialogs (r24 — §4.2) -----------------------------------
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.surfaceLight,
+      // Brightness-aware: the sheet was pinned to white, so dark-mode text
+      // (near-white) disappeared into it. Follow the scheme like dialogs do.
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colorScheme.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.r24)),
         ),
         showDragHandle: true,
