@@ -30,7 +30,7 @@ reports them:
 
 | Diagram | Size |
 |---|---|
-| Navigation map | 1378×1234 |
+| Navigation map | 1418×1400 |
 | Order lifecycle | 1688×363 |
 | Payment lifecycle | 1105×312 |
 | Authentication and role routing | 1548×620 |
@@ -40,9 +40,15 @@ reports them:
 | Permission matrix | 1320×677 |
 | State ownership and refresh paths | 1824×557 |
 
-The navigation map was re-laid-out on 2026-11-09 so each shell is its own card with a
-header rule and its own nested group; the table entry above is from before that change
-and is refreshed by the next `Flows A` run (~1378×1424 expected).
+The navigation map carries two nested shell groups (customer `510px`, admin `650px`);
+its 6 direct children are the backdrop, the title, `login`, the two shell groups and the
+`login → customer` connector.
+
+**Moving a diagram:** select the group — a single click on the panel, or its row in the
+layers panel — then drag. Clicking *into* a group (double-click, or the child's row)
+selects a child, and dragging that moves only the child; that is Figma's normal
+behaviour, not a broken container. `Inspect · board` prints the group/child structure
+if it is ever in doubt.
 
 **Tooling** — two local **development plugins**, unmetered: `plugin/` (design, 14
 batches incl. `Audit · screens` and `Registry · ids`) and `plugin-figjam/` (4 batches
