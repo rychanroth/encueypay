@@ -25,6 +25,21 @@ sequences, ERD, permission matrix, state ownership. Each is a **group** named af
 diagram, containing its fitted backdrop, title, shapes and connectors — so dragging the
 panel drags its contents, and a re-run removes it wholesale (`fjClear`).
 
+Rebuilt 2026-11-09 after the containers were fixed; fitted sizes (w×h) as the plugin
+reports them:
+
+| Diagram | Size |
+|---|---|
+| Navigation map | 1378×1234 |
+| Order lifecycle | 1688×363 |
+| Payment lifecycle | 1105×312 |
+| Authentication and role routing | 1548×620 |
+| Checkout and atomic placement | 1802×843 |
+| KHQR payment verification | 1548×843 |
+| Data model (ERD) | 1668×603 |
+| Permission matrix | 1320×677 |
+| State ownership and refresh paths | 1824×557 |
+
 **Tooling** — two local **development plugins**, unmetered: `plugin/` (design, 14
 batches incl. `Audit · screens` and `Registry · ids`) and `plugin-figjam/` (4 batches
 incl. `Reset · clear board`). Both assemble a flat `code.js` from `src/*.js` via
@@ -99,8 +114,9 @@ the app scrolls them — by design. No per-screen fixes are planned.
   `adminSettingsAccount`; the ERD carries 23 of 25 relations.
 - FigJam containers: until 2026-11-09 each diagram was a plain rectangle backdrop with
   loose neighbours, so it neither hugged its content (sizes were literals) nor carried
-  it when moved. Diagrams are now grouped with content-fitted backdrops; the board
-  needs one `Reset · clear board` + `Flows A/B/C` to replace the legacy drawings.
+  it when moved. Fixed and rebuilt: diagrams are groups with content-fitted backdrops.
+  The old literals were wrong by 90–110px on height (navigation 1320 → 1234, order
+  lifecycle 420 → 363, payment 420 → 312), which is what the empty band was.
 
 ## 6. Constraints and gotchas (learned the hard way)
 
@@ -127,6 +143,7 @@ the app scrolls them — by design. No per-screen fixes are planned.
 | **No auto-layout in FigJam** | A rectangle is decoration, not a container: dragging it moves nothing. Group the contents (`figma.group`, name the group) or use a section — that is the only way children follow. |
 | FigJam sizing | Panel sizes written as literals never match the drawing. Snapshot `page.children` at panel creation, then fit the backdrop to the bbox of what was added (`fjEnd`). |
 | Re-run pollution | Cleanup is by **name**: groups named after the diagram are removed wholesale. Anything outside a named container (a free-standing heading, a loose connector anchor) survives — sweep it explicitly, or group it. |
+| Cascading deletes | Removing a shape also removes its connectors, so a snapshot of `page.children` goes stale mid-loop and `remove()` throws `node … does not exist`. Check `node.removed` or sweep in passes. |
 
 ## 7. Verification
 
