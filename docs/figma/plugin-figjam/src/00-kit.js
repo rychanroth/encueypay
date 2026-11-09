@@ -145,9 +145,18 @@ function fjArrowBetween(x1, y1, x2, y2, label) {
 let FJ_BEFORE = null;
 let FJ_PANEL = null;
 
+/** Nodes added to the page since a snapshot — the reliable way to collect a drawing. */
+function fjSnapshot() {
+  return new Set(figma.currentPage.children.map((n) => n.id));
+}
+
+function fjAdded(before) {
+  return figma.currentPage.children.filter((n) => !before.has(n.id));
+}
+
 /** Diagram backdrop + title. Records the page so fjEnd() can group what was added. */
 async function fjPanel(x, y, width, height, title) {
-  FJ_BEFORE = new Set(figma.currentPage.children.map((n) => n.id));
+  FJ_BEFORE = fjSnapshot();
   const bg = figma.createRectangle();
   bg.resize(width, height);
   bg.x = x;
@@ -170,7 +179,7 @@ async function fjPanel(x, y, width, height, title) {
 async function fjEnd(pad) {
   const page = figma.currentPage;
   const bg = FJ_PANEL;
-  const added = page.children.filter((n) => !FJ_BEFORE.has(n.id));
+  const added = fjAdded(FJ_BEFORE);
   const content = added.filter((n) => n !== bg);
   FJ_PANEL = null;
   FJ_BEFORE = null;

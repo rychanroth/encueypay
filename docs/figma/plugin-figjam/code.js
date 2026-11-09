@@ -152,9 +152,18 @@ function fjArrowBetween(x1, y1, x2, y2, label) {
 let FJ_BEFORE = null;
 let FJ_PANEL = null;
 
+/** Nodes added to the page since a snapshot — the reliable way to collect a drawing. */
+function fjSnapshot() {
+  return new Set(figma.currentPage.children.map((n) => n.id));
+}
+
+function fjAdded(before) {
+  return figma.currentPage.children.filter((n) => !before.has(n.id));
+}
+
 /** Diagram backdrop + title. Records the page so fjEnd() can group what was added. */
 async function fjPanel(x, y, width, height, title) {
-  FJ_BEFORE = new Set(figma.currentPage.children.map((n) => n.id));
+  FJ_BEFORE = fjSnapshot();
   const bg = figma.createRectangle();
   bg.resize(width, height);
   bg.x = x;
@@ -177,7 +186,7 @@ async function fjPanel(x, y, width, height, title) {
 async function fjEnd(pad) {
   const page = figma.currentPage;
   const bg = FJ_PANEL;
-  const added = page.children.filter((n) => !FJ_BEFORE.has(n.id));
+  const added = fjAdded(FJ_BEFORE);
   const content = added.filter((n) => n !== bg);
   FJ_PANEL = null;
   FJ_BEFORE = null;
@@ -281,9 +290,25 @@ const NAV_ADMIN = [
   ["adminReports\n/admin/reports\ntab 4", []],
 ];
 
+const FJ_SHELL_PAD = 20;
+const FJ_SHELL_HEADER = 44;
+
+/** One shell: its own white card, a header rule with the shell name, and a group. */
 async function fjNavShell(x, y, caption, tabs, colW, rowGap) {
-  await fjText(x, y, caption, 13, FJ.muted, true);
-  const tabY = y + 28;
+  const before = fjSnapshot();
+
+  const bg = figma.createRectangle();
+  bg.x = x - FJ_SHELL_PAD;
+  bg.y = y - FJ_SHELL_PAD;
+  bg.resize(400, 200);
+  bg.fills = [fjPaint("#FFFFFF")];
+  bg.strokes = [fjPaint(FJ.line)];
+  bg.cornerRadius = 14;
+  bg.name = caption;
+
+  await fjText(x, y + 12, caption, 14, FJ.primary, true);
+
+  const tabY = y + FJ_SHELL_HEADER;
   const boxes = [];
   for (let i = 0; i < tabs.length; i++) {
     const label = tabs[i][0];
@@ -301,7 +326,37 @@ async function fjNavShell(x, y, caption, tabs, colW, rowGap) {
       cy += 58 + rowGap;
     }
   }
-  return boxes;
+
+  const content = fjAdded(before).filter((n) => n !== bg);
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  content.forEach((n) => {
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.width);
+    maxY = Math.max(maxY, n.y + n.height);
+  });
+  bg.x = minX - FJ_SHELL_PAD;
+  bg.y = minY - FJ_SHELL_PAD;
+  bg.resize(maxX - minX + FJ_SHELL_PAD * 2, maxY - minY + FJ_SHELL_PAD * 2);
+
+  const rule = figma.createRectangle();
+  rule.resize(bg.width - 24, 1);
+  rule.x = bg.x + 12;
+  rule.y = y + FJ_SHELL_HEADER - 8;
+  rule.fills = [fjPaint(FJ.line)];
+  rule.strokes = [];
+
+  let group = null;
+  try {
+    group = figma.group([bg].concat(content, [rule]), figma.currentPage);
+    group.name = caption;
+  } catch (e) {
+    warn(`could not group "${caption}": ${(e && e.message) || e}`);
+  }
+  return { tabs: boxes, h: Math.round((group || bg).height) };
 }
 
 async function buildNavigation(x, y, log) {
@@ -311,12 +366,19 @@ async function buildNavigation(x, y, log) {
     fill: FJ.warnSoft,
     stroke: FJ.warnInk,
   });
-  const customer = await fjNavShell(x + 24, y + 148, "Customer shell — 5 tabs", NAV_CUSTOMER, 250, 12);
-  await fjNavShell(x + 24, y + 600, "Admin shell — 4 tabs", NAV_ADMIN, 250, 12);
+  const customer = await fjNavShell(x + 24, y + 176, "Customer shell — 5 tabs", NAV_CUSTOMER, 250, 12);
+  const admin = await fjNavShell(
+    x + 24,
+    y + 176 + customer.h + 44,
+    "Admin shell — 4 tabs",
+    NAV_ADMIN,
+    250,
+    12
+  );
 
-  fjConnect(login, customer[0]);
+  fjConnect(login, customer.tabs[0]);
   const nav = await fjEnd();
-  log(`navigation built (${nav ? nav.w + "x" + nav.h : "ungrouped"})`);
+  log(`navigation built (${nav ? nav.w + "x" + nav.h : "ungrouped"}) · shells ${customer.h}px, ${admin.h}px`);
 }
 
 async function buildOrderLifecycle(x, y, log) {
