@@ -889,7 +889,49 @@ const BATCHES = {
   "flows-b": batchFlowsB,
   "flows-c": batchFlowsC,
   reset: batchReset,
+  inspect: batchInspectBoard,
 };
+
+/**
+ * Read-only: what the page actually holds. One line per top-level node with its type,
+ * size and child count — the answer to "is each diagram really a group?".
+ */
+async function batchInspectBoard(log) {
+  if (figma.editorType !== "figjam") {
+    throw new Error("Open the FigJam board (EncueYPay — Flows & Data) and run this there.");
+  }
+  const page = figma.currentPage;
+  const nodes = page.children.slice();
+  const counts = {};
+  nodes.forEach((n) => {
+    counts[n.type] = (counts[n.type] || 0) + 1;
+  });
+
+  nodes
+    .sort((a, b) => a.y - b.y || a.x - b.x)
+    .forEach((n) => {
+      const kids = n.children ? n.children.length : 0;
+      log(
+        [
+          n.type,
+          n.name || "(unnamed)",
+          `${Math.round(n.width)}x${Math.round(n.height)}`,
+          `children ${kids}`,
+          `at ${Math.round(n.x)},${Math.round(n.y)}`,
+        ].join("\t")
+      );
+    });
+
+  log("");
+  log(
+    `${nodes.length} top-level nodes · ` +
+      Object.keys(counts)
+        .sort()
+        .map((k) => `${counts[k]} ${k}`)
+        .join(" · ")
+  );
+  return `inspect — ${nodes.length} top-level nodes`;
+}
 
 /**
  * Clear the board. The board is generated end to end by this plugin, so there is
@@ -936,6 +978,7 @@ const HTML = `
     <button data-batch="flows-b">Flows B · sequences</button>
     <button data-batch="flows-c">Flows C · data + permissions</button>
     <button data-batch="reset">Reset · clear board</button>
+    <button data-batch="inspect">Inspect · board</button>
     <button id="copy">Copy log</button>
   </div>
   <textarea id="log" readonly placeholder="Run a batch to see its report."></textarea>
