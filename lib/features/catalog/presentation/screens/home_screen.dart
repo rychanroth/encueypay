@@ -189,100 +189,113 @@ class _BannersStripState extends ConsumerState<_BannersStrip> {
         if (banners.isEmpty) return const SizedBox.shrink();
         return Column(
           children: [
-            SizedBox(
-              height: 148,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: banners.length,
-                itemBuilder: (context, index) {
-                  final banner = banners[index];
-                  // Targeted banners are CTAs (Section 9): tap-through to the
-                  // Discovery feed pre-filtered to the configured brand or
-                  // category — the same deep-link contract as the home
-                  // category/brand cards. Untargeted banners stay inert.
-                  final onTap = switch (banner.target) {
-                    CatalogBannerTarget.brand ||
-                    CatalogBannerTarget.category =>
-                      banner.targetId == null
-                          ? null
-                          : () => context.goNamed(
-                                AppRoutes.discovery,
-                                queryParameters: {
-                                  'kind': banner.target.name,
-                                  'id': banner.targetId!,
-                                  'name': banner.targetName ?? banner.name,
-                                  'image': banner.imageUrl,
-                                },
-                              ),
-                    // Store-wide campaign: the full Discovery feed (every
-                    // card in scope carries the discount chip).
-                    CatalogBannerTarget.platform => () => context.goNamed(
-                          AppRoutes.discovery,
-                          queryParameters: {
-                            'name': banner.targetName ?? banner.name,
-                            'image': banner.imageUrl,
-                          },
-                        ),
-                    CatalogBannerTarget.none => null,
-                  };
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: InkWell(
-                      onTap: onTap,
-                      borderRadius: AppRadii.br16,
-                      child: ClipRRect(
-                        borderRadius: AppRadii.br16,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            MonogramImage(
-                              imageUrl: banner.imageUrl,
-                              name: banner.name,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Intrinsic height: wider banners grow into a hero up to a
+                // bounded max (RESP-01) instead of becoming a thin strip.
+                final height =
+                    (constraints.maxWidth / AppWidths.bannerAspectRatio)
+                        .clamp(
+                          AppWidths.bannerMinHeight,
+                          AppWidths.bannerMaxHeight,
+                        )
+                        .toDouble();
+                return SizedBox(
+                  height: height,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: banners.length,
+                    itemBuilder: (context, index) {
+                      final banner = banners[index];
+                      // Targeted banners are CTAs (Section 9): tap-through to
+                      // the Discovery feed pre-filtered to the configured brand
+                      // or category — the same deep-link contract as the home
+                      // category/brand cards. Untargeted banners stay inert.
+                      final onTap = switch (banner.target) {
+                        CatalogBannerTarget.brand ||
+                        CatalogBannerTarget.category =>
+                          banner.targetId == null
+                              ? null
+                              : () => context.goNamed(
+                                    AppRoutes.discovery,
+                                    queryParameters: {
+                                      'kind': banner.target.name,
+                                      'id': banner.targetId!,
+                                      'name': banner.targetName ?? banner.name,
+                                      'image': banner.imageUrl,
+                                    },
+                                  ),
+                        // Store-wide campaign: the full Discovery feed (every
+                        // card in scope carries the discount chip).
+                        CatalogBannerTarget.platform => () => context.goNamed(
+                              AppRoutes.discovery,
+                              queryParameters: {
+                                'name': banner.targetName ?? banner.name,
+                                'image': banner.imageUrl,
+                              },
                             ),
-                            // Gradient scrim — bottom-weighted title panel.
-                            const DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  stops: [0.45, 1.0],
-                                  colors: [
-                                    Colors.transparent,
-                                    Color(0xB30F172A)
-                                  ],
+                        CatalogBannerTarget.none => null,
+                      };
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: InkWell(
+                          onTap: onTap,
+                          borderRadius: AppRadii.br16,
+                          child: ClipRRect(
+                            borderRadius: AppRadii.br16,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                MonogramImage(
+                                  imageUrl: banner.imageUrl,
+                                  name: banner.name,
                                 ),
-                              ),
-                            ),
-                            Positioned(
-                              left: AppSpacing.md,
-                              right: AppSpacing.md,
-                              bottom: AppSpacing.sm + 2,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      banner.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                        color: Colors.white,
-                                      ),
+                                // Gradient scrim — bottom-weighted title panel.
+                                const DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      stops: [0.45, 1.0],
+                                      colors: [
+                                        Colors.transparent,
+                                        Color(0xB30F172A)
+                                      ],
                                     ),
                                   ),
-                                  if (onTap != null)
-                                    const Icon(Icons.arrow_forward_ios,
-                                        size: 14, color: Colors.white),
-                                ],
-                              ),
+                                ),
+                                Positioned(
+                                  left: AppSpacing.md,
+                                  right: AppSpacing.md,
+                                  bottom: AppSpacing.sm + 2,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          banner.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      if (onTap != null)
+                                        const Icon(Icons.arrow_forward_ios,
+                                            size: 14, color: Colors.white),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.sm),
             Row(

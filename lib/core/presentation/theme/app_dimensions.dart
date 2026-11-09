@@ -57,6 +57,14 @@ abstract final class AppWidths {
   /// Upper bound for one category discovery tile (aligned with the product
   /// card bound so both grids share the same column count).
   static const double categoryTileMax = 240;
+
+  /// Hero banner width-to-height ratio on phones, used to derive a height
+  /// that grows with the window on wider layouts.
+  static const double bannerAspectRatio = 2.4;
+
+  /// Height bounds for the hero banner carousel (compact floor, wide cap).
+  static const double bannerMinHeight = 148;
+  static const double bannerMaxHeight = 380;
 }
 
 abstract final class AppElevation {
