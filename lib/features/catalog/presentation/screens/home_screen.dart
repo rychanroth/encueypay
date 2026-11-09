@@ -9,7 +9,6 @@ import '../../../../core/presentation/illustrations.dart';
 import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
-import '../../../../core/presentation/widgets/content_width.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/presentation/widgets/staggered_grid.dart';
 import '../../../../core/router/app_routes.dart';
@@ -53,61 +52,58 @@ class HomeScreen extends ConsumerWidget {
           ?profileAction,
         ],
       ),
-      body: ContentWidth(
-        maxWidth: AppWidths.contentMax,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(28),
-                // Deep-link into the Discover tab (DESIGN.md §5.1.2).
-                onTap: () => context.goNamed(AppRoutes.discovery),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Search products',
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(28),
+              // Deep-link into the Discover tab (DESIGN.md §5.1.2).
+              onTap: () => context.goNamed(AppRoutes.discovery),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Search products',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
                 ),
               ),
             ),
-            _SectionTitle('Featured'),
-            const _BannersStrip(),
-            // Section 2c: card-based discovery navigation (assignment §2
-            // "intuitive Search Bar and navigation for rapid discovery") —
-            // categories as an image card grid, brands as a logo rail, both
-            // tapping into the discovery screen. The chips remain in the
-            // products screen's filter bar.
-            _SectionTitle(
-              'Shop by category',
-              actionLabel: 'See all',
-              onAction: () => context.goNamed(AppRoutes.discovery),
-            ),
-            _CategoryCardGrid(),
-            _SectionTitle('Top brands'),
-            _BrandRail(),
-            _SectionTitle(
-              'New arrivals',
-              actionLabel: 'See all',
-              onAction: () => context.goNamed(AppRoutes.discovery),
-            ),
-            _HomeProductsGrid(actionsBuilder: actionsBuilder),
-          ],
-        ),
+          ),
+          _SectionTitle('Featured'),
+          const _BannersStrip(),
+          // Section 2c: card-based discovery navigation (assignment §2
+          // "intuitive Search Bar and navigation for rapid discovery") —
+          // categories as an image card grid, brands as a logo rail, both
+          // tapping into the discovery screen. The chips remain in the
+          // products screen's filter bar.
+          _SectionTitle(
+            'Shop by category',
+            actionLabel: 'See all',
+            onAction: () => context.goNamed(AppRoutes.discovery),
+          ),
+          _CategoryCardGrid(),
+          _SectionTitle('Top brands'),
+          _BrandRail(),
+          _SectionTitle(
+            'New arrivals',
+            actionLabel: 'See all',
+            onAction: () => context.goNamed(AppRoutes.discovery),
+          ),
+          _HomeProductsGrid(actionsBuilder: actionsBuilder),
+        ],
       ),
     );
   }

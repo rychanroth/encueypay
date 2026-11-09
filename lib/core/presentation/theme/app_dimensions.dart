@@ -47,13 +47,10 @@ abstract final class AppRadii {
   static const BorderRadius brFull = BorderRadius.all(Radius.circular(full));
 }
 
-/// Layout width tokens (RESP-01). Browsing surfaces cap their content on
-/// large windows instead of stretching edge-to-edge, and card grids bound
-/// each card's width so extra room adds columns rather than bigger cards.
+/// Layout width tokens (RESP-01). Card grids bound each card's width so
+/// extra room adds columns rather than bigger cards, letting a browsing
+/// surface fill the window without inflating its tiles.
 abstract final class AppWidths {
-  /// Widest centered content column for browsing surfaces on desktop.
-  static const double contentMax = 1200;
-
   /// Upper bound for one product-grid card; wider windows add columns.
   static const double productCardMax = 240;
 
