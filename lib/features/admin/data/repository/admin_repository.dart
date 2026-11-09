@@ -94,7 +94,16 @@ abstract interface class IAdminRepository {
   });
 
   // -------------------------------------------------------- orders (§3)
-  Future<List<AdminOrderSummary>> fetchOrders();
+  /// One filtered/sorted page plus the full matching count and gross total.
+  Future<AdminOrderPage> searchOrders(
+    AdminOrderQuery query, {
+    int limit = 25,
+    int offset = 0,
+  });
+
+  /// One order by id (the detail screen owns its own fetch so filters and
+  /// pagination on the list cannot make the order "disappear").
+  Future<AdminOrderSummary> fetchOrder(String orderId);
 
   /// Realtime sync signal for the admin order feed. Fires on both order
   /// lifecycle changes and payment changes so the list/detail stay fresh.

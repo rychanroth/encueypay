@@ -48,12 +48,13 @@ class PlatformSettingsAdminDto {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AdminApplicantJoinDto {
-  const AdminApplicantJoinDto({this.fullName});
+  const AdminApplicantJoinDto({this.fullName, this.phone});
 
   factory AdminApplicantJoinDto.fromJson(Map<String, dynamic> json) =>
       _$AdminApplicantJoinDtoFromJson(json);
 
   final String? fullName;
+  final String? phone;
 
   Map<String, dynamic> toJson() => _$AdminApplicantJoinDtoToJson(this);
 }
@@ -230,6 +231,11 @@ class AdminOrderRowDto {
     this.users,
     this.payments,
     this.items = const [],
+    this.shippingRecipientName = '',
+    this.shippingPhone = '',
+    this.shippingLine1 = '',
+    this.shippingLine2,
+    this.shippingCity = '',
   });
 
   factory AdminOrderRowDto.fromJson(Map<String, dynamic> json) =>
@@ -245,6 +251,20 @@ class AdminOrderRowDto {
 
   @JsonKey(defaultValue: '')
   final String cancellationReason;
+
+  @JsonKey(defaultValue: '')
+  final String shippingRecipientName;
+
+  @JsonKey(defaultValue: '')
+  final String shippingPhone;
+
+  @JsonKey(defaultValue: '')
+  final String shippingLine1;
+
+  final String? shippingLine2;
+
+  @JsonKey(defaultValue: '')
+  final String shippingCity;
 
   @JsonKey(name: 'users')
   final AdminApplicantJoinDto? users;
@@ -314,4 +334,29 @@ class AdminItemProductJoinDto {
   final List<AdminProductImagePathDto> productImages;
 
   Map<String, dynamic> toJson() => _$AdminItemProductJoinDtoToJson(this);
+}
+
+/// Wire shape of `admin_search_orders` (DATA-01): one page of orders plus the
+/// full matching count and gross total for the active filter.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AdminOrderPageDto {
+  const AdminOrderPageDto({
+    this.orders = const [],
+    this.totalCount = 0,
+    this.totalMinor = 0,
+  });
+
+  factory AdminOrderPageDto.fromJson(Map<String, dynamic> json) =>
+      _$AdminOrderPageDtoFromJson(json);
+
+  @JsonKey(defaultValue: [])
+  final List<AdminOrderRowDto> orders;
+
+  @JsonKey(defaultValue: 0)
+  final int totalCount;
+
+  @JsonKey(defaultValue: 0)
+  final int totalMinor;
+
+  Map<String, dynamic> toJson() => _$AdminOrderPageDtoToJson(this);
 }

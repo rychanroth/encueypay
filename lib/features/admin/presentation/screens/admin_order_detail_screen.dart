@@ -19,10 +19,11 @@ class AdminOrderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ordersAsync = ref.watch(adminOrdersControllerProvider);
+    final detailProvider = adminOrderDetailControllerProvider(orderId);
+    final orderAsync = ref.watch(detailProvider);
     final theme = Theme.of(context);
 
-    ref.listen(adminOrdersControllerProvider, (previous, next) {
+    ref.listen(detailProvider, (previous, next) {
       final error = next.hasError ? next.error : null;
       if (error is Failure) {
         ScaffoldMessenger.of(context)
@@ -33,14 +34,10 @@ class AdminOrderDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Order')),
-      body: ordersAsync.when(
+      body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text(userMessageFor(error))),
-        data: (orders) {
-          final order = orders.where((order) => order.id == orderId).firstOrNull;
-          if (order == null) {
-            return const Center(child: Text('Order not found.'));
-          }
+        data: (order) {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -52,11 +49,8 @@ class AdminOrderDetailScreen extends ConsumerWidget {
               if (order.nextTransition != null)
                 FilledButton(
                   onPressed: () => ref
-                      .read(adminOrdersControllerProvider.notifier)
-                      .transition(
-                        orderId: order.id,
-                        status: order.nextTransition!.wireName,
-                      ),
+                      .read(detailProvider.notifier)
+                      .transition(status: order.nextTransition!.wireName),
                   child: Text(
                       'Move to ${order.nextTransition!.wireName.replaceAll('_', ' ')}'),
                 ),
@@ -126,6 +120,24 @@ class _SummaryCard extends StatelessWidget {
             _Row('Total', Money(order.totalMinor).format(), bold: true),
             if (order.paymentMethod != null)
               _Row('Payment', '${order.paymentMethod} · ${order.paymentStatus}'),
+            if (order.shippingLine1.isNotEmpty ||
+                order.shippingCity.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Deliver to', style: theme.textTheme.labelMedium),
+              const SizedBox(height: 2),
+              Text(
+                [
+                  order.shippingRecipientName,
+                  order.shippingPhone,
+                  [
+                    order.shippingLine1,
+                    order.shippingLine2 ?? '',
+                    order.shippingCity,
+                  ].where((part) => part.isNotEmpty).join(', '),
+                ].where((part) => part.isNotEmpty).join('\n'),
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
           ],
         ),
       ),
@@ -183,7 +195,9 @@ Future<void> _markCodPaid(
     ),
   );
   if (confirmed != true) return;
-  await ref.read(adminOrdersControllerProvider.notifier).markCodPaid(orderId);
+  await ref
+      .read(adminOrderDetailControllerProvider(orderId).notifier)
+      .markCodPaid();
 }
 
 Future<void> _cancel(
@@ -213,8 +227,9 @@ Future<void> _cancel(
     ),
   );
   if (confirmed != true) return;
-  await ref.read(adminOrdersControllerProvider.notifier).transition(
-        orderId: orderId,
+  await ref
+      .read(adminOrderDetailControllerProvider(orderId).notifier)
+      .transition(
         status: 'cancelled',
         reason: reasonController.text.trim(),
       );

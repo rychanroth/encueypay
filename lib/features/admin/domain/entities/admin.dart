@@ -172,9 +172,18 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
     String? paymentMethod,
     String? paymentStatus,
     @Default([]) List<AdminOrderItem> items,
+    @Default('') String customerPhone,
+    @Default('') String shippingRecipientName,
+    @Default('') String shippingPhone,
+    @Default('') String shippingLine1,
+    String? shippingLine2,
+    @Default('') String shippingCity,
   }) = _AdminOrderSummary;
 
   const AdminOrderSummary._();
+
+  /// Total units across all line items (not the number of distinct lines).
+  int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
 
   /// The next step of the lifecycle, or null when terminal/not yet
   /// cancellable. Pending/confirmed orders can instead be cancelled with a
@@ -216,6 +225,69 @@ abstract class AdminOrderItem with _$AdminOrderItem {
   }) = _AdminOrderItem;
 }
 
+/// Filter/sort parameters for the admin order search (Section 3). Empty sets
+/// mean "any"; `from`/`to` are inclusive local days; [excludeCancelled] backs
+/// the dashboard Total-sales deep link (the KPI sums non-cancelled orders).
+@freezed
+abstract class AdminOrderQuery with _$AdminOrderQuery {
+  const factory AdminOrderQuery({
+    @Default('') String search,
+    DateTime? from,
+    DateTime? to,
+    @Default(<String>{}) Set<String> statuses,
+    @Default(<String>{}) Set<String> paymentStatuses,
+    @Default(<String>{}) Set<String> paymentMethods,
+    String? brandId,
+    String? categoryId,
+    int? minTotalMinor,
+    int? maxTotalMinor,
+    @Default(false) bool excludeCancelled,
+    @Default(false) bool needsAttention,
+    @Default(AdminOrderSort.newest) AdminOrderSort sort,
+  }) = _AdminOrderQuery;
+
+  const AdminOrderQuery._();
+
+  /// True when anything narrows the result (used for the no-match empty
+  /// state vs "no orders yet").
+  bool get hasFilters =>
+      search.isNotEmpty ||
+      from != null ||
+      to != null ||
+      statuses.isNotEmpty ||
+      paymentStatuses.isNotEmpty ||
+      paymentMethods.isNotEmpty ||
+      brandId != null ||
+      categoryId != null ||
+      minTotalMinor != null ||
+      maxTotalMinor != null ||
+      excludeCancelled ||
+      needsAttention;
+}
+
+/// One page of the admin order search plus the full matching totals.
+@freezed
+abstract class AdminOrderPage with _$AdminOrderPage {
+  const factory AdminOrderPage({
+    @Default(<AdminOrderSummary>[]) List<AdminOrderSummary> orders,
+    @Default(0) int totalCount,
+    @Default(0) int totalMinor,
+  }) = _AdminOrderPage;
+}
+
+enum AdminOrderSort {
+  newest,
+  oldest,
+  totalDesc,
+  totalAsc;
+
+  String get wireName => switch (this) {
+        AdminOrderSort.totalDesc => 'total_desc',
+        AdminOrderSort.totalAsc => 'total_asc',
+        _ => name,
+      };
+}
+
 /// The order lifecycle (mirrors the `order_status` wire enum, Section 7A).
 enum AdminOrderStatus {
   pending,
@@ -225,7 +297,8 @@ enum AdminOrderStatus {
   shipped,
   outForDelivery,
   delivered,
-  cancelled;
+  cancelled,
+  returned;
 
   static AdminOrderStatus fromName(String? name) {
     if (name == null) return AdminOrderStatus.pending;

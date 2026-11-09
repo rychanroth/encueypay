@@ -44,11 +44,14 @@ Map<String, dynamic> _$PlatformSettingsAdminDtoToJson(
 
 AdminApplicantJoinDto _$AdminApplicantJoinDtoFromJson(
   Map<String, dynamic> json,
-) => AdminApplicantJoinDto(fullName: json['full_name'] as String?);
+) => AdminApplicantJoinDto(
+  fullName: json['full_name'] as String?,
+  phone: json['phone'] as String?,
+);
 
 Map<String, dynamic> _$AdminApplicantJoinDtoToJson(
   AdminApplicantJoinDto instance,
-) => <String, dynamic>{'full_name': instance.fullName};
+) => <String, dynamic>{'full_name': instance.fullName, 'phone': instance.phone};
 
 AdminCategoryDto _$AdminCategoryDtoFromJson(Map<String, dynamic> json) =>
     AdminCategoryDto(
@@ -196,6 +199,11 @@ AdminOrderRowDto _$AdminOrderRowDtoFromJson(
           ?.map((e) => AdminItemJoinDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
+  shippingRecipientName: json['shipping_recipient_name'] as String? ?? '',
+  shippingPhone: json['shipping_phone'] as String? ?? '',
+  shippingLine1: json['shipping_line1'] as String? ?? '',
+  shippingLine2: json['shipping_line2'] as String?,
+  shippingCity: json['shipping_city'] as String? ?? '',
 );
 
 Map<String, dynamic> _$AdminOrderRowDtoToJson(AdminOrderRowDto instance) =>
@@ -208,6 +216,11 @@ Map<String, dynamic> _$AdminOrderRowDtoToJson(AdminOrderRowDto instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'status': instance.status,
       'cancellation_reason': instance.cancellationReason,
+      'shipping_recipient_name': instance.shippingRecipientName,
+      'shipping_phone': instance.shippingPhone,
+      'shipping_line1': instance.shippingLine1,
+      'shipping_line2': instance.shippingLine2,
+      'shipping_city': instance.shippingCity,
       'users': instance.users,
       'payments': instance.payments,
       'order_items': instance.items,
@@ -264,3 +277,21 @@ AdminItemProductJoinDto _$AdminItemProductJoinDtoFromJson(
 Map<String, dynamic> _$AdminItemProductJoinDtoToJson(
   AdminItemProductJoinDto instance,
 ) => <String, dynamic>{'product_images': instance.productImages};
+
+AdminOrderPageDto _$AdminOrderPageDtoFromJson(Map<String, dynamic> json) =>
+    AdminOrderPageDto(
+      orders:
+          (json['orders'] as List<dynamic>?)
+              ?.map((e) => AdminOrderRowDto.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      totalCount: (json['total_count'] as num?)?.toInt() ?? 0,
+      totalMinor: (json['total_minor'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$AdminOrderPageDtoToJson(AdminOrderPageDto instance) =>
+    <String, dynamic>{
+      'orders': instance.orders,
+      'total_count': instance.totalCount,
+      'total_minor': instance.totalMinor,
+    };

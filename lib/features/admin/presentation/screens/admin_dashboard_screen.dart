@@ -62,8 +62,15 @@ class AdminDashboardScreen extends ConsumerWidget {
             data: (kpis) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero: money first, momentum second (§8B).
-                _HeroCard(kpis: kpis),
+                // Hero: money first, momentum second (§8B). Tap-through to
+                // the orders behind the KPI (non-cancelled, all time).
+                _HeroCard(
+                  kpis: kpis,
+                  onTap: () => context.goNamed(
+                    AppRoutes.adminOrders,
+                    queryParameters: const {'ex': '1'},
+                  ),
+                ),
                 const SizedBox(height: 16),
                 // Actionable alerts — the things an admin should act on.
                 if (kpis.lowStockProducts > 0 || kpis.outOfStockProducts > 0)
@@ -195,9 +202,10 @@ class AdminDashboardScreen extends ConsumerWidget {
 /// Total sales, order count, and the 7-day vs prior-7-day momentum —
 /// computed from the trend the server already returns.
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.kpis});
+  const _HeroCard({required this.kpis, this.onTap});
 
   final AdminKpis kpis;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -216,44 +224,52 @@ class _HeroCard extends StatelessWidget {
     }
     return Card(
       color: theme.colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Total sales',
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Total sales',
                 style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer)),
-            Text(
-              Money(kpis.totalSalesMinor).formatUsd(),
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Text(
-                  '${kpis.totalOrders} orders · ${kpis.totalCustomers} customers',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onPrimaryContainer),
-                ),
-              ],
-            ),
-            if (momentum != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(up ? Icons.trending_up : Icons.trending_down,
-                        size: 16,
-                        color: up ? const Color(0xFF059669) : theme.colorScheme.error),
-                    const SizedBox(width: 4),
-                    Text(momentum, style: theme.textTheme.bodySmall),
-                  ],
-                ),
+                    color: theme.colorScheme.onPrimaryContainer),
               ),
-          ],
+              Text(
+                Money(kpis.totalSalesMinor).formatUsd(),
+                style: theme.textTheme.headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text(
+                    '${kpis.totalOrders} orders · ${kpis.totalCustomers} customers',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer),
+                  ),
+                ],
+              ),
+              if (momentum != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(up ? Icons.trending_up : Icons.trending_down,
+                          size: 16,
+                          color: up
+                              ? const Color(0xFF059669)
+                              : theme.colorScheme.error),
+                      const SizedBox(width: 4),
+                      Text(momentum, style: theme.textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

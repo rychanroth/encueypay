@@ -496,51 +496,111 @@ class AdminRepositoryImpl implements IAdminRepository {
 
   // ---------------------------------------------------------- orders (§3)
   @override
-  Future<List<AdminOrderSummary>> fetchOrders() async {
+  Future<AdminOrderPage> searchOrders(
+    AdminOrderQuery query, {
+    int limit = 25,
+    int offset = 0,
+  }) async {
     try {
-      final rows = await _client
+      final result = await _client.rpc('admin_search_orders', params: {
+        'p_search': query.search.trim().isEmpty ? null : query.search.trim(),
+        'p_from': query.from == null ? null : _dateOnly(query.from!),
+        'p_to': query.to == null ? null : _dateOnly(query.to!),
+        'p_statuses': query.statuses.toList(),
+        'p_payment_statuses': query.paymentStatuses.toList(),
+        'p_payment_methods': query.paymentMethods.toList(),
+        'p_brand_id': query.brandId,
+        'p_category_id': query.categoryId,
+        'p_min_total': query.minTotalMinor,
+        'p_max_total': query.maxTotalMinor,
+        'p_exclude_cancelled': query.excludeCancelled,
+        'p_needs_attention': query.needsAttention,
+        'p_sort': query.sort.wireName,
+        'p_limit': limit,
+        'p_offset': offset,
+      });
+      final dto = AdminOrderPageDto.fromJson(
+        (result as Map).cast<String, dynamic>(),
+      );
+      return AdminOrderPage(
+        orders: dto.orders.map(_mapOrderRow).toList(),
+        totalCount: dto.totalCount,
+        totalMinor: dto.totalMinor,
+      );
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<AdminOrderSummary> fetchOrder(String orderId) async {
+    try {
+      final row = await _client
           .from('orders')
           .select(
             'id, status, cancellation_reason, subtotal_minor, '
             'discount_minor, delivery_fee_minor, total_minor, created_at, '
-            'users(full_name), payments(method, status), '
+            'shipping_recipient_name, shipping_phone, shipping_line1, '
+            'shipping_line2, shipping_city, '
+            'users(full_name, phone), payments(method, status), '
             'order_items(product_name, variant_name, quantity, '
             'unit_price_minor, discount_minor, line_total_minor, '
             'products(product_images(id, storage_path, sort_order)))',
           )
-          .order('created_at', ascending: false)
-          .limit(50);
-      return rows.map(AdminOrderRowDto.fromJson).map((dto) {
-        // One-to-one embed — a single payment per order (unique order_id).
-        final payment = dto.payments;
-        return AdminOrderSummary(
-          id: dto.id,
-          customerName: dto.users?.fullName ?? 'Customer',
-          subtotalMinor: dto.subtotalMinor,
-          discountMinor: dto.discountMinor,
-          deliveryFeeMinor: dto.deliveryFeeMinor,
-          totalMinor: dto.totalMinor,
-          createdAt: dto.createdAt,
-          status: AdminOrderStatus.fromName(dto.status),
-          cancellationReason: dto.cancellationReason,
-          paymentMethod: payment?.method,
-          paymentStatus: payment?.status,
-          items: dto.items
-              .map((item) => AdminOrderItem(
-                    productName: item.productName,
-                    variantName: item.variantName,
-                    quantity: item.quantity,
-                    unitPriceMinor: item.unitPriceMinor,
-                    discountMinor: item.discountMinor,
-                    lineTotalMinor: item.lineTotalMinor,
-                    imageUrl: _itemImageUrl(item),
-                  ))
-              .toList(),
-        );
-      }).toList();
+          .eq('id', orderId)
+          .maybeSingle();
+      if (row == null) {
+        throw const ServerFailure('Order not found');
+      }
+      return _mapOrderRow(AdminOrderRowDto.fromJson(row));
+    } on Failure {
+      rethrow;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
+  }
+
+  AdminOrderSummary _mapOrderRow(AdminOrderRowDto dto) {
+    // One-to-one embed — a single payment per order (unique order_id).
+    final payment = dto.payments;
+    return AdminOrderSummary(
+      id: dto.id,
+      customerName: dto.users?.fullName ?? 'Customer',
+      customerPhone: dto.users?.phone ?? dto.shippingPhone,
+      subtotalMinor: dto.subtotalMinor,
+      discountMinor: dto.discountMinor,
+      deliveryFeeMinor: dto.deliveryFeeMinor,
+      totalMinor: dto.totalMinor,
+      createdAt: dto.createdAt,
+      status: AdminOrderStatus.fromName(dto.status),
+      cancellationReason: dto.cancellationReason,
+      paymentMethod: payment?.method,
+      paymentStatus: payment?.status,
+      items: dto.items
+          .map((item) => AdminOrderItem(
+                productName: item.productName,
+                variantName: item.variantName,
+                quantity: item.quantity,
+                unitPriceMinor: item.unitPriceMinor,
+                discountMinor: item.discountMinor,
+                lineTotalMinor: item.lineTotalMinor,
+                imageUrl: _itemImageUrl(item),
+              ))
+          .toList(),
+      shippingRecipientName: dto.shippingRecipientName,
+      shippingPhone: dto.shippingPhone,
+      shippingLine1: dto.shippingLine1,
+      shippingLine2: dto.shippingLine2,
+      shippingCity: dto.shippingCity,
+    );
+  }
+
+  /// Date-only string for the RPC's `date` parameters (local day).
+  String _dateOnly(DateTime value) {
+    final day = value.toLocal();
+    return '${day.year.toString().padLeft(4, '0')}-'
+        '${day.month.toString().padLeft(2, '0')}-'
+        '${day.day.toString().padLeft(2, '0')}';
   }
 
   /// Resolves the first catalog image for an order line; full http(s)
