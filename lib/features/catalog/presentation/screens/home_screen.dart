@@ -39,9 +39,12 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Full-screen hero on tablet/desktop; phones keep the inset card banner
-    // and the compact above-the-fold stack (RESP-01).
-    final fullScreenHero = context.screenSize != ScreenSize.compact;
+    // Full-bleed hero on tablet/desktop; phones keep the inset card banner
+    // and the compact above-the-fold stack (RESP-01). Tablets cap the hero
+    // height so the discovery sections peek below the fold; expanded windows
+    // fill the body.
+    final size = context.screenSize;
+    final fullScreenHero = size != ScreenSize.compact;
 
     return Scaffold(
       appBar: AppBar(
@@ -63,7 +66,13 @@ class HomeScreen extends ConsumerWidget {
                 : const EdgeInsets.symmetric(vertical: 12),
             children: [
               if (fullScreenHero)
-                _HeroStage(height: constraints.maxHeight)
+                _HeroStage(
+                  height: size == ScreenSize.expanded
+                      ? constraints.maxHeight
+                      : constraints.maxHeight
+                          .clamp(0, AppWidths.heroTabletMax)
+                          .toDouble(),
+                )
               else ...[
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),

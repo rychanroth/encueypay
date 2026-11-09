@@ -71,6 +71,14 @@ abstract final class AppWidths {
 
   /// Square product media on wide layouts (never a stretched 260dp strip).
   static const double detailImageAspect = 1;
+
+  /// Product media on tablets: a large 16:9 block instead of the phone's
+  /// fixed 260dp strip.
+  static const double detailImageAspectMedium = 16 / 9;
+
+  /// Tablet (medium) hero cap — full-bleed, but leaves the next section
+  /// visible below the fold; expanded windows fill the body height.
+  static const double heroTabletMax = 560;
 }
 
 abstract final class AppElevation {

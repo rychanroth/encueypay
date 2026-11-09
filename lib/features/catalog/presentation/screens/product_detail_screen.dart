@@ -166,17 +166,37 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           // information side by side once the window reaches the expanded
           // class (RESP-01/02). The centered max width keeps text readable
           // and stops the media from stretching into a thin banner.
-          final wide = context.screenSize == ScreenSize.expanded;
+          final size = context.screenSize;
+          final wide = size == ScreenSize.expanded;
+          // Phones keep the fixed 260dp carousel; tablets get a large 16:9
+          // block; expanded windows get a square beside the info column.
+          final imageAspect = switch (size) {
+            ScreenSize.compact => null,
+            ScreenSize.medium => AppWidths.detailImageAspectMedium,
+            ScreenSize.expanded => AppWidths.detailImageAspect,
+          };
+          final pager = _ImagePager(
+            imageUrls: carouselImages,
+            pageController: _pageController,
+            currentPage: _page,
+            onPageChanged: (index) => setState(() => _page = index),
+            aspectRatio: imageAspect,
+          );
           final media = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _ImagePager(
-                imageUrls: carouselImages,
-                pageController: _pageController,
-                currentPage: _page,
-                onPageChanged: (index) => setState(() => _page = index),
-                wide: wide,
-              ),
+              // Phones bleed the carousel edge-to-edge; tablet media is
+              // rounded, so it takes the page gutter (expanded already sits
+              // inside the two-column page padding).
+              if (size == ScreenSize.medium)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
+                  child: pager,
+                )
+              else
+                pager,
               // Variant thumbnails (Section 9): image + name below the
               // carousel; selecting one re-leads the carousel.
               if (detail.variants.length > 1) ...[
@@ -851,7 +871,7 @@ class _ImagePager extends StatelessWidget {
     required this.pageController,
     required this.currentPage,
     required this.onPageChanged,
-    required this.wide,
+    required this.aspectRatio,
   });
 
   final List<String> imageUrls;
@@ -859,9 +879,9 @@ class _ImagePager extends StatelessWidget {
   final int currentPage;
   final ValueChanged<int> onPageChanged;
 
-  /// Expanded layouts show a square, rounded media block beside the info
-  /// column; compact/medium keep the full-bleed 260dp carousel.
-  final bool wide;
+  /// Null keeps the compact 260dp carousel; a value wraps the same content
+  /// in a rounded aspect-ratio block (tablet 16:9, expanded square).
+  final double? aspectRatio;
 
   @override
   Widget build(BuildContext context) {
@@ -952,13 +972,10 @@ class _ImagePager extends StatelessWidget {
                 ),
             ],
           );
-    if (wide) {
+    if (aspectRatio != null) {
       return ClipRRect(
         borderRadius: AppRadii.br16,
-        child: AspectRatio(
-          aspectRatio: AppWidths.detailImageAspect,
-          child: content,
-        ),
+        child: AspectRatio(aspectRatio: aspectRatio!, child: content),
       );
     }
     return SizedBox(height: 260, child: content);
