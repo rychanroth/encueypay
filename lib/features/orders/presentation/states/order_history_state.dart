@@ -30,7 +30,8 @@ enum OrderHistoryGroup {
 }
 
 /// Immutable Order History state (PRES-02): items + pagination + the active
-/// server-side filters (Section 7B — status group + date range).
+/// server-side filters (Section 7B — status group, date range, search and
+/// the "to review" view).
 @freezed
 abstract class OrderHistoryState with _$OrderHistoryState {
   const factory OrderHistoryState({
@@ -40,5 +41,18 @@ abstract class OrderHistoryState with _$OrderHistoryState {
     @Default(OrderHistoryGroup.all) OrderHistoryGroup group,
     DateTime? fromDate,
     DateTime? toDate,
+    @Default('') String search,
+    @Default(false) bool toReview,
   }) = _OrderHistoryState;
+
+  const OrderHistoryState._();
+
+  /// True when anything narrows the list (drives the empty state and its
+  /// clear-filters action).
+  bool get hasActiveFilters =>
+      group != OrderHistoryGroup.all ||
+      fromDate != null ||
+      toDate != null ||
+      search.isNotEmpty ||
+      toReview;
 }

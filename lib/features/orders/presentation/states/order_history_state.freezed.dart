@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderHistoryState {
 
- List<CustomerOrder> get items; bool get hasMore; bool get isLoadingMore; OrderHistoryGroup get group; DateTime? get fromDate; DateTime? get toDate;
+ List<CustomerOrder> get items; bool get hasMore; bool get isLoadingMore; OrderHistoryGroup get group; DateTime? get fromDate; DateTime? get toDate; String get search; bool get toReview;
 /// Create a copy of OrderHistoryState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $OrderHistoryStateCopyWith<OrderHistoryState> get copyWith => _$OrderHistoryStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderHistoryState&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.group, group) || other.group == group)&&(identical(other.fromDate, fromDate) || other.fromDate == fromDate)&&(identical(other.toDate, toDate) || other.toDate == toDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderHistoryState&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.group, group) || other.group == group)&&(identical(other.fromDate, fromDate) || other.fromDate == fromDate)&&(identical(other.toDate, toDate) || other.toDate == toDate)&&(identical(other.search, search) || other.search == search)&&(identical(other.toReview, toReview) || other.toReview == toReview));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),hasMore,isLoadingMore,group,fromDate,toDate);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),hasMore,isLoadingMore,group,fromDate,toDate,search,toReview);
 
 @override
 String toString() {
-  return 'OrderHistoryState(items: $items, hasMore: $hasMore, isLoadingMore: $isLoadingMore, group: $group, fromDate: $fromDate, toDate: $toDate)';
+  return 'OrderHistoryState(items: $items, hasMore: $hasMore, isLoadingMore: $isLoadingMore, group: $group, fromDate: $fromDate, toDate: $toDate, search: $search, toReview: $toReview)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $OrderHistoryStateCopyWith<$Res>  {
   factory $OrderHistoryStateCopyWith(OrderHistoryState value, $Res Function(OrderHistoryState) _then) = _$OrderHistoryStateCopyWithImpl;
 @useResult
 $Res call({
- List<CustomerOrder> items, bool hasMore, bool isLoadingMore, OrderHistoryGroup group, DateTime? fromDate, DateTime? toDate
+ List<CustomerOrder> items, bool hasMore, bool isLoadingMore, OrderHistoryGroup group, DateTime? fromDate, DateTime? toDate, String search, bool toReview
 });
 
 
@@ -63,7 +63,7 @@ class _$OrderHistoryStateCopyWithImpl<$Res>
 
 /// Create a copy of OrderHistoryState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? hasMore = null,Object? isLoadingMore = null,Object? group = null,Object? fromDate = freezed,Object? toDate = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? hasMore = null,Object? isLoadingMore = null,Object? group = null,Object? fromDate = freezed,Object? toDate = freezed,Object? search = null,Object? toReview = null,}) {
   return _then(OrderHistoryState(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<CustomerOrder>,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
@@ -71,7 +71,9 @@ as bool,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMo
 as bool,group: null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as OrderHistoryGroup,fromDate: freezed == fromDate ? _self.fromDate : fromDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,toDate: freezed == toDate ? _self.toDate : toDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,search: null == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
+as String,toReview: null == toReview ? _self.toReview : toReview // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -156,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CustomerOrder> items,  bool hasMore,  bool isLoadingMore,  OrderHistoryGroup group,  DateTime? fromDate,  DateTime? toDate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<CustomerOrder> items,  bool hasMore,  bool isLoadingMore,  OrderHistoryGroup group,  DateTime? fromDate,  DateTime? toDate,  String search,  bool toReview)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderHistoryState() when $default != null:
-return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.fromDate,_that.toDate);case _:
+return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.fromDate,_that.toDate,_that.search,_that.toReview);case _:
   return orElse();
 
 }
@@ -177,10 +179,10 @@ return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CustomerOrder> items,  bool hasMore,  bool isLoadingMore,  OrderHistoryGroup group,  DateTime? fromDate,  DateTime? toDate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<CustomerOrder> items,  bool hasMore,  bool isLoadingMore,  OrderHistoryGroup group,  DateTime? fromDate,  DateTime? toDate,  String search,  bool toReview)  $default,) {final _that = this;
 switch (_that) {
 case _OrderHistoryState():
-return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.fromDate,_that.toDate);case _:
+return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.fromDate,_that.toDate,_that.search,_that.toReview);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +199,10 @@ return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CustomerOrder> items,  bool hasMore,  bool isLoadingMore,  OrderHistoryGroup group,  DateTime? fromDate,  DateTime? toDate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<CustomerOrder> items,  bool hasMore,  bool isLoadingMore,  OrderHistoryGroup group,  DateTime? fromDate,  DateTime? toDate,  String search,  bool toReview)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderHistoryState() when $default != null:
-return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.fromDate,_that.toDate);case _:
+return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.fromDate,_that.toDate,_that.search,_that.toReview);case _:
   return null;
 
 }
@@ -211,8 +213,8 @@ return $default(_that.items,_that.hasMore,_that.isLoadingMore,_that.group,_that.
 /// @nodoc
 
 
-class _OrderHistoryState implements OrderHistoryState {
-  const _OrderHistoryState({ List<CustomerOrder> items = const [], this.hasMore = true, this.isLoadingMore = false, this.group = OrderHistoryGroup.all, this.fromDate, this.toDate}): _items = items;
+class _OrderHistoryState extends OrderHistoryState {
+  const _OrderHistoryState({ List<CustomerOrder> items = const [], this.hasMore = true, this.isLoadingMore = false, this.group = OrderHistoryGroup.all, this.fromDate, this.toDate, this.search = '', this.toReview = false}): _items = items,super._();
   
 
  final  List<CustomerOrder> _items;
@@ -227,6 +229,8 @@ class _OrderHistoryState implements OrderHistoryState {
 @override@JsonKey() final  OrderHistoryGroup group;
 @override final  DateTime? fromDate;
 @override final  DateTime? toDate;
+@override@JsonKey() final  String search;
+@override@JsonKey() final  bool toReview;
 
 /// Create a copy of OrderHistoryState
 /// with the given fields replaced by the non-null parameter values.
@@ -238,16 +242,16 @@ _$OrderHistoryStateCopyWith<_OrderHistoryState> get copyWith => __$OrderHistoryS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderHistoryState&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.group, group) || other.group == group)&&(identical(other.fromDate, fromDate) || other.fromDate == fromDate)&&(identical(other.toDate, toDate) || other.toDate == toDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderHistoryState&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.group, group) || other.group == group)&&(identical(other.fromDate, fromDate) || other.fromDate == fromDate)&&(identical(other.toDate, toDate) || other.toDate == toDate)&&(identical(other.search, search) || other.search == search)&&(identical(other.toReview, toReview) || other.toReview == toReview));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),hasMore,isLoadingMore,group,fromDate,toDate);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),hasMore,isLoadingMore,group,fromDate,toDate,search,toReview);
 
 @override
 String toString() {
-  return 'OrderHistoryState(items: $items, hasMore: $hasMore, isLoadingMore: $isLoadingMore, group: $group, fromDate: $fromDate, toDate: $toDate)';
+  return 'OrderHistoryState(items: $items, hasMore: $hasMore, isLoadingMore: $isLoadingMore, group: $group, fromDate: $fromDate, toDate: $toDate, search: $search, toReview: $toReview)';
 }
 
 
@@ -258,7 +262,7 @@ abstract mixin class _$OrderHistoryStateCopyWith<$Res> implements $OrderHistoryS
   factory _$OrderHistoryStateCopyWith(_OrderHistoryState value, $Res Function(_OrderHistoryState) _then) = __$OrderHistoryStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<CustomerOrder> items, bool hasMore, bool isLoadingMore, OrderHistoryGroup group, DateTime? fromDate, DateTime? toDate
+ List<CustomerOrder> items, bool hasMore, bool isLoadingMore, OrderHistoryGroup group, DateTime? fromDate, DateTime? toDate, String search, bool toReview
 });
 
 
@@ -275,7 +279,7 @@ class __$OrderHistoryStateCopyWithImpl<$Res>
 
 /// Create a copy of OrderHistoryState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? hasMore = null,Object? isLoadingMore = null,Object? group = null,Object? fromDate = freezed,Object? toDate = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? hasMore = null,Object? isLoadingMore = null,Object? group = null,Object? fromDate = freezed,Object? toDate = freezed,Object? search = null,Object? toReview = null,}) {
   return _then(_OrderHistoryState(
 items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<CustomerOrder>,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
@@ -283,7 +287,9 @@ as bool,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMo
 as bool,group: null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as OrderHistoryGroup,fromDate: freezed == fromDate ? _self.fromDate : fromDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,toDate: freezed == toDate ? _self.toDate : toDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,search: null == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
+as String,toReview: null == toReview ? _self.toReview : toReview // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

@@ -19,6 +19,9 @@ class OrdersController extends _$OrdersController {
 
   Timer? _refreshDebounce;
 
+  /// Guards against a slow earlier fetch overwriting a newer filter result.
+  int _request = 0;
+
   @override
   Future<OrderHistoryState> build() async {
     final repository = ref.watch(ordersRepositoryProvider);
@@ -51,6 +54,7 @@ class OrdersController extends _$OrdersController {
     if (!ref.mounted) return;
     final current = state.value;
     if (current == null) return;
+    final request = _request;
     final limit = current.items.isEmpty ? _pageSize : current.items.length;
     try {
       final page = await ref.read(ordersRepositoryProvider).fetchMyOrders(
@@ -58,8 +62,10 @@ class OrdersController extends _$OrdersController {
             statuses: current.group.wireStatuses,
             fromDate: current.fromDate,
             toDate: current.toDate,
+            search: current.search,
+            toReview: current.toReview,
           );
-      if (!ref.mounted) return;
+      if (!ref.mounted || request != _request) return;
       state = AsyncData(current.copyWith(
         items: page,
         hasMore: page.length == limit,
@@ -77,6 +83,8 @@ class OrdersController extends _$OrdersController {
           statuses: historyState.group.wireStatuses,
           fromDate: historyState.fromDate,
           toDate: historyState.toDate,
+          search: historyState.search,
+          toReview: historyState.toReview,
         );
     return historyState.copyWith(
       items: [...historyState.items, ...page],
@@ -85,43 +93,48 @@ class OrdersController extends _$OrdersController {
     );
   }
 
-  /// Section 7B: apply a new filter set — refetches page 0.
-  Future<void> setFilters({
-    OrderHistoryGroup? group,
-    DateTime? fromDate,
-    DateTime? toDate,
+  /// Section 7B: apply a complete filter set — resets to page 0. The filter
+  /// fields update immediately (the list shows a spinner while the page
+  /// loads) so chips/search never lag behind the tap.
+  Future<void> applyFilters({
+    required OrderHistoryGroup group,
+    required DateTime? fromDate,
+    required DateTime? toDate,
+    required String search,
+    required bool toReview,
   }) async {
     final current = state.value ?? const OrderHistoryState();
-    state = await AsyncValue.guard(
-      () => _fetch(current.copyWith(
-        group: group ?? current.group,
-        fromDate: fromDate ?? current.fromDate,
-        toDate: toDate ?? current.toDate,
-        // Reset the list when the filter set changes.
-        items: [],
-        hasMore: true,
-        isLoadingMore: false,
-      )),
+    final next = current.copyWith(
+      group: group,
+      fromDate: fromDate,
+      toDate: toDate,
+      search: search,
+      toReview: toReview,
+      items: const [],
+      hasMore: true,
+      isLoadingMore: false,
     );
-  }
-
-  Future<void> clearDateRange() async {
-    final current = state.value ?? const OrderHistoryState();
-    state = await AsyncValue.guard(
-      () => _fetch(current.copyWith(fromDate: null, toDate: null, items: [], hasMore: true)),
-    );
+    final request = ++_request;
+    state = AsyncData(next);
+    final result = await AsyncValue.guard(() => _fetch(next));
+    if (!ref.mounted || request != _request) return;
+    state = result;
   }
 
   Future<void> loadMore() async {
     final current = state.value;
     if (current == null || !current.hasMore || current.isLoadingMore) return;
-    state = await AsyncValue.guard(() async {
+    final request = _request;
+    state = AsyncData(current.copyWith(isLoadingMore: true));
+    final result = await AsyncValue.guard(() async {
       final page = await ref.read(ordersRepositoryProvider).fetchMyOrders(
             limit: _pageSize,
             offset: current.items.length,
             statuses: current.group.wireStatuses,
             fromDate: current.fromDate,
             toDate: current.toDate,
+            search: current.search,
+            toReview: current.toReview,
           );
       return current.copyWith(
         items: [...current.items, ...page],
@@ -129,5 +142,7 @@ class OrdersController extends _$OrdersController {
         isLoadingMore: false,
       );
     });
+    if (!ref.mounted || request != _request) return;
+    state = result;
   }
 }

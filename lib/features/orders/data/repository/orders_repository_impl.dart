@@ -92,6 +92,13 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     return _client.storage.from('product_images').getPublicUrl(storagePath);
   }
 
+  String _dateOnly(DateTime value) {
+    final day = value.toLocal();
+    return '${day.year.toString().padLeft(4, '0')}-'
+        '${day.month.toString().padLeft(2, '0')}-'
+        '${day.day.toString().padLeft(2, '0')}';
+  }
+
   @override
   Future<List<CustomerOrder>> fetchMyOrders({
     int limit = 10,
@@ -99,8 +106,27 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     List<String>? statuses,
     DateTime? fromDate,
     DateTime? toDate,
+    String? search,
+    bool toReview = false,
   }) async {
     try {
+      final query = search?.trim() ?? '';
+      // Free-text and the unreviewed view need server-side matching against
+      // order_items; the plain browse path stays a PostgREST select.
+      if (query.isNotEmpty || toReview) {
+        final result = await _client.rpc('customer_search_orders', params: {
+          'p_search': query.isEmpty ? null : query,
+          'p_statuses': statuses ?? const <String>[],
+          'p_from': fromDate == null ? null : _dateOnly(fromDate),
+          'p_to': toDate == null ? null : _dateOnly(toDate),
+          'p_to_review': toReview,
+          'p_limit': limit,
+          'p_offset': offset,
+        });
+        final rows = (result as List? ?? const [])
+            .cast<Map<String, dynamic>>();
+        return rows.map(_mapRow).toList();
+      }
       var request = _client
           .from('orders')
           .select(_orderSelect)
