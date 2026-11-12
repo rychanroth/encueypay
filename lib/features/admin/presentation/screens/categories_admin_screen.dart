@@ -286,11 +286,12 @@ class CategoriesAdminScreen extends ConsumerWidget {
               description: 'Add a top-level category to start the catalog.',
             );
           }
+          final ordered = orderedAdminCategories(categories);
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: categories.length,
+            itemCount: ordered.length,
             itemBuilder: (context, index) {
-              final category = categories[index];
+              final category = ordered[index];
               return ListTile(
                 leading: SizedBox(
                   width: 44,
@@ -329,4 +330,30 @@ class CategoriesAdminScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Display order for the admin category list (mirrors the customer
+/// DiscoveryScreen chip strip): top-level categories alphabetically, each
+/// immediately followed by its own alphabetical children. Children whose
+/// parent is missing from the list stay visible at the end so management
+/// never hides a row.
+List<AdminCategory> orderedAdminCategories(List<AdminCategory> categories) {
+  final byName = [...categories]
+    ..sort((a, b) {
+      final byLabel = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      return byLabel != 0 ? byLabel : a.id.compareTo(b.id);
+    });
+  final parents =
+      byName.where((category) => category.parentId == null).toList();
+  final parentIds = {for (final parent in parents) parent.id};
+  return [
+    for (final parent in parents) ...[
+      parent,
+      ...byName.where((category) => category.parentId == parent.id),
+    ],
+    ...byName.where(
+      (category) =>
+          category.parentId != null && !parentIds.contains(category.parentId),
+    ),
+  ];
 }
