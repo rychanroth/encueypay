@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AdminProductsState {
 
- AdminProductsFilter get filter;
+ AdminProductQuery get query; List<AdminProductSummary> get products; int get totalCount; int get totalStockValueMinor; bool get loadingMore;
 /// Create a copy of AdminProductsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $AdminProductsStateCopyWith<AdminProductsState> get copyWith => _$AdminProductsS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductsState&&(identical(other.filter, filter) || other.filter == filter));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductsState&&(identical(other.query, query) || other.query == query)&&const DeepCollectionEquality().equals(other.products, products)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.totalStockValueMinor, totalStockValueMinor) || other.totalStockValueMinor == totalStockValueMinor)&&(identical(other.loadingMore, loadingMore) || other.loadingMore == loadingMore));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,filter);
+int get hashCode => Object.hash(runtimeType,query,const DeepCollectionEquality().hash(products),totalCount,totalStockValueMinor,loadingMore);
 
 @override
 String toString() {
-  return 'AdminProductsState(filter: $filter)';
+  return 'AdminProductsState(query: $query, products: $products, totalCount: $totalCount, totalStockValueMinor: $totalStockValueMinor, loadingMore: $loadingMore)';
 }
 
 
@@ -46,11 +46,11 @@ abstract mixin class $AdminProductsStateCopyWith<$Res>  {
   factory $AdminProductsStateCopyWith(AdminProductsState value, $Res Function(AdminProductsState) _then) = _$AdminProductsStateCopyWithImpl;
 @useResult
 $Res call({
- AdminProductsFilter filter
+ AdminProductQuery query, List<AdminProductSummary> products, int totalCount, int totalStockValueMinor, bool loadingMore
 });
 
 
-
+$AdminProductQueryCopyWith<$Res> get query;
 
 }
 /// @nodoc
@@ -63,13 +63,26 @@ class _$AdminProductsStateCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? filter = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? query = null,Object? products = null,Object? totalCount = null,Object? totalStockValueMinor = null,Object? loadingMore = null,}) {
   return _then(AdminProductsState(
-filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
-as AdminProductsFilter,
+query: null == query ? _self.query : query // ignore: cast_nullable_to_non_nullable
+as AdminProductQuery,products: null == products ? _self.products : products // ignore: cast_nullable_to_non_nullable
+as List<AdminProductSummary>,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
+as int,totalStockValueMinor: null == totalStockValueMinor ? _self.totalStockValueMinor : totalStockValueMinor // ignore: cast_nullable_to_non_nullable
+as int,loadingMore: null == loadingMore ? _self.loadingMore : loadingMore // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
-
+/// Create a copy of AdminProductsState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$AdminProductQueryCopyWith<$Res> get query {
+  
+  return $AdminProductQueryCopyWith<$Res>(_self.query, (value) {
+    return _then(_self.copyWith(query: value));
+  });
+}
 }
 
 
@@ -151,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AdminProductsFilter filter)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AdminProductQuery query,  List<AdminProductSummary> products,  int totalCount,  int totalStockValueMinor,  bool loadingMore)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminProductsState() when $default != null:
-return $default(_that.filter);case _:
+return $default(_that.query,_that.products,_that.totalCount,_that.totalStockValueMinor,_that.loadingMore);case _:
   return orElse();
 
 }
@@ -172,10 +185,10 @@ return $default(_that.filter);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AdminProductsFilter filter)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AdminProductQuery query,  List<AdminProductSummary> products,  int totalCount,  int totalStockValueMinor,  bool loadingMore)  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductsState():
-return $default(_that.filter);case _:
+return $default(_that.query,_that.products,_that.totalCount,_that.totalStockValueMinor,_that.loadingMore);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -192,10 +205,10 @@ return $default(_that.filter);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AdminProductsFilter filter)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AdminProductQuery query,  List<AdminProductSummary> products,  int totalCount,  int totalStockValueMinor,  bool loadingMore)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminProductsState() when $default != null:
-return $default(_that.filter);case _:
+return $default(_that.query,_that.products,_that.totalCount,_that.totalStockValueMinor,_that.loadingMore);case _:
   return null;
 
 }
@@ -206,11 +219,21 @@ return $default(_that.filter);case _:
 /// @nodoc
 
 
-class _AdminProductsState implements AdminProductsState {
-  const _AdminProductsState({this.filter = AdminProductsFilter.all});
+class _AdminProductsState extends AdminProductsState {
+  const _AdminProductsState({required this.query,  List<AdminProductSummary> products = const <AdminProductSummary>[], this.totalCount = 0, this.totalStockValueMinor = 0, this.loadingMore = false}): _products = products,super._();
   
 
-@override@JsonKey() final  AdminProductsFilter filter;
+@override final  AdminProductQuery query;
+ final  List<AdminProductSummary> _products;
+@override@JsonKey() List<AdminProductSummary> get products {
+  if (_products is EqualUnmodifiableListView) return _products;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_products);
+}
+
+@override@JsonKey() final  int totalCount;
+@override@JsonKey() final  int totalStockValueMinor;
+@override@JsonKey() final  bool loadingMore;
 
 /// Create a copy of AdminProductsState
 /// with the given fields replaced by the non-null parameter values.
@@ -222,16 +245,16 @@ _$AdminProductsStateCopyWith<_AdminProductsState> get copyWith => __$AdminProduc
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductsState&&(identical(other.filter, filter) || other.filter == filter));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductsState&&(identical(other.query, query) || other.query == query)&&const DeepCollectionEquality().equals(other._products, _products)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.totalStockValueMinor, totalStockValueMinor) || other.totalStockValueMinor == totalStockValueMinor)&&(identical(other.loadingMore, loadingMore) || other.loadingMore == loadingMore));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,filter);
+int get hashCode => Object.hash(runtimeType,query,const DeepCollectionEquality().hash(_products),totalCount,totalStockValueMinor,loadingMore);
 
 @override
 String toString() {
-  return 'AdminProductsState(filter: $filter)';
+  return 'AdminProductsState(query: $query, products: $products, totalCount: $totalCount, totalStockValueMinor: $totalStockValueMinor, loadingMore: $loadingMore)';
 }
 
 
@@ -242,11 +265,11 @@ abstract mixin class _$AdminProductsStateCopyWith<$Res> implements $AdminProduct
   factory _$AdminProductsStateCopyWith(_AdminProductsState value, $Res Function(_AdminProductsState) _then) = __$AdminProductsStateCopyWithImpl;
 @override @useResult
 $Res call({
- AdminProductsFilter filter
+ AdminProductQuery query, List<AdminProductSummary> products, int totalCount, int totalStockValueMinor, bool loadingMore
 });
 
 
-
+@override $AdminProductQueryCopyWith<$Res> get query;
 
 }
 /// @nodoc
@@ -259,14 +282,27 @@ class __$AdminProductsStateCopyWithImpl<$Res>
 
 /// Create a copy of AdminProductsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? filter = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? query = null,Object? products = null,Object? totalCount = null,Object? totalStockValueMinor = null,Object? loadingMore = null,}) {
   return _then(_AdminProductsState(
-filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
-as AdminProductsFilter,
+query: null == query ? _self.query : query // ignore: cast_nullable_to_non_nullable
+as AdminProductQuery,products: null == products ? _self._products : products // ignore: cast_nullable_to_non_nullable
+as List<AdminProductSummary>,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
+as int,totalStockValueMinor: null == totalStockValueMinor ? _self.totalStockValueMinor : totalStockValueMinor // ignore: cast_nullable_to_non_nullable
+as int,loadingMore: null == loadingMore ? _self.loadingMore : loadingMore // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
-
+/// Create a copy of AdminProductsState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$AdminProductQueryCopyWith<$Res> get query {
+  
+  return $AdminProductQueryCopyWith<$Res>(_self.query, (value) {
+    return _then(_self.copyWith(query: value));
+  });
+}
 }
 
 // dart format on

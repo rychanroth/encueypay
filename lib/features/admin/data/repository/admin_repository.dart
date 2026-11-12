@@ -56,7 +56,19 @@ abstract interface class IAdminRepository {
   Future<void> deleteBrand({required String brandId});
 
   // ------------------------------------------------------ products (2b)
-  Future<List<AdminProductSummary>> fetchProducts({String? query});
+  /// Server-side filtered/sorted/paged catalog search with full-match totals
+  /// (`admin_search_products`). [limit] is capped at 5000 server-side for
+  /// CSV exports.
+  Future<AdminProductPage> searchProducts(
+    AdminProductQuery query, {
+    int limit = 25,
+    int offset = 0,
+  });
+
+  /// Fresh single-product read for the edit form: the list row it was opened
+  /// from can be stale (an image edit invalidates asynchronously), and the
+  /// form seeds its images/variant `image_path`s from this snapshot.
+  Future<AdminProductSummary> fetchProduct(String productId);
 
   Future<String> createProduct(AdminProductDraft draft);
 

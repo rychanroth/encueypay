@@ -876,6 +876,571 @@ as List<AdminProductVariantRef>,
 }
 
 /// @nodoc
+mixin _$AdminProductQuery {
+
+ String get search; Set<AdminCatalogStatus> get statuses; String? get brandId; String? get categoryId; Set<AdminProductStock> get stock; int? get minPriceMinor; int? get maxPriceMinor; DateTime? get from; DateTime? get to; AdminProductSort get sort;
+/// Create a copy of AdminProductQuery
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminProductQueryCopyWith<AdminProductQuery> get copyWith => _$AdminProductQueryCopyWithImpl<AdminProductQuery>(this as AdminProductQuery, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductQuery&&(identical(other.search, search) || other.search == search)&&const DeepCollectionEquality().equals(other.statuses, statuses)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&const DeepCollectionEquality().equals(other.stock, stock)&&(identical(other.minPriceMinor, minPriceMinor) || other.minPriceMinor == minPriceMinor)&&(identical(other.maxPriceMinor, maxPriceMinor) || other.maxPriceMinor == maxPriceMinor)&&(identical(other.from, from) || other.from == from)&&(identical(other.to, to) || other.to == to)&&(identical(other.sort, sort) || other.sort == sort));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,search,const DeepCollectionEquality().hash(statuses),brandId,categoryId,const DeepCollectionEquality().hash(stock),minPriceMinor,maxPriceMinor,from,to,sort);
+
+@override
+String toString() {
+  return 'AdminProductQuery(search: $search, statuses: $statuses, brandId: $brandId, categoryId: $categoryId, stock: $stock, minPriceMinor: $minPriceMinor, maxPriceMinor: $maxPriceMinor, from: $from, to: $to, sort: $sort)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminProductQueryCopyWith<$Res>  {
+  factory $AdminProductQueryCopyWith(AdminProductQuery value, $Res Function(AdminProductQuery) _then) = _$AdminProductQueryCopyWithImpl;
+@useResult
+$Res call({
+ String search, Set<AdminCatalogStatus> statuses, String? brandId, String? categoryId, Set<AdminProductStock> stock, int? minPriceMinor, int? maxPriceMinor, DateTime? from, DateTime? to, AdminProductSort sort
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminProductQueryCopyWithImpl<$Res>
+    implements $AdminProductQueryCopyWith<$Res> {
+  _$AdminProductQueryCopyWithImpl(this._self, this._then);
+
+  final AdminProductQuery _self;
+  final $Res Function(AdminProductQuery) _then;
+
+/// Create a copy of AdminProductQuery
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? search = null,Object? statuses = null,Object? brandId = freezed,Object? categoryId = freezed,Object? stock = null,Object? minPriceMinor = freezed,Object? maxPriceMinor = freezed,Object? from = freezed,Object? to = freezed,Object? sort = null,}) {
+  return _then(AdminProductQuery(
+search: null == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
+as String,statuses: null == statuses ? _self.statuses : statuses // ignore: cast_nullable_to_non_nullable
+as Set<AdminCatalogStatus>,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
+as String?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String?,stock: null == stock ? _self.stock : stock // ignore: cast_nullable_to_non_nullable
+as Set<AdminProductStock>,minPriceMinor: freezed == minPriceMinor ? _self.minPriceMinor : minPriceMinor // ignore: cast_nullable_to_non_nullable
+as int?,maxPriceMinor: freezed == maxPriceMinor ? _self.maxPriceMinor : maxPriceMinor // ignore: cast_nullable_to_non_nullable
+as int?,from: freezed == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
+as DateTime?,to: freezed == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
+as DateTime?,sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
+as AdminProductSort,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminProductQuery].
+extension AdminProductQueryPatterns on AdminProductQuery {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminProductQuery value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminProductQuery() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminProductQuery value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductQuery():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminProductQuery value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductQuery() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String search,  Set<AdminCatalogStatus> statuses,  String? brandId,  String? categoryId,  Set<AdminProductStock> stock,  int? minPriceMinor,  int? maxPriceMinor,  DateTime? from,  DateTime? to,  AdminProductSort sort)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminProductQuery() when $default != null:
+return $default(_that.search,_that.statuses,_that.brandId,_that.categoryId,_that.stock,_that.minPriceMinor,_that.maxPriceMinor,_that.from,_that.to,_that.sort);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String search,  Set<AdminCatalogStatus> statuses,  String? brandId,  String? categoryId,  Set<AdminProductStock> stock,  int? minPriceMinor,  int? maxPriceMinor,  DateTime? from,  DateTime? to,  AdminProductSort sort)  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductQuery():
+return $default(_that.search,_that.statuses,_that.brandId,_that.categoryId,_that.stock,_that.minPriceMinor,_that.maxPriceMinor,_that.from,_that.to,_that.sort);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String search,  Set<AdminCatalogStatus> statuses,  String? brandId,  String? categoryId,  Set<AdminProductStock> stock,  int? minPriceMinor,  int? maxPriceMinor,  DateTime? from,  DateTime? to,  AdminProductSort sort)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductQuery() when $default != null:
+return $default(_that.search,_that.statuses,_that.brandId,_that.categoryId,_that.stock,_that.minPriceMinor,_that.maxPriceMinor,_that.from,_that.to,_that.sort);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminProductQuery extends AdminProductQuery {
+  const _AdminProductQuery({this.search = '',  Set<AdminCatalogStatus> statuses = const <AdminCatalogStatus>{}, this.brandId, this.categoryId,  Set<AdminProductStock> stock = const <AdminProductStock>{}, this.minPriceMinor, this.maxPriceMinor, this.from, this.to, this.sort = AdminProductSort.newest}): _statuses = statuses,_stock = stock,super._();
+  
+
+@override@JsonKey() final  String search;
+ final  Set<AdminCatalogStatus> _statuses;
+@override@JsonKey() Set<AdminCatalogStatus> get statuses {
+  if (_statuses is EqualUnmodifiableSetView) return _statuses;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableSetView(_statuses);
+}
+
+@override final  String? brandId;
+@override final  String? categoryId;
+ final  Set<AdminProductStock> _stock;
+@override@JsonKey() Set<AdminProductStock> get stock {
+  if (_stock is EqualUnmodifiableSetView) return _stock;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableSetView(_stock);
+}
+
+@override final  int? minPriceMinor;
+@override final  int? maxPriceMinor;
+@override final  DateTime? from;
+@override final  DateTime? to;
+@override@JsonKey() final  AdminProductSort sort;
+
+/// Create a copy of AdminProductQuery
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminProductQueryCopyWith<_AdminProductQuery> get copyWith => __$AdminProductQueryCopyWithImpl<_AdminProductQuery>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductQuery&&(identical(other.search, search) || other.search == search)&&const DeepCollectionEquality().equals(other._statuses, _statuses)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&const DeepCollectionEquality().equals(other._stock, _stock)&&(identical(other.minPriceMinor, minPriceMinor) || other.minPriceMinor == minPriceMinor)&&(identical(other.maxPriceMinor, maxPriceMinor) || other.maxPriceMinor == maxPriceMinor)&&(identical(other.from, from) || other.from == from)&&(identical(other.to, to) || other.to == to)&&(identical(other.sort, sort) || other.sort == sort));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,search,const DeepCollectionEquality().hash(_statuses),brandId,categoryId,const DeepCollectionEquality().hash(_stock),minPriceMinor,maxPriceMinor,from,to,sort);
+
+@override
+String toString() {
+  return 'AdminProductQuery(search: $search, statuses: $statuses, brandId: $brandId, categoryId: $categoryId, stock: $stock, minPriceMinor: $minPriceMinor, maxPriceMinor: $maxPriceMinor, from: $from, to: $to, sort: $sort)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminProductQueryCopyWith<$Res> implements $AdminProductQueryCopyWith<$Res> {
+  factory _$AdminProductQueryCopyWith(_AdminProductQuery value, $Res Function(_AdminProductQuery) _then) = __$AdminProductQueryCopyWithImpl;
+@override @useResult
+$Res call({
+ String search, Set<AdminCatalogStatus> statuses, String? brandId, String? categoryId, Set<AdminProductStock> stock, int? minPriceMinor, int? maxPriceMinor, DateTime? from, DateTime? to, AdminProductSort sort
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminProductQueryCopyWithImpl<$Res>
+    implements _$AdminProductQueryCopyWith<$Res> {
+  __$AdminProductQueryCopyWithImpl(this._self, this._then);
+
+  final _AdminProductQuery _self;
+  final $Res Function(_AdminProductQuery) _then;
+
+/// Create a copy of AdminProductQuery
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? search = null,Object? statuses = null,Object? brandId = freezed,Object? categoryId = freezed,Object? stock = null,Object? minPriceMinor = freezed,Object? maxPriceMinor = freezed,Object? from = freezed,Object? to = freezed,Object? sort = null,}) {
+  return _then(_AdminProductQuery(
+search: null == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
+as String,statuses: null == statuses ? _self._statuses : statuses // ignore: cast_nullable_to_non_nullable
+as Set<AdminCatalogStatus>,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
+as String?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as String?,stock: null == stock ? _self._stock : stock // ignore: cast_nullable_to_non_nullable
+as Set<AdminProductStock>,minPriceMinor: freezed == minPriceMinor ? _self.minPriceMinor : minPriceMinor // ignore: cast_nullable_to_non_nullable
+as int?,maxPriceMinor: freezed == maxPriceMinor ? _self.maxPriceMinor : maxPriceMinor // ignore: cast_nullable_to_non_nullable
+as int?,from: freezed == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
+as DateTime?,to: freezed == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
+as DateTime?,sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
+as AdminProductSort,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$AdminProductPage {
+
+ List<AdminProductSummary> get products; int get totalCount; int get totalStockValueMinor;
+/// Create a copy of AdminProductPage
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AdminProductPageCopyWith<AdminProductPage> get copyWith => _$AdminProductPageCopyWithImpl<AdminProductPage>(this as AdminProductPage, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminProductPage&&const DeepCollectionEquality().equals(other.products, products)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.totalStockValueMinor, totalStockValueMinor) || other.totalStockValueMinor == totalStockValueMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(products),totalCount,totalStockValueMinor);
+
+@override
+String toString() {
+  return 'AdminProductPage(products: $products, totalCount: $totalCount, totalStockValueMinor: $totalStockValueMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AdminProductPageCopyWith<$Res>  {
+  factory $AdminProductPageCopyWith(AdminProductPage value, $Res Function(AdminProductPage) _then) = _$AdminProductPageCopyWithImpl;
+@useResult
+$Res call({
+ List<AdminProductSummary> products, int totalCount, int totalStockValueMinor
+});
+
+
+
+
+}
+/// @nodoc
+class _$AdminProductPageCopyWithImpl<$Res>
+    implements $AdminProductPageCopyWith<$Res> {
+  _$AdminProductPageCopyWithImpl(this._self, this._then);
+
+  final AdminProductPage _self;
+  final $Res Function(AdminProductPage) _then;
+
+/// Create a copy of AdminProductPage
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? products = null,Object? totalCount = null,Object? totalStockValueMinor = null,}) {
+  return _then(AdminProductPage(
+products: null == products ? _self.products : products // ignore: cast_nullable_to_non_nullable
+as List<AdminProductSummary>,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
+as int,totalStockValueMinor: null == totalStockValueMinor ? _self.totalStockValueMinor : totalStockValueMinor // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AdminProductPage].
+extension AdminProductPagePatterns on AdminProductPage {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AdminProductPage value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AdminProductPage() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AdminProductPage value)  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductPage():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AdminProductPage value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AdminProductPage() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<AdminProductSummary> products,  int totalCount,  int totalStockValueMinor)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AdminProductPage() when $default != null:
+return $default(_that.products,_that.totalCount,_that.totalStockValueMinor);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<AdminProductSummary> products,  int totalCount,  int totalStockValueMinor)  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductPage():
+return $default(_that.products,_that.totalCount,_that.totalStockValueMinor);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<AdminProductSummary> products,  int totalCount,  int totalStockValueMinor)?  $default,) {final _that = this;
+switch (_that) {
+case _AdminProductPage() when $default != null:
+return $default(_that.products,_that.totalCount,_that.totalStockValueMinor);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _AdminProductPage implements AdminProductPage {
+  const _AdminProductPage({ List<AdminProductSummary> products = const <AdminProductSummary>[], this.totalCount = 0, this.totalStockValueMinor = 0}): _products = products;
+  
+
+ final  List<AdminProductSummary> _products;
+@override@JsonKey() List<AdminProductSummary> get products {
+  if (_products is EqualUnmodifiableListView) return _products;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_products);
+}
+
+@override@JsonKey() final  int totalCount;
+@override@JsonKey() final  int totalStockValueMinor;
+
+/// Create a copy of AdminProductPage
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AdminProductPageCopyWith<_AdminProductPage> get copyWith => __$AdminProductPageCopyWithImpl<_AdminProductPage>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminProductPage&&const DeepCollectionEquality().equals(other._products, _products)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.totalStockValueMinor, totalStockValueMinor) || other.totalStockValueMinor == totalStockValueMinor));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_products),totalCount,totalStockValueMinor);
+
+@override
+String toString() {
+  return 'AdminProductPage(products: $products, totalCount: $totalCount, totalStockValueMinor: $totalStockValueMinor)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AdminProductPageCopyWith<$Res> implements $AdminProductPageCopyWith<$Res> {
+  factory _$AdminProductPageCopyWith(_AdminProductPage value, $Res Function(_AdminProductPage) _then) = __$AdminProductPageCopyWithImpl;
+@override @useResult
+$Res call({
+ List<AdminProductSummary> products, int totalCount, int totalStockValueMinor
+});
+
+
+
+
+}
+/// @nodoc
+class __$AdminProductPageCopyWithImpl<$Res>
+    implements _$AdminProductPageCopyWith<$Res> {
+  __$AdminProductPageCopyWithImpl(this._self, this._then);
+
+  final _AdminProductPage _self;
+  final $Res Function(_AdminProductPage) _then;
+
+/// Create a copy of AdminProductPage
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? products = null,Object? totalCount = null,Object? totalStockValueMinor = null,}) {
+  return _then(_AdminProductPage(
+products: null == products ? _self._products : products // ignore: cast_nullable_to_non_nullable
+as List<AdminProductSummary>,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
+as int,totalStockValueMinor: null == totalStockValueMinor ? _self.totalStockValueMinor : totalStockValueMinor // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$AdminProductImageRef {
 
  String get id; String get storagePath; String get url;

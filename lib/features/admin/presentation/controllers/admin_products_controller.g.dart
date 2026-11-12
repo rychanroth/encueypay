@@ -8,56 +8,68 @@ part of 'admin_products_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Applied filter/sort state for the Products tab (PRES-02). Kept separate
+/// from the list controller so the screen (and the URL codec) own one source
+/// of truth and changing a filter rebuilds exactly one fetch.
 
-@ProviderFor(AdminProductsFilterController)
-final adminProductsFilterControllerProvider =
-    AdminProductsFilterControllerProvider._();
+@ProviderFor(AdminProductsQueryController)
+final adminProductsQueryControllerProvider =
+    AdminProductsQueryControllerProvider._();
 
-final class AdminProductsFilterControllerProvider
-    extends
-        $NotifierProvider<AdminProductsFilterController, AdminProductsState> {
-  AdminProductsFilterControllerProvider._()
+/// Applied filter/sort state for the Products tab (PRES-02). Kept separate
+/// from the list controller so the screen (and the URL codec) own one source
+/// of truth and changing a filter rebuilds exactly one fetch.
+final class AdminProductsQueryControllerProvider
+    extends $NotifierProvider<AdminProductsQueryController, AdminProductQuery> {
+  /// Applied filter/sort state for the Products tab (PRES-02). Kept separate
+  /// from the list controller so the screen (and the URL codec) own one source
+  /// of truth and changing a filter rebuilds exactly one fetch.
+  AdminProductsQueryControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'adminProductsFilterControllerProvider',
-        isAutoDispose: true,
+        name: r'adminProductsQueryControllerProvider',
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$adminProductsFilterControllerHash();
+  String debugGetCreateSourceHash() => _$adminProductsQueryControllerHash();
 
   @$internal
   @override
-  AdminProductsFilterController create() => AdminProductsFilterController();
+  AdminProductsQueryController create() => AdminProductsQueryController();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AdminProductsState value) {
+  Override overrideWithValue(AdminProductQuery value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AdminProductsState>(value),
+      providerOverride: $SyncValueProvider<AdminProductQuery>(value),
     );
   }
 }
 
-String _$adminProductsFilterControllerHash() =>
-    r'a4f12605eadb42fdb71e1ca3d4962285cd3d2f08';
+String _$adminProductsQueryControllerHash() =>
+    r'18647f885f4232548279a8f140b88a882fee6fa3';
 
-abstract class _$AdminProductsFilterController
-    extends $Notifier<AdminProductsState> {
-  AdminProductsState build();
+/// Applied filter/sort state for the Products tab (PRES-02). Kept separate
+/// from the list controller so the screen (and the URL codec) own one source
+/// of truth and changing a filter rebuilds exactly one fetch.
+
+abstract class _$AdminProductsQueryController
+    extends $Notifier<AdminProductQuery> {
+  AdminProductQuery build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AdminProductsState, AdminProductsState>;
+    final ref = this.ref as $Ref<AdminProductQuery, AdminProductQuery>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AdminProductsState, AdminProductsState>,
-              AdminProductsState,
+              AnyNotifier<AdminProductQuery, AdminProductQuery>,
+              AdminProductQuery,
               Object?,
               Object?
             >;
@@ -65,128 +77,64 @@ abstract class _$AdminProductsFilterController
   }
 }
 
-/// Admin product catalog (Section 2b, spec §8 "manages Products"): all
-/// statuses, name search, archive/activate, and the draft mutations backing
-/// the product form. List is capped at 100 rows — prototype scale.
+/// Admin product catalog (Section 2b, spec §8 "manages Products"):
+/// server-side filtered/sorted/paginated search over every status, with the
+/// draft mutations backing the product form.
 
 @ProviderFor(AdminProductsController)
-final adminProductsControllerProvider = AdminProductsControllerFamily._();
+final adminProductsControllerProvider = AdminProductsControllerProvider._();
 
-/// Admin product catalog (Section 2b, spec §8 "manages Products"): all
-/// statuses, name search, archive/activate, and the draft mutations backing
-/// the product form. List is capped at 100 rows — prototype scale.
+/// Admin product catalog (Section 2b, spec §8 "manages Products"):
+/// server-side filtered/sorted/paginated search over every status, with the
+/// draft mutations backing the product form.
 final class AdminProductsControllerProvider
     extends
-        $AsyncNotifierProvider<
-          AdminProductsController,
-          List<AdminProductSummary>
-        > {
-  /// Admin product catalog (Section 2b, spec §8 "manages Products"): all
-  /// statuses, name search, archive/activate, and the draft mutations backing
-  /// the product form. List is capped at 100 rows — prototype scale.
-  AdminProductsControllerProvider._({
-    required AdminProductsControllerFamily super.from,
-    required String? super.argument,
-  }) : super(
-         retry: null,
-         name: r'adminProductsControllerProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+        $AsyncNotifierProvider<AdminProductsController, AdminProductsState> {
+  /// Admin product catalog (Section 2b, spec §8 "manages Products"):
+  /// server-side filtered/sorted/paginated search over every status, with the
+  /// draft mutations backing the product form.
+  AdminProductsControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminProductsControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$adminProductsControllerHash();
 
-  @override
-  String toString() {
-    return r'adminProductsControllerProvider'
-        ''
-        '($argument)';
-  }
-
   @$internal
   @override
   AdminProductsController create() => AdminProductsController();
-
-  @override
-  bool operator ==(Object other) {
-    return other is AdminProductsControllerProvider &&
-        other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
 }
 
 String _$adminProductsControllerHash() =>
-    r'5bf6904534c09a35af891b8c665356b4f27a57c2';
+    r'08f196dbfa04fb62aa1e18037ed7d780de9572b3';
 
-/// Admin product catalog (Section 2b, spec §8 "manages Products"): all
-/// statuses, name search, archive/activate, and the draft mutations backing
-/// the product form. List is capped at 100 rows — prototype scale.
-
-final class AdminProductsControllerFamily extends $Family
-    with
-        $ClassFamilyOverride<
-          AdminProductsController,
-          AsyncValue<List<AdminProductSummary>>,
-          List<AdminProductSummary>,
-          FutureOr<List<AdminProductSummary>>,
-          String?
-        > {
-  AdminProductsControllerFamily._()
-    : super(
-        retry: null,
-        name: r'adminProductsControllerProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  /// Admin product catalog (Section 2b, spec §8 "manages Products"): all
-  /// statuses, name search, archive/activate, and the draft mutations backing
-  /// the product form. List is capped at 100 rows — prototype scale.
-
-  AdminProductsControllerProvider call(String? query) =>
-      AdminProductsControllerProvider._(argument: query, from: this);
-
-  @override
-  String toString() => r'adminProductsControllerProvider';
-}
-
-/// Admin product catalog (Section 2b, spec §8 "manages Products"): all
-/// statuses, name search, archive/activate, and the draft mutations backing
-/// the product form. List is capped at 100 rows — prototype scale.
+/// Admin product catalog (Section 2b, spec §8 "manages Products"):
+/// server-side filtered/sorted/paginated search over every status, with the
+/// draft mutations backing the product form.
 
 abstract class _$AdminProductsController
-    extends $AsyncNotifier<List<AdminProductSummary>> {
-  late final _$args = ref.$arg as String?;
-  String? get query => _$args;
-
-  FutureOr<List<AdminProductSummary>> build(String? query);
+    extends $AsyncNotifier<AdminProductsState> {
+  FutureOr<AdminProductsState> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref
-            as $Ref<
-              AsyncValue<List<AdminProductSummary>>,
-              List<AdminProductSummary>
-            >;
+        this.ref as $Ref<AsyncValue<AdminProductsState>, AdminProductsState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<List<AdminProductSummary>>,
-                List<AdminProductSummary>
-              >,
-              AsyncValue<List<AdminProductSummary>>,
+              AnyNotifier<AsyncValue<AdminProductsState>, AdminProductsState>,
+              AsyncValue<AdminProductsState>,
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(_$args));
+    return element.handleCreate(ref, build);
   }
 }

@@ -228,7 +228,7 @@ class _AdminProductFormScreenState
     setState(() => _saving = true);
     try {
       final controller =
-          ref.read(adminProductsControllerProvider(null).notifier);
+          ref.read(adminProductsControllerProvider.notifier);
       if (widget.product == null) {
         await controller.createWithImages(
           draft: draft,
@@ -241,7 +241,7 @@ class _AdminProductFormScreenState
         );
       }
       final hasError =
-          ref.read(adminProductsControllerProvider(null)).hasError;
+          ref.read(adminProductsControllerProvider).hasError;
       if (hasError) return;
 
       // Staged removals only hit the server after the product save succeeds
@@ -274,7 +274,7 @@ class _AdminProductFormScreenState
     final categoriesAsync = ref.watch(adminCategoriesControllerProvider);
     final brandsAsync = ref.watch(adminBrandsControllerProvider);
 
-    ref.listen(adminProductsControllerProvider(null), (previous, next) {
+    ref.listen(adminProductsControllerProvider, (previous, next) {
       final error = next.hasError ? next.error : null;
       if (error is Failure) {
         ScaffoldMessenger.of(context)

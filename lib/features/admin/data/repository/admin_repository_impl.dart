@@ -186,6 +186,13 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   // -------------------------------------------------------- products (2b)
+  /// Same embed shape as the search RPC so [AdminProductRowDto] mapping is
+  /// shared between the list and the fresh edit-form read.
+  static const _adminProductSelect =
+      '*, brands(name), categories(name), '
+      'product_variants(id, name, price_minor, status, image_path), '
+      'product_images(id, storage_path, sort_order)';
+
   String _productImageUrl(String storagePath) {
     if (storagePath.startsWith('http')) return storagePath;
     return _client.storage.from('product_images').getPublicUrl(storagePath);
@@ -200,68 +207,104 @@ class AdminRepositoryImpl implements IAdminRepository {
   }
 
   @override
-  Future<List<AdminProductSummary>> fetchProducts({String? query}) async {
+  Future<AdminProductPage> searchProducts(
+    AdminProductQuery query, {
+    int limit = 25,
+    int offset = 0,
+  }) async {
     try {
-      var request = _client.from('products').select(
-            '*, brands(name), categories(name), '
-            'product_variants(id, name, price_minor, status, image_path), '
-            'product_images(id, storage_path, sort_order)',
-          );
-      final q = query?.trim() ?? '';
-      if (q.isNotEmpty) {
-        request = request.ilike('name', '%$q%');
-      }
-      final rows =
-          await request.order('created_at', ascending: false).limit(100);
-      return rows.map(AdminProductRowDto.fromJson).map((dto) {
-        final images = [...dto.productImages]
-          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-        // The form authors real priced variants only. The null-price
-        // single-price placeholder and archived rows never appear there.
-        final variants = [
-          for (final variant in dto.productVariants)
-            if (variant.status != 'archived' && variant.priceMinor != null)
-              AdminProductVariantRef(
-                id: variant.id ?? '',
-                name: variant.name ?? '',
-                priceMinor: variant.priceMinor,
-                imagePath: variant.imagePath,
-                imageUrl: _productImageUrlOrNull(variant.imagePath),
-              ),
-        ];
-        // Multi-variant base price is derived from the cheapest option, so
-        // the admin list shows the same "from" price customers see. A
-        // single-price product uses its stored base price.
-        final effectiveBasePrice = variants.isEmpty
-            ? dto.basePriceMinor
-            : variants
-                .map((variant) => variant.priceMinor!)
-                .reduce((a, b) => a < b ? a : b);
-        return AdminProductSummary(
-          id: dto.id,
-          name: dto.name,
-          categoryId: dto.categoryId,
-          categoryName: dto.categories?.name ?? '',
-          basePriceMinor: effectiveBasePrice,
-          variantCount: variants.length,
-          stock: dto.stock,
-          description: dto.description ?? '',
-          status: AdminCatalogStatus.fromName(dto.status),
-          brandId: dto.brandId,
-          brandName: dto.brands?.name,
-          images: images
-              .map((image) => AdminProductImageRef(
-                    id: image.id,
-                    storagePath: image.storagePath,
-                    url: _productImageUrl(image.storagePath),
-                  ))
-              .toList(),
-          variants: variants,
-        );
-      }).toList();
+      final result = await _client.rpc('admin_search_products', params: {
+        'p_search': query.search.trim().isEmpty ? null : query.search.trim(),
+        'p_statuses': [for (final status in query.statuses) status.name],
+        'p_brand_id': query.brandId,
+        'p_category_id': query.categoryId,
+        'p_stock_buckets': [for (final bucket in query.stock) bucket.wireName],
+        'p_min_price': query.minPriceMinor,
+        'p_max_price': query.maxPriceMinor,
+        'p_from': query.from == null ? null : _dateOnly(query.from!),
+        'p_to': query.to == null ? null : _dateOnly(query.to!),
+        'p_sort': query.sort.wireName,
+        'p_limit': limit,
+        'p_offset': offset,
+      });
+      final map = Map<String, dynamic>.from(result as Map);
+      final rows = (map['products'] as List? ?? const [])
+          .whereType<Map<String, dynamic>>();
+      return AdminProductPage(
+        products: rows
+            .map((row) => _mapProductRow(AdminProductRowDto.fromJson(row)))
+            .toList(),
+        totalCount: _intFrom(map, 'total_count'),
+        totalStockValueMinor: _intFrom(map, 'total_stock_value_minor'),
+      );
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
+  }
+
+  @override
+  Future<AdminProductSummary> fetchProduct(String productId) async {
+    try {
+      final row = await _client
+          .from('products')
+          .select(_adminProductSelect)
+          .eq('id', productId)
+          .maybeSingle();
+      if (row == null) {
+        throw const ServerFailure('Product not found');
+      }
+      return _mapProductRow(AdminProductRowDto.fromJson(row));
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  /// Wire row → list entity (DATA-01 mapping stays in the data layer).
+  AdminProductSummary _mapProductRow(AdminProductRowDto dto) {
+    final images = [...dto.productImages]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    // The form authors real priced variants only. The null-price
+    // single-price placeholder and archived rows never appear there.
+    final variants = [
+      for (final variant in dto.productVariants)
+        if (variant.status != 'archived' && variant.priceMinor != null)
+          AdminProductVariantRef(
+            id: variant.id ?? '',
+            name: variant.name ?? '',
+            priceMinor: variant.priceMinor,
+            imagePath: variant.imagePath,
+            imageUrl: _productImageUrlOrNull(variant.imagePath),
+          ),
+    ];
+    // Multi-variant base price is derived from the cheapest option, so
+    // the admin list shows the same "from" price customers see. A
+    // single-price product uses its stored base price.
+    final effectiveBasePrice = variants.isEmpty
+        ? dto.basePriceMinor
+        : variants
+            .map((variant) => variant.priceMinor!)
+            .reduce((a, b) => a < b ? a : b);
+    return AdminProductSummary(
+      id: dto.id,
+      name: dto.name,
+      categoryId: dto.categoryId,
+      categoryName: dto.categories?.name ?? '',
+      basePriceMinor: effectiveBasePrice,
+      variantCount: variants.length,
+      stock: dto.stock,
+      description: dto.description ?? '',
+      status: AdminCatalogStatus.fromName(dto.status),
+      brandId: dto.brandId,
+      brandName: dto.brands?.name,
+      images: images
+          .map((image) => AdminProductImageRef(
+                id: image.id,
+                storagePath: image.storagePath,
+                url: _productImageUrl(image.storagePath),
+              ))
+          .toList(),
+      variants: variants,
+    );
   }
 
   /// Reads an int that may arrive as a JSON number of either flavor —

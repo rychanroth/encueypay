@@ -76,6 +76,92 @@ enum AdminCatalogStatus {
       AdminCatalogStatus.archived;
 }
 
+/// Filter/sort parameters for the admin product search (Section 2b). Empty
+/// sets mean "any"; [from]/[to] are inclusive local days; price bounds and
+/// sorts use the effective (cheapest active variant) price.
+@freezed
+abstract class AdminProductQuery with _$AdminProductQuery {
+  const factory AdminProductQuery({
+    @Default('') String search,
+    @Default(<AdminCatalogStatus>{}) Set<AdminCatalogStatus> statuses,
+    String? brandId,
+    String? categoryId,
+    @Default(<AdminProductStock>{}) Set<AdminProductStock> stock,
+    int? minPriceMinor,
+    int? maxPriceMinor,
+    DateTime? from,
+    DateTime? to,
+    @Default(AdminProductSort.newest) AdminProductSort sort,
+  }) = _AdminProductQuery;
+
+  const AdminProductQuery._();
+
+  /// True when anything narrows the result (used for the no-match empty
+  /// state vs "no products yet").
+  bool get hasFilters =>
+      search.isNotEmpty ||
+      statuses.isNotEmpty ||
+      brandId != null ||
+      categoryId != null ||
+      stock.isNotEmpty ||
+      minPriceMinor != null ||
+      maxPriceMinor != null ||
+      from != null ||
+      to != null;
+}
+
+/// Inventory buckets (server-side). "In stock" excludes the low band, so the
+/// three buckets partition the catalog: out = 0, low = 1–5, in = 6+.
+enum AdminProductStock {
+  inStock('in', 'In stock'),
+  low('low', 'Low stock (≤5)'),
+  out('out', 'Out of stock');
+
+  const AdminProductStock(this.wireName, this.label);
+
+  final String wireName;
+  final String label;
+
+  static AdminProductStock? fromWire(String? value) {
+    for (final bucket in values) {
+      if (bucket.wireName == value) return bucket;
+    }
+    return null;
+  }
+}
+
+enum AdminProductSort {
+  newest('newest', 'Newest'),
+  oldest('oldest', 'Oldest'),
+  nameAsc('name_asc', 'Name A–Z'),
+  priceDesc('price_desc', 'Price: high → low'),
+  priceAsc('price_asc', 'Price: low → high'),
+  stockAsc('stock_asc', 'Stock: low → high'),
+  stockDesc('stock_desc', 'Stock: high → low');
+
+  const AdminProductSort(this.wireName, this.label);
+
+  final String wireName;
+  final String label;
+
+  static AdminProductSort fromWire(String? value) {
+    for (final sort in values) {
+      if (sort.wireName == value) return sort;
+    }
+    return AdminProductSort.newest;
+  }
+}
+
+/// One page of the admin product search plus the full matching totals.
+@freezed
+abstract class AdminProductPage with _$AdminProductPage {
+  const factory AdminProductPage({
+    @Default(<AdminProductSummary>[]) List<AdminProductSummary> products,
+    @Default(0) int totalCount,
+    @Default(0) int totalStockValueMinor,
+  }) = _AdminProductPage;
+}
+
 /// Product image reference for admin editing (Section 2b).
 @freezed
 abstract class AdminProductImageRef with _$AdminProductImageRef {
@@ -189,14 +275,14 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
   /// cancellable. Pending/confirmed orders can instead be cancelled with a
   /// reason (the rejection equivalent).
   AdminOrderStatus? get nextTransition => switch (status) {
-        AdminOrderStatus.pending => AdminOrderStatus.confirmed,
-        AdminOrderStatus.confirmed => AdminOrderStatus.processing,
-        AdminOrderStatus.processing => AdminOrderStatus.packed,
-        AdminOrderStatus.packed => AdminOrderStatus.shipped,
-        AdminOrderStatus.shipped => AdminOrderStatus.outForDelivery,
-        AdminOrderStatus.outForDelivery => AdminOrderStatus.delivered,
-        _ => null,
-      };
+    AdminOrderStatus.pending => AdminOrderStatus.confirmed,
+    AdminOrderStatus.confirmed => AdminOrderStatus.processing,
+    AdminOrderStatus.processing => AdminOrderStatus.packed,
+    AdminOrderStatus.packed => AdminOrderStatus.shipped,
+    AdminOrderStatus.shipped => AdminOrderStatus.outForDelivery,
+    AdminOrderStatus.outForDelivery => AdminOrderStatus.delivered,
+    _ => null,
+  };
 
   bool get cancellable =>
       status == AdminOrderStatus.pending ||
@@ -282,10 +368,10 @@ enum AdminOrderSort {
   totalAsc;
 
   String get wireName => switch (this) {
-        AdminOrderSort.totalDesc => 'total_desc',
-        AdminOrderSort.totalAsc => 'total_asc',
-        _ => name,
-      };
+    AdminOrderSort.totalDesc => 'total_desc',
+    AdminOrderSort.totalAsc => 'total_asc',
+    _ => name,
+  };
 }
 
 /// The order lifecycle (mirrors the `order_status` wire enum, Section 7A).
@@ -313,9 +399,9 @@ enum AdminOrderStatus {
 
   /// Wire value (snake_case on the wire).
   String get wireName => switch (this) {
-        AdminOrderStatus.outForDelivery => 'out_for_delivery',
-        _ => name,
-      };
+    AdminOrderStatus.outForDelivery => 'out_for_delivery',
+    _ => name,
+  };
 }
 
 @freezed
