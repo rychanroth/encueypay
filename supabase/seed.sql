@@ -15,12 +15,12 @@
 insert into public.categories (name, image_path)
 select c.name, c.image_path
 from (values
-  ('Electronics', 'https://picsum.photos/seed/encuey-electronics/640/480'),
-  ('Fashion', 'https://picsum.photos/seed/encuey-fashion/640/480'),
-  ('Food & Beverages', 'https://picsum.photos/seed/encuey-food/640/480'),
-  ('Home & Living', 'https://picsum.photos/seed/encuey-home/640/480'),
-  ('Beauty', 'https://picsum.photos/seed/encuey-beauty/640/480'),
-  ('Sports', 'https://picsum.photos/seed/encuey-sports/640/480')
+  ('Electronics', 'https://placehold.co/640x480/png?text=Electronics'),
+  ('Fashion', 'https://placehold.co/640x480/png?text=Fashion'),
+  ('Food & Beverages', 'https://placehold.co/640x480/png?text=Food+%26+Beverages'),
+  ('Home & Living', 'https://placehold.co/640x480/png?text=Home+%26+Living'),
+  ('Beauty', 'https://placehold.co/640x480/png?text=Beauty'),
+  ('Sports', 'https://placehold.co/640x480/png?text=Sports')
 ) as c(name, image_path)
 where not exists (
   select 1 from public.categories existing where existing.name = c.name
@@ -43,10 +43,10 @@ where not exists (
 insert into public.brands (name, description, image_path)
 select b.name, b.description, b.image_path
 from (values
-  ('Acme', 'Reliable everyday essentials.', 'https://picsum.photos/seed/encuey-acme/320/320'),
-  ('Nordwind', 'Outdoor and adventure gear.', 'https://picsum.photos/seed/encuey-nordwind/320/320'),
-  ('Lumina', 'Modern lighting and electronics.', 'https://picsum.photos/seed/encuey-lumina/320/320'),
-  ('Verde', 'Natural beauty and wellness.', 'https://picsum.photos/seed/encuey-verde/320/320')
+  ('Acme', 'Reliable everyday essentials.', 'https://placehold.co/320x320/png?text=Acme'),
+  ('Nordwind', 'Outdoor and adventure gear.', 'https://placehold.co/320x320/png?text=Nordwind'),
+  ('Lumina', 'Modern lighting and electronics.', 'https://placehold.co/320x320/png?text=Lumina'),
+  ('Verde', 'Natural beauty and wellness.', 'https://placehold.co/320x320/png?text=Verde')
 ) as b(name, description, image_path)
 where not exists (
   select 1 from public.brands existing where existing.name = b.name
@@ -133,27 +133,29 @@ update public.products p
 -- ----------------------------------------------------------------- images
 -- storage_path may be a bare catalog path or a full http(s) URL (the
 -- repository passes URLs through — same convention as banners and
--- catalog_assets). Placeholder URLs keep the demo presentable; the client's
--- monogram fallback covers offline runs.
+-- catalog_assets). Demo imagery uses placehold.co PNGs: picsum.photos stopped
+-- answering over HTTPS, and `.png` matters — Flutter's Image.network cannot
+-- render the service's default SVG. The client's monogram fallback covers
+-- offline runs.
 insert into public.product_images (product_id, storage_path, sort_order)
 select p.id, v.storage_path, v.sort_order
 from (values
-  ('Lumina Aurora Table Lamp', 'https://picsum.photos/seed/encuey-p-aurora-1/800/800', 0),
-  ('Lumina Aurora Table Lamp', 'https://picsum.photos/seed/encuey-p-aurora-2/800/800', 1),
-  ('Nordwind Trail Backpack 30L', 'https://picsum.photos/seed/encuey-p-backpack-1/800/800', 0),
-  ('Nordwind Trail Backpack 30L', 'https://picsum.photos/seed/encuey-p-backpack-2/800/800', 1),
-  ('Acme Ceramic Mug Set', 'https://picsum.photos/seed/encuey-p-mug-1/800/800', 0),
-  ('Acme Ceramic Mug Set', 'https://picsum.photos/seed/encuey-p-mug-2/800/800', 1),
-  ('Lumina Pulse Phone', 'https://picsum.photos/seed/encuey-p-phone-1/800/800', 0),
-  ('Lumina Pulse Phone', 'https://picsum.photos/seed/encuey-p-phone-2/800/800', 1),
-  ('Nordwind Merino Beanie', 'https://picsum.photos/seed/encuey-p-beanie-1/800/800', 0),
-  ('Nordwind Merino Beanie', 'https://picsum.photos/seed/encuey-p-beanie-2/800/800', 1),
-  ('Verde Glow Serum', 'https://picsum.photos/seed/encuey-p-serum-1/800/800', 0),
-  ('Verde Glow Serum', 'https://picsum.photos/seed/encuey-p-serum-2/800/800', 1),
-  ('Acme Trail Water Bottle', 'https://picsum.photos/seed/encuey-p-bottle-1/800/800', 0),
-  ('Acme Trail Water Bottle', 'https://picsum.photos/seed/encuey-p-bottle-2/800/800', 1),
-  ('Lumina Flux Laptop 14', 'https://picsum.photos/seed/encuey-p-laptop-1/800/800', 0),
-  ('Lumina Flux Laptop 14', 'https://picsum.photos/seed/encuey-p-laptop-2/800/800', 1)
+  ('Lumina Aurora Table Lamp', 'https://placehold.co/800x800/png?text=Aurora+Lamp+1', 0),
+  ('Lumina Aurora Table Lamp', 'https://placehold.co/800x800/png?text=Aurora+Lamp+2', 1),
+  ('Nordwind Trail Backpack 30L', 'https://placehold.co/800x800/png?text=Trail+Backpack+1', 0),
+  ('Nordwind Trail Backpack 30L', 'https://placehold.co/800x800/png?text=Trail+Backpack+2', 1),
+  ('Acme Ceramic Mug Set', 'https://placehold.co/800x800/png?text=Mug+Set+1', 0),
+  ('Acme Ceramic Mug Set', 'https://placehold.co/800x800/png?text=Mug+Set+2', 1),
+  ('Lumina Pulse Phone', 'https://placehold.co/800x800/png?text=Pulse+Phone+1', 0),
+  ('Lumina Pulse Phone', 'https://placehold.co/800x800/png?text=Pulse+Phone+2', 1),
+  ('Nordwind Merino Beanie', 'https://placehold.co/800x800/png?text=Merino+Beanie+1', 0),
+  ('Nordwind Merino Beanie', 'https://placehold.co/800x800/png?text=Merino+Beanie+2', 1),
+  ('Verde Glow Serum', 'https://placehold.co/800x800/png?text=Glow+Serum+1', 0),
+  ('Verde Glow Serum', 'https://placehold.co/800x800/png?text=Glow+Serum+2', 1),
+  ('Acme Trail Water Bottle', 'https://placehold.co/800x800/png?text=Water+Bottle+1', 0),
+  ('Acme Trail Water Bottle', 'https://placehold.co/800x800/png?text=Water+Bottle+2', 1),
+  ('Lumina Flux Laptop 14', 'https://placehold.co/800x800/png?text=Flux+Laptop+1', 0),
+  ('Lumina Flux Laptop 14', 'https://placehold.co/800x800/png?text=Flux+Laptop+2', 1)
 ) as v(product_name, storage_path, sort_order)
 join public.products p on p.name = v.product_name
 where not exists (
