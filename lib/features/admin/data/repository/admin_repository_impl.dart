@@ -331,6 +331,7 @@ class AdminRepositoryImpl implements IAdminRepository {
         totalOrders: _intFrom(map, 'total_orders'),
         completedOrders: _intFrom(map, 'completed_orders'),
         cancelledOrders: _intFrom(map, 'cancelled_orders'),
+        realizedOrders: _intFrom(map, 'realized_orders'),
         totalSalesMinor: _intFrom(map, 'total_sales_minor'),
         averageOrderValueMinor: _intFrom(map, 'average_order_value_minor'),
         lowStockProducts: _intFrom(map, 'low_stock_products'),

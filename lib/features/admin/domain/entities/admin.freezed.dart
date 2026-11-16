@@ -4553,7 +4553,9 @@ as List<AdminTrendPoint>,
 /// @nodoc
 mixin _$AdminSalesReport {
 
- DateTime get from; DateTime get to; int get totalOrders; int get completedOrders; int get cancelledOrders; int get totalSalesMinor; int get averageOrderValueMinor; int get lowStockProducts; int get outOfStockProducts; List<AdminBestSeller> get bestSellers; List<AdminCategoryUnits> get topCategories; List<AdminCustomerFrequency> get purchaseFrequency; int get netSettledMinor; int get inventoryValuationMinor; AdminPaymentSplit get paymentSplit; List<AdminBrandRevenue> get brandRevenue;
+ DateTime get from; DateTime get to; int get totalOrders; int get completedOrders; int get cancelledOrders; int get totalSalesMinor; int get averageOrderValueMinor;/// Orders whose revenue is realized — delivered (COD collected) or with
+/// a verified payment. The AOV denominator; excludes cancelled/refunded.
+ int get realizedOrders; int get lowStockProducts; int get outOfStockProducts; List<AdminBestSeller> get bestSellers; List<AdminCategoryUnits> get topCategories; List<AdminCustomerFrequency> get purchaseFrequency; int get netSettledMinor; int get inventoryValuationMinor; AdminPaymentSplit get paymentSplit; List<AdminBrandRevenue> get brandRevenue;
 /// Create a copy of AdminSalesReport
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -4564,16 +4566,16 @@ $AdminSalesReportCopyWith<AdminSalesReport> get copyWith => _$AdminSalesReportCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminSalesReport&&(identical(other.from, from) || other.from == from)&&(identical(other.to, to) || other.to == to)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&(identical(other.completedOrders, completedOrders) || other.completedOrders == completedOrders)&&(identical(other.cancelledOrders, cancelledOrders) || other.cancelledOrders == cancelledOrders)&&(identical(other.totalSalesMinor, totalSalesMinor) || other.totalSalesMinor == totalSalesMinor)&&(identical(other.averageOrderValueMinor, averageOrderValueMinor) || other.averageOrderValueMinor == averageOrderValueMinor)&&(identical(other.lowStockProducts, lowStockProducts) || other.lowStockProducts == lowStockProducts)&&(identical(other.outOfStockProducts, outOfStockProducts) || other.outOfStockProducts == outOfStockProducts)&&const DeepCollectionEquality().equals(other.bestSellers, bestSellers)&&const DeepCollectionEquality().equals(other.topCategories, topCategories)&&const DeepCollectionEquality().equals(other.purchaseFrequency, purchaseFrequency)&&(identical(other.netSettledMinor, netSettledMinor) || other.netSettledMinor == netSettledMinor)&&(identical(other.inventoryValuationMinor, inventoryValuationMinor) || other.inventoryValuationMinor == inventoryValuationMinor)&&(identical(other.paymentSplit, paymentSplit) || other.paymentSplit == paymentSplit)&&const DeepCollectionEquality().equals(other.brandRevenue, brandRevenue));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminSalesReport&&(identical(other.from, from) || other.from == from)&&(identical(other.to, to) || other.to == to)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&(identical(other.completedOrders, completedOrders) || other.completedOrders == completedOrders)&&(identical(other.cancelledOrders, cancelledOrders) || other.cancelledOrders == cancelledOrders)&&(identical(other.totalSalesMinor, totalSalesMinor) || other.totalSalesMinor == totalSalesMinor)&&(identical(other.averageOrderValueMinor, averageOrderValueMinor) || other.averageOrderValueMinor == averageOrderValueMinor)&&(identical(other.realizedOrders, realizedOrders) || other.realizedOrders == realizedOrders)&&(identical(other.lowStockProducts, lowStockProducts) || other.lowStockProducts == lowStockProducts)&&(identical(other.outOfStockProducts, outOfStockProducts) || other.outOfStockProducts == outOfStockProducts)&&const DeepCollectionEquality().equals(other.bestSellers, bestSellers)&&const DeepCollectionEquality().equals(other.topCategories, topCategories)&&const DeepCollectionEquality().equals(other.purchaseFrequency, purchaseFrequency)&&(identical(other.netSettledMinor, netSettledMinor) || other.netSettledMinor == netSettledMinor)&&(identical(other.inventoryValuationMinor, inventoryValuationMinor) || other.inventoryValuationMinor == inventoryValuationMinor)&&(identical(other.paymentSplit, paymentSplit) || other.paymentSplit == paymentSplit)&&const DeepCollectionEquality().equals(other.brandRevenue, brandRevenue));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,from,to,totalOrders,completedOrders,cancelledOrders,totalSalesMinor,averageOrderValueMinor,lowStockProducts,outOfStockProducts,const DeepCollectionEquality().hash(bestSellers),const DeepCollectionEquality().hash(topCategories),const DeepCollectionEquality().hash(purchaseFrequency),netSettledMinor,inventoryValuationMinor,paymentSplit,const DeepCollectionEquality().hash(brandRevenue));
+int get hashCode => Object.hash(runtimeType,from,to,totalOrders,completedOrders,cancelledOrders,totalSalesMinor,averageOrderValueMinor,realizedOrders,lowStockProducts,outOfStockProducts,const DeepCollectionEquality().hash(bestSellers),const DeepCollectionEquality().hash(topCategories),const DeepCollectionEquality().hash(purchaseFrequency),netSettledMinor,inventoryValuationMinor,paymentSplit,const DeepCollectionEquality().hash(brandRevenue));
 
 @override
 String toString() {
-  return 'AdminSalesReport(from: $from, to: $to, totalOrders: $totalOrders, completedOrders: $completedOrders, cancelledOrders: $cancelledOrders, totalSalesMinor: $totalSalesMinor, averageOrderValueMinor: $averageOrderValueMinor, lowStockProducts: $lowStockProducts, outOfStockProducts: $outOfStockProducts, bestSellers: $bestSellers, topCategories: $topCategories, purchaseFrequency: $purchaseFrequency, netSettledMinor: $netSettledMinor, inventoryValuationMinor: $inventoryValuationMinor, paymentSplit: $paymentSplit, brandRevenue: $brandRevenue)';
+  return 'AdminSalesReport(from: $from, to: $to, totalOrders: $totalOrders, completedOrders: $completedOrders, cancelledOrders: $cancelledOrders, totalSalesMinor: $totalSalesMinor, averageOrderValueMinor: $averageOrderValueMinor, realizedOrders: $realizedOrders, lowStockProducts: $lowStockProducts, outOfStockProducts: $outOfStockProducts, bestSellers: $bestSellers, topCategories: $topCategories, purchaseFrequency: $purchaseFrequency, netSettledMinor: $netSettledMinor, inventoryValuationMinor: $inventoryValuationMinor, paymentSplit: $paymentSplit, brandRevenue: $brandRevenue)';
 }
 
 
@@ -4584,7 +4586,7 @@ abstract mixin class $AdminSalesReportCopyWith<$Res>  {
   factory $AdminSalesReportCopyWith(AdminSalesReport value, $Res Function(AdminSalesReport) _then) = _$AdminSalesReportCopyWithImpl;
 @useResult
 $Res call({
- DateTime from, DateTime to, int totalOrders, int completedOrders, int cancelledOrders, int totalSalesMinor, int averageOrderValueMinor, int lowStockProducts, int outOfStockProducts, List<AdminBestSeller> bestSellers, List<AdminCategoryUnits> topCategories, List<AdminCustomerFrequency> purchaseFrequency, int netSettledMinor, int inventoryValuationMinor, AdminPaymentSplit paymentSplit, List<AdminBrandRevenue> brandRevenue
+ DateTime from, DateTime to, int totalOrders, int completedOrders, int cancelledOrders, int totalSalesMinor, int averageOrderValueMinor, int realizedOrders, int lowStockProducts, int outOfStockProducts, List<AdminBestSeller> bestSellers, List<AdminCategoryUnits> topCategories, List<AdminCustomerFrequency> purchaseFrequency, int netSettledMinor, int inventoryValuationMinor, AdminPaymentSplit paymentSplit, List<AdminBrandRevenue> brandRevenue
 });
 
 
@@ -4601,7 +4603,7 @@ class _$AdminSalesReportCopyWithImpl<$Res>
 
 /// Create a copy of AdminSalesReport
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? from = null,Object? to = null,Object? totalOrders = null,Object? completedOrders = null,Object? cancelledOrders = null,Object? totalSalesMinor = null,Object? averageOrderValueMinor = null,Object? lowStockProducts = null,Object? outOfStockProducts = null,Object? bestSellers = null,Object? topCategories = null,Object? purchaseFrequency = null,Object? netSettledMinor = null,Object? inventoryValuationMinor = null,Object? paymentSplit = null,Object? brandRevenue = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? from = null,Object? to = null,Object? totalOrders = null,Object? completedOrders = null,Object? cancelledOrders = null,Object? totalSalesMinor = null,Object? averageOrderValueMinor = null,Object? realizedOrders = null,Object? lowStockProducts = null,Object? outOfStockProducts = null,Object? bestSellers = null,Object? topCategories = null,Object? purchaseFrequency = null,Object? netSettledMinor = null,Object? inventoryValuationMinor = null,Object? paymentSplit = null,Object? brandRevenue = null,}) {
   return _then(AdminSalesReport(
 from: null == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
 as DateTime,to: null == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
@@ -4610,6 +4612,7 @@ as int,completedOrders: null == completedOrders ? _self.completedOrders : comple
 as int,cancelledOrders: null == cancelledOrders ? _self.cancelledOrders : cancelledOrders // ignore: cast_nullable_to_non_nullable
 as int,totalSalesMinor: null == totalSalesMinor ? _self.totalSalesMinor : totalSalesMinor // ignore: cast_nullable_to_non_nullable
 as int,averageOrderValueMinor: null == averageOrderValueMinor ? _self.averageOrderValueMinor : averageOrderValueMinor // ignore: cast_nullable_to_non_nullable
+as int,realizedOrders: null == realizedOrders ? _self.realizedOrders : realizedOrders // ignore: cast_nullable_to_non_nullable
 as int,lowStockProducts: null == lowStockProducts ? _self.lowStockProducts : lowStockProducts // ignore: cast_nullable_to_non_nullable
 as int,outOfStockProducts: null == outOfStockProducts ? _self.outOfStockProducts : outOfStockProducts // ignore: cast_nullable_to_non_nullable
 as int,bestSellers: null == bestSellers ? _self.bestSellers : bestSellers // ignore: cast_nullable_to_non_nullable
@@ -4713,10 +4716,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime from,  DateTime to,  int totalOrders,  int completedOrders,  int cancelledOrders,  int totalSalesMinor,  int averageOrderValueMinor,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminCategoryUnits> topCategories,  List<AdminCustomerFrequency> purchaseFrequency,  int netSettledMinor,  int inventoryValuationMinor,  AdminPaymentSplit paymentSplit,  List<AdminBrandRevenue> brandRevenue)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime from,  DateTime to,  int totalOrders,  int completedOrders,  int cancelledOrders,  int totalSalesMinor,  int averageOrderValueMinor,  int realizedOrders,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminCategoryUnits> topCategories,  List<AdminCustomerFrequency> purchaseFrequency,  int netSettledMinor,  int inventoryValuationMinor,  AdminPaymentSplit paymentSplit,  List<AdminBrandRevenue> brandRevenue)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AdminSalesReport() when $default != null:
-return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_that.cancelledOrders,_that.totalSalesMinor,_that.averageOrderValueMinor,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.topCategories,_that.purchaseFrequency,_that.netSettledMinor,_that.inventoryValuationMinor,_that.paymentSplit,_that.brandRevenue);case _:
+return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_that.cancelledOrders,_that.totalSalesMinor,_that.averageOrderValueMinor,_that.realizedOrders,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.topCategories,_that.purchaseFrequency,_that.netSettledMinor,_that.inventoryValuationMinor,_that.paymentSplit,_that.brandRevenue);case _:
   return orElse();
 
 }
@@ -4734,10 +4737,10 @@ return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime from,  DateTime to,  int totalOrders,  int completedOrders,  int cancelledOrders,  int totalSalesMinor,  int averageOrderValueMinor,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminCategoryUnits> topCategories,  List<AdminCustomerFrequency> purchaseFrequency,  int netSettledMinor,  int inventoryValuationMinor,  AdminPaymentSplit paymentSplit,  List<AdminBrandRevenue> brandRevenue)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime from,  DateTime to,  int totalOrders,  int completedOrders,  int cancelledOrders,  int totalSalesMinor,  int averageOrderValueMinor,  int realizedOrders,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminCategoryUnits> topCategories,  List<AdminCustomerFrequency> purchaseFrequency,  int netSettledMinor,  int inventoryValuationMinor,  AdminPaymentSplit paymentSplit,  List<AdminBrandRevenue> brandRevenue)  $default,) {final _that = this;
 switch (_that) {
 case _AdminSalesReport():
-return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_that.cancelledOrders,_that.totalSalesMinor,_that.averageOrderValueMinor,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.topCategories,_that.purchaseFrequency,_that.netSettledMinor,_that.inventoryValuationMinor,_that.paymentSplit,_that.brandRevenue);case _:
+return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_that.cancelledOrders,_that.totalSalesMinor,_that.averageOrderValueMinor,_that.realizedOrders,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.topCategories,_that.purchaseFrequency,_that.netSettledMinor,_that.inventoryValuationMinor,_that.paymentSplit,_that.brandRevenue);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -4754,10 +4757,10 @@ return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime from,  DateTime to,  int totalOrders,  int completedOrders,  int cancelledOrders,  int totalSalesMinor,  int averageOrderValueMinor,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminCategoryUnits> topCategories,  List<AdminCustomerFrequency> purchaseFrequency,  int netSettledMinor,  int inventoryValuationMinor,  AdminPaymentSplit paymentSplit,  List<AdminBrandRevenue> brandRevenue)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime from,  DateTime to,  int totalOrders,  int completedOrders,  int cancelledOrders,  int totalSalesMinor,  int averageOrderValueMinor,  int realizedOrders,  int lowStockProducts,  int outOfStockProducts,  List<AdminBestSeller> bestSellers,  List<AdminCategoryUnits> topCategories,  List<AdminCustomerFrequency> purchaseFrequency,  int netSettledMinor,  int inventoryValuationMinor,  AdminPaymentSplit paymentSplit,  List<AdminBrandRevenue> brandRevenue)?  $default,) {final _that = this;
 switch (_that) {
 case _AdminSalesReport() when $default != null:
-return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_that.cancelledOrders,_that.totalSalesMinor,_that.averageOrderValueMinor,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.topCategories,_that.purchaseFrequency,_that.netSettledMinor,_that.inventoryValuationMinor,_that.paymentSplit,_that.brandRevenue);case _:
+return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_that.cancelledOrders,_that.totalSalesMinor,_that.averageOrderValueMinor,_that.realizedOrders,_that.lowStockProducts,_that.outOfStockProducts,_that.bestSellers,_that.topCategories,_that.purchaseFrequency,_that.netSettledMinor,_that.inventoryValuationMinor,_that.paymentSplit,_that.brandRevenue);case _:
   return null;
 
 }
@@ -4769,7 +4772,7 @@ return $default(_that.from,_that.to,_that.totalOrders,_that.completedOrders,_tha
 
 
 class _AdminSalesReport implements AdminSalesReport {
-  const _AdminSalesReport({required this.from, required this.to, required this.totalOrders, required this.completedOrders, required this.cancelledOrders, required this.totalSalesMinor, required this.averageOrderValueMinor, required this.lowStockProducts, required this.outOfStockProducts,  List<AdminBestSeller> bestSellers = const [],  List<AdminCategoryUnits> topCategories = const [],  List<AdminCustomerFrequency> purchaseFrequency = const [], this.netSettledMinor = 0, this.inventoryValuationMinor = 0, this.paymentSplit = const AdminPaymentSplit(),  List<AdminBrandRevenue> brandRevenue = const []}): _bestSellers = bestSellers,_topCategories = topCategories,_purchaseFrequency = purchaseFrequency,_brandRevenue = brandRevenue;
+  const _AdminSalesReport({required this.from, required this.to, required this.totalOrders, required this.completedOrders, required this.cancelledOrders, required this.totalSalesMinor, required this.averageOrderValueMinor, this.realizedOrders = 0, required this.lowStockProducts, required this.outOfStockProducts,  List<AdminBestSeller> bestSellers = const [],  List<AdminCategoryUnits> topCategories = const [],  List<AdminCustomerFrequency> purchaseFrequency = const [], this.netSettledMinor = 0, this.inventoryValuationMinor = 0, this.paymentSplit = const AdminPaymentSplit(),  List<AdminBrandRevenue> brandRevenue = const []}): _bestSellers = bestSellers,_topCategories = topCategories,_purchaseFrequency = purchaseFrequency,_brandRevenue = brandRevenue;
   
 
 @override final  DateTime from;
@@ -4779,6 +4782,9 @@ class _AdminSalesReport implements AdminSalesReport {
 @override final  int cancelledOrders;
 @override final  int totalSalesMinor;
 @override final  int averageOrderValueMinor;
+/// Orders whose revenue is realized — delivered (COD collected) or with
+/// a verified payment. The AOV denominator; excludes cancelled/refunded.
+@override@JsonKey() final  int realizedOrders;
 @override final  int lowStockProducts;
 @override final  int outOfStockProducts;
  final  List<AdminBestSeller> _bestSellers;
@@ -4823,16 +4829,16 @@ _$AdminSalesReportCopyWith<_AdminSalesReport> get copyWith => __$AdminSalesRepor
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminSalesReport&&(identical(other.from, from) || other.from == from)&&(identical(other.to, to) || other.to == to)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&(identical(other.completedOrders, completedOrders) || other.completedOrders == completedOrders)&&(identical(other.cancelledOrders, cancelledOrders) || other.cancelledOrders == cancelledOrders)&&(identical(other.totalSalesMinor, totalSalesMinor) || other.totalSalesMinor == totalSalesMinor)&&(identical(other.averageOrderValueMinor, averageOrderValueMinor) || other.averageOrderValueMinor == averageOrderValueMinor)&&(identical(other.lowStockProducts, lowStockProducts) || other.lowStockProducts == lowStockProducts)&&(identical(other.outOfStockProducts, outOfStockProducts) || other.outOfStockProducts == outOfStockProducts)&&const DeepCollectionEquality().equals(other._bestSellers, _bestSellers)&&const DeepCollectionEquality().equals(other._topCategories, _topCategories)&&const DeepCollectionEquality().equals(other._purchaseFrequency, _purchaseFrequency)&&(identical(other.netSettledMinor, netSettledMinor) || other.netSettledMinor == netSettledMinor)&&(identical(other.inventoryValuationMinor, inventoryValuationMinor) || other.inventoryValuationMinor == inventoryValuationMinor)&&(identical(other.paymentSplit, paymentSplit) || other.paymentSplit == paymentSplit)&&const DeepCollectionEquality().equals(other._brandRevenue, _brandRevenue));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminSalesReport&&(identical(other.from, from) || other.from == from)&&(identical(other.to, to) || other.to == to)&&(identical(other.totalOrders, totalOrders) || other.totalOrders == totalOrders)&&(identical(other.completedOrders, completedOrders) || other.completedOrders == completedOrders)&&(identical(other.cancelledOrders, cancelledOrders) || other.cancelledOrders == cancelledOrders)&&(identical(other.totalSalesMinor, totalSalesMinor) || other.totalSalesMinor == totalSalesMinor)&&(identical(other.averageOrderValueMinor, averageOrderValueMinor) || other.averageOrderValueMinor == averageOrderValueMinor)&&(identical(other.realizedOrders, realizedOrders) || other.realizedOrders == realizedOrders)&&(identical(other.lowStockProducts, lowStockProducts) || other.lowStockProducts == lowStockProducts)&&(identical(other.outOfStockProducts, outOfStockProducts) || other.outOfStockProducts == outOfStockProducts)&&const DeepCollectionEquality().equals(other._bestSellers, _bestSellers)&&const DeepCollectionEquality().equals(other._topCategories, _topCategories)&&const DeepCollectionEquality().equals(other._purchaseFrequency, _purchaseFrequency)&&(identical(other.netSettledMinor, netSettledMinor) || other.netSettledMinor == netSettledMinor)&&(identical(other.inventoryValuationMinor, inventoryValuationMinor) || other.inventoryValuationMinor == inventoryValuationMinor)&&(identical(other.paymentSplit, paymentSplit) || other.paymentSplit == paymentSplit)&&const DeepCollectionEquality().equals(other._brandRevenue, _brandRevenue));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,from,to,totalOrders,completedOrders,cancelledOrders,totalSalesMinor,averageOrderValueMinor,lowStockProducts,outOfStockProducts,const DeepCollectionEquality().hash(_bestSellers),const DeepCollectionEquality().hash(_topCategories),const DeepCollectionEquality().hash(_purchaseFrequency),netSettledMinor,inventoryValuationMinor,paymentSplit,const DeepCollectionEquality().hash(_brandRevenue));
+int get hashCode => Object.hash(runtimeType,from,to,totalOrders,completedOrders,cancelledOrders,totalSalesMinor,averageOrderValueMinor,realizedOrders,lowStockProducts,outOfStockProducts,const DeepCollectionEquality().hash(_bestSellers),const DeepCollectionEquality().hash(_topCategories),const DeepCollectionEquality().hash(_purchaseFrequency),netSettledMinor,inventoryValuationMinor,paymentSplit,const DeepCollectionEquality().hash(_brandRevenue));
 
 @override
 String toString() {
-  return 'AdminSalesReport(from: $from, to: $to, totalOrders: $totalOrders, completedOrders: $completedOrders, cancelledOrders: $cancelledOrders, totalSalesMinor: $totalSalesMinor, averageOrderValueMinor: $averageOrderValueMinor, lowStockProducts: $lowStockProducts, outOfStockProducts: $outOfStockProducts, bestSellers: $bestSellers, topCategories: $topCategories, purchaseFrequency: $purchaseFrequency, netSettledMinor: $netSettledMinor, inventoryValuationMinor: $inventoryValuationMinor, paymentSplit: $paymentSplit, brandRevenue: $brandRevenue)';
+  return 'AdminSalesReport(from: $from, to: $to, totalOrders: $totalOrders, completedOrders: $completedOrders, cancelledOrders: $cancelledOrders, totalSalesMinor: $totalSalesMinor, averageOrderValueMinor: $averageOrderValueMinor, realizedOrders: $realizedOrders, lowStockProducts: $lowStockProducts, outOfStockProducts: $outOfStockProducts, bestSellers: $bestSellers, topCategories: $topCategories, purchaseFrequency: $purchaseFrequency, netSettledMinor: $netSettledMinor, inventoryValuationMinor: $inventoryValuationMinor, paymentSplit: $paymentSplit, brandRevenue: $brandRevenue)';
 }
 
 
@@ -4843,7 +4849,7 @@ abstract mixin class _$AdminSalesReportCopyWith<$Res> implements $AdminSalesRepo
   factory _$AdminSalesReportCopyWith(_AdminSalesReport value, $Res Function(_AdminSalesReport) _then) = __$AdminSalesReportCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime from, DateTime to, int totalOrders, int completedOrders, int cancelledOrders, int totalSalesMinor, int averageOrderValueMinor, int lowStockProducts, int outOfStockProducts, List<AdminBestSeller> bestSellers, List<AdminCategoryUnits> topCategories, List<AdminCustomerFrequency> purchaseFrequency, int netSettledMinor, int inventoryValuationMinor, AdminPaymentSplit paymentSplit, List<AdminBrandRevenue> brandRevenue
+ DateTime from, DateTime to, int totalOrders, int completedOrders, int cancelledOrders, int totalSalesMinor, int averageOrderValueMinor, int realizedOrders, int lowStockProducts, int outOfStockProducts, List<AdminBestSeller> bestSellers, List<AdminCategoryUnits> topCategories, List<AdminCustomerFrequency> purchaseFrequency, int netSettledMinor, int inventoryValuationMinor, AdminPaymentSplit paymentSplit, List<AdminBrandRevenue> brandRevenue
 });
 
 
@@ -4860,7 +4866,7 @@ class __$AdminSalesReportCopyWithImpl<$Res>
 
 /// Create a copy of AdminSalesReport
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? from = null,Object? to = null,Object? totalOrders = null,Object? completedOrders = null,Object? cancelledOrders = null,Object? totalSalesMinor = null,Object? averageOrderValueMinor = null,Object? lowStockProducts = null,Object? outOfStockProducts = null,Object? bestSellers = null,Object? topCategories = null,Object? purchaseFrequency = null,Object? netSettledMinor = null,Object? inventoryValuationMinor = null,Object? paymentSplit = null,Object? brandRevenue = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? from = null,Object? to = null,Object? totalOrders = null,Object? completedOrders = null,Object? cancelledOrders = null,Object? totalSalesMinor = null,Object? averageOrderValueMinor = null,Object? realizedOrders = null,Object? lowStockProducts = null,Object? outOfStockProducts = null,Object? bestSellers = null,Object? topCategories = null,Object? purchaseFrequency = null,Object? netSettledMinor = null,Object? inventoryValuationMinor = null,Object? paymentSplit = null,Object? brandRevenue = null,}) {
   return _then(_AdminSalesReport(
 from: null == from ? _self.from : from // ignore: cast_nullable_to_non_nullable
 as DateTime,to: null == to ? _self.to : to // ignore: cast_nullable_to_non_nullable
@@ -4869,6 +4875,7 @@ as int,completedOrders: null == completedOrders ? _self.completedOrders : comple
 as int,cancelledOrders: null == cancelledOrders ? _self.cancelledOrders : cancelledOrders // ignore: cast_nullable_to_non_nullable
 as int,totalSalesMinor: null == totalSalesMinor ? _self.totalSalesMinor : totalSalesMinor // ignore: cast_nullable_to_non_nullable
 as int,averageOrderValueMinor: null == averageOrderValueMinor ? _self.averageOrderValueMinor : averageOrderValueMinor // ignore: cast_nullable_to_non_nullable
+as int,realizedOrders: null == realizedOrders ? _self.realizedOrders : realizedOrders // ignore: cast_nullable_to_non_nullable
 as int,lowStockProducts: null == lowStockProducts ? _self.lowStockProducts : lowStockProducts // ignore: cast_nullable_to_non_nullable
 as int,outOfStockProducts: null == outOfStockProducts ? _self.outOfStockProducts : outOfStockProducts // ignore: cast_nullable_to_non_nullable
 as int,bestSellers: null == bestSellers ? _self._bestSellers : bestSellers // ignore: cast_nullable_to_non_nullable

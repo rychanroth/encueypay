@@ -455,6 +455,10 @@ abstract class AdminSalesReport with _$AdminSalesReport {
     required int cancelledOrders,
     required int totalSalesMinor,
     required int averageOrderValueMinor,
+
+    /// Orders whose revenue is realized — delivered (COD collected) or with
+    /// a verified payment. The AOV denominator; excludes cancelled/refunded.
+    @Default(0) int realizedOrders,
     required int lowStockProducts,
     required int outOfStockProducts,
     @Default([]) List<AdminBestSeller> bestSellers,

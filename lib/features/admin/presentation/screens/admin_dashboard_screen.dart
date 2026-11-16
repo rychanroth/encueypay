@@ -208,8 +208,8 @@ class AdminDashboardScreen extends ConsumerWidget {
   }
 }
 
-/// Total sales, order count, and the 7-day vs prior-7-day momentum —
-/// computed from the trend the server already returns.
+/// Realized sales (paid or delivered), order count, and the 7-day vs
+/// prior-7-day momentum — computed from the trend the server already returns.
 class _HeroCard extends StatelessWidget {
   const _HeroCard({required this.kpis, this.onTap});
 
@@ -242,7 +242,7 @@ class _HeroCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Total sales',
+                'Realized sales',
                 style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onPrimaryContainer),
               ),
@@ -255,7 +255,8 @@ class _HeroCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '${kpis.totalOrders} orders · ${kpis.totalCustomers} customers',
+                    '${kpis.totalOrders} orders placed · '
+                    '${kpis.totalCustomers} customers',
                     style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onPrimaryContainer),
                   ),

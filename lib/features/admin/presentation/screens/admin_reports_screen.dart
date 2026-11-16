@@ -144,6 +144,10 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen> {
                           value: '${report.cancelledOrders}',
                         ),
                         _StatCard(
+                          label: 'Realized orders',
+                          value: '${report.realizedOrders}',
+                        ),
+                        _StatCard(
                           label: 'Gross realized revenue',
                           value: Money(report.totalSalesMinor).formatUsd(),
                         ),
@@ -171,6 +175,14 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen> {
                         ],
                       );
                     },
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Gross realized revenue and AOV count paid or delivered '
+                    'orders only.',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   // Payment gateway distribution (§5.2.4): KHQR vs COD split

@@ -258,7 +258,7 @@ abstract class AppTypography {
 > Categories/Brands/Promotions/Account live under Dashboard quick actions; the
 > Cart tab carries a live bag-count badge; Reports is a full tab.
 1. **Dashboard (`/admin/dashboard`)**:
-    - Gross realized revenue KPI card with momentum trend percentage.
+    - Realized sales hero (paid or delivered orders only) with momentum trend percentage.
     - Order volume split (Done, Pending, Cancelled) & Verified customer accounts.
     - **Critical Stock Alert Card**: Surfacing items where `stock <= 5` or `stock == 0` with quick Restock shortcuts.
     - **14-Day Sales Momentum Chart**: Native Flutter bar chart (`DEPS-03` compliant).
@@ -274,7 +274,8 @@ abstract class AppTypography {
     - Reverse payment authorization: **"Authorize & Record Bakong Refund"** button on returned/cancelled orders (§7D).
 4. **Reports (`/admin/reports`)**:
     - Date range selector (`7D`, `15D`, `30D`, `MTD`, Custom Window).
-    - Executive KPI summary: Gross Realized Revenue, Net Settled Balance, Completed Orders, AOV ($91.93), and Purchase Frequency.
+    - Executive KPI summary: Gross Realized Revenue, Realized Orders, Net Settled Balance, Completed Orders, AOV, and Purchase Frequency.
+    - **Realized** = delivered (COD collected) or with a verified payment, never cancelled/returned/refunded; AOV divides by the realized-order count.
     - Sales breakdown by catalog department.
     - **Payment Gateway Distribution**: Bakong KHQR (82%) vs Cash on Delivery (18%).
     - Brand revenue rankings and current inventory capital valuation.
@@ -347,6 +348,7 @@ abstract class AppTypography {
 - `payments`: Payment record (`order_id`, `amount_minor`, `payment_method` = `qr | cod`, `status`).
 - `promotions` & `coupons`: promotional rules scoped **`platform | brand`** (`brand_id` set → brand-wide, NULL → platform-wide; the dormant `'business'` enum value is unreachable), `min_order_amount_minor`, `starts_at`, `ends_at`. **Campaigns (2026-10-28, Option A):** a banner belongs to a promotion (`banners.promotion_id`, required for campaign banners) whose Discovery target derives from the promotion's scope; campaign coupons carry `auto_apply = true` and the single best eligible one is applied at order placement automatically (best auto + manual codes stack, capped at the subtotal). `promotions` reads are public (chips/banner derivation); writes stay admin-only. The never-read `attributes` column on variants was dropped.
 - `product_ratings` **view**: `avg(rating)`/`count()` per product for card ratings — inline PostgREST aggregates are unsupported on this backend (DATA-09 in the architecture contract).
+- `realized_orders` **view** *(2026-11-16)*: orders whose revenue is realized — `delivered` (COD cash collected) **or** a `payments.status = 'transaction_verified'` row, never `cancelled`/`returned`/refunded. `get_sales_report` and `get_admin_kpis` both read it, so dashboard totals, gross realized revenue and AOV share one definition; AOV divides by this view's count.
 - `businesses`: **dropped** (migration 0008) — the vendor model is retired.
 
 ### 7.2 Security Definer RPC Endpoints
