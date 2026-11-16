@@ -1,11 +1,11 @@
 {
-    "name": "EncueYPay",
-    "short_name": "EncueYPay",
+    "name": "R67",
+    "short_name": "R67",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "EncueYPay — multi-vendor commerce platform.",
+    "description": "R67 — multi-vendor commerce platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

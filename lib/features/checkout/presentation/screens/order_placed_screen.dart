@@ -137,7 +137,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
             XFile.fromData(bytes, mimeType: 'image/png'),
           ],
           fileNameOverrides: [_qrFileName],
-          title: 'EncueYPay QR payment',
+          title: 'R67 QR payment',
           text: 'Scan this KHQR to pay for order '
               '${widget.orderId.substring(0, 8).toUpperCase()}.',
         ),

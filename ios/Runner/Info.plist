@@ -40,7 +40,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>EncueYPay uses your location only when you tap "Use my current location" on the address form, to pre-fill the delivery address.</string>
+	<string>R67 uses your location only when you tap "Use my current location" on the address form, to pre-fill the delivery address.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

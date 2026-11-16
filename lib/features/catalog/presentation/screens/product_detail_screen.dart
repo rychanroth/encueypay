@@ -664,7 +664,7 @@ class _StorePromises extends StatelessWidget {
           ),
           const _PromiseRow(
             icon: Icons.storefront_outlined,
-            title: 'Sold by EncueYPay',
+            title: 'Sold by R67',
             subtitle: 'Official single-seller storefront',
           ),
         ],

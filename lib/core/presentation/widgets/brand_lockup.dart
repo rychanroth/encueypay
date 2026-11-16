@@ -36,7 +36,7 @@ class BrandLockup extends StatelessWidget {
       filterQuality: FilterQuality.medium,
     );
     final wordmark = Text(
-      'EncueYPay',
+      'R67',
       textAlign: TextAlign.center,
       style: AppTypography.displayLarge.copyWith(
         fontSize: wordmarkSize,
@@ -48,7 +48,7 @@ class BrandLockup extends StatelessWidget {
 
     return Semantics(
       header: true,
-      label: 'EncueYPay',
+      label: 'R67',
       child: ExcludeSemantics(
         child: layout == BrandLockupLayout.stacked
             ? Column(

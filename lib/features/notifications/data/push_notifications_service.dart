@@ -85,7 +85,7 @@ class PushNotificationsService {
     _subscriptions.add(FirebaseMessaging.onMessage.listen((message) {
       unawaited(
         _presentForeground(
-          title: message.notification?.title ?? 'EncueYPay',
+          title: message.notification?.title ?? 'R67',
           body: message.notification?.body ?? '',
           target: _targetFor(message),
           onOpen: onOpen,

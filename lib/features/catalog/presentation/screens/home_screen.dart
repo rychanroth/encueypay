@@ -48,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('EncueYPay'),
+        title: const Text('R67'),
         actions: [
           IconButton(
             tooltip: 'Notifications',
