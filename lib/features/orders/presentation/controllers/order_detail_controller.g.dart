@@ -51,7 +51,7 @@ final class OrderDetailControllerProvider
 }
 
 String _$orderDetailControllerHash() =>
-    r'3cb6eba6058eca03d915fbb8a467d88a376108b5';
+    r'4d2138ca3569eec58d44b00a0f3161e86668597e';
 
 final class OrderDetailControllerFamily extends $Family
     with

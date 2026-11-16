@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/domain/failures.dart';
-import '../../../../core/domain/picked_file.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../data/repository/orders_repository_impl.dart';
 import '../../domain/entities/order.dart';
@@ -52,23 +51,6 @@ class OrderDetailController extends _$OrderDetailController {
     }
     // Keep the list consistent too.
     ref.invalidate(ordersControllerProvider);
-    return true;
-  }
-
-  Future<bool> uploadProof({required PickedFile proof}) async {
-    if (state.value == null) return false;
-    final result = await AsyncValue.guard(() async {
-      await ref
-          .read(ordersRepositoryProvider)
-          .submitPaymentProof(orderId: orderId, proof: proof);
-      ref.invalidateSelf();
-    });
-    if (result.hasError) {
-      ref
-          .read(orderActionErrorProvider(orderId).notifier)
-          .show(userMessageFor(result.error!));
-      return false;
-    }
     return true;
   }
 }

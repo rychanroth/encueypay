@@ -1,4 +1,3 @@
-import '../../../../core/domain/picked_file.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../domain/entities/order.dart';
 
@@ -34,12 +33,5 @@ abstract interface class IOrdersRepository {
   /// Throws [Failure] only; the server decides whether cancellation is
   /// permitted and releases reservations (§12/§50).
   Future<void> cancelOrder(String orderId);
-
-  /// Uploads a bank-transfer proof to Storage and transitions the payment
-  /// server-side (§20.2). [proof] carries the original name so its extension
-  /// is preserved.
-  Future<void> submitPaymentProof({
-    required String orderId,
-    required PickedFile proof,
-  });
 }
+

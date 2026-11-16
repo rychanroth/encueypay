@@ -1,19 +1,12 @@
-/// Payment methods supported by the MVP (spec §20; §6b: QR replaces manual
-/// bank transfer in the UI — the wire value stays for legacy rows).
+/// Payment methods a customer can choose at checkout (spec §20; §6b: QR
+/// replaced manual bank transfer).
+///
+/// `bank_transfer` is a retired wire value with no write path left: it
+/// survives only on legacy payment rows, where the orders feature's
+/// `PaymentMethodKind` still parses and labels it.
 enum PaymentMethod {
   cod,
-  bankTransfer,
   qr;
 
-  String get wireName => switch (this) {
-        PaymentMethod.cod => 'cod',
-        PaymentMethod.bankTransfer => 'bank_transfer',
-        PaymentMethod.qr => 'qr',
-      };
-
-  static PaymentMethod fromWire(String? name) => switch (name) {
-        'bank_transfer' => PaymentMethod.bankTransfer,
-        'qr' => PaymentMethod.qr,
-        _ => PaymentMethod.cod,
-      };
+  String get wireName => name;
 }

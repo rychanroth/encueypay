@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/domain/failures.dart';
-import '../../../../core/domain/picked_file.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/stream_result.dart';
 import '../../../../core/network/supabase_client_provider.dart';
@@ -184,26 +183,6 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   Future<void> cancelOrder(String orderId) async {
     try {
       await _client.rpc('cancel_order', params: {'p_order_id': orderId});
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
-      throw mapRepositoryError(error, stackTrace);
-    }
-  }
-
-  @override
-  Future<void> submitPaymentProof({
-    required String orderId,
-    required PickedFile proof,
-  }) async {
-    try {
-      final path = '$_uid/$orderId/'
-          '${DateTime.now().millisecondsSinceEpoch}_${proof.fileName}';
-      await _client.storage
-          .from('payment_proofs')
-          .uploadBinary(path, proof.bytes);
-      await _client.rpc('submit_payment_proof', params: {
-        'p_order_id': orderId,
-        'p_path': path,
-      });
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }

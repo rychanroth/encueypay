@@ -45,7 +45,7 @@ final class OrdersControllerProvider
   OrdersController create() => OrdersController();
 }
 
-String _$ordersControllerHash() => r'7ac6dc21ff6e9e9ea1d06268601154a44fa04024';
+String _$ordersControllerHash() => r'b8f8344d3cd77e7e4d010aed92b200775fe73637';
 
 /// Paginated "my orders" list with server-side history filters
 /// (Section 7B: status group + date range). Changing a filter refetches
