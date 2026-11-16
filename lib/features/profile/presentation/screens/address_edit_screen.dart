@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/address.dart';
 import '../../domain/entities/administrative_unit.dart';
@@ -217,6 +218,12 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     } on Failure catch (failure) {
       if (!mounted) return;
       setState(() => _geoError = userMessageFor(failure));
+    } catch (error, stackTrace) {
+      // A provider-level client bug must not leave the dropdowns silently
+      // empty; surface the retry row instead.
+      logSuppressedError(error, stackTrace);
+      if (!mounted) return;
+      setState(() => _geoError = 'Could not load the address list.');
     }
   }
 

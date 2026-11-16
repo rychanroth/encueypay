@@ -21,7 +21,14 @@ final locationRepositoryProvider = Provider<ILocationRepository>((ref) {
 });
 
 class LocationRepositoryImpl implements ILocationRepository {
-  final Geocoding _geocoder = Geocoding();
+  // Created lazily: `geocoding` has no web implementation and its constructor
+  // throws on unsupported platforms. Constructing it eagerly took down the
+  // whole repository on web — geo hierarchy providers failed (empty dropdowns)
+  // and the locate call surfaced an unmapped error.
+  Geocoding? _platformGeocoder;
+
+  Geocoding get _geocoder => _platformGeocoder ??= Geocoding();
+
   final CambodiaGeoDataSource _geo = CambodiaGeoDataSource();
 
   @override
@@ -136,6 +143,10 @@ class LocationRepositoryImpl implements ILocationRepository {
     } catch (error, stackTrace) {
       logSuppressedError(error, stackTrace);
     }
+
+    // Web has no platform geocoder (`geocoding` has no web implementation);
+    // the Nominatim + official-hierarchy path above is the only source there.
+    if (kIsWeb) return null;
 
     try {
       final placemarks =
