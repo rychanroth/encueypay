@@ -9,6 +9,7 @@ import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/catalog/presentation/controllers/brands_provider.dart';
 import '../../../features/catalog/presentation/controllers/categories_provider.dart';
 import '../../../features/catalog/presentation/controllers/home_feed_providers.dart';
+import '../../../features/catalog/presentation/controllers/sale_providers.dart';
 import '../../../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../../presentation/motion.dart';
 import '../navigation_tabs.dart';
@@ -64,6 +65,28 @@ class _AppShellState extends ConsumerState<AppShell> {
           ref.invalidate(homeProductsProvider);
           ref.invalidate(categoriesProvider);
           ref.invalidate(brandsProvider);
+          // Sale pricing is its own fetch (`active_sales` view), shared by
+          // every price surface. Without this an admin deactivating a sale
+          // left struck prices, chips and the linked banner on screen for
+          // the rest of the session — the IndexedStack never disposed them.
+          ref.invalidate(activeSalesProvider);
+        });
+      }
+      // Discover renders the same product cards, so it needs the same sale
+      // refresh; its own product query is per-filter and refetches on mount.
+      if (!isInitialActivation && activatedTab == 'discovery') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref.invalidate(activeSalesProvider);
+        });
+      }
+      // Cart lines are priced by the server (`cart_item_details`). The badge
+      // keeps this provider alive across tab switches, so stale sale prices
+      // would otherwise persist until a quantity edit.
+      if (!isInitialActivation && activatedTab == 'cart') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref.invalidate(cartControllerProvider);
         });
       }
       // Spending/order counts are server-aggregated and the Profile tab stays
