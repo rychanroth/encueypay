@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/address.dart';
 import '../../domain/entities/administrative_unit.dart';
 import '../../domain/entities/located_address.dart';
@@ -55,6 +56,11 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
   /// Guards map-tap reverse-geocode races: a slower earlier lookup must not
   /// overwrite a newer pin.
   int _mapLookupToken = 0;
+
+  /// Why the last locate attempt failed — rendered inline (persistent) so the
+  /// customer can read it, retry, or fall back to the map. Null when idle or
+  /// successful.
+  String? _locationError;
 
   static const _fallbackLatitude = 11.5564;
   static const _fallbackLongitude = 104.9282;
@@ -400,6 +406,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
   /// map + prefill. Only fills empty fields — typed values are never
   /// overwritten silently.
   Future<void> _useCurrentLocation() async {
+    if (_locationError != null) setState(() => _locationError = null);
     final notifier = ref.read(currentLocationControllerProvider.notifier);
     final located = await notifier.locate();
     if (!mounted) return;
@@ -407,20 +414,21 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       final failure = ref.read(currentLocationControllerProvider).error;
       // Browser geolocation is optional (insecure origin, no provider, user
       // denied). Keep the form usable: drop a pin at the city centre so the
-      // customer can tap the map to place it manually.
+      // customer can tap the map to place it manually. The reason stays on
+      // screen (not a transient snackbar) with a retry action.
       setState(() {
+        _locationError = failure is Failure
+            ? failure.message
+            : 'Location is unavailable.';
         _locatedCoordinates ??= (
           latitude: _fallbackLatitude,
           longitude: _fallbackLongitude,
         );
       });
-      final message = failure is Failure
-          ? failure.message
-          : 'Location is unavailable.';
-      _showSnack('$message Tap the map to set your pin manually.');
       return;
     }
     setState(() {
+      _locationError = null;
       _locatedCoordinates = (
         latitude: located.latitude,
         longitude: located.longitude,
@@ -475,7 +483,10 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     ({double latitude, double longitude}) position,
   ) async {
     final token = ++_mapLookupToken;
-    setState(() => _locatedCoordinates = position);
+    setState(() {
+      _locatedCoordinates = position;
+      _locationError = null;
+    });
     final address = await ref
         .read(currentLocationControllerProvider.notifier)
         .reverseGeocodeAt(
@@ -620,6 +631,56 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                   : const Icon(Icons.my_location_outlined),
               label: const Text('Use my current location'),
             ),
+            if (_locationError != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.sm + 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.errorContainer,
+                  borderRadius: AppRadii.br12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_off_outlined,
+                          size: 18,
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Expanded(
+                          child: Text(
+                            'Location unavailable',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: theme.colorScheme.onErrorContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      _locationError!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onErrorContainer,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: isLocating ? null : _useCurrentLocation,
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('Try again'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (_locatedCoordinates != null) ...[
               const SizedBox(height: 12),
               CurrentLocationMap(
