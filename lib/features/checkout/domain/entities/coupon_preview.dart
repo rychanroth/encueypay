@@ -43,4 +43,24 @@ abstract class CouponPreview with _$CouponPreview {
     CouponDiscountType.fixed => '${Money(discountValue).formatUsd()} off',
     null => '',
   };
+
+  /// One row of the applied-coupon bar.
+  ///
+  /// `validate_coupon` is authoritative for validity, name and the offer
+  /// details. `preview_order_totals` only reports `{code, discount_minor}`
+  /// for codes that still qualify, so only the money is refreshed from it —
+  /// replacing the whole preview with a totals row rendered an applied
+  /// coupon as failed (its `valid` flag is absent from that payload).
+  ///
+  /// [discountMinor] is null when the preview has no row for this code:
+  /// either the totals are still loading ([previewLoaded] false — keep the
+  /// validated preview) or the code stopped qualifying after a cart edit.
+  CouponPreview withPreviewDiscount(
+    int? discountMinor, {
+    required bool previewLoaded,
+  }) {
+    if (discountMinor != null) return copyWith(discountMinor: discountMinor);
+    if (!previewLoaded) return this;
+    return copyWith(valid: false, reason: null, message: null);
+  }
 }

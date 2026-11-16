@@ -168,10 +168,13 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         },
       );
       final map = Map<String, dynamic>.from(result as Map);
+      // `preview_order_totals` reports applied codes as {code, discount_minor}
+      // only — membership in `manual` is the validity verdict, so the missing
+      // `valid` flag must not be read as "rejected".
       final manual =
           ((map['manual'] as List? ?? const [])
                   .whereType<Map<String, dynamic>>())
-              .map(_couponFromJson)
+              .map((row) => _couponFromJson(row).copyWith(valid: true))
               .toList();
       final rejected =
           ((map['rejected'] as List? ?? const [])

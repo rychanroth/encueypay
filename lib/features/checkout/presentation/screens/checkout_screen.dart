@@ -178,13 +178,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         (summary?.totalMinor ?? 0) - state.discountPreviewMinor;
 
     // The preview re-evaluates every applied code against the current cart.
-    // Overlay its verdict on the state previews so a code that stops (or
-    // starts) qualifying after a cart edit shows the current reason.
-    final effectiveCoupons = <String, CouponPreview>{
+    // Only its discount amount is overlaid: validity, name and the offer
+    // details come from `validate_coupon` (see [CouponPreview.withPreviewDiscount]).
+    final appliedDiscounts = <String, int>{
       for (final coupon in totals?.manual ?? const <CouponPreview>[])
-        coupon.code: coupon,
-      for (final coupon in totals?.rejected ?? const <CouponPreview>[])
-        coupon.code: coupon,
+        coupon.code.toUpperCase(): coupon.discountMinor,
     };
     final stateCodes = state.coupons.map((coupon) => coupon.code).toSet();
     final rejectedCoupons = (totals?.rejected ?? const <CouponPreview>[])
@@ -415,7 +413,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ),
                       for (final coupon in state.coupons)
                         _CouponStepTile(
-                          coupon: effectiveCoupons[coupon.code] ?? coupon,
+                          coupon: coupon.withPreviewDiscount(
+                            appliedDiscounts[coupon.code.toUpperCase()],
+                            previewLoaded: totals != null,
+                          ),
                           onRemove: () => ref
                               .read(
                                 checkoutControllerProvider(
