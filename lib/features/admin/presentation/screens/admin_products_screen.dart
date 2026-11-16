@@ -325,11 +325,6 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
               ]
             : [
                 IconButton(
-                  tooltip: 'Brands',
-                  icon: const Icon(Icons.sell_outlined),
-                  onPressed: () => context.pushNamed(AppRoutes.adminBrands),
-                ),
-                IconButton(
                   tooltip: 'Export CSV',
                   icon: const Icon(Icons.download_outlined),
                   onPressed: _exportCsv,

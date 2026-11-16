@@ -255,7 +255,7 @@ abstract class AppTypography {
 
 ### 5.2 Admin Prototype Navigation (4-Tab Executive Shell) — Dashboard · Products · Orders · Reports
 
-> Categories/Promotions/Account live under Dashboard quick actions; the
+> Categories/Brands/Promotions/Account live under Dashboard quick actions; the
 > Cart tab carries a live bag-count badge; Reports is a full tab.
 1. **Dashboard (`/admin/dashboard`)**:
     - Gross realized revenue KPI card with momentum trend percentage.

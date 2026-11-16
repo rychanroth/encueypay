@@ -56,13 +56,13 @@ abstract final class AppRoutes {
   // Admin tabs.
   static const adminDashboard = 'adminDashboard';
   static const adminCategories = 'adminCategories';
+  static const adminBrands = 'adminBrands';
   static const adminPromotions = 'adminPromotions';
   static const adminArchivedCoupons = 'adminArchivedCoupons';
 
   // Admin products (Section 2b — nested under the Products tab).
   static const adminProducts = 'adminProducts';
   static const adminProductForm = 'adminProductForm';
-  static const adminBrands = 'adminBrands';
 
   // Admin orders (Section 3 — nested under the Orders tab).
   static const adminOrders = 'adminOrders';

@@ -152,9 +152,18 @@ class AdminDashboardScreen extends ConsumerWidget {
               title: const Text('Manage categories'),
               subtitle: const Text('Catalog taxonomy'),
               trailing: const Icon(Icons.chevron_right),
-              // DESIGN.md §5.2: Categories/Promotions live under Dashboard
-              // quick actions in the 4-tab shell.
+              // DESIGN.md §5.2: Categories/Brands/Promotions live under
+              // Dashboard quick actions in the 4-tab shell.
               onTap: () => context.pushNamed(AppRoutes.adminCategories),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.sell_outlined),
+              title: const Text('Manage brands'),
+              subtitle: const Text('Brand names & logos'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.adminBrands),
             ),
           ),
           Card(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../../features/admin/presentation/screens/audit_logs_screen.dart';
+import '../../../features/admin/presentation/screens/brands_admin_screen.dart';
 import '../../../features/admin/presentation/screens/categories_admin_screen.dart';
 import '../../../features/admin/presentation/screens/platform_settings_screen.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
@@ -55,6 +56,13 @@ final adminDashboardBranch = StatefulShellBranch(
           name: AppRoutes.adminCategories,
           path: 'categories',
           builder: (context, state) => const CategoriesAdminScreen(),
+        ),
+        // Brand management lives with the other catalog quick actions
+        // (moved out of the Products app bar).
+        GoRoute(
+          name: AppRoutes.adminBrands,
+          path: 'brands',
+          builder: (context, state) => const BrandsAdminScreen(),
         ),
         GoRoute(
           name: AppRoutes.adminPromotions,
