@@ -402,6 +402,19 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     return parts.isEmpty ? _cityController.text.trim() : parts.join(', ');
   }
 
+  /// Opens the pin map without asking the browser for a location. This is the
+  /// manual path: the customer taps the exact spot and the hierarchy fields
+  /// below remain fully editable.
+  void _showMapManually() {
+    setState(() {
+      _locationError = null;
+      _locatedCoordinates ??= (
+        latitude: _fallbackLatitude,
+        longitude: _fallbackLongitude,
+      );
+    });
+  }
+
   /// One-tap locate (spec B.6): position → reverse geocode → verification
   /// map + prefill. Only fills empty fields — typed values are never
   /// overwritten silently.
@@ -627,16 +640,29 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: isLocating ? null : _useCurrentLocation,
-              icon: isLocating
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.my_location_outlined),
-              label: const Text('Use my current location'),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: isLocating ? null : _useCurrentLocation,
+                  icon: isLocating
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.my_location_outlined),
+                  label: const Text('Use my current location'),
+                ),
+                // Device location is best-effort (browser/OS permission and
+                // provider); the map is the always-available manual path.
+                TextButton.icon(
+                  onPressed: isLocating ? null : _showMapManually,
+                  icon: const Icon(Icons.map_outlined, size: 20),
+                  label: const Text('Pick on map'),
+                ),
+              ],
             ),
             if (_locationError != null) ...[
               const SizedBox(height: AppSpacing.sm),
@@ -644,7 +670,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.sm + 4),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
+                  color: theme.colorScheme.secondaryContainer,
                   borderRadius: AppRadii.br12,
                 ),
                 child: Column(
@@ -653,16 +679,16 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                     Row(
                       children: [
                         Icon(
-                          Icons.location_off_outlined,
+                          Icons.info_outline,
                           size: 18,
-                          color: theme.colorScheme.onErrorContainer,
+                          color: theme.colorScheme.onSecondaryContainer,
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Text(
-                            'Location unavailable',
+                            "Couldn't use your current location",
                             style: theme.textTheme.titleSmall?.copyWith(
-                              color: theme.colorScheme.onErrorContainer,
+                              color: theme.colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
@@ -672,10 +698,17 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
                     Text(
                       _locationError!,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onErrorContainer,
+                        color: theme.colorScheme.onSecondaryContainer,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'You can still tap the map to set a pin, or choose your '
+                      'address below.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton.icon(
@@ -704,6 +737,13 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
               ),
             ],
             const SizedBox(height: 12),
+            Text(
+              'Or choose your address',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
             _adminDropdown(
               label: 'Province / City',
               units: _provinces,
