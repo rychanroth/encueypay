@@ -534,9 +534,9 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 
 #### 4.2.13 Profile — `profile`
 **Goal:** Account hub with customer overview.
-**Layout:** AppBar “Profile” → identity card (64dp avatar + camera badge, name, phone, upload hint) → customer overview panel (royal spending hero, counts, recent orders, wishlist rail, cart summary) → Edit profile → Addresses → Wishlist → Settings → Sign out.
-**Happy path:** Tap avatar → image picker → upload → snackbar; open nested screens; sign out confirm → unregister device token → session clear → login.
-**Alternates/edges:** Cold loading spinner; error + retry; mutations keep profile visible; avatar upload spinner; empty overview rows; admin variant hides customer overview/addresses/wishlist.
+**Layout:** AppBar “Profile” → identity card (64dp avatar + camera badge, name, phone, upload hint) → customer overview panel (royal spending hero, counts, recent orders, wishlist rail, cart summary) → Edit profile → Addresses → Wishlist → Help & support → Help and feedback → About R67 → Settings → Sign out.
+**Happy path:** Tap avatar → image picker → upload → snackbar; open nested screens; pull to refresh the overview; sign out confirm → unregister device token → session clear → login.
+**Alternates/edges:** Cold loading spinner; error + retry; mutations keep profile visible; avatar upload spinner; empty overview rows; admin variant hides customer overview/addresses/wishlist. “Total spending” sums every non-cancelled order (DESIGN §5.1.5), so a just-placed pending order counts immediately; the dashboard refetches on order-placed exit, on every Profile tab visit and on pull-to-refresh, so a missed realtime event cannot leave it stale.
 **Pre-conditions:** Authenticated. **Post-conditions:** Profile/avatar persisted; sign-out returns to login.
 
 #### 4.2.14 Edit Profile — `profileEdit`

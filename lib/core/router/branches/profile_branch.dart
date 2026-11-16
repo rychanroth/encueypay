@@ -6,11 +6,13 @@ import '../../../features/auth/domain/entities/user_role.dart';
 import '../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../features/catalog/domain/entities/product.dart';
 import '../../../features/catalog/presentation/widgets/product_card.dart';
+import '../../../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../../../features/dashboard/presentation/widgets/dashboard_overview_panel.dart';
 import '../../../features/notifications/data/push_notifications_service.dart';
 import '../../../features/wishlist/domain/entities/wishlist_item.dart';
 import '../../../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../../../features/profile/domain/entities/address.dart';
+import '../../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../../features/profile/presentation/screens/address_edit_screen.dart';
 import '../../../features/profile/presentation/screens/addresses_screen.dart';
 import '../../../features/profile/presentation/screens/profile_edit_screen.dart';
@@ -87,6 +89,15 @@ final profileBranch = StatefulShellBranch(
             isCustomer: role == UserRole.customer,
             overviewPanel: role == UserRole.customer
                 ? DashboardOverviewPanel(wishlistCards: wishlistCards)
+                : null,
+            onRefresh: role == UserRole.customer
+                ? () async {
+                    ref.invalidate(profileControllerProvider);
+                    ref.invalidate(dashboardControllerProvider);
+                    // Wait for the server aggregation so the indicator stays
+                    // until the new spending number is on screen.
+                    await ref.read(dashboardControllerProvider.future);
+                  }
                 : null,
             onSignOut: () async {
               // Remove this device's push token while still authenticated,

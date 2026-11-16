@@ -9,6 +9,7 @@ import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/catalog/presentation/controllers/brands_provider.dart';
 import '../../../features/catalog/presentation/controllers/categories_provider.dart';
 import '../../../features/catalog/presentation/controllers/home_feed_providers.dart';
+import '../../../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../../presentation/motion.dart';
 import '../navigation_tabs.dart';
 
@@ -63,6 +64,15 @@ class _AppShellState extends ConsumerState<AppShell> {
           ref.invalidate(homeProductsProvider);
           ref.invalidate(categoriesProvider);
           ref.invalidate(brandsProvider);
+        });
+      }
+      // Spending/order counts are server-aggregated and the Profile tab stays
+      // mounted in the IndexedStack. Re-read them on every Profile visit so a
+      // missed realtime event can never leave a stale "Total spending".
+      if (!isInitialActivation && activatedTab == 'profile') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref.invalidate(dashboardControllerProvider);
         });
       }
     }

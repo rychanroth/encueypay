@@ -5,6 +5,7 @@ import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/cart/presentation/screens/cart_screen.dart';
 import '../../../features/checkout/presentation/screens/checkout_screen.dart';
 import '../../../features/checkout/presentation/screens/order_placed_screen.dart';
+import '../../../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../../../features/profile/domain/entities/address.dart';
 import '../../../features/profile/presentation/screens/address_edit_screen.dart';
 import '../../../features/profile/presentation/screens/addresses_screen.dart';
@@ -55,10 +56,15 @@ final cartBranch = StatefulShellBranch(
               // server-side, and the cart tab stays mounted in the shell —
               // drop its cached contents so the tab refetches ground truth.
               onExit: (context, state) {
-                ProviderScope.containerOf(
+                final container = ProviderScope.containerOf(
                   context,
                   listen: false,
-                ).invalidate(cartControllerProvider);
+                );
+                container.invalidate(cartControllerProvider);
+                // The Profile dashboard's spending/count aggregation is
+                // server-side; refresh it as soon as the placed order is
+                // left instead of waiting for a realtime event.
+                container.invalidate(dashboardControllerProvider);
                 return true;
               },
               builder: (context, state) =>

@@ -22,6 +22,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
     this.isCustomer = true,
     this.overviewPanel,
     this.onSignOut,
+    this.onRefresh,
   });
 
   final bool isCustomer;
@@ -33,6 +34,11 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
   /// Injected by the composition root (ROUTE-08). Null hides the action.
   final Future<void> Function()? onSignOut;
+
+  /// Pull-to-refresh for the server-aggregated overview (spending/order
+  /// counts). Injected by the composition root so profile never imports the
+  /// dashboard feature; null disables the indicator (admin profile).
+  final Future<void> Function()? onRefresh;
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -121,84 +127,93 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
         ),
-        data: (profile) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _ProfileHeader(
-              profile: profile,
-              uploading: _uploadingAvatar,
-              onChangePhoto: _changePhoto,
-            ),
-            if (widget.isCustomer && widget.overviewPanel != null) ...[
-              const SizedBox(height: 16),
-              widget.overviewPanel!,
-            ],
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: const Text('Edit profile'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.profileEdit),
-            ),
-            if (widget.isCustomer) ...[
-              ListTile(
-                leading: const Icon(Icons.location_on_outlined),
-                title: const Text('Addresses'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.pushNamed(AppRoutes.addresses),
+        data: (profile) => _withRefresh(
+          ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            children: [
+              _ProfileHeader(
+                profile: profile,
+                uploading: _uploadingAvatar,
+                onChangePhoto: _changePhoto,
               ),
+              if (widget.isCustomer && widget.overviewPanel != null) ...[
+                const SizedBox(height: 16),
+                widget.overviewPanel!,
+              ],
+              const SizedBox(height: 8),
               ListTile(
-                leading: const Icon(Icons.favorite_outline),
-                title: const Text('Wishlist'),
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Edit profile'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.pushNamed(AppRoutes.wishlist),
+                onTap: () => context.pushNamed(AppRoutes.profileEdit),
               ),
-            ],
-            ListTile(
-              leading: const Icon(Icons.headset_mic_outlined),
-              title: const Text('Help & support'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.helpSupport),
-            ),
-            ListTile(
-              leading: const Icon(Icons.feedback_outlined),
-              title: const Text('Help and feedback'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.helpFeedback),
-            ),
-            ListTile(
-              leading: const Icon(Icons.storefront_outlined),
-              title: const Text('About R67'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.about),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Settings'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.settings),
-            ),
-            if (widget.onSignOut != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              OutlinedButton.icon(
-                onPressed: _signingOut ? null : _confirmSignOut,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: theme.colorScheme.error,
+              if (widget.isCustomer) ...[
+                ListTile(
+                  leading: const Icon(Icons.location_on_outlined),
+                  title: const Text('Addresses'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.pushNamed(AppRoutes.addresses),
                 ),
-                icon: _signingOut
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.logout),
-                label: const Text('Sign out'),
+                ListTile(
+                  leading: const Icon(Icons.favorite_outline),
+                  title: const Text('Wishlist'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.pushNamed(AppRoutes.wishlist),
+                ),
+              ],
+              ListTile(
+                leading: const Icon(Icons.headset_mic_outlined),
+                title: const Text('Help & support'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.helpSupport),
               ),
+              ListTile(
+                leading: const Icon(Icons.feedback_outlined),
+                title: const Text('Help and feedback'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.helpFeedback),
+              ),
+              ListTile(
+                leading: const Icon(Icons.storefront_outlined),
+                title: const Text('About R67'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.about),
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text('Settings'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.settings),
+              ),
+              if (widget.onSignOut != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                OutlinedButton.icon(
+                  onPressed: _signingOut ? null : _confirmSignOut,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  icon: _signingOut
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.logout),
+                  label: const Text('Sign out'),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _withRefresh(Widget child) {
+    final onRefresh = widget.onRefresh;
+    if (onRefresh == null) return child;
+    return RefreshIndicator(onRefresh: onRefresh, child: child);
   }
 }
 
