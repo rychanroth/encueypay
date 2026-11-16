@@ -416,10 +416,17 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       // denied). Keep the form usable: drop a pin at the city centre so the
       // customer can tap the map to place it manually. The reason stays on
       // screen (not a transient snackbar) with a retry action.
+      if (failure != null && failure is! Failure) {
+        // Should be unreachable (the repository maps every error); keep the
+        // type visible for diagnosis instead of hiding the real defect.
+        debugPrint('[location] unexpected state error: $failure');
+      }
       setState(() {
         _locationError = failure is Failure
             ? failure.message
-            : 'Location is unavailable.';
+            : failure == null
+                ? 'Location is unavailable.'
+                : 'Location is unavailable (${failure.runtimeType}).';
         _locatedCoordinates ??= (
           latitude: _fallbackLatitude,
           longitude: _fallbackLongitude,

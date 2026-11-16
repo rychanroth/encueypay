@@ -30,7 +30,8 @@ class LocationRepositoryImpl implements ILocationRepository {
       // Web has no separate "location service", and its Permissions API
       // support varies by browser (Safari throws on the geolocation query).
       // getCurrentPosition itself raises the browser prompt, so on web go
-      // straight to it and let the browser decide.
+      // straight to it and let the browser decide — this also keeps the call
+      // inside the tap's user-activation window (Google Maps does the same).
       if (!kIsWeb) {
         if (!await Geolocator.isLocationServiceEnabled()) {
           throw const NetworkFailure(_serviceOffMessage);
@@ -42,25 +43,6 @@ class LocationRepositoryImpl implements ILocationRepository {
         if (permission == LocationPermission.denied ||
             permission == LocationPermission.deniedForever) {
           throw NetworkFailure(_permissionMessage);
-        }
-      } else {
-        // A permission that is already denied forever (including every
-        // non-secure origin — Chrome only grants geolocation on https:// or
-        // localhost) can never be prompted again; surface that instead of
-        // calling getCurrentPosition and waiting for a callback that never
-        // comes. `prompt` maps to `denied`, so a first visit still reaches
-        // the browser prompt below.
-        try {
-          final permission = await Geolocator.checkPermission();
-          if (permission == LocationPermission.deniedForever) {
-            throw NetworkFailure(_permissionMessage);
-          }
-        } on NetworkFailure {
-          rethrow;
-        } catch (error, stackTrace) {
-          // Permissions API is optional (Safari); getCurrentPosition is the
-          // real gate there.
-          logSuppressedError(error, stackTrace);
         }
       }
       // Single-shot best-effort fix. The web plugin's own timeout conversion
