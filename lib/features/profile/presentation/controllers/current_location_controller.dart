@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/network/failure_mapping.dart';
 import '../../data/repository/location_repository_impl.dart';
 import '../../domain/entities/located_address.dart';
 
@@ -44,6 +45,24 @@ class CurrentLocationController extends _$CurrentLocationController {
   /// repository owns the plugin call.
   Future<void> openSettings() {
     return ref.read(locationRepositoryProvider).openSettings();
+  }
+
+  /// Reverse-geocodes a manually picked map point (web fallback when the
+  /// browser has no usable location provider). Best-effort: a lookup failure
+  /// returns null so the pin still stands and the fields stay editable.
+  Future<LocatedAddress?> reverseGeocodeAt({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      return await ref.read(locationRepositoryProvider).reverseGeocode(
+            latitude: latitude,
+            longitude: longitude,
+          );
+    } catch (error, stackTrace) {
+      logSuppressedError(error, stackTrace);
+      return null;
+    }
   }
 
   Future<void> openLocationSettings() {

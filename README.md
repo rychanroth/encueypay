@@ -26,6 +26,9 @@ flutter run --dart-define-from-file=config/.remote
 ```
 
 OAuth/setup prerequisites are in [`supabase/README.md`](supabase/README.md).
+Web geolocation ("Use my current location") requires `https://` or
+`http://localhost`; Chrome denies it on a LAN IP. The address form falls back to
+tap-to-place on the map when the browser has no usable location provider.
 
 ## Verify
 

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -48,8 +47,17 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
   );
 
   /// The located fix once "Use my current location" succeeds — drives the
-  /// verification map and is persisted with the address.
+  /// verification map and is persisted with the address. On a failed web
+  /// lookup the map starts at the Phnom Penh centre and the customer places
+  /// the pin by tapping.
   ({double latitude, double longitude})? _locatedCoordinates;
+
+  /// Guards map-tap reverse-geocode races: a slower earlier lookup must not
+  /// overwrite a newer pin.
+  int _mapLookupToken = 0;
+
+  static const _fallbackLatitude = 11.5564;
+  static const _fallbackLongitude = 104.9282;
 
   List<AdministrativeUnit> _provinces = const [];
   List<AdministrativeUnit> _districts = const [];
@@ -397,22 +405,19 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     if (!mounted) return;
     if (located == null) {
       final failure = ref.read(currentLocationControllerProvider).error;
-      if (failure is! Failure) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(failure.message),
-            // Browsers own the site-permission UI, so there is no app
-            // settings screen to open on web — the message says where to go.
-            action: failure is NetworkFailure && !kIsWeb
-                ? SnackBarAction(
-                    label: 'Open settings',
-                    onPressed: notifier.openSettings,
-                  )
-                : null,
-          ),
+      // Browser geolocation is optional (insecure origin, no provider, user
+      // denied). Keep the form usable: drop a pin at the city centre so the
+      // customer can tap the map to place it manually.
+      setState(() {
+        _locatedCoordinates ??= (
+          latitude: _fallbackLatitude,
+          longitude: _fallbackLongitude,
         );
+      });
+      final message = failure is Failure
+          ? failure.message
+          : 'Location is unavailable.';
+      _showSnack('$message Tap the map to set your pin manually.');
       return;
     }
     setState(() {
@@ -421,45 +426,68 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
         longitude: located.longitude,
       );
     });
-    var filled = false;
     final address = located.address;
-    if (address != null) {
-      if (address.line1.isNotEmpty && _line1Controller.text.trim().isEmpty) {
-        _line1Controller.text = address.line1;
-        filled = true;
-      }
-      final noHierarchyYet =
-          _provinceCode == null &&
-          _districtCode == null &&
-          _communeCode == null &&
-          _villageCode == null;
-      if (address.provinceCode != null && noHierarchyYet) {
-        await _applyDetectedHierarchy(address);
-        filled = true;
-      } else if (address.city != null && _cityController.text.trim().isEmpty) {
-        _cityController.text = address.city!;
-        filled = true;
-      }
-    }
+    final filled = await _applyLocatedAddress(address);
     if (!mounted) return;
     final levels = address?.matchedLevels ?? 0;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(switch ((filled, address)) {
-            (true, _) when levels > 0 =>
-              'Detected $levels administrative level(s) — verify the pin and '
-                  'selections before saving.',
-            (true, _) =>
-              'Filled from your current location — verify the pin and details.',
-            (false, null) =>
-              "Couldn't determine an address from your location — please enter it manually.",
-            (false, _) =>
-              'Address fields already have values — nothing changed.',
-          }),
-        ),
-      );
+    _showSnack(
+      switch ((filled, address)) {
+        (true, _) when levels > 0 =>
+          'Detected $levels administrative level(s) — verify the pin and '
+              'selections before saving.',
+        (true, _) =>
+          'Filled from your current location — verify the pin and details.',
+        (false, null) =>
+          "Couldn't determine an address from your location — tap the map or "
+              'enter it manually.',
+        (false, _) => 'Address fields already have values — nothing changed.',
+      },
+    );
+  }
+
+  /// Applies a reverse-geocoded suggestion to the fields, never overwriting
+  /// values the customer already typed. Returns whether anything changed.
+  Future<bool> _applyLocatedAddress(LocatedAddress? address) async {
+    if (address == null) return false;
+    var filled = false;
+    if (address.line1.isNotEmpty && _line1Controller.text.trim().isEmpty) {
+      _line1Controller.text = address.line1;
+      filled = true;
+    }
+    final noHierarchyYet = _provinceCode == null &&
+        _districtCode == null &&
+        _communeCode == null &&
+        _villageCode == null;
+    if (address.provinceCode != null && noHierarchyYet) {
+      await _applyDetectedHierarchy(address);
+      filled = true;
+    } else if (address.city != null && _cityController.text.trim().isEmpty) {
+      _cityController.text = address.city!;
+      filled = true;
+    }
+    return filled;
+  }
+
+  /// Tap-to-place fallback: the pin moves immediately and the new point is
+  /// reverse-geocoded best-effort. A slow lookup cannot overwrite a newer tap
+  /// (guarded by [_mapLookupToken]).
+  Future<void> _onMapPositionChanged(
+    ({double latitude, double longitude}) position,
+  ) async {
+    final token = ++_mapLookupToken;
+    setState(() => _locatedCoordinates = position);
+    final address = await ref
+        .read(currentLocationControllerProvider.notifier)
+        .reverseGeocodeAt(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+    if (!mounted || token != _mapLookupToken || address == null) return;
+    final filled = await _applyLocatedAddress(address);
+    if (!mounted || token != _mapLookupToken) return;
+    if (filled) {
+      _showSnack('Updated from the pin — verify the fields before saving.');
+    }
   }
 
   Widget _adminDropdown({
@@ -597,9 +625,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
               CurrentLocationMap(
                 latitude: _locatedCoordinates!.latitude,
                 longitude: _locatedCoordinates!.longitude,
-                onPositionChanged: (position) => setState(
-                  () => _locatedCoordinates = position,
-                ),
+                onPositionChanged: _onMapPositionChanged,
               ),
               const SizedBox(height: 4),
               Text(

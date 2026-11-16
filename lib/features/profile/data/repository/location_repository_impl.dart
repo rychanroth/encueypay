@@ -43,12 +43,33 @@ class LocationRepositoryImpl implements ILocationRepository {
             permission == LocationPermission.deniedForever) {
           throw NetworkFailure(_permissionMessage);
         }
+      } else {
+        // A permission that is already denied forever (including every
+        // non-secure origin — Chrome only grants geolocation on https:// or
+        // localhost) can never be prompted again; surface that instead of
+        // calling getCurrentPosition and waiting for a callback that never
+        // comes. `prompt` maps to `denied`, so a first visit still reaches
+        // the browser prompt below.
+        try {
+          final permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.deniedForever) {
+            throw NetworkFailure(_permissionMessage);
+          }
+        } on NetworkFailure {
+          rethrow;
+        } catch (error, stackTrace) {
+          // Permissions API is optional (Safari); getCurrentPosition is the
+          // real gate there.
+          logSuppressedError(error, stackTrace);
+        }
       }
-      // Single-shot, best-effort fix — the result feeds an editable form,
-      // not a map.
-      final position = await Geolocator.getCurrentPosition();
+      // Single-shot best-effort fix. The web plugin's own timeout conversion
+      // is unreliable, and a dismissed/locked permission prompt can leave the
+      // future pending forever — cap it here so the form never hangs.
+      final position = await Geolocator.getCurrentPosition()
+          .timeout(const Duration(seconds: 30));
       return (latitude: position.latitude, longitude: position.longitude);
-    } on Failure {
+    } on NetworkFailure {
       // Anticipated device states above — don't reclassify (DATA-05).
       rethrow;
     } on LocationServiceDisabledException {
@@ -207,15 +228,16 @@ String? _firstNonEmpty(List<String?> values) {
 const _serviceOffMessage =
     'Location services are disabled. Turn them on to use your current location.';
 const _timeoutMessage =
-    'Getting your location timed out. Please try again.';
+    'Getting your location timed out. Check the browser permission prompt and '
+    'try again — you can also tap the map to set your pin.';
 
 String get _permissionMessage => kIsWeb
-    ? 'Location access is blocked. Allow it for this site in your browser, '
-        'then try again.'
+    ? 'Location is blocked for this site. Chrome only allows location on '
+        'https:// or http://localhost — allow it for this site, then reload.'
     : 'Location permission is needed to use your current location.';
 
 String get _unavailableMessage => kIsWeb
-    ? "Your browser couldn't share a location. Browsers only allow it on "
-        'HTTPS (or localhost), with location enabled for this site.'
+    ? "Chrome couldn't determine your location. Tap the map to set your pin "
+        'manually, or allow location for this site and try again.'
     : "Couldn't get your location. Move somewhere with a clearer signal and "
         'try again.';
