@@ -178,8 +178,9 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Gross realized revenue and AOV count paid or delivered '
-                    'orders only.',
+                    'Realized = delivered or payment-verified; AOV divides by '
+                    'that count. Net settled counts verified gateway payments '
+                    'only.',
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
