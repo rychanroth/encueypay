@@ -19,11 +19,17 @@ class ReviewComposeScreen extends ConsumerStatefulWidget {
     required this.orderItemId,
     required this.productId,
     required this.productName,
+    this.onSubmitted,
   });
 
   final String orderItemId;
   final String productId;
   final String productName;
+
+  /// Runs after the server accepted the review, before navigation. The
+  /// composition root uses it to invalidate the order detail/list and the
+  /// product page, so back-navigation never shows a stale "Review" action.
+  final VoidCallback? onSubmitted;
 
   @override
   ConsumerState<ReviewComposeScreen> createState() =>
@@ -48,6 +54,10 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
         );
     final hasError = ref.read(reviewComposeControllerProvider).hasError;
     if (!hasError && mounted) {
+      // The order detail is still mounted below this route; refetch it (and
+      // the order list / product page) before navigating so the review state
+      // is current when the customer comes back.
+      widget.onSubmitted?.call();
       if (widget.productId.isEmpty) {
         context.pop();
         return;

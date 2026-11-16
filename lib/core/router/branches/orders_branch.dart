@@ -1,5 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../features/catalog/presentation/controllers/product_detail_controller.dart';
+import '../../../features/orders/presentation/controllers/order_detail_controller.dart';
+import '../../../features/orders/presentation/controllers/orders_controller.dart';
 import '../../../features/orders/presentation/screens/order_detail_screen.dart';
 import '../../../features/orders/presentation/screens/orders_screen.dart';
 import '../../../features/reviews/presentation/screens/review_compose_screen.dart';
@@ -21,15 +25,24 @@ final ordersBranch = StatefulShellBranch(
         GoRoute(
           name: AppRoutes.reviewCompose,
           path: 'review',
-          builder: (context, state) {
-            final (orderItemId, productId, productName) =
-                state.extra! as (String, String, String);
-            return ReviewComposeScreen(
-              orderItemId: orderItemId,
-              productId: productId,
-              productName: productName,
-            );
-          },
+          builder: (context, state) => Consumer(
+            builder: (context, ref, _) {
+              final (orderId, orderItemId, productId, productName) =
+                  state.extra! as (String, String, String, String);
+              return ReviewComposeScreen(
+                orderItemId: orderItemId,
+                productId: productId,
+                productName: productName,
+                onSubmitted: () {
+                  ref.invalidate(orderDetailControllerProvider(orderId));
+                  ref.invalidate(ordersControllerProvider);
+                  if (productId.isNotEmpty) {
+                    ref.invalidate(productDetailControllerProvider(productId));
+                  }
+                },
+              );
+            },
+          ),
         ),
         GoRoute(
           name: AppRoutes.orderDetail,

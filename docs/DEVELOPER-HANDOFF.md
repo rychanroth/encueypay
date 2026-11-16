@@ -528,9 +528,9 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 #### 4.2.12 Review Compose — `reviewCompose`
 **Goal:** Submit the single review allowed per purchased order item.
 **Layout:** AppBar “Write a review” → product name → 5 star buttons (36dp) → 4-line text field → Submit → “Reviews are read-only once submitted.”
-**Happy path:** Choose 1–5 stars, optional text → submit → replace with Product Detail showing review.
-**Alternates/edges:** Submitting spinner; error snackbar; empty product id → pop; server enforces ownership, delivered purchase, rating 1–5, one per item.
-**Pre-conditions:** Router `extra` record `(orderItemId, productId, productName)`. **Post-conditions:** Review persisted; product page updated.
+**Happy path:** Choose 1–5 stars, optional text → submit → invalidate order detail/list + product page → replace with Product Detail showing review.
+**Alternates/edges:** Submitting spinner; error snackbar; empty product id → pop (still invalidates); server enforces ownership, delivered purchase, rating 1–5, one per item.
+**Pre-conditions:** Router `extra` record `(orderId, orderItemId, productId, productName)`. **Post-conditions:** Review persisted; order detail shows “Reviewed” without a manual refresh; product page fetches the new review.
 
 #### 4.2.13 Profile — `profile`
 **Goal:** Account hub with customer overview.
