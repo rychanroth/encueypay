@@ -96,7 +96,7 @@ async function handle(req: Request): Promise<Response> {
   );
   const { data: payment, error: fetchError } = await supabase
     .from('payments')
-    .select('status, method, amount_minor, qr_payload')
+    .select('status, method, amount_minor, qr_payload, orders(status)')
     .eq('order_id', orderId)
     .maybeSingle();
   if (fetchError) {
@@ -108,6 +108,20 @@ async function handle(req: Request): Promise<Response> {
   }
   if (!payment) {
     return Response.json({ configured: true, reason: 'no_payment' });
+  }
+  // Only a live order may mint a QR: cancelled/returned/delivered orders are
+  // terminal, and generating a payable QR for them would take money the
+  // order cannot fulfil.
+  const orderStatus = (payment.orders as { status?: string } | null)?.status;
+  if (!orderStatus ||
+    orderStatus === 'cancelled' ||
+    orderStatus === 'returned' ||
+    orderStatus === 'delivered') {
+    return Response.json({
+      configured: true,
+      reason: 'order_not_pending',
+      orderStatus: orderStatus ?? null,
+    });
   }
   if (payment.method !== 'qr' || payment.status !== 'pending') {
     return Response.json({
@@ -150,8 +164,20 @@ async function handle(req: Request): Promise<Response> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...params, hash }),
+      // PayWay normally answers in well under a second; a stuck socket must
+      // not burn the function's whole invocation budget.
+      signal: AbortSignal.timeout(15000),
     },
-  );
+  ).catch((error) => {
+    console.error('generate-qr request failed', String(error));
+    return null;
+  });
+  if (response === null) {
+    return Response.json(
+      { configured: true, reason: 'payway_unreachable' },
+      { status: 502 },
+    );
+  }
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('application/json')) {
     // Checkout-profile HTML instead of the QR API's JSON — the merchant

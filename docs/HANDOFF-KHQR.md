@@ -86,6 +86,14 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
   amount check works). Remaining untested: PayWay's own HTTP callback
   (needs the hosted deploy — the baked callback_url is the local stack's
   address) and a real phone scan.
+- **Hosted re-verified 2026-11-16**: the deployed function returned a live
+  sandbox QR with the hosted secrets (identical to the local ones) and now
+  refuses terminal orders (`order_not_pending` for cancelled/returned/
+  delivered) so a dead order cannot mint a payable QR. The order lookup
+  needs `service_role` SELECT on `orders` — the missing grant was fixed in
+  `20261116000003` after it made every call answer `lookup_failed`. The app
+  now surfaces the function's `reason` instead of collapsing every failure
+  into "PayWay service unreachable".
 - `supabase/config.toml` `[edge_runtime.secrets]` maps the four `PAYWAY_*`
   names to host env vars — **`supabase start` does not read
   `supabase/functions/.env` on its own**; start with:

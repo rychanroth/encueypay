@@ -238,9 +238,20 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
     } on Failure {
       rethrow; // Already classified above — DATA-05: no re-mapping.
     } on FunctionException catch (error, stackTrace) {
-      // Function not deployed/running — the simulation path covers demos.
+      // The function answers non-2xx only for real failures (502 upstream /
+      // 500 unexpected). Surface its `reason` instead of collapsing every
+      // stage into "unreachable"; a transport failure keeps that wording.
       logSuppressedError(error, stackTrace);
-      throw const NetworkFailure('PayWay service unreachable');
+      final details = error.details;
+      final reason = details is Map ? details['reason'] : null;
+      if (reason is String && reason.isNotEmpty) {
+        throw ServerFailure('PayWay QR unavailable ($reason)');
+      }
+      throw NetworkFailure(
+        error.status == 0
+            ? 'PayWay service unreachable'
+            : 'PayWay QR unavailable (http ${error.status})',
+      );
     } catch (error, stackTrace) {
       throw mapRepositoryError(error, stackTrace);
     }
