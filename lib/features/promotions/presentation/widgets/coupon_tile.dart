@@ -3,27 +3,26 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/money.dart';
 import '../../domain/entities/promotion.dart';
 
-/// One coupon row shared by the live Coupons section and the read-only
-/// archive screen. The archive passes no trailing control and asks for the
-/// expired/deactivated label.
+/// One coupon row shared by the live Coupons section and the archive screen.
+///
+/// Always states the code's lifecycle word (Live / Scheduled / Disabled /
+/// Expired / Archived) so a switched-off code never looks redeemable.
 class CouponTile extends StatelessWidget {
   const CouponTile({
     super.key,
     required this.coupon,
     this.trailing,
-    this.showArchiveState = false,
   });
 
   final ManagedCoupon coupon;
   final Widget? trailing;
-  final bool showArchiveState;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final now = DateTime.now().toUtc();
-    final expired = coupon.isExpiredAt(now);
-    final dimmed = coupon.isArchivedAt(now);
+    final status = coupon.statusLabel(now);
+    final dimmed = status != 'Live' && status != 'Scheduled';
 
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -41,7 +40,7 @@ class CouponTile extends StatelessWidget {
           '${coupon.minOrderAmountMinor == 0 ? '' : ' · min ${Money(coupon.minOrderAmountMinor).format()}'}'
           '${coupon.startsAt == null ? '' : ' · from ${_day(coupon.startsAt!)}'}'
           '${coupon.endsAt == null ? '' : ' · until ${_day(coupon.endsAt!)}'}'
-          '${showArchiveState ? (expired ? ' · expired' : ' · deactivated') : ''}',
+          ' · $status',
         ),
         trailing: trailing,
       ),

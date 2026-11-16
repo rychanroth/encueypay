@@ -4,26 +4,26 @@ import '../../../../core/domain/money.dart';
 import '../../domain/entities/promotion.dart';
 
 /// One sale row shared by the live Sales section and the archive screen.
-/// The archive asks for the expired/deactivated suffix and keeps the kill
-/// switch so a deactivated sale can be brought back.
+///
+/// Always states the sale's lifecycle word (Live / Scheduled / Disabled /
+/// Ended / Archived) so a switched-off sale never looks live, and dims it
+/// when it is not currently pricing anything.
 class SaleTile extends StatelessWidget {
   const SaleTile({
     super.key,
     required this.sale,
     this.trailing,
-    this.showArchiveState = false,
   });
 
   final ManagedSale sale;
   final Widget? trailing;
-  final bool showArchiveState;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final now = DateTime.now().toUtc();
-    final expired = sale.isExpiredAt(now);
-    final dimmed = sale.isArchivedAt(now);
+    final status = sale.statusLabel(now);
+    final dimmed = !sale.isLiveAt(now);
 
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -40,7 +40,7 @@ class SaleTile extends StatelessWidget {
           ' · ${_scopeLabel(sale)}'
           '${sale.startsAt == null ? '' : ' · from ${_day(sale.startsAt!)}'}'
           '${sale.endsAt == null ? '' : ' · until ${_day(sale.endsAt!)}'}'
-          '${showArchiveState ? (expired ? ' · expired' : ' · deactivated') : ''}',
+          ' · $status',
         ),
         trailing: trailing,
       ),

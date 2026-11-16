@@ -46,7 +46,7 @@ class AdminSalesController extends _$AdminSalesController {
   }
 
   /// Sale kill switch: chips, struck prices and the linked banner stop
-  /// rendering while inactive.
+  /// rendering while inactive. The sale stays in the list (Disabled).
   Future<void> toggleSale({
     required String saleId,
     required bool active,
@@ -56,6 +56,21 @@ class AdminSalesController extends _$AdminSalesController {
       await ref
           .read(promotionsRepositoryProvider)
           .setSaleActive(saleId: saleId, active: active);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
+  /// Moves a sale into the archive (or back to the list as Disabled).
+  Future<void> archiveSale({
+    required String saleId,
+    required bool archived,
+  }) async {
+    final current = state.value ?? const <ManagedSale>[];
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(promotionsRepositoryProvider)
+          .setSaleArchived(saleId: saleId, archived: archived);
       ref.invalidateSelf();
       return current;
     });
@@ -95,7 +110,8 @@ class AdminCouponsController extends _$AdminCouponsController {
     });
   }
 
-  /// Code kill switch; date-window expiry is derived server-side.
+  /// Code kill switch; date-window expiry is derived server-side. The code
+  /// stays in the list (Disabled) — archiving is a separate action.
   Future<void> toggleCoupon({
     required String couponId,
     required bool active,
@@ -105,6 +121,21 @@ class AdminCouponsController extends _$AdminCouponsController {
       await ref
           .read(promotionsRepositoryProvider)
           .setCouponActive(couponId: couponId, active: active);
+      ref.invalidateSelf();
+      return current;
+    });
+  }
+
+  /// Moves a code into the archive (or back to the list as Disabled).
+  Future<void> archiveCoupon({
+    required String couponId,
+    required bool archived,
+  }) async {
+    final current = state.value ?? const <ManagedCoupon>[];
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(promotionsRepositoryProvider)
+          .setCouponArchived(couponId: couponId, archived: archived);
       ref.invalidateSelf();
       return current;
     });

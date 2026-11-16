@@ -20,6 +20,9 @@ SaleDto _$SaleDtoFromJson(Map<String, dynamic> json) => SaleDto(
   endsAt: json['ends_at'] == null
       ? null
       : DateTime.parse(json['ends_at'] as String),
+  archivedAt: json['archived_at'] == null
+      ? null
+      : DateTime.parse(json['archived_at'] as String),
   brands: json['brands'] == null
       ? null
       : PromoBrandRefDto.fromJson(json['brands'] as Map<String, dynamic>),
@@ -40,6 +43,7 @@ Map<String, dynamic> _$SaleDtoToJson(SaleDto instance) => <String, dynamic>{
   'active': instance.active,
   'starts_at': instance.startsAt?.toIso8601String(),
   'ends_at': instance.endsAt?.toIso8601String(),
+  'archived_at': instance.archivedAt?.toIso8601String(),
   'brands': instance.brands,
   'categories': instance.categories,
 };
@@ -58,6 +62,9 @@ CouponDto _$CouponDtoFromJson(Map<String, dynamic> json) => CouponDto(
   endsAt: json['ends_at'] == null
       ? null
       : DateTime.parse(json['ends_at'] as String),
+  archivedAt: json['archived_at'] == null
+      ? null
+      : DateTime.parse(json['archived_at'] as String),
 );
 
 Map<String, dynamic> _$CouponDtoToJson(CouponDto instance) => <String, dynamic>{
@@ -70,6 +77,7 @@ Map<String, dynamic> _$CouponDtoToJson(CouponDto instance) => <String, dynamic>{
   'active': instance.active,
   'starts_at': instance.startsAt?.toIso8601String(),
   'ends_at': instance.endsAt?.toIso8601String(),
+  'archived_at': instance.archivedAt?.toIso8601String(),
 };
 
 BannerDto _$BannerDtoFromJson(Map<String, dynamic> json) => BannerDto(

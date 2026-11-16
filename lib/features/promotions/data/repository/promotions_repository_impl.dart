@@ -28,10 +28,10 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
 
   static const _saleSelect =
       'id, name, description, scope, discount_type, discount_value, active, '
-      'starts_at, ends_at, brands(name), categories(name)';
+      'starts_at, ends_at, archived_at, brands(name), categories(name)';
   static const _couponSelect =
       'id, name, code, discount_type, discount_value, '
-      'min_order_amount_minor, active, starts_at, ends_at';
+      'min_order_amount_minor, active, starts_at, ends_at, archived_at';
 
   Future<void> _rpc(String function, Map<String, dynamic> params) async {
     try {
@@ -201,6 +201,17 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
   }
 
   @override
+  Future<void> setSaleArchived({
+    required String saleId,
+    required bool archived,
+  }) {
+    return _rpc('admin_set_sale_archived', {
+      'p_sale_id': saleId,
+      'p_archived': archived,
+    });
+  }
+
+  @override
   Future<void> createCoupon({
     required String name,
     required String code,
@@ -264,6 +275,17 @@ class PromotionsRepositoryImpl implements IPromotionsRepository {
     return _rpc('set_coupon_active', {
       'p_coupon_id': couponId,
       'p_active': active,
+    });
+  }
+
+  @override
+  Future<void> setCouponArchived({
+    required String couponId,
+    required bool archived,
+  }) {
+    return _rpc('admin_set_coupon_archived', {
+      'p_coupon_id': couponId,
+      'p_archived': archived,
     });
   }
 

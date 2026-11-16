@@ -16,6 +16,7 @@ class SaleDto {
     this.active = true,
     this.startsAt,
     this.endsAt,
+    this.archivedAt,
     this.brands,
     this.categories,
   });
@@ -43,6 +44,9 @@ class SaleDto {
   final DateTime? startsAt;
   final DateTime? endsAt;
 
+  /// Set by the archive action; NULL while the sale is in the admin list.
+  final DateTime? archivedAt;
+
   @JsonKey(name: 'brands')
   final PromoBrandRefDto? brands;
 
@@ -66,6 +70,7 @@ class CouponDto {
     this.active = true,
     this.startsAt,
     this.endsAt,
+    this.archivedAt,
   });
 
   factory CouponDto.fromJson(Map<String, dynamic> json) =>
@@ -92,6 +97,9 @@ class CouponDto {
 
   final DateTime? startsAt;
   final DateTime? endsAt;
+
+  /// Set by the archive action; NULL while the code is in the admin list.
+  final DateTime? archivedAt;
 
   Map<String, dynamic> toJson() => _$CouponDtoToJson(this);
 }

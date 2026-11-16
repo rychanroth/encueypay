@@ -6,14 +6,13 @@ import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../controllers/admin_promotions_controller.dart';
 import '../widgets/sale_tile.dart';
 
-/// Home for ended and manually deactivated sales — the same lifecycle split
-/// the Coupons section uses (`!active || expired`).
+/// Sales retired with the archive action. Disabled and ended sales are NOT
+/// here — they stay in the admin list (Disabled / Ended); only an explicit
+/// archive moves a sale out of it.
 ///
 /// Sales are never deleted: `banners.sale_id` points at them (`ON DELETE SET
-/// NULL`) and the archive is where a switched-off sale is kept. Unlike the
-/// coupon archive, the kill switch stays here: the live list now hides
-/// inactive sales, so without it deactivating a sale would be irreversible
-/// from the app.
+/// NULL`), so the archive is where a retired sale lives. Restore puts it back
+/// in the list as Disabled (archiving switched it off).
 class ArchivedSalesScreen extends ConsumerWidget {
   const ArchivedSalesScreen({super.key});
 
@@ -41,8 +40,8 @@ class ArchivedSalesScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               Text(
-                'Ended or deactivated sales are kept here. Switch one back on '
-                'to make it price products again.',
+                'Archived sales are kept for banner links and history. '
+                'Restore puts one back in the list as disabled.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -50,15 +49,12 @@ class ArchivedSalesScreen extends ConsumerWidget {
               for (final sale in archived)
                 SaleTile(
                   sale: sale,
-                  showArchiveState: true,
-                  trailing: Semantics(
-                    label: 'Activate sale ${sale.name}',
-                    child: Switch(
-                      value: sale.active,
-                      onChanged: (active) => ref
-                          .read(adminSalesControllerProvider.notifier)
-                          .toggleSale(saleId: sale.id, active: active),
-                    ),
+                  trailing: IconButton(
+                    tooltip: 'Restore sale',
+                    icon: const Icon(Icons.unarchive_outlined),
+                    onPressed: () => ref
+                        .read(adminSalesControllerProvider.notifier)
+                        .archiveSale(saleId: sale.id, archived: false),
                   ),
                 ),
             ],

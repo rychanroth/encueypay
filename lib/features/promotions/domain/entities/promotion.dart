@@ -21,6 +21,9 @@ abstract class ManagedSale with _$ManagedSale {
     DateTime? endsAt,
     String? brandName,
     String? categoryName,
+
+    /// Set only by the dedicated archive action (`admin_set_sale_archived`).
+    DateTime? archivedAt,
   }) = _ManagedSale;
 
   const ManagedSale._();
@@ -30,10 +33,26 @@ abstract class ManagedSale with _$ManagedSale {
   bool isExpiredAt(DateTime now) =>
       endsAt != null && !endsAt!.toUtc().isAfter(now.toUtc());
 
-  /// Main admin list = still pricing or scheduled. Archive = switched off or
-  /// past its end date. Starting in the future does not archive a sale.
-  /// Same lifecycle rule as [ManagedCoupon.isArchivedAt].
-  bool isArchivedAt(DateTime now) => !active || isExpiredAt(now);
+  /// Archived = deliberately retired. Disabling a sale is NOT archiving: a
+  /// disabled sale stays in the admin list and can be switched back on.
+  bool isArchivedAt(DateTime now) => archivedAt != null;
+
+  /// The one word the admin list shows: Archived | Ended | Disabled |
+  /// Scheduled | Live.
+  String statusLabel(DateTime now) {
+    if (archivedAt != null) return 'Archived';
+    if (isExpiredAt(now)) return 'Ended';
+    if (!active) return 'Disabled';
+    if (startsAt != null && startsAt!.toUtc().isAfter(now.toUtc())) {
+      return 'Scheduled';
+    }
+    return 'Live';
+  }
+
+  /// Dimmed when it is not currently pricing anything.
+  bool isLiveAt(DateTime now) =>
+      active && !isExpiredAt(now) &&
+      (startsAt == null || !startsAt!.toUtc().isAfter(now.toUtc()));
 }
 
 /// A standalone coupon code (assignment §5 attribute set): cart-wide,
@@ -53,6 +72,9 @@ abstract class ManagedCoupon with _$ManagedCoupon {
     @Default(true) bool active,
     DateTime? startsAt,
     DateTime? endsAt,
+
+    /// Set only by the dedicated archive action (`admin_set_coupon_archived`).
+    DateTime? archivedAt,
   }) = _ManagedCoupon;
 
   /// `ends_at` is inclusive in SQL; at the boundary the code is no longer
@@ -60,9 +82,21 @@ abstract class ManagedCoupon with _$ManagedCoupon {
   bool isExpiredAt(DateTime now) =>
       endsAt != null && !endsAt!.toUtc().isAfter(now.toUtc());
 
-  /// Main admin list = still usable or scheduled. Archive = switched off or
-  /// past its end date. Starting in the future does not archive a code.
-  bool isArchivedAt(DateTime now) => !active || isExpiredAt(now);
+  /// Archived = deliberately retired. Disabling a code is NOT archiving: a
+  /// disabled coupon stays in the admin list and can be switched back on.
+  bool isArchivedAt(DateTime now) => archivedAt != null;
+
+  /// The one word the admin list shows: Archived | Expired | Disabled |
+  /// Scheduled | Live.
+  String statusLabel(DateTime now) {
+    if (archivedAt != null) return 'Archived';
+    if (isExpiredAt(now)) return 'Expired';
+    if (!active) return 'Disabled';
+    if (startsAt != null && startsAt!.toUtc().isAfter(now.toUtc())) {
+      return 'Scheduled';
+    }
+    return 'Live';
+  }
 }
 
 /// A promotional banner (Section 5b/§9): the advertising surface and

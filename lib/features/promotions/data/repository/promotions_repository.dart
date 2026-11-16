@@ -37,8 +37,15 @@ abstract interface class IPromotionsRepository {
   });
 
   /// Sale kill switch: deactivates the sale (chips, struck prices and
-  /// linked banners stop rendering).
+  /// linked banners stop rendering). A disabled sale stays in the admin
+  /// list — it is not archived.
   Future<void> setSaleActive({required String saleId, required bool active});
+
+  /// Retires a sale to the archive (or restores it to the list as disabled).
+  Future<void> setSaleArchived({
+    required String saleId,
+    required bool archived,
+  });
 
   /// Create a standalone coupon code via `admin_create_coupon` — cart-wide,
   /// stacks on sale prices at checkout.
@@ -66,6 +73,12 @@ abstract interface class IPromotionsRepository {
   });
 
   Future<void> setCouponActive({required String couponId, required bool active});
+
+  /// Retires a code to the archive (or restores it to the list as disabled).
+  Future<void> setCouponArchived({
+    required String couponId,
+    required bool archived,
+  });
 
   /// Hard-delete a coupon that has never been redeemed. Used codes are
   /// rejected server-side — deactivate them instead so order history keeps

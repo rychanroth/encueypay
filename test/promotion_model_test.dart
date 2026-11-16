@@ -63,12 +63,13 @@ void main() {
     expect(coupon.discountValue, 0);
   });
 
-  test('coupon archive split: expired or deactivated, not scheduled', () {
+  test('archive is explicit: disabling or expiring never archives', () {
     final now = DateTime.utc(2026, 11, 2, 12);
     ManagedCoupon coupon({
       bool active = true,
       DateTime? startsAt,
       DateTime? endsAt,
+      DateTime? archivedAt,
     }) =>
         ManagedCoupon(
           id: 'coupon-1',
@@ -78,22 +79,67 @@ void main() {
           active: active,
           startsAt: startsAt,
           endsAt: endsAt,
+          archivedAt: archivedAt,
         );
 
+    // Live / scheduled / disabled / expired all stay in the admin list.
+    final live = coupon(endsAt: now.add(const Duration(days: 1)));
+    final scheduled = coupon(startsAt: now.add(const Duration(days: 1)));
+    final disabled = coupon(active: false);
+    final expired = coupon(endsAt: now.subtract(const Duration(seconds: 1)));
+    for (final inList in [live, scheduled, disabled, expired]) {
+      expect(inList.isArchivedAt(now), isFalse);
+    }
+
+    expect(live.statusLabel(now), 'Live');
+    expect(scheduled.statusLabel(now), 'Scheduled');
+    expect(disabled.statusLabel(now), 'Disabled');
+    expect(expired.statusLabel(now), 'Expired');
+
+    // Only the archive action moves a code out of the list.
+    final archived = coupon(active: false, archivedAt: now);
+    expect(archived.isArchivedAt(now), isTrue);
+    expect(archived.statusLabel(now), 'Archived');
+  });
+
+  test('sale lifecycle mirrors coupons, with its own words', () {
+    final now = DateTime.utc(2026, 11, 2, 12);
+    ManagedSale sale({
+      bool active = true,
+      DateTime? startsAt,
+      DateTime? endsAt,
+      DateTime? archivedAt,
+    }) =>
+        ManagedSale(
+          id: 'sale-1',
+          name: 'Sale',
+          scope: SaleScope.platform,
+          discountType: PromoDiscountType.percent,
+          discountValue: 10,
+          active: active,
+          startsAt: startsAt,
+          endsAt: endsAt,
+          archivedAt: archivedAt,
+        );
+
+    // Disabling is a status, not retirement: the sale stays listed.
+    final disabled = sale(active: false);
+    expect(disabled.isArchivedAt(now), isFalse);
+    expect(disabled.statusLabel(now), 'Disabled');
+    expect(disabled.isLiveAt(now), isFalse);
+
+    final ended = sale(endsAt: now.subtract(const Duration(seconds: 1)));
+    expect(ended.isArchivedAt(now), isFalse);
+    expect(ended.statusLabel(now), 'Ended');
+
+    final archived = sale(active: false, archivedAt: now);
+    expect(archived.isArchivedAt(now), isTrue);
+    expect(archived.statusLabel(now), 'Archived');
+
+    expect(sale().statusLabel(now), 'Live');
     expect(
-      coupon(endsAt: now.add(const Duration(days: 1))).isArchivedAt(now),
-      isFalse,
-    );
-    expect(
-      coupon(endsAt: now.subtract(const Duration(seconds: 1)))
-          .isArchivedAt(now),
-      isTrue,
-    );
-    expect(coupon(endsAt: now).isArchivedAt(now), isTrue);
-    expect(coupon(active: false).isArchivedAt(now), isTrue);
-    expect(
-      coupon(startsAt: now.add(const Duration(days: 1))).isArchivedAt(now),
-      isFalse,
+      sale(startsAt: now.add(const Duration(days: 1))).statusLabel(now),
+      'Scheduled',
     );
   });
 

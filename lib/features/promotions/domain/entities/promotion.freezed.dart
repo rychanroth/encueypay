@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ManagedSale {
 
- String get id; String get name; String get description; SaleScope get scope; PromoDiscountType get discountType; int get discountValue; bool get active; DateTime? get startsAt; DateTime? get endsAt; String? get brandName; String? get categoryName;
+ String get id; String get name; String get description; SaleScope get scope; PromoDiscountType get discountType; int get discountValue; bool get active; DateTime? get startsAt; DateTime? get endsAt; String? get brandName; String? get categoryName;/// Set only by the dedicated archive action (`admin_set_sale_archived`).
+ DateTime? get archivedAt;
 /// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +27,16 @@ $ManagedSaleCopyWith<ManagedSale> get copyWith => _$ManagedSaleCopyWithImpl<Mana
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedSale&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedSale&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,startsAt,endsAt,brandName,categoryName);
+int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,startsAt,endsAt,brandName,categoryName,archivedAt);
 
 @override
 String toString() {
-  return 'ManagedSale(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, startsAt: $startsAt, endsAt: $endsAt, brandName: $brandName, categoryName: $categoryName)';
+  return 'ManagedSale(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, startsAt: $startsAt, endsAt: $endsAt, brandName: $brandName, categoryName: $categoryName, archivedAt: $archivedAt)';
 }
 
 
@@ -46,7 +47,7 @@ abstract mixin class $ManagedSaleCopyWith<$Res>  {
   factory $ManagedSaleCopyWith(ManagedSale value, $Res Function(ManagedSale) _then) = _$ManagedSaleCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String description, SaleScope scope, PromoDiscountType discountType, int discountValue, bool active, DateTime? startsAt, DateTime? endsAt, String? brandName, String? categoryName
+ String id, String name, String description, SaleScope scope, PromoDiscountType discountType, int discountValue, bool active, DateTime? startsAt, DateTime? endsAt, String? brandName, String? categoryName, DateTime? archivedAt
 });
 
 
@@ -63,7 +64,7 @@ class _$ManagedSaleCopyWithImpl<$Res>
 
 /// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandName = freezed,Object? categoryName = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandName = freezed,Object? categoryName = freezed,Object? archivedAt = freezed,}) {
   return _then(ManagedSale(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -76,7 +77,8 @@ as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cas
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String?,categoryName: freezed == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -161,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName,  DateTime? archivedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ManagedSale() when $default != null:
-return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName);case _:
+return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName,_that.archivedAt);case _:
   return orElse();
 
 }
@@ -182,10 +184,10 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName,  DateTime? archivedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ManagedSale():
-return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName);case _:
+return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName,_that.archivedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +204,10 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String description,  SaleScope scope,  PromoDiscountType discountType,  int discountValue,  bool active,  DateTime? startsAt,  DateTime? endsAt,  String? brandName,  String? categoryName,  DateTime? archivedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ManagedSale() when $default != null:
-return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName);case _:
+return $default(_that.id,_that.name,_that.description,_that.scope,_that.discountType,_that.discountValue,_that.active,_that.startsAt,_that.endsAt,_that.brandName,_that.categoryName,_that.archivedAt);case _:
   return null;
 
 }
@@ -217,7 +219,7 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 
 
 class _ManagedSale extends ManagedSale {
-  const _ManagedSale({required this.id, required this.name, this.description = '', required this.scope, required this.discountType, required this.discountValue, this.active = true, this.startsAt, this.endsAt, this.brandName, this.categoryName}): super._();
+  const _ManagedSale({required this.id, required this.name, this.description = '', required this.scope, required this.discountType, required this.discountValue, this.active = true, this.startsAt, this.endsAt, this.brandName, this.categoryName, this.archivedAt}): super._();
   
 
 @override final  String id;
@@ -231,6 +233,8 @@ class _ManagedSale extends ManagedSale {
 @override final  DateTime? endsAt;
 @override final  String? brandName;
 @override final  String? categoryName;
+/// Set only by the dedicated archive action (`admin_set_sale_archived`).
+@override final  DateTime? archivedAt;
 
 /// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
@@ -242,16 +246,16 @@ _$ManagedSaleCopyWith<_ManagedSale> get copyWith => __$ManagedSaleCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedSale&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedSale&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,startsAt,endsAt,brandName,categoryName);
+int get hashCode => Object.hash(runtimeType,id,name,description,scope,discountType,discountValue,active,startsAt,endsAt,brandName,categoryName,archivedAt);
 
 @override
 String toString() {
-  return 'ManagedSale(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, startsAt: $startsAt, endsAt: $endsAt, brandName: $brandName, categoryName: $categoryName)';
+  return 'ManagedSale(id: $id, name: $name, description: $description, scope: $scope, discountType: $discountType, discountValue: $discountValue, active: $active, startsAt: $startsAt, endsAt: $endsAt, brandName: $brandName, categoryName: $categoryName, archivedAt: $archivedAt)';
 }
 
 
@@ -262,7 +266,7 @@ abstract mixin class _$ManagedSaleCopyWith<$Res> implements $ManagedSaleCopyWith
   factory _$ManagedSaleCopyWith(_ManagedSale value, $Res Function(_ManagedSale) _then) = __$ManagedSaleCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String description, SaleScope scope, PromoDiscountType discountType, int discountValue, bool active, DateTime? startsAt, DateTime? endsAt, String? brandName, String? categoryName
+ String id, String name, String description, SaleScope scope, PromoDiscountType discountType, int discountValue, bool active, DateTime? startsAt, DateTime? endsAt, String? brandName, String? categoryName, DateTime? archivedAt
 });
 
 
@@ -279,7 +283,7 @@ class __$ManagedSaleCopyWithImpl<$Res>
 
 /// Create a copy of ManagedSale
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandName = freezed,Object? categoryName = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandName = freezed,Object? categoryName = freezed,Object? archivedAt = freezed,}) {
   return _then(_ManagedSale(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -292,7 +296,8 @@ as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cas
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,brandName: freezed == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String?,categoryName: freezed == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -302,7 +307,8 @@ as String?,
 /// @nodoc
 mixin _$ManagedCoupon {
 
- String get id; String get name; String get code; PromoDiscountType get discountType; int get discountValue; int get minOrderAmountMinor; bool get active; DateTime? get startsAt; DateTime? get endsAt;
+ String get id; String get name; String get code; PromoDiscountType get discountType; int get discountValue; int get minOrderAmountMinor; bool get active; DateTime? get startsAt; DateTime? get endsAt;/// Set only by the dedicated archive action (`admin_set_coupon_archived`).
+ DateTime? get archivedAt;
 /// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -313,16 +319,16 @@ $ManagedCouponCopyWith<ManagedCoupon> get copyWith => _$ManagedCouponCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.code, code) || other.code == code)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ManagedCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.code, code) || other.code == code)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,code,discountType,discountValue,minOrderAmountMinor,active,startsAt,endsAt);
+int get hashCode => Object.hash(runtimeType,id,name,code,discountType,discountValue,minOrderAmountMinor,active,startsAt,endsAt,archivedAt);
 
 @override
 String toString() {
-  return 'ManagedCoupon(id: $id, name: $name, code: $code, discountType: $discountType, discountValue: $discountValue, minOrderAmountMinor: $minOrderAmountMinor, active: $active, startsAt: $startsAt, endsAt: $endsAt)';
+  return 'ManagedCoupon(id: $id, name: $name, code: $code, discountType: $discountType, discountValue: $discountValue, minOrderAmountMinor: $minOrderAmountMinor, active: $active, startsAt: $startsAt, endsAt: $endsAt, archivedAt: $archivedAt)';
 }
 
 
@@ -333,7 +339,7 @@ abstract mixin class $ManagedCouponCopyWith<$Res>  {
   factory $ManagedCouponCopyWith(ManagedCoupon value, $Res Function(ManagedCoupon) _then) = _$ManagedCouponCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String code, PromoDiscountType discountType, int discountValue, int minOrderAmountMinor, bool active, DateTime? startsAt, DateTime? endsAt
+ String id, String name, String code, PromoDiscountType discountType, int discountValue, int minOrderAmountMinor, bool active, DateTime? startsAt, DateTime? endsAt, DateTime? archivedAt
 });
 
 
@@ -350,7 +356,7 @@ class _$ManagedCouponCopyWithImpl<$Res>
 
 /// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? code = null,Object? discountType = null,Object? discountValue = null,Object? minOrderAmountMinor = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? code = null,Object? discountType = null,Object? discountValue = null,Object? minOrderAmountMinor = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? archivedAt = freezed,}) {
   return _then(ManagedCoupon(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -361,6 +367,7 @@ as int,minOrderAmountMinor: null == minOrderAmountMinor ? _self.minOrderAmountMi
 as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -446,10 +453,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt,  DateTime? archivedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ManagedCoupon() when $default != null:
-return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt);case _:
+return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt,_that.archivedAt);case _:
   return orElse();
 
 }
@@ -467,10 +474,10 @@ return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt,  DateTime? archivedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ManagedCoupon():
-return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt);case _:
+return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt,_that.archivedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -487,10 +494,10 @@ return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String code,  PromoDiscountType discountType,  int discountValue,  int minOrderAmountMinor,  bool active,  DateTime? startsAt,  DateTime? endsAt,  DateTime? archivedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ManagedCoupon() when $default != null:
-return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt);case _:
+return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discountValue,_that.minOrderAmountMinor,_that.active,_that.startsAt,_that.endsAt,_that.archivedAt);case _:
   return null;
 
 }
@@ -502,7 +509,7 @@ return $default(_that.id,_that.name,_that.code,_that.discountType,_that.discount
 
 
 class _ManagedCoupon extends ManagedCoupon {
-  const _ManagedCoupon({required this.id, this.name = '', required this.code, required this.discountType, required this.discountValue, this.minOrderAmountMinor = 0, this.active = true, this.startsAt, this.endsAt}): super._();
+  const _ManagedCoupon({required this.id, this.name = '', required this.code, required this.discountType, required this.discountValue, this.minOrderAmountMinor = 0, this.active = true, this.startsAt, this.endsAt, this.archivedAt}): super._();
   
 
 @override final  String id;
@@ -514,6 +521,8 @@ class _ManagedCoupon extends ManagedCoupon {
 @override@JsonKey() final  bool active;
 @override final  DateTime? startsAt;
 @override final  DateTime? endsAt;
+/// Set only by the dedicated archive action (`admin_set_coupon_archived`).
+@override final  DateTime? archivedAt;
 
 /// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
@@ -525,16 +534,16 @@ _$ManagedCouponCopyWith<_ManagedCoupon> get copyWith => __$ManagedCouponCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.code, code) || other.code == code)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ManagedCoupon&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.code, code) || other.code == code)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.minOrderAmountMinor, minOrderAmountMinor) || other.minOrderAmountMinor == minOrderAmountMinor)&&(identical(other.active, active) || other.active == active)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,code,discountType,discountValue,minOrderAmountMinor,active,startsAt,endsAt);
+int get hashCode => Object.hash(runtimeType,id,name,code,discountType,discountValue,minOrderAmountMinor,active,startsAt,endsAt,archivedAt);
 
 @override
 String toString() {
-  return 'ManagedCoupon(id: $id, name: $name, code: $code, discountType: $discountType, discountValue: $discountValue, minOrderAmountMinor: $minOrderAmountMinor, active: $active, startsAt: $startsAt, endsAt: $endsAt)';
+  return 'ManagedCoupon(id: $id, name: $name, code: $code, discountType: $discountType, discountValue: $discountValue, minOrderAmountMinor: $minOrderAmountMinor, active: $active, startsAt: $startsAt, endsAt: $endsAt, archivedAt: $archivedAt)';
 }
 
 
@@ -545,7 +554,7 @@ abstract mixin class _$ManagedCouponCopyWith<$Res> implements $ManagedCouponCopy
   factory _$ManagedCouponCopyWith(_ManagedCoupon value, $Res Function(_ManagedCoupon) _then) = __$ManagedCouponCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String code, PromoDiscountType discountType, int discountValue, int minOrderAmountMinor, bool active, DateTime? startsAt, DateTime? endsAt
+ String id, String name, String code, PromoDiscountType discountType, int discountValue, int minOrderAmountMinor, bool active, DateTime? startsAt, DateTime? endsAt, DateTime? archivedAt
 });
 
 
@@ -562,7 +571,7 @@ class __$ManagedCouponCopyWithImpl<$Res>
 
 /// Create a copy of ManagedCoupon
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? code = null,Object? discountType = null,Object? discountValue = null,Object? minOrderAmountMinor = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? code = null,Object? discountType = null,Object? discountValue = null,Object? minOrderAmountMinor = null,Object? active = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? archivedAt = freezed,}) {
   return _then(_ManagedCoupon(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -573,6 +582,7 @@ as int,minOrderAmountMinor: null == minOrderAmountMinor ? _self.minOrderAmountMi
 as int,active: null == active ? _self.active : active // ignore: cast_nullable_to_non_nullable
 as bool,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }

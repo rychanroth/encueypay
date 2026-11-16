@@ -15,6 +15,7 @@ extension SaleDtoX on SaleDto {
       endsAt: endsAt,
       brandName: brands?.name,
       categoryName: categories?.name,
+      archivedAt: archivedAt,
     );
   }
 }
@@ -31,6 +32,7 @@ extension CouponDtoX on CouponDto {
       active: active,
       startsAt: startsAt,
       endsAt: endsAt,
+      archivedAt: archivedAt,
     );
   }
 }

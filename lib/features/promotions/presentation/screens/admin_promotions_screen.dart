@@ -558,7 +558,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
           ),
           IconButton(
             tooltip: 'New coupon',
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.confirmation_number_outlined),
             onPressed: () => _createCoupon(context, ref),
           ),
           IconButton(
@@ -602,26 +602,39 @@ class AdminPromotionsScreen extends ConsumerWidget {
               ),
               data: (sales) {
                 final now = DateTime.now().toUtc();
-                final live = sales
+                final listed = sales
                     .where((sale) => !sale.isArchivedAt(now))
                     .toList();
-                if (live.isEmpty) {
+                if (listed.isEmpty) {
                   return const Text(
-                      'No live or scheduled sales. Check Archived.');
+                      'No sales in the list. Create one, or check Archived.');
                 }
                 return Column(
                   children: [
-                    for (final sale in live)
+                    for (final sale in listed)
                       SaleTile(
                         sale: sale,
-                        trailing: Semantics(
-                          label: 'Activate sale ${sale.name}',
-                          child: Switch(
-                            value: sale.active,
-                            onChanged: (active) => ref
-                                .read(adminSalesControllerProvider.notifier)
-                                .toggleSale(saleId: sale.id, active: active),
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Semantics(
+                              label: 'Activate sale ${sale.name}',
+                              child: Switch(
+                                value: sale.active,
+                                onChanged: (active) => ref
+                                    .read(adminSalesControllerProvider.notifier)
+                                    .toggleSale(
+                                        saleId: sale.id, active: active),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Archive sale',
+                              icon: const Icon(Icons.inventory_2_outlined),
+                              onPressed: () => ref
+                                  .read(adminSalesControllerProvider.notifier)
+                                  .archiveSale(saleId: sale.id, archived: true),
+                            ),
+                          ],
                         ),
                       ),
                   ],
@@ -658,16 +671,16 @@ class AdminPromotionsScreen extends ConsumerWidget {
               ),
               data: (coupons) {
                 final now = DateTime.now().toUtc();
-                final live = coupons
+                final listed = coupons
                     .where((coupon) => !coupon.isArchivedAt(now))
                     .toList();
-                if (live.isEmpty) {
+                if (listed.isEmpty) {
                   return const Text(
-                      'No live or scheduled coupons. Check Archived.');
+                      'No coupons in the list. Create one, or check Archived.');
                 }
                 return Column(
                   children: [
-                    for (final coupon in live)
+                    for (final coupon in listed)
                       CouponTile(
                         coupon: coupon,
                         trailing: Row(
@@ -684,11 +697,30 @@ class AdminPromotionsScreen extends ConsumerWidget {
                                         couponId: coupon.id, active: active),
                               ),
                             ),
-                            IconButton(
-                              tooltip: 'Delete coupon',
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () =>
-                                  _deleteCoupon(context, ref, coupon),
+                            PopupMenuButton<String>(
+                              tooltip: 'Coupon actions',
+                              onSelected: (action) {
+                                switch (action) {
+                                  case 'archive':
+                                    ref
+                                        .read(adminCouponsControllerProvider
+                                            .notifier)
+                                        .archiveCoupon(
+                                            couponId: coupon.id, archived: true);
+                                  case 'delete':
+                                    _deleteCoupon(context, ref, coupon);
+                                }
+                              },
+                              itemBuilder: (menuContext) => const [
+                                PopupMenuItem(
+                                  value: 'archive',
+                                  child: Text('Archive'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('Delete'),
+                                ),
+                              ],
                             ),
                           ],
                         ),

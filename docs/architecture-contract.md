@@ -739,6 +739,13 @@ constants per feature.
   generation, the Auto-applied summary row, `admin_create_campaign`,
   `admin_set_promotion_active`, `create_platform_promotion`,
   `preview_cart_discounts`.
+  **Lifecycle (2026-11-17):** status, retirement and expiry are separate.
+  `active` is the kill switch — Disabled rows stay in the admin list and can
+  be switched back on. `archived_at` is set only by the archive action
+  (`admin_set_sale_archived` / `admin_set_coupon_archived`, which also clear
+  `active`; Restore returns the row as Disabled). A past `ends_at` is Ended,
+  derived client-side, never stored. Archived rows are excluded from
+  `active_sales` and cannot be toggled until restored.
 
 - **ACTION-04 (bank transfer retirement — EXECUTED 2026-11-17).** Manual bank
   transfer was replaced by KHQR before launch, so checkout only creates

@@ -37,7 +37,7 @@ final class AdminSalesControllerProvider
 }
 
 String _$adminSalesControllerHash() =>
-    r'b6f5238314b2408f3c359c17c5576055ba05d6b6';
+    r'b21d494f14fb83c7ade7a68aa8d3a391e47716f0';
 
 /// Admin sales management (Section 9): the group-pricing layer.
 
@@ -91,7 +91,7 @@ final class AdminCouponsControllerProvider
 }
 
 String _$adminCouponsControllerHash() =>
-    r'dc0d551dcf1008cd3d30603b92bba04e7757344d';
+    r'd9bc17889cc7734b50d25870b6d3967924f79115';
 
 /// Admin standalone coupon codes — cart-wide, stacked on sale prices.
 
