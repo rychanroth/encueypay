@@ -14,6 +14,7 @@ import '../../../features/profile/presentation/screens/profile_screen.dart';
 import '../../../features/profile/presentation/screens/settings_screen.dart';
 import '../../../features/promotions/presentation/screens/admin_promotions_screen.dart';
 import '../../../features/promotions/presentation/screens/archived_coupons_screen.dart';
+import '../../../features/promotions/presentation/screens/archived_sales_screen.dart';
 import '../../presentation/widgets/profile_avatar_button.dart';
 import '../app_routes.dart';
 
@@ -73,6 +74,11 @@ final adminDashboardBranch = StatefulShellBranch(
               name: AppRoutes.adminArchivedCoupons,
               path: 'archive',
               builder: (context, state) => const ArchivedCouponsScreen(),
+            ),
+            GoRoute(
+              name: AppRoutes.adminArchivedSales,
+              path: 'sales-archive',
+              builder: (context, state) => const ArchivedSalesScreen(),
             ),
           ],
         ),

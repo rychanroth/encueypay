@@ -22,6 +22,18 @@ abstract class ManagedSale with _$ManagedSale {
     String? brandName,
     String? categoryName,
   }) = _ManagedSale;
+
+  const ManagedSale._();
+
+  /// `ends_at` is inclusive in SQL; at the boundary the sale no longer prices
+  /// anything, so equal-to-now counts as expired.
+  bool isExpiredAt(DateTime now) =>
+      endsAt != null && !endsAt!.toUtc().isAfter(now.toUtc());
+
+  /// Main admin list = still pricing or scheduled. Archive = switched off or
+  /// past its end date. Starting in the future does not archive a sale.
+  /// Same lifecycle rule as [ManagedCoupon.isArchivedAt].
+  bool isArchivedAt(DateTime now) => !active || isExpiredAt(now);
 }
 
 /// A standalone coupon code (assignment §5 attribute set): cart-wide,

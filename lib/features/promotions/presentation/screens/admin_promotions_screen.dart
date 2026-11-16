@@ -12,6 +12,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/promotion.dart';
 import '../controllers/admin_promotions_controller.dart';
 import '../widgets/coupon_tile.dart';
+import '../widgets/sale_tile.dart';
 
 /// Admin Promotions tab (spec §2.4/§27): three independent sections —
 /// Sales (group pricing: platform/brand/category), Coupons (standalone
@@ -572,9 +573,20 @@ class AdminPromotionsScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text('Sales',
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Sales',
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+                TextButton.icon(
+                  onPressed: () =>
+                      context.pushNamed(AppRoutes.adminArchivedSales),
+                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  label: const Text('Archived'),
+                ),
+              ],
+            ),
             salesAsync.when(
               loading: () => const Padding(
                 padding: EdgeInsets.all(8),
@@ -589,39 +601,26 @@ class AdminPromotionsScreen extends ConsumerWidget {
                 retry: () => ref.invalidate(adminSalesControllerProvider),
               ),
               data: (sales) {
-                if (sales.isEmpty) {
+                final now = DateTime.now().toUtc();
+                final live = sales
+                    .where((sale) => !sale.isArchivedAt(now))
+                    .toList();
+                if (live.isEmpty) {
                   return const Text(
-                      'No sales yet. Use the campaign icon to create one.');
+                      'No live or scheduled sales. Check Archived.');
                 }
                 return Column(
                   children: [
-                    for (final sale in sales)
-                      Card(
-                        margin: const EdgeInsets.only(top: 8),
-                        child: ListTile(
-                          title: Text(
-                            sale.name,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: sale.active
-                                  ? null
-                                  : theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          subtitle: Text(
-                            '${_discountLabel(sale.discountType, sale.discountValue)}'
-                            ' · ${_scopeLabel(sale)}'
-                            '${sale.startsAt == null ? '' : ' · from ${_day(sale.startsAt!)}'}'
-                            '${sale.endsAt == null ? '' : ' · until ${_day(sale.endsAt!)}'}',
-                          ),
-                          trailing: Semantics(
-                            label: 'Activate sale ${sale.name}',
-                            child: Switch(
-                              value: sale.active,
-                              onChanged: (active) => ref
-                                  .read(adminSalesControllerProvider.notifier)
-                                  .toggleSale(saleId: sale.id, active: active),
-                            ),
+                    for (final sale in live)
+                      SaleTile(
+                        sale: sale,
+                        trailing: Semantics(
+                          label: 'Activate sale ${sale.name}',
+                          child: Switch(
+                            value: sale.active,
+                            onChanged: (active) => ref
+                                .read(adminSalesControllerProvider.notifier)
+                                .toggleSale(saleId: sale.id, active: active),
                           ),
                         ),
                       ),
@@ -806,21 +805,6 @@ class AdminPromotionsScreen extends ConsumerWidget {
       ),
     );
   }
-
-  static String _discountLabel(PromoDiscountType type, int value) =>
-      switch (type) {
-        PromoDiscountType.percent => '$value% off',
-        PromoDiscountType.fixed => '${Money(value).format()} off',
-      };
-
-  static String _scopeLabel(ManagedSale sale) => switch (sale.scope) {
-        SaleScope.platform => 'All products',
-        SaleScope.brand => 'Brand: ${sale.brandName ?? '—'}',
-        SaleScope.category => 'Category: ${sale.categoryName ?? '—'}',
-      };
-
-  static String _day(DateTime value) =>
-      value.toLocal().toString().substring(0, 10);
 }
 
 class _DateField extends StatelessWidget {

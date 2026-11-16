@@ -216,8 +216,8 @@ return $default(_that.id,_that.name,_that.description,_that.scope,_that.discount
 /// @nodoc
 
 
-class _ManagedSale implements ManagedSale {
-  const _ManagedSale({required this.id, required this.name, this.description = '', required this.scope, required this.discountType, required this.discountValue, this.active = true, this.startsAt, this.endsAt, this.brandName, this.categoryName});
+class _ManagedSale extends ManagedSale {
+  const _ManagedSale({required this.id, required this.name, this.description = '', required this.scope, required this.discountType, required this.discountValue, this.active = true, this.startsAt, this.endsAt, this.brandName, this.categoryName}): super._();
   
 
 @override final  String id;

@@ -59,6 +59,7 @@ abstract final class AppRoutes {
   static const adminBrands = 'adminBrands';
   static const adminPromotions = 'adminPromotions';
   static const adminArchivedCoupons = 'adminArchivedCoupons';
+  static const adminArchivedSales = 'adminArchivedSales';
 
   // Admin products (Section 2b — nested under the Products tab).
   static const adminProducts = 'adminProducts';
