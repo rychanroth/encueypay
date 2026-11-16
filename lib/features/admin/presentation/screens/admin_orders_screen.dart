@@ -1276,7 +1276,12 @@ const _paymentStatuses = [
   'refunded',
 ];
 
-const _paymentMethods = ['cod', 'qr', 'bank_transfer'];
+/// Methods a customer can actually pick at checkout (checkout offers only
+/// these two). `bank_transfer` is a retired wire value: QR replaced manual
+/// bank transfer, and the value survives only so legacy rows still parse and
+/// render via [_methodLabel]. Nothing can create one today, so it is not a
+/// filter here — legacy rows stay reachable through the unfiltered list.
+const _paymentMethods = ['cod', 'qr'];
 
 int _filterCount(AdminOrderQuery query) {
   var count = 0;
