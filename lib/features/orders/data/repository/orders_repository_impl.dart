@@ -135,9 +135,13 @@ class OrdersRepositoryImpl implements IOrdersRepository {
         request = request.inFilter('status', statuses);
       }
       if (fromDate != null) {
+        // Local midnight of the requested day, sent as an absolute instant:
+        // a bare wall-clock string is parsed in the server's timezone (UTC on
+        // hosted Supabase) and silently shifts the day by the UTC offset.
         request = request.gte(
           'created_at',
           DateTime(fromDate.year, fromDate.month, fromDate.day)
+              .toUtc()
               .toIso8601String(),
         );
       }
@@ -146,6 +150,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
         request = request.lte(
           'created_at',
           DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59)
+              .toUtc()
               .toIso8601String(),
         );
       }
