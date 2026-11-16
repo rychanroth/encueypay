@@ -177,111 +177,130 @@ class _CartBody extends ConsumerWidget {
       );
     }
 
-    return Stack(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.xs,
-                AppSpacing.md,
-                0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CartDeliveryHeader(
-                    address: header?.address,
-                    loading: headerAsync.isLoading,
-                    onTap: openAddresses,
+    return ColoredBox(
+      // Grouped cart surface: white section bands on a stronger gray page —
+      // the reference's section separation without inventing markup. Dark
+      // mode uses the base surface so the cards (surfaceContainerLowest)
+      // still read as raised.
+      color: theme.brightness == Brightness.dark
+          ? theme.colorScheme.surface
+          : theme.colorScheme.surfaceContainer,
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Material(
+                color: theme.colorScheme.surfaceContainerLowest,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.xs,
+                    AppSpacing.md,
+                    AppSpacing.sm,
                   ),
-                  CartStoreHeader(),
-                  CartFilterBar(
-                    state: filterState,
-                    onQueryChanged: filterController.setQuery,
-                    onFilterChanged: filterController.setFilter,
-                    onSortChanged: filterController.setSort,
-                    onClear: filterController.clear,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Expanded(
-              child: visibleItems.isEmpty
-                  ? EmptyStateView(
-                      illustration: AppIllustrations.noSearch,
-                      title: 'No items match',
-                      description: 'Try another keyword or filter.',
-                      actionLabel: 'Clear filters',
-                      onAction: filterController.clear,
-                    )
-                  : _AnimatedCartList(
-                      items: visibleItems,
-                      selection: selection,
-                      deliveryFeeMinor: header?.deliveryFeeMinor,
-                      onToggle: (itemId) => ref
-                          .read(cartSelectionControllerProvider.notifier)
-                          .toggle(itemId),
-                      onRemove: (itemId) async {
-                        try {
-                          await ref
-                              .read(cartControllerProvider.notifier)
-                              .remove(itemId: itemId);
-                          return true;
-                        } on Failure catch (failure) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(
-                                SnackBar(content: Text(failure.message)),
-                              );
-                          }
-                          return false;
-                        }
-                      },
-                      onQuantityChanged: (itemId, quantity) => ref
-                          .read(cartControllerProvider.notifier)
-                          .updateQuantity(itemId: itemId, quantity: quantity),
-                      onSupportTap: () =>
-                          context.pushNamed(AppRoutes.helpSupport),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
                     ),
-            ),
-          ],
-        ),
-        // Floating Action Dock (§6.5), docked above the navigation bar.
-        Positioned(
-          left: AppSpacing.md,
-          right: AppSpacing.md,
-          bottom: AppSpacing.md,
-          child: CartCheckoutDock(
-            payableMinor: payableMinor,
-            selectedCount: selectedItems.length,
-            allSelected: allSelected,
-            onToggleAll: () => ref
-                .read(cartSelectionControllerProvider.notifier)
-                .setAll(selected: !allSelected),
-            onCheckout: checkout,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CartDeliveryHeader(
+                        address: header?.address,
+                        loading: headerAsync.isLoading,
+                        onTap: openAddresses,
+                      ),
+                      CartStoreHeader(),
+                      CartFilterBar(
+                        state: filterState,
+                        onQueryChanged: filterController.setQuery,
+                        onFilterChanged: filterController.setFilter,
+                        onSortChanged: filterController.setSort,
+                        onClear: filterController.clear,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Expanded(
+                child: visibleItems.isEmpty
+                    ? EmptyStateView(
+                        illustration: AppIllustrations.noSearch,
+                        title: 'No items match',
+                        description: 'Try another keyword or filter.',
+                        actionLabel: 'Clear filters',
+                        onAction: filterController.clear,
+                      )
+                    : _AnimatedCartList(
+                        items: visibleItems,
+                        selection: selection,
+                        deliveryFeeMinor: header?.deliveryFeeMinor,
+                        onToggle: (itemId) => ref
+                            .read(cartSelectionControllerProvider.notifier)
+                            .toggle(itemId),
+                        onRemove: (itemId) async {
+                          try {
+                            await ref
+                                .read(cartControllerProvider.notifier)
+                                .remove(itemId: itemId);
+                            return true;
+                          } on Failure catch (failure) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context)
+                                ..hideCurrentSnackBar()
+                                ..showSnackBar(
+                                  SnackBar(content: Text(failure.message)),
+                                );
+                            }
+                            return false;
+                          }
+                        },
+                        onQuantityChanged: (itemId, quantity) => ref
+                            .read(cartControllerProvider.notifier)
+                            .updateQuantity(itemId: itemId, quantity: quantity),
+                        onSupportTap: () =>
+                            context.pushNamed(AppRoutes.helpSupport),
+                      ),
+              ),
+            ],
           ),
-        ),
-        if (selectedItems.isEmpty)
+          // Floating Action Dock (§6.5), docked above the navigation bar.
           Positioned(
             left: AppSpacing.md,
             right: AppSpacing.md,
-            bottom: AppSpacing.md + 84,
-            child: IgnorePointer(
-              child: Text(
-                'Tick at least one line to checkout',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+            bottom: AppSpacing.md,
+            child: CartCheckoutDock(
+              payableMinor: payableMinor,
+              selectedCount: selectedItems.length,
+              allSelected: allSelected,
+              onToggleAll: () => ref
+                  .read(cartSelectionControllerProvider.notifier)
+                  .setAll(selected: !allSelected),
+              onCheckout: checkout,
+            ),
+          ),
+          if (selectedItems.isEmpty)
+            Positioned(
+              left: AppSpacing.md,
+              right: AppSpacing.md,
+              bottom: AppSpacing.md + 84,
+              child: IgnorePointer(
+                child: Text(
+                  'Tick at least one line to checkout',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -359,13 +378,14 @@ class _AnimatedCartListState extends State<_AnimatedCartList> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AnimatedList(
       key: _listKey,
-      // +1 for the trailing trust rows.
+      // +1 for the trailing trust section.
       initialItemCount: _items.length + 1,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
-        0,
+        AppSpacing.sm,
         AppSpacing.md,
         156, // clearance above the floating dock (§1.5/§6.5)
       ),
@@ -375,10 +395,27 @@ class _AnimatedCartListState extends State<_AnimatedCartList> {
             sizeFactor: animation,
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: StorePromisesCard(
-                deliveryFeeMinor: widget.deliveryFeeMinor,
-                onSupportTap: widget.onSupportTap,
+              padding: const EdgeInsets.only(top: AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppSpacing.xs,
+                      bottom: AppSpacing.sm,
+                    ),
+                    child: Text(
+                      'Why shop with R67',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  StorePromisesCard(
+                    deliveryFeeMinor: widget.deliveryFeeMinor,
+                    onSupportTap: widget.onSupportTap,
+                  ),
+                ],
               ),
             ),
           );

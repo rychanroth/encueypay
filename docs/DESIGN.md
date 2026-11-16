@@ -235,7 +235,11 @@ abstract class AppTypography {
     - Line items with variant chips, low-stock/unavailable warnings,
       product-wide stock-capped quantity steppers and swipe-to-delete.
     - Honest trust rows below the lines (Delivery / Secure payment / Sold by R67 /
-      Help & support) — the shared `StorePromisesCard`.
+      Help & support) — the shared `StorePromisesCard`, under a labelled
+      "Why shop with R67" section separated by the page's gray band.
+    - **Grouped surface**: white section bands (header, line cards, trust card) on the
+      `surfaceContainer` page; the header band ends in a hairline border so the
+      sections read as distinct blocks.
     - **Floating Action Dock (`fixed bottom-16`)** with select-all, the selected
       total payable and one-tap checkout of the ticked lines only.
 4. **Orders (`/orders`)**:

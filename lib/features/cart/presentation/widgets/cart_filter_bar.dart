@@ -100,6 +100,8 @@ class _CartFilterBarState extends State<CartFilterBar> {
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             isDense: true,
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainer,
             hintText: 'Search your cart',
             prefixIcon: const Icon(Icons.search, size: 20),
             suffixIcon: _searchController.text.isEmpty
