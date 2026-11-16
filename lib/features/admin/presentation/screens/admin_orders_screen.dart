@@ -63,7 +63,7 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
     ref.read(adminOrdersQueryControllerProvider.notifier).update(query);
   }
 
-  /// External deep links (dashboard Total sales, pasted URLs) update the
+  /// External deep links (dashboard hero, pasted URLs) update the
   /// query; in-app filter changes write the query back to the URL.
   void _applyRouteQuery() {
     final params = GoRouterState.of(context).uri.queryParameters;
@@ -653,7 +653,10 @@ class _OrderRow extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        AdminLifecycleChip(label: order.status.wireName),
+                        AdminLifecycleChip(
+                          wireName: order.status.wireName,
+                          label: _statusLabel(order.status.wireName),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -1149,7 +1152,7 @@ class _OrderFilterSheetState extends State<_OrderFilterSheet> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Exclude cancelled orders'),
                 subtitle: const Text(
-                  'Matches the dashboard Total sales definition.',
+                  'Hides cancelled and returned orders.',
                 ),
                 value: _draft.excludeCancelled,
                 onChanged: (value) => setState(
@@ -1325,8 +1328,35 @@ String _paymentLabel(AdminOrderSummary order) {
   if (method == null && status == null) return '';
   return [
     if (method != null) _methodLabel(method),
-    if (status != null) _paymentStatusLabel(status),
-  ].join(' · ');
+    if (status != null) _paymentStateLabel(order),
+  ].where((part) => part.isNotEmpty).join(' · ');
+}
+
+/// Context-aware payment state for the queue's meta line. A bare "Pending"
+/// next to a delivered or cancelled lifecycle chip reads as a contradiction;
+/// the label now says what actually has to happen (collect cash, refund, …).
+String _paymentStateLabel(AdminOrderSummary order) {
+  final status = order.paymentStatus;
+  if (status == null) return '';
+  final terminal = order.status == AdminOrderStatus.cancelled ||
+      order.status == AdminOrderStatus.returned;
+  return switch (status) {
+    'transaction_verified' => 'Paid',
+    'awaiting_payment_verification' => 'Awaiting verification',
+    'refund_required' => 'Refund required',
+    'refunded' => 'Refunded',
+    'pending' => switch (order.paymentMethod) {
+        'cod' => terminal
+            ? 'Not collected'
+            : order.status == AdminOrderStatus.delivered
+                ? 'Cash pending'
+                : 'Pay on delivery',
+        'qr' => terminal ? 'Unpaid' : 'Awaiting payment',
+        'bank_transfer' => 'Awaiting verification',
+        _ => 'Unpaid',
+      },
+    _ => _statusLabel(status),
+  };
 }
 
 String _itemsSummary(AdminOrderSummary order) {

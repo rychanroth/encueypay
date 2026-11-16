@@ -3,27 +3,23 @@ import 'package:flutter/material.dart';
 import '../../../../core/presentation/widgets/status_badge.dart';
 
 /// Lifecycle chip shared by the admin orders list and detail views
-/// (Section 3). Delegates to the shared §2.2 status-badge palette so admin
-/// and customer surfaces speak the same color language (DESIGN.md §2.2).
-/// The label is the wire lifecycle computed by
-/// [AdminOrderSummary.lifecycle] or a raw business-order status; wire names
-/// outside the palette render the neutral slate entry.
+/// (Section 3). [wireName] drives the shared §2.2 status-badge palette so
+/// admin and customer surfaces speak the same color language; [label] is the
+/// humanized lifecycle text (never the raw wire name). Keeping the two
+/// separate prevents a display label from accidentally selecting another
+/// status's palette entry.
 class AdminLifecycleChip extends StatelessWidget {
-  const AdminLifecycleChip({super.key, required this.label});
+  const AdminLifecycleChip({
+    super.key,
+    required this.wireName,
+    required this.label,
+  });
 
+  final String wireName;
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    return StatusBadge(
-      wireName: switch (label) {
-        'completed' => 'delivered',
-        'ready' => 'packed',
-        'rejected' => 'cancelled',
-        _ => label,
-      },
-      label: label,
-      dense: true,
-    );
+    return StatusBadge(wireName: wireName, label: label, dense: true);
   }
 }
