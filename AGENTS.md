@@ -28,7 +28,10 @@ Silent invention is how architecture drifts.
   `Failure` at the repository boundary only — via `mapRepositoryError`
   (backend → `ServerFailure`, sockets → `NetworkFailure`, anything else → logged
   `UnexpectedFailure`; bare `catch (_)` is banned); streams surface `StreamError` events
-  (DATA-01…09).
+  (DATA-01…10). **Date-only filters are store days (DATA-10):** resolve `p_from`/`p_to`
+  via `public.store_day_start()` (+07, no DST), never `p_from::timestamptz` (session zone
+  — UTC on hosted); day buckets use `(created_at at time zone public.store_timezone())::date`;
+  clients send day bounds as absolute instants (`.toUtc().toIso8601String()`).
 - **Domain:** entities are immutable freezed classes (DTOs stay plain
   json_serializable); use cases = one class, `call()`, interface-injected, own
   manual Provider. Pragmatic split: use cases for real domain logic, controllers

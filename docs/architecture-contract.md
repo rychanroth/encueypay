@@ -1,6 +1,7 @@
 # Architecture Contract
 
-**Version:** 2.3.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
+**Version:** 2.4.0 · **Status:** Ratified (2026-09-27) · **Owner:** Project maintainer
+**2.4.0 (2026-11-17):** DATA-10 added (date-only filters mean the store's calendar day); the admin order filters' leftover `bank_transfer` chip and the proof-upload path retired (ACTION-04).
 **2.3.0 (2026-11-02):** `share_plus` added for QR image sharing (user-approved, DEPS-01); cart/checkout line pricing recorded as the `cart_item_details` read model (ACTION-03); Nominatim address prefill recorded in DEPS-04.
 **2.2.0 (2026-10-15):** DATA-09 added (PostgREST aggregate constraint); THEME-03 updated to the as-built token system; §3 CORE widget inventory; ACTION-02 recorded (single-seller schema retirement, migrations 0008–0010).
 **Audience:** Every AI agent and human contributor modifying this codebase.
@@ -350,12 +351,30 @@ outside `data/repository/`.
   SQL *strings* in repositories (not just Dart field names; both
   snake_case column forms and Dart camelCase forms).
 
+- **DATA-10 (Date-only filters mean the store's day).** A filter that arrives
+  as a bare `date` (`p_from`/`p_to`) MUST resolve to the **store's** calendar
+  day, never the database session's. Cast a `date` to `timestamptz` only
+  through `public.store_day_start(<date>)` (`store_timezone()` = the store's
+  IANA zone, currently `Asia/Phnom_Penh`, fixed +07 with no DST); a raw
+  `p_from::timestamptz` resolves in the session zone and shifts every window
+  (hosted Supabase runs UTC — this silently emptied the admin "Today" filter
+  for everything ordered before 07:00 local). The same rule applies to day
+  bucketing: `(o.created_at at time zone public.store_timezone())::date`.
+  Client-side, send day boundaries as absolute instants
+  (`DateTime(...).toUtc().toIso8601String()`), never a bare wall-clock string,
+  which Postgres re-reads in the session zone.
+  Known limit: the admin filter chips label "Today" from the *device* clock
+  while the RPC resolves the *store* day. One-region operation makes these
+  equal; an admin in another timezone sees a chip whose label and window
+  disagree, which is accepted (single-region business).
+
 **Checklist:**
 - [ ] DTO annotated with `FieldRename.snake`, `.g.dart` regenerated, not hand-edited.
 - [ ] Null-defaults applied in the mapper, not in widgets.
 - [ ] Interface and impl in separate files; provider exposes the interface.
 - [ ] Every method maps exceptions to `Failure` via `mapRepositoryError` (futures throw, streams emit `StreamError`).
 - [ ] Selects reference only existing columns; aggregates via views/RPCs (DATA-09).
+- [ ] Date-only RPC params go through `store_day_start`, day buckets through `store_timezone()` (DATA-10).
 
 ---
 
@@ -720,6 +739,18 @@ constants per feature.
   generation, the Auto-applied summary row, `admin_create_campaign`,
   `admin_set_promotion_active`, `create_platform_promotion`,
   `preview_cart_discounts`.
+
+- **ACTION-04 (bank transfer retirement — EXECUTED 2026-11-17).** Manual bank
+  transfer was replaced by KHQR before launch, so checkout only creates
+  `cod`/`qr` orders. Retired: the `bank_transfer` chip in the admin order
+  filters (it could never match a new order), and the customer payment-proof
+  upload (`submit_payment_proof` RPC, `submitPaymentProof` repository call,
+  the order-detail "Upload proof" action) — an unreachable path that let a
+  customer mark their own payment `transaction_verified`. Deliberately kept:
+  the `payment_method` enum value, `payments.proof_path`, the
+  `payment_proofs` bucket and the label mappings, because legacy rows still
+  parse and render through them. New payment methods MUST NOT be added to
+  checkout without revisiting this action.
 
 **Known deviations** — acknowledged debt. Do **not** fix unprompted (GLOBAL-02); fix on
 the next touch of the file or on request:

@@ -44,3 +44,26 @@ begin
   end if;
 end
 $$;
+
+-- Supabase-internal schemas + publication the frozen baseline references
+-- (CREATE EXTENSION pg_net WITH SCHEMA extensions, supabase_vault WITH SCHEMA
+-- vault, ALTER PUBLICATION supabase_realtime ...). Hosted Supabase ships all
+-- of these, so without them a scratch cluster dies on the first migration.
+-- pg_net/supabase_vault must exist on the server (they come with the Supabase
+-- Postgres build); on a plain build those two lines are the only ones that
+-- need them.
+create schema if not exists extensions;
+create schema if not exists vault;
+
+create extension if not exists pg_net with schema extensions;
+create extension if not exists supabase_vault with schema vault;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication where pubname = 'supabase_realtime'
+  ) then
+    create publication supabase_realtime;
+  end if;
+end
+$$;
