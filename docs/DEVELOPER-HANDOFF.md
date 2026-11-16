@@ -388,11 +388,16 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 | Route name | Path | Screen file | Shell |
 |---|---|---|---|
 | `login` | `/login` | `login_screen.dart` | Outside shell |
+| `helpSupport` | `/help` | `help_support_screen.dart` | Top-level overlay |
+| `helpFeedback` | `/help/feedback` | `help_feedback_screen.dart` | Top-level overlay |
+| `about` | `/about` | `about_screen.dart` | Top-level overlay |
 | `home` | `/home` | `home_screen.dart` | Customer tab 1 |
 | `productDetail` | `/home/product/:id` | `product_detail_screen.dart` | Nested under Home |
 | `notifications` | `/home/notifications` | `notifications_screen.dart` | Nested under Home |
 | `discovery` | `/discovery?kind=&id=&name=&image=&q=` | `discovery_screen.dart` | Customer tab 2 |
 | `cart` | `/cart` | `cart_screen.dart` | Customer tab 3 |
+| `cartAddresses` | `/cart/addresses` | `addresses_screen.dart` | Nested under Cart |
+| `cartAddressEdit` | `/cart/addresses/edit` | `address_edit_screen.dart` | Nested under Cart |
 | `checkout` | `/cart/checkout` | `checkout_screen.dart` | Nested under Cart |
 | `checkoutAddressEdit` | `/cart/checkout/address/edit` | `address_edit_screen.dart` | Nested under Cart |
 | `orderPlaced` | `/cart/checkout/placed/:id` | `order_placed_screen.dart` | Nested under Cart |
@@ -409,6 +414,7 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 | `adminAudit` | `/admin/dashboard/audit` | `audit_logs_screen.dart` | Nested under Dashboard |
 | `adminSettings` | `/admin/dashboard/settings` | `platform_settings_screen.dart` | Nested under Dashboard |
 | `adminCategories` | `/admin/dashboard/categories` | `categories_admin_screen.dart` | Nested under Dashboard |
+| `adminBrands` | `/admin/dashboard/brands` | `brands_admin_screen.dart` | Nested under Dashboard (quick action) |
 | `adminPromotions` | `/admin/dashboard/promotions` | `admin_promotions_screen.dart` | Nested under Dashboard |
 | `adminArchivedCoupons` | `/admin/dashboard/promotions/archive` | `archived_coupons_screen.dart` | Nested under Promotions |
 | `profile` (admin) | `/admin/dashboard/account` | `profile_screen.dart` | Nested under Dashboard |
@@ -416,7 +422,6 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 | `settings` (admin account) | `/admin/dashboard/account/settings` | `settings_screen.dart` | Nested under Account |
 | `adminProducts` | `/admin/products` | `admin_products_screen.dart` | Admin tab 2 |
 | `adminProductForm` | `/admin/products/form` | `admin_product_form_screen.dart` | Nested under Products |
-| `adminBrands` | `/admin/products/brands` | `brands_admin_screen.dart` | Nested under Products |
 | `adminOrders` | `/admin/orders` | `admin_orders_screen.dart` | Admin tab 3 |
 | `adminOrderDetail` | `/admin/orders/:id` | `admin_order_detail_screen.dart` | Nested under Orders |
 | `adminReports` | `/admin/reports` | `admin_reports_screen.dart` | Admin tab 4 |
@@ -479,18 +484,18 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 **Pre-conditions:** Authenticated. **Post-conditions:** Read state persisted server-side.
 
 #### 4.2.6 Cart — `cart`
-**Goal:** Review and edit the server cart before checkout.
-**Layout:** AppBar “Cart” + clear-cart action → AnimatedList of line cards (64dp image, name, variant, unit × qty, line total, pill stepper, delete) → floating dock: total payable USD + KHR + Checkout button. Empty state: “Your cart is empty”.
-**Happy path:** +/- quantity (stock-capped), delete line, tap line → Product Detail, clear cart (confirm dialog), Checkout → `/cart/checkout`.
-**Alternates/edges:** 0-stock line cannot increase; sale line shows discounted price with original struck through; removal animates only after server-confirmed refetch; load error + retry; mutation failure snackbar; loading spinner; dock clears 148dp list bottom padding.
-**Pre-conditions:** Authenticated. **Post-conditions:** Cart persisted server-side; checkout consumes it.
+**Goal:** Review, filter, select and edit the server cart before checkout.
+**Layout:** AppBar “Cart (n)” + clear-cart action → white header band (delivery-address preview → “R67 Official Store” → search, All / On sale / Sold out chips, sort sheet) on a grouped gray page → line cards with tick circle, thumbnail, variant chip, low-stock/unavailable warning, price, stock-capped pill stepper; swipe-to-delete → “Why shop with R67” trust card (shared `StorePromisesCard`) → floating dock: select-all, selected total USD + KHR, Checkout. Empty state: “Your cart is empty”.
+**Happy path:** Tick lines (or All) → +/- quantity (stock-capped) → delete line (swipe or detail) → tap line → Product Detail → Checkout with only the ticked cart-item ids → `/cart/checkout`. Unticked lines stay in the cart after the order.
+**Alternates/edges:** 0-stock line cannot be ticked or ordered; sale line shows discounted price with original struck through; filters/search/sort are client-side and combine; no matches → clear-filters empty state; removal animates only after server-confirmed refetch; header address opens the cart-scoped address list; load error + retry; mutation failure snackbar; loading spinner; dock clears 156dp list bottom padding.
+**Pre-conditions:** Authenticated. **Post-conditions:** Cart persisted server-side; checkout consumes the selection.
 
 #### 4.2.7 Checkout — `checkout`
 **Goal:** Single-page review and atomic order placement.
 **Layout:** AppBar “Checkout” → max 720dp scroll: Order items → Delivery address radio list + add address → Delivery & payment (standard fee, COD/KHQR radio) → Coupon input + applied/rejected tiles → Order note → Summary (subtotal, discounts, delivery, total, KHR, QR hint) → fixed bottom bar: total + “Place order”.
 **Happy path:** Default address preselected → choose method → apply valid coupon(s) → note optional → totals preview refreshes → Place order → `/cart/checkout/placed/:id`.
 **Alternates/edges:** No address → CTA disabled + “Select a delivery address”; empty cart → CTA disabled; placement error stays on page and snackbars, preserving notes/coupons/address; coupon rejection messages (unknown, inactive, not started, expired, minimum spend, empty cart, unauthenticated); preview error notice + retry; `isPlacing` absorbs input and shows spinner; QR hint states payment happens after placement.
-**Pre-conditions:** Authenticated; cart non-empty. **Post-conditions:** Atomic order + pending payment created, stock deducted, cart cleared.
+**Pre-conditions:** Authenticated; at least one ticked cart line. **Post-conditions:** Atomic order + pending payment for the selected lines, stock deducted, those lines removed from the cart (unselected lines remain).
 
 #### 4.2.8 Checkout Address Edit — `checkoutAddressEdit`
 **Goal:** Create an address inline without leaving checkout.
@@ -575,15 +580,15 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 
 #### 4.3.1 Admin Dashboard — `adminDashboard`
 **Goal:** Executive snapshot with actionable stock alerts.
-**Layout:** AppBar “Admin dashboard” + avatar → KPI hero (total sales, orders/customers, 7-day momentum) → stock alert card (low ≤5 / out) → 14-day bar chart → top 3 sellers → quick links: Reports, Categories, Promotions, Account, Audit logs, Platform settings.
+**Layout:** AppBar “Admin dashboard” + avatar → KPI hero (realized sales — paid or delivered only, orders placed/customers, 7-day momentum) → stock alert card (low ≤5 / out) → 14-day bar chart → top 3 sellers → quick links: Reports, Categories, Brands, Promotions, Account, Audit logs, Platform settings.
 **Happy path:** Tap alerts → Products; top seller → Product Detail; quick links open nested screens/tabs.
 **Alternates/edges:** Loading spinner; error + retry; no trend/best sellers collapses; zero-sales days show stub bars; audit count uses loaded audit state.
 **Pre-conditions:** Admin role. **Post-conditions:** Navigation.
 
 #### 4.3.2 Admin Products — `adminProducts`
 **Goal:** Inventory manager with product-wide stock.
-**Layout:** AppBar “Products” + Brands action → search field → filter chips All / Low Stock (≤5) / Out of Stock → list: 48dp image, name, “Unavailable” badge, category · brand · price · variants, [- stock +] pill, overflow Edit/Archive/Restore → FAB “Add”.
-**Happy path:** Adjust stock inline; edit/archive/restore; open brands; add product.
+**Layout:** AppBar “Products” + search field → filter chips All / Low Stock (≤5) / Out of Stock → list: 48dp image, name, “Unavailable” badge, category · brand · price · variants, [- stock +] pill, overflow Edit/Archive/Restore → FAB “Add”. Brand management lives under Dashboard → Brands.
+**Happy path:** Adjust stock inline; edit/archive/restore; add product. Brand management opens from Dashboard → Manage brands.
 **Alternates/edges:** Loading skeleton; empty filter state; busy opacity + disabled controls; errors snackbar; archived shows restore; low/out stock tinted.
 **Pre-conditions:** Admin. **Post-conditions:** Server stock/status updated and list invalidated.
 
@@ -617,7 +622,8 @@ Ratings use 18dp stars on cards (12dp compact), 36dp stars in review compose. Ic
 
 #### 4.3.7 Admin Reports — `adminReports`
 **Goal:** Date-range executive reporting.
-**Layout:** AppBar “Reports” → preset chips 7D/15D/30D/MTD/Custom → date label → responsive KPI grid (orders, completed, cancelled, gross realized, AOV, net settled, inventory valuation) → payment split bar → ranked sections (best sellers, top categories, brand revenue, purchase frequency) → stock summary.
+**Layout:** AppBar “Reports” → preset chips 7D/15D/30D/MTD/Custom → date label → responsive KPI grid (orders, completed, cancelled, realized orders, gross realized, AOV, net settled, inventory valuation) → realized-definition caption → payment split bar → ranked sections (best sellers, top categories, brand revenue, purchase frequency) → stock summary.
+**Definition:** money metrics read the `realized_orders` view — delivered (COD collected) or `payments.status = 'transaction_verified'`, never cancelled/returned/refunded; AOV divides by that count. Order-funnel counts stay all orders.
 **Happy path:** Choose preset/custom range → report refetches.
 **Alternates/edges:** Loading skeleton/cross-fade; error + retry; empty ranked sections collapse; zero payment split hidden; KPI cards fit narrow widths.
 **Pre-conditions:** Admin. **Post-conditions:** None (read-only).
@@ -1481,8 +1487,8 @@ Coupon: created active → valid window + minimum met → applied at checkout
 | `moderate_banner` | `p_banner_id uuid`, `p_action text` | void | Admin; `approve`/`reject`/`disable` | Promotions |
 | `admin_transition_order` | `p_order_id uuid`, `p_status order_status`, `p_reason default null` | void | Admin; one-step forward chain or cancel with reason; restores stock on cancel; audit | Admin order detail |
 | `admin_mark_cod_paid` | `p_order_id uuid` | void | Admin; COD only; delivered only; idempotent if already verified | Admin order detail |
-| `get_admin_kpis` | — | `jsonb` | Admin; totals, stock alerts, best sellers, 14-day trend | Dashboard |
-| `get_sales_report` | `p_from date`, `p_to date` | `jsonb` | Admin; date-range KPIs, splits, rankings | Reports |
+| `get_admin_kpis` | — | `jsonb` | Admin; realized sales (paid/delivered), totals, stock alerts, best sellers, 14-day realized trend | Dashboard |
+| `get_sales_report` | `p_from date`, `p_to date` | `jsonb` | Admin; date-range KPIs, splits, rankings; revenue/AOV from `realized_orders` | Reports |
 | `get_platform_report` | — | `jsonb` | Admin; legacy platform summary | Admin repo |
 | `register_qr_payment` | `p_order_id uuid`, `p_payload text` | void | Customer own pending QR; idempotent if payload exists | Edge/internal |
 | `confirm_qr_payment` | `p_order_id uuid`, `p_reference text` | void | Pending → verified; webhook/service path | `payway-webhook` |

@@ -114,8 +114,18 @@ Active handoffs live in `docs/HANDOFF-<FEATURE>.md` — read the feature's hando
 resuming it. If a handoff contradicts this file, this file wins.
 
 - **Checkout:** no active handoff. The flat one-page checkout, server-priced cart lines,
-  and QR order lifecycle landed in `e649771`; `docs/DESIGN.md` still describes the
-  retired multi-step wizard — the contract and current code win.
+  and QR order lifecycle landed in `e649771`. Checkout is selection-aware: only the
+  cart lines ticked on the cart page are priced and placed (`create_order_from_cart`
+  takes `p_item_ids`); `docs/DESIGN.md` still describes the retired multi-step wizard —
+  the contract and current code win.
+- **Cart:** no active handoff. Taobao-style selectable cart landed 2026-11-16
+  (`5ea0193`, `fee03a2`): tick lines + select-all, client-side search/filter/sort,
+  delivery-address and store bands, shared trust card, swipe-to-delete. Migration
+  `20261116000001` is applied locally and hosted.
+- **Admin reporting:** no active handoff. Revenue/AOV definition is `realized_orders`
+  (delivered or `payments.status = 'transaction_verified'`; never cancelled/returned/
+  refunded). Both `get_sales_report` and `get_admin_kpis` read it; `20261116000002`
+  applied locally and hosted. `docs/DESIGN.md` §5.2/§7.1 carries the definition.
 - **Promotions:** `docs/HANDOFF-PROMOTIONS.md` — the 2026-11-03 reset wiped
   sales/coupons/banners; re-author them in the admin UI, then run the §6 verification.
 - **Variants:** `docs/HANDOFF-VARIANTS.md` — explicit variants only (no implicit
@@ -128,7 +138,9 @@ resuming it. If a handoff contradicts this file, this file wins.
   The service-role `device_tokens` grant fix is in `20261107000001`. Remaining:
   iOS platform config, admin/new-order and promo notifications.
 - **KHQR:** `docs/HANDOFF-KHQR.md` — working end-to-end (hosted functions + PayWay
-  callback live, 2026-11-03); production credentials remain a launch checklist item.
+  callback live, 2026-11-03); hosted sandbox re-verified 2026-11-16 (real QR returned,
+  terminal orders now refused, `service_role` orders grant in `20261116000003`).
+  Production credentials remain a launch checklist item.
 - **Figma mirror:** **frozen snapshot** — record in `docs/figma/PLAN.md`, pinned ids
   and commits in `docs/figma/manifest.json`. 18 component sets, 30 screens, 9 FigJam
   diagrams, page 03, two unmetered local dev plugins (`docs/figma/plugin/`,
