@@ -7,6 +7,7 @@ import '../../../../core/presentation/widgets/content_width.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/domain/picked_file.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../controllers/admin_categories_controller.dart';
@@ -131,7 +132,7 @@ class _AdminProductFormScreenState
     if (!mounted || file == null) return;
     if (_images.length + _imageDrafts.length >= _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Up to $_maxImages images per product')),
+        AppSnackBar(content: Text('Up to $_maxImages images per product')),
       );
       return;
     }
@@ -256,7 +257,7 @@ class _AdminProductFormScreenState
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(content: Text(userMessageFor(error))),
+              AppSnackBar(content: Text(userMessageFor(error))),
             );
           return;
         }
@@ -279,7 +280,7 @@ class _AdminProductFormScreenState
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/presentation/widgets/brand_lockup.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/login_controller.dart';
 import '../widgets/auth_error_snackbar.dart';
@@ -81,7 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               final email = emailController.text.trim();
               if (!email.contains('@')) {
                 ScaffoldMessenger.of(dialogContext).showSnackBar(
-                  const SnackBar(content: Text('Enter a valid email')),
+                  const AppSnackBar(content: Text('Enter a valid email')),
                 );
                 return;
               }
@@ -104,7 +105,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(content: Text('Reset link sent to $email')),
+          AppSnackBar(content: Text('Reset link sent to $email')),
         );
     }
   }

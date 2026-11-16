@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../controllers/review_compose_controller.dart';
 
 /// Compose the (single, read-only after submission) review for a purchased
@@ -82,7 +83,7 @@ class _ReviewComposeScreenState extends ConsumerState<ReviewComposeScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 

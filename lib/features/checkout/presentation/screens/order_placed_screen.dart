@@ -17,6 +17,7 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/khqr_card.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../controllers/order_payment_controller.dart';
 
 /// Order confirmation (Section 6b). State semantics are explicit — they are
@@ -154,7 +155,7 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(AppSnackBar(content: Text(message)));
   }
 
   /// Cross-fades the payment state (QR pending → verified, or QR creation

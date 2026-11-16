@@ -16,6 +16,7 @@ import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../controllers/admin_categories_controller.dart';
@@ -137,7 +138,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(AppSnackBar(content: Text(message)));
   }
 
   /// Opens the edit form with a fresh server snapshot. The row rendered in
@@ -301,7 +302,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -646,7 +647,7 @@ class _AdminProductTileState extends ConsumerState<_AdminProductTile> {
   void _showError(Object error) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+      ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
   }
 
   @override

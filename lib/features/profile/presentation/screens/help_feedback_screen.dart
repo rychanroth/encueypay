@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 
 /// Help and feedback (static/mocked per the prototype brief): the form
 /// collects a category and message locally and confirms with a snackbar —
@@ -37,7 +38,7 @@ class _HelpFeedbackScreenState extends State<HelpFeedbackScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
+        const AppSnackBar(
           content: Text('Thanks! Your feedback has been recorded (demo).'),
         ),
       );

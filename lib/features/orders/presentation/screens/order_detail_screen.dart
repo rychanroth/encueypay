@@ -9,6 +9,7 @@ import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_detail_controller.dart';
 import '../widgets/order_item_card.dart';
@@ -59,7 +60,7 @@ class OrderDetailScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -67,7 +68,7 @@ class OrderDetailScreen extends ConsumerWidget {
       if (next == null) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(next)));
+        ..showSnackBar(AppSnackBar(content: Text(next)));
       ref.read(orderActionErrorProvider(orderId).notifier).clear();
     });
 

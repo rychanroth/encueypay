@@ -6,6 +6,7 @@ import '../../../../core/presentation/widgets/content_width.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/address.dart';
 import '../../domain/entities/administrative_unit.dart';
 import '../../domain/entities/located_address.dart';
@@ -182,7 +183,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(AppSnackBar(content: Text(message)));
   }
 
   Future<void> _hydrateGeo() async {
@@ -584,7 +585,7 @@ class _AddressEditScreenState extends ConsumerState<AddressEditScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
     return Scaffold(

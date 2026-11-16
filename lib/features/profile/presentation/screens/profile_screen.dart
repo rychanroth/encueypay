@@ -7,6 +7,7 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/picked_file.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/user_profile.dart';
 import '../controllers/profile_controller.dart';
 
@@ -67,7 +68,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
+        AppSnackBar(
           content: Text(
             error == null ? 'Photo updated' : userMessageFor(error),
           ),

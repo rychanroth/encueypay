@@ -9,6 +9,7 @@ import '../../../../core/domain/money.dart';
 import '../../../../core/domain/picked_file.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/promotion.dart';
 import '../controllers/admin_promotions_controller.dart';
 import '../widgets/coupon_tile.dart';
@@ -88,7 +89,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+        ..showSnackBar(AppSnackBar(content: Text(failure.message)));
       return;
     }
     if (!context.mounted) return;
@@ -268,7 +269,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
                       discount == null ||
                       groupMissing) {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(
+                      const AppSnackBar(
                         content: Text(
                             'Name, a positive discount and the scope group '
                             '(for brand/category) are required'),
@@ -414,7 +415,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
                   );
                   if (code.text.trim().isEmpty || discount == null) {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(
+                      const AppSnackBar(
                         content: Text(
                             'A code and a positive discount are required'),
                       ),
@@ -534,7 +535,7 @@ class AdminPromotionsScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     }
 

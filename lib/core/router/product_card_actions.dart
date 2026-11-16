@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../presentation/widgets/app_snack_bar.dart';
 
 import '../../features/cart/domain/entities/cart_item.dart';
 import '../../features/cart/presentation/controllers/cart_controller.dart';
@@ -58,8 +59,10 @@ ProductCardActions productCardActions(
         ref.read(supabaseClientProvider).auth.currentUser == null;
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
+      ..showSnackBar(AppSnackBar(
         content: Text(failure.message),
+        // The "Sign in" action needs a tap window.
+        duration: appSnackBarActionDuration,
         action: needsSignIn
             ? SnackBarAction(
                 label: 'Sign in',

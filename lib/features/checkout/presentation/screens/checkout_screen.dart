@@ -8,6 +8,7 @@ import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/motion.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/coupon_preview.dart';
 import '../../domain/entities/payment_method.dart';
 import '../controllers/checkout_controller.dart';
@@ -63,13 +64,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       };
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message)));
+        ..showSnackBar(AppSnackBar(content: Text(message)));
       if (preview?.valid == true) _couponController.clear();
     } on Failure catch (failure) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+        ..showSnackBar(AppSnackBar(content: Text(failure.message)));
     }
   }
 
@@ -115,7 +116,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (error == null) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(error)));
+      ..showSnackBar(AppSnackBar(content: Text(error)));
   }
 
   Future<void> _addAddress() async {
@@ -127,7 +128,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (!mounted || error == null) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+      ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
   }
 
   @override

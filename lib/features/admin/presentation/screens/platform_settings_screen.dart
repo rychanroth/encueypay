@@ -4,6 +4,7 @@ import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_settings_controller.dart';
 
@@ -44,7 +45,7 @@ class _PlatformSettingsScreenState
     final platformCommission = int.tryParse(_platformCommissionController.text) ?? -1;
     if (feeMinor < 0 || platformCommission < 0 || platformCommission > 100) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Check the values (commissions 0-100)')),
+        const AppSnackBar(content: Text('Check the values (commissions 0-100)')),
       );
       return;
     }
@@ -62,7 +63,7 @@ class _PlatformSettingsScreenState
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(
+          AppSnackBar(
             content: Text(
               error == null ? 'Settings saved' : userMessageFor(error),
             ),
@@ -82,7 +83,7 @@ class _PlatformSettingsScreenState
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 

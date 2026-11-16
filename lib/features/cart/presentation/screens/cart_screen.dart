@@ -9,6 +9,7 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/store_promises_card.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/cart_item.dart';
 import '../../domain/usecases/filter_cart_items.dart';
 import '../controllers/cart_controller.dart';
@@ -48,7 +49,7 @@ class CartScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -254,7 +255,7 @@ class _CartBody extends ConsumerWidget {
                               ScaffoldMessenger.of(context)
                                 ..hideCurrentSnackBar()
                                 ..showSnackBar(
-                                  SnackBar(content: Text(failure.message)),
+                                  AppSnackBar(content: Text(failure.message)),
                                 );
                             }
                             return false;

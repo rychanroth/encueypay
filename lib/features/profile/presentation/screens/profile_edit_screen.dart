@@ -5,6 +5,7 @@ import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/content_width.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../controllers/profile_controller.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -68,7 +69,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 

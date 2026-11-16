@@ -4,6 +4,7 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/motion.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_variant.dart';
@@ -318,19 +319,19 @@ class _VariantPickerSheetState extends State<_VariantPickerSheet> {
       Navigator.of(context).pop();
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Added to cart')));
+        ..showSnackBar(const AppSnackBar(content: Text('Added to cart')));
     } on Failure catch (failure) {
       if (mounted) setState(() => _adding = false);
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+        ..showSnackBar(AppSnackBar(content: Text(failure.message)));
     } catch (error, stackTrace) {
       // DATA-05: presentation never sees raw exceptions — classify first.
       if (mounted) setState(() => _adding = false);
       final failure = mapRepositoryError(error, stackTrace);
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(failure.message)));
+        ..showSnackBar(AppSnackBar(content: Text(failure.message)));
     }
   }
 }

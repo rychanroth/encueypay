@@ -6,6 +6,7 @@ import '../../../../core/presentation/illustrations.dart';
 
 import '../../../../core/domain/failures.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/address.dart';
 import '../controllers/addresses_controller.dart';
 
@@ -56,7 +57,7 @@ class AddressesScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 

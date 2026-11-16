@@ -5,6 +5,7 @@ import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/picked_file.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../widgets/catalog_image_pick_field.dart';
@@ -53,7 +54,7 @@ class BrandsAdminScreen extends ConsumerWidget {
             onPressed: () {
               if (nameController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(dialogContext).showSnackBar(
-                  const SnackBar(content: Text('Enter a brand name')),
+                  const AppSnackBar(content: Text('Enter a brand name')),
                 );
                 return;
               }
@@ -76,7 +77,7 @@ class BrandsAdminScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+        ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       return;
     }
     await ref
@@ -152,7 +153,7 @@ class BrandsAdminScreen extends ConsumerWidget {
             onPressed: () {
               if (nameController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(dialogContext).showSnackBar(
-                  const SnackBar(content: Text('Enter a brand name')),
+                  const AppSnackBar(content: Text('Enter a brand name')),
                 );
                 return;
               }
@@ -175,7 +176,7 @@ class BrandsAdminScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+        ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       return;
     }
     await ref
@@ -228,7 +229,7 @@ class BrandsAdminScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 

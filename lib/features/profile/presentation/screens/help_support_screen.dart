@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/presentation/theme/app_dimensions.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 
 /// Help & support (mocked contact data, per the prototype brief). The
 /// details are placeholders — tapping a row copies it so the flow can be
@@ -20,7 +21,7 @@ class HelpSupportScreen extends StatelessWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('Copied $value')));
+      ..showSnackBar(AppSnackBar(content: Text('Copied $value')));
   }
 
   @override

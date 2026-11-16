@@ -8,6 +8,7 @@ import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../controllers/wishlist_controller.dart';
 import '../../domain/entities/wishlist_item.dart';
 
@@ -34,7 +35,7 @@ class WishlistScreen extends ConsumerWidget {
       if (error is Failure) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(userMessageFor(error))));
+          ..showSnackBar(AppSnackBar(content: Text(userMessageFor(error))));
       }
     });
 
@@ -118,7 +119,7 @@ class WishlistScreen extends ConsumerWidget {
                         messenger
                           ..hideCurrentSnackBar()
                           ..showSnackBar(
-                            SnackBar(content: Text(userMessageFor(error))),
+                            AppSnackBar(content: Text(userMessageFor(error))),
                           );
                       }
                     },

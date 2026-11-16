@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../presentation/widgets/app_snack_bar.dart';
 
 import '../../../features/cart/presentation/controllers/cart_controller.dart';
 import '../../../features/catalog/presentation/screens/home_screen.dart';
@@ -97,8 +98,10 @@ final homeBranch = StatefulShellBranch(
                         null;
                     messenger
                       ..hideCurrentSnackBar()
-                      ..showSnackBar(SnackBar(
+                      ..showSnackBar(AppSnackBar(
                         content: Text(failure.message),
+                        // The "Sign in" action needs a tap window.
+                        duration: appSnackBarActionDuration,
                         action: needsSignIn
                             ? SnackBarAction(
                                 label: 'Sign in',

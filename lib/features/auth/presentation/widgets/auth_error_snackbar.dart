@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/domain/failures.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 
 /// Surfaces an async failure from the auth session stream (`watchSession`).
 ///
@@ -13,5 +14,5 @@ void showAuthStreamError(BuildContext context, Object? error) {
       : userMessageFor(error);
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text('Session error — $detail')));
+    ..showSnackBar(AppSnackBar(content: Text('Session error — $detail')));
 }
