@@ -1,3 +1,4 @@
+import '../../domain/entities/cart_delivery_address.dart';
 import '../../domain/entities/cart_item.dart';
 
 /// Cart contract (spec §8, §58 Shopping ops) (DATA-03). Quantity
@@ -5,6 +6,13 @@ import '../../domain/entities/cart_item.dart';
 /// Coupon validation lives in checkout (step 5 of the §6 sequence).
 abstract interface class ICartRepository {
   Future<List<CartItem>> fetchMyCart();
+
+  /// Default delivery address preview for the cart header; null when the
+  /// customer has no address yet.
+  Future<CartDeliveryAddress?> fetchDefaultAddress();
+
+  /// Platform-wide delivery fee (minor units) for the cart trust rows.
+  Future<int> fetchDeliveryFeeMinor();
 
   Future<void> addItem({required String variantId, required int quantity});
 

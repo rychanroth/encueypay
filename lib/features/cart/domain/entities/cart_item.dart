@@ -28,6 +28,10 @@ abstract class CartItem with _$CartItem {
     @Default(0) int stock,
     String? imageUrl,
 
+    /// When the line was added — the "Newest" sort key. Null for legacy rows
+    /// (they keep the server's created_at ordering).
+    DateTime? createdAt,
+
     /// Product group ids from the cart read model (kept for display/
     /// diagnostics; pricing already arrives resolved as
     /// [saleUnitPriceMinor]).

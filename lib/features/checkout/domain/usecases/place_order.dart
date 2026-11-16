@@ -17,12 +17,14 @@ class PlaceOrderUseCase {
     required PaymentMethod method,
     required List<String> couponCodes,
     String note = '',
+    List<String> itemIds = const [],
   }) {
     return _repository.placeOrder(
       addressId: addressId,
       method: method,
       couponCodes: couponCodes,
       note: note,
+      itemIds: itemIds,
     );
   }
 }

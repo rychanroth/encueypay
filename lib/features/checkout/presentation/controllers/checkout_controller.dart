@@ -15,11 +15,25 @@ part 'checkout_controller.g.dart';
 /// (DOMAIN-02).
 @riverpod
 class CheckoutController extends _$CheckoutController {
+  /// Cart lines ticked in the cart (empty = whole cart). Set by [build] from
+  /// the family key so every preview/placement call is scoped identically.
+  List<String> _itemIds = const [];
+
+  /// Stable family key for the selected cart-item ids.
+  static String selectionKeyFor(List<String> ids) {
+    final sorted = [...ids]..sort();
+    return sorted.join(',');
+  }
+
+  static List<String> parseSelection(String key) =>
+      key.isEmpty ? const <String>[] : key.split(',');
+
   @override
-  Future<CheckoutState> build() async {
+  Future<CheckoutState> build(String selectionKey) async {
+    _itemIds = parseSelection(selectionKey);
     final repository = ref.watch(checkoutRepositoryProvider);
     final addresses = await repository.fetchMyAddressOptions();
-    final summary = await repository.fetchMySummary();
+    final summary = await repository.fetchMySummary(itemIds: _itemIds);
     // The first address is the user's default (repository ordering, §6b).
     return CheckoutState(
       addresses: addresses,
@@ -64,7 +78,7 @@ class CheckoutController extends _$CheckoutController {
     }
     final preview = await ref
         .read(checkoutRepositoryProvider)
-        .validateCoupon(code);
+        .validateCoupon(code, itemIds: _itemIds);
     final coupons = [
       for (final coupon in current.coupons)
         if (coupon.code.toUpperCase() != normalized) coupon,
@@ -86,13 +100,12 @@ class CheckoutController extends _$CheckoutController {
     if (result.hasError) return result.error;
     final addresses = result.value;
     if (addresses == null) return null;
-    final selected = addresses.any(
-      (address) => address.id == current.selectedAddressId,
-    )
+    final selected =
+        addresses.any((address) => address.id == current.selectedAddressId)
         ? current.selectedAddressId
         : addresses.isEmpty
-            ? null
-            : addresses.first.id;
+        ? null
+        : addresses.first.id;
     state = AsyncData(
       current.copyWith(
         addresses: addresses,
@@ -145,6 +158,7 @@ class CheckoutController extends _$CheckoutController {
             .map((coupon) => coupon.code)
             .toList(),
         note: current.note,
+        itemIds: _itemIds,
       );
       final latest = state.value ?? current;
       return latest.copyWith(isPlacing: false, placementError: null);

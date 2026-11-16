@@ -16,6 +16,9 @@ CartItemDto _$CartItemDtoFromJson(Map<String, dynamic> json) => CartItemDto(
   saleUnitPriceMinor: (json['sale_unit_price_minor'] as num).toInt(),
   variantName: json['variant_name'] as String?,
   stock: (json['stock'] as num?)?.toInt() ?? 0,
+  createdAt: json['created_at'] == null
+      ? null
+      : DateTime.parse(json['created_at'] as String),
   brandId: json['brand_id'] as String?,
   categoryId: json['category_id'] as String?,
   imageStoragePath: json['image_storage_path'] as String?,
@@ -32,6 +35,7 @@ Map<String, dynamic> _$CartItemDtoToJson(CartItemDto instance) =>
       'unit_price_minor': instance.unitPriceMinor,
       'sale_unit_price_minor': instance.saleUnitPriceMinor,
       'stock': instance.stock,
+      'created_at': instance.createdAt?.toIso8601String(),
       'brand_id': instance.brandId,
       'category_id': instance.categoryId,
       'image_storage_path': instance.imageStoragePath,

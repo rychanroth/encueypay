@@ -225,11 +225,19 @@ abstract class AppTypography {
     - Filter chips: Categories and Brands (`brands` table, `products.brand_id`).
     - Sort dropdown: Newest, Price Ascending, Price Descending, Name.
     - 2-column `ProductCard` grid with product-wide stock indicators.
-3. **Cart (`/cart`)**:
-    - Dedicated tab with active bag count badge (e.g. `2`).
-    - Line items with product-wide stock-capped quantity steppers.
-    - Voucher code input with scope recognition (`platform` vs `brand`).
-    - **Floating Action Dock (`fixed bottom-16`)** with total payable and one-tap checkout entry.
+3. **Cart (`/cart`)** *(as-built 2026-11-16, Taobao-style)*:
+    - Dedicated tab with active bag count badge (e.g. `2`) and a `Cart (n)` title.
+    - Delivery-address header (default address preview; opens cart-scoped address management).
+    - Single-seller store header (`R67 Official Store`) — the app has no shop model.
+    - Keyword search + chips (`All` / `On sale` / `Sold out`) + sort sheet
+      (Newest added, Price ↑/↓, Name) — client-side over the loaded cart.
+    - Per-line tick circles with a select-all rail; sold-out lines cannot be ticked.
+    - Line items with variant chips, low-stock/unavailable warnings,
+      product-wide stock-capped quantity steppers and swipe-to-delete.
+    - Honest trust rows below the lines (Delivery / Secure payment / Sold by R67 /
+      Help & support) — the shared `StorePromisesCard`.
+    - **Floating Action Dock (`fixed bottom-16`)** with select-all, the selected
+      total payable and one-tap checkout of the ticked lines only.
 4. **Orders (`/orders`)**:
     - Status group filter tabs: `All`, `Active`, `Completed`, `Cancelled`, `Returned`.
     - Date-range filter picker (`showDateRangePicker`).
@@ -309,7 +317,16 @@ abstract class AppTypography {
 
 ### 6.5 Floating Checkout Action Dock (`CartScreen`)
 - **Visuals**: Anchored dock floating above the 5-tab bottom navigation (`fixed bottom-16`).
-- **Ergonomics**: Backdrop blur (`backdrop-blur-md`), elevation shadow (`shadow-xl`), showing Total Payable and instant "Proceed to Checkout (Step 1 of 7) →" action.
+- **Ergonomics**: Backdrop blur (`backdrop-blur-md`), elevation shadow (`shadow-xl`), the
+  select-all tick, the payable total for the ticked lines and the instant `Checkout`
+  action. An empty selection disables checkout; unselected lines stay in the cart after
+  the order is placed server-side (`create_order_from_cart(p_item_ids)`).
+
+### 6.6 `StorePromisesCard` (Shared Trust Rows)
+- **Where**: product detail (3 rows) and the cart footer (4 rows, with Help & support).
+- **Content (honest only)**: real platform delivery fee, supported payment methods
+  (COD/KHQR), the single-seller identity, and a support entry that opens the top-level
+  Help & support screen. No warranty, ETA, returns or social-proof claims.
 
 ---
 

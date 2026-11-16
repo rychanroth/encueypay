@@ -18,7 +18,11 @@ import '../states/checkout_state.dart';
 /// note and summary are visible together; the place-order action stays in a
 /// bottom bar. Selection/placement state lives in [CheckoutController].
 class CheckoutScreen extends ConsumerStatefulWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, this.selectedItemIds = const []});
+
+  /// Cart lines ticked in the cart. Empty means the whole cart — the RPC's
+  /// backward-compatible default.
+  final List<String> selectedItemIds;
 
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -27,6 +31,10 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _couponController = TextEditingController();
   final _noteController = TextEditingController();
+
+  /// Family key scoping every checkout provider to the selected lines.
+  String get _selectionKey =>
+      CheckoutController.selectionKeyFor(widget.selectedItemIds);
 
   @override
   void dispose() {
@@ -40,7 +48,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (code.isEmpty) return;
     try {
       final preview = await ref
-          .read(checkoutControllerProvider.notifier)
+          .read(checkoutControllerProvider(_selectionKey).notifier)
           .applyCoupon(code);
       if (!mounted) return;
       final message = switch (preview) {
@@ -93,7 +101,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Future<void> _placeOrder() async {
     final orderId = await ref
-        .read(checkoutControllerProvider.notifier)
+        .read(checkoutControllerProvider(_selectionKey).notifier)
         .placeOrder();
     if (!mounted) return;
     if (orderId != null) {
@@ -101,7 +109,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
     final error = ref
-        .read(checkoutControllerProvider)
+        .read(checkoutControllerProvider(_selectionKey))
         .value
         ?.placementError;
     if (error == null) return;
@@ -114,7 +122,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     await context.pushNamed(AppRoutes.checkoutAddressEdit);
     if (!mounted) return;
     final error = await ref
-        .read(checkoutControllerProvider.notifier)
+        .read(checkoutControllerProvider(_selectionKey).notifier)
         .refreshAddresses();
     if (!mounted || error == null) return;
     ScaffoldMessenger.of(context)
@@ -124,29 +132,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final checkoutAsync = ref.watch(checkoutControllerProvider);
+    final checkoutAsync = ref.watch(checkoutControllerProvider(_selectionKey));
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
       body: ContentWidth(
         child: checkoutAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(userMessageFor(error), textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(checkoutControllerProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(userMessageFor(error), textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                FilledButton.tonal(
+                  onPressed: () =>
+                      ref.invalidate(checkoutControllerProvider(_selectionKey)),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
           ),
+          data: (state) => _buildCheckout(context, theme, state),
         ),
-        data: (state) => _buildCheckout(context, theme, state),
-      ),
       ),
     );
   }
@@ -157,7 +166,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     CheckoutState state,
   ) {
     final summary = state.summary;
-    final totalsAsync = ref.watch(orderTotalsPreviewProvider);
+    final totalsAsync = ref.watch(orderTotalsPreviewProvider(_selectionKey));
     final totals = totalsAsync.value;
     final totalDiscount =
         totals?.totalDiscountMinor ?? state.discountPreviewMinor;
@@ -286,7 +295,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           onChanged: (value) {
                             if (value != null) {
                               ref
-                                  .read(checkoutControllerProvider.notifier)
+                                  .read(
+                                    checkoutControllerProvider(
+                                      _selectionKey,
+                                    ).notifier,
+                                  )
                                   .selectAddress(value);
                             }
                           },
@@ -344,7 +357,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         onChanged: (value) {
                           if (value != null) {
                             ref
-                                .read(checkoutControllerProvider.notifier)
+                                .read(
+                                  checkoutControllerProvider(
+                                    _selectionKey,
+                                  ).notifier,
+                                )
                                 .setMethod(value);
                           }
                         },
@@ -400,7 +417,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         _CouponStepTile(
                           coupon: effectiveCoupons[coupon.code] ?? coupon,
                           onRemove: () => ref
-                              .read(checkoutControllerProvider.notifier)
+                              .read(
+                                checkoutControllerProvider(
+                                  _selectionKey,
+                                ).notifier,
+                              )
                               .removeCoupon(coupon.code),
                         ),
                       for (final coupon in rejectedCoupons)
@@ -418,7 +439,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     ),
                     maxLines: 3,
                     onChanged: ref
-                        .read(checkoutControllerProvider.notifier)
+                        .read(
+                          checkoutControllerProvider(_selectionKey).notifier,
+                        )
                         .setNote,
                   ),
                 ),
@@ -431,8 +454,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             if (totalsAsync.hasError)
                               _PreviewNotice(
                                 message: userMessageFor(totalsAsync.error!),
-                                onRetry: () =>
-                                    ref.invalidate(orderTotalsPreviewProvider),
+                                onRetry: () => ref.invalidate(
+                                  orderTotalsPreviewProvider(_selectionKey),
+                                ),
                               )
                             else if (totalsAsync.isLoading && totals == null)
                               const _PreviewNotice(

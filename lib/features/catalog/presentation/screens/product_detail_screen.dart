@@ -11,6 +11,7 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
 import '../../../../core/presentation/widgets/content_width.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
+import '../../../../core/presentation/widgets/store_promises_card.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/active_sale.dart';
 import '../../domain/entities/product.dart';
@@ -491,7 +492,7 @@ class _ProductInfo extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         // Honest store promises (§2): real platform fee, supported payment
         // methods and the single-seller identity — no invented claims.
-        _StorePromises(deliveryFeeMinor: deliveryFeeMinor),
+        StorePromisesCard(deliveryFeeMinor: deliveryFeeMinor),
         // Description only when the product carries one.
         if (product.description.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
@@ -610,107 +611,6 @@ class _RatingSummaryRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Honest store-promises card (HANDOFF-UX-VISUAL §2): only verifiable facts —
-/// the platform delivery fee, supported payment methods and the single-seller
-/// identity. No warranty, ETA, returns or social-proof claims.
-class _StorePromises extends StatelessWidget {
-  const _StorePromises({required this.deliveryFeeMinor});
-
-  /// Null while loading or on failure — the row falls back to "calculated at
-  /// checkout" rather than inventing a fee.
-  final int? deliveryFeeMinor;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final delivery = switch (deliveryFeeMinor) {
-      null => 'Calculated at checkout',
-      0 => 'Free delivery',
-      final fee => '${Money(fee).formatUsd()} platform delivery fee',
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: AppRadii.br16,
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        children: [
-          _PromiseRow(
-            icon: Icons.local_shipping_outlined,
-            title: 'Delivery',
-            subtitle: delivery,
-          ),
-          Divider(
-            height: AppSpacing.md,
-            color: theme.colorScheme.outlineVariant,
-          ),
-          const _PromiseRow(
-            icon: Icons.qr_code_2,
-            title: 'Payment',
-            subtitle: 'Cash on delivery or KHQR',
-          ),
-          Divider(
-            height: AppSpacing.md,
-            color: theme.colorScheme.outlineVariant,
-          ),
-          const _PromiseRow(
-            icon: Icons.storefront_outlined,
-            title: 'Sold by R67',
-            subtitle: 'Official single-seller storefront',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One compact promise row — icon, title, supporting line.
-class _PromiseRow extends StatelessWidget {
-  const _PromiseRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: theme.colorScheme.primary),
-          const SizedBox(width: AppSpacing.sm + 2),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: theme.textTheme.titleSmall),
-                const SizedBox(height: 1),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

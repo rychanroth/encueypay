@@ -6,6 +6,9 @@ import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/domain/entities/user_role.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/profile/presentation/screens/about_screen.dart';
+import '../../features/profile/presentation/screens/help_feedback_screen.dart';
+import '../../features/profile/presentation/screens/help_support_screen.dart';
 import '../presentation/app_keys.dart';
 import '../presentation/not_found_screen.dart';
 import 'app_routes.dart';
@@ -27,8 +30,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   // would rebuild this provider — and recreate the GoRouter — on every
   // session transition, stranding navigation mid-OAuth. Session-level
   // changes flow through the listen below (ROUTE-10).
-  final refreshListenable =
-      ValueNotifier<AsyncValue<AppUser?>>(ref.read(authControllerProvider));
+  final refreshListenable = ValueNotifier<AsyncValue<AppUser?>>(
+    ref.read(authControllerProvider),
+  );
 
   ref.listen<AsyncValue<AppUser?>>(authControllerProvider, (prev, next) {
     refreshListenable.value = next;
@@ -63,18 +67,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (!isAuthenticated && !isLoggingIn) {
         return state.namedLocation(AppRoutes.login);
       }
-      if (isAuthenticated &&
-          (isLoggingIn || state.matchedLocation == '/')) {
+      if (isAuthenticated && (isLoggingIn || state.matchedLocation == '/')) {
         return state.namedLocation(defaultRouteForRole(role));
       }
       return null;
     },
-    errorBuilder: (context, state) => NotFoundScreen(path: state.uri.path), // ROUTE-09
+    errorBuilder: (context, state) =>
+        NotFoundScreen(path: state.uri.path), // ROUTE-09
     routes: [
       GoRoute(
         name: AppRoutes.login,
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      // Help & support / feedback / about are top-level overlays (like
+      // login): both the cart and the profile can open them, and popping
+      // returns to whichever tab pushed them.
+      GoRoute(
+        name: AppRoutes.helpSupport,
+        path: '/help',
+        builder: (context, state) => const HelpSupportScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.helpFeedback,
+        path: '/help/feedback',
+        builder: (context, state) => const HelpFeedbackScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.about,
+        path: '/about',
+        builder: (context, state) => const AboutScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

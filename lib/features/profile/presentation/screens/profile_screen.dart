@@ -155,6 +155,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ],
             ListTile(
+              leading: const Icon(Icons.headset_mic_outlined),
+              title: const Text('Help & support'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.helpSupport),
+            ),
+            ListTile(
+              leading: const Icon(Icons.feedback_outlined),
+              title: const Text('Help and feedback'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.helpFeedback),
+            ),
+            ListTile(
+              leading: const Icon(Icons.storefront_outlined),
+              title: const Text('About R67'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.about),
+            ),
+            ListTile(
               leading: const Icon(Icons.settings_outlined),
               title: const Text('Settings'),
               trailing: const Icon(Icons.chevron_right),
@@ -215,8 +233,7 @@ class _ProfileHeader extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage:
-                        hasAvatar ? NetworkImage(avatarUrl) : null,
+                    backgroundImage: hasAvatar ? NetworkImage(avatarUrl) : null,
                     child: hasAvatar
                         ? null
                         : const Icon(Icons.person, size: 32),
@@ -263,8 +280,9 @@ class _ProfileHeader extends StatelessWidget {
                           : profile.fullName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (profile.phone != null && profile.phone!.isNotEmpty)
                       Text(

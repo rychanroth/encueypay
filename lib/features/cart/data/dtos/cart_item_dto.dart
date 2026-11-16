@@ -17,6 +17,7 @@ class CartItemDto {
     required this.saleUnitPriceMinor,
     this.variantName,
     this.stock = 0,
+    this.createdAt,
     this.brandId,
     this.categoryId,
     this.imageStoragePath,
@@ -41,6 +42,8 @@ class CartItemDto {
 
   @JsonKey(defaultValue: 0)
   final int stock;
+
+  final DateTime? createdAt;
 
   final String? brandId;
   final String? categoryId;

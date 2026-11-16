@@ -9,6 +9,12 @@ abstract final class AppRoutes {
   // Auth — full-screen overlay, outside the shell (ROUTE-03).
   static const login = 'login';
 
+  // Help & support — top-level overlays so both the cart and the profile
+  // can open them without switching tabs.
+  static const helpSupport = 'helpSupport';
+  static const helpFeedback = 'helpFeedback';
+  static const about = 'about';
+
   // Customer tabs.
   static const home = 'home';
   static const discovery = 'discovery';
@@ -19,6 +25,11 @@ abstract final class AppRoutes {
   static const checkout = 'checkout';
   static const checkoutAddressEdit = 'checkoutAddressEdit';
   static const orderPlaced = 'orderPlaced';
+
+  // Cart-scoped address management (nested under Cart): stays inside the
+  // cart branch so returning from an address edit lands back on the cart.
+  static const cartAddresses = 'cartAddresses';
+  static const cartAddressEdit = 'cartAddressEdit';
 
   // Orders (nested under Orders tab).
   static const orderDetail = 'orderDetail';

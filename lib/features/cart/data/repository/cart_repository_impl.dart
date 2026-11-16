@@ -4,8 +4,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/domain/failures.dart';
 import '../../../../core/network/failure_mapping.dart';
 import '../../../../core/network/supabase_client_provider.dart';
+import '../../domain/entities/cart_delivery_address.dart';
 import '../../domain/entities/cart_item.dart';
+import '../dtos/cart_address_dto.dart';
 import '../dtos/cart_item_dto.dart';
+import '../mappers/cart_address_mapper.dart';
 import '../mappers/cart_item_mapper.dart';
 import 'cart_repository.dart';
 
@@ -50,7 +53,28 @@ class CartRepositoryImpl implements ICartRepository {
         final dto = CartItemDto.fromJson(row);
         return dto.toDomain(imageUrl: _publicUrl(dto.imageStoragePath));
       }).toList();
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
+  Future<CartDeliveryAddress?> fetchDefaultAddress() async {
+    try {
+      final row = await _client
+          .from('addresses')
+          .select('id, label, city')
+          .eq('user_id', _uid)
+          // Default first, then chronological — same ordering as checkout.
+          .order('is_default', ascending: false)
+          .order('created_at')
+          .limit(1)
+          .maybeSingle();
+      if (row == null) return null;
+      return CartAddressDto.fromJson(row).toDomain();
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -66,16 +90,32 @@ class CartRepositoryImpl implements ICartRepository {
   }
 
   @override
+  Future<int> fetchDeliveryFeeMinor() async {
+    try {
+      final row = await _client
+          .from('platform_settings')
+          .select('delivery_fee_minor')
+          .eq('id', 1)
+          .maybeSingle();
+      return (row?['delivery_fee_minor'] as num?)?.toInt() ?? 0;
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
   Future<void> addItem({
     required String variantId,
     required int quantity,
   }) async {
     try {
-      await _client.rpc('add_cart_item', params: {
-        'p_variant_id': variantId,
-        'p_quantity': quantity,
-      });
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      await _client.rpc(
+        'add_cart_item',
+        params: {'p_variant_id': variantId, 'p_quantity': quantity},
+      );
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -86,11 +126,12 @@ class CartRepositoryImpl implements ICartRepository {
     required int quantity,
   }) async {
     try {
-      await _client.rpc('update_cart_item', params: {
-        'p_item_id': itemId,
-        'p_quantity': quantity,
-      });
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      await _client.rpc(
+        'update_cart_item',
+        params: {'p_item_id': itemId, 'p_quantity': quantity},
+      );
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -99,7 +140,8 @@ class CartRepositoryImpl implements ICartRepository {
   Future<void> removeItem({required String itemId}) async {
     try {
       await _client.rpc('remove_cart_item', params: {'p_item_id': itemId});
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -108,7 +150,8 @@ class CartRepositoryImpl implements ICartRepository {
   Future<void> clear() async {
     try {
       await _client.rpc('clear_cart');
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }

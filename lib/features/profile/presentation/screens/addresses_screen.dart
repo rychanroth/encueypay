@@ -10,9 +10,21 @@ import '../../domain/entities/address.dart';
 import '../controllers/addresses_controller.dart';
 
 class AddressesScreen extends ConsumerWidget {
-  const AddressesScreen({super.key});
+  const AddressesScreen({
+    super.key,
+    this.editRouteName = AppRoutes.addressEdit,
+  });
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Address address) async {
+  /// Route opened for add/edit. The profile tab uses the profile-nested
+  /// editor; the cart's nested copy passes its own so the back stack stays
+  /// inside the cart branch.
+  final String editRouteName;
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    Address address,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -51,7 +63,7 @@ class AddressesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Addresses')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushNamed(AppRoutes.addressEdit),
+        onPressed: () => context.pushNamed(editRouteName),
         icon: const Icon(Icons.add),
         label: const Text('Add'),
       ),
@@ -77,7 +89,7 @@ class AddressesScreen extends ConsumerWidget {
               title: 'No addresses yet',
               description: 'Add a delivery address to place an order.',
               actionLabel: 'Add address',
-              onAction: () => context.pushNamed(AppRoutes.addressEdit),
+              onAction: () => context.pushNamed(editRouteName),
             );
           }
           return ListView.builder(
@@ -88,9 +100,7 @@ class AddressesScreen extends ConsumerWidget {
               return Card(
                 child: ListTile(
                   leading: Icon(
-                    address.isDefault
-                        ? Icons.star
-                        : Icons.location_on_outlined,
+                    address.isDefault ? Icons.star : Icons.location_on_outlined,
                     color: address.isDefault
                         ? Theme.of(context).colorScheme.primary
                         : null,
@@ -123,10 +133,7 @@ class AddressesScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  onTap: () => context.pushNamed(
-                    AppRoutes.addressEdit,
-                    extra: address,
-                  ),
+                  onTap: () => context.pushNamed(editRouteName, extra: address),
                 ),
               );
             },

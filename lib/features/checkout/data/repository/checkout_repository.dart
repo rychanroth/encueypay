@@ -8,26 +8,35 @@ import '../../domain/entities/payment_method.dart';
 abstract interface class ICheckoutRepository {
   Future<List<AddressOption>> fetchMyAddressOptions();
 
-  Future<CheckoutSummary> fetchMySummary();
+  /// Cart lines to price. Empty means the whole cart (backward compatible
+  /// with the pre-selection behavior).
+  Future<CheckoutSummary> fetchMySummary({List<String> itemIds = const []});
 
   /// Server-side coupon preview — never throws for a logically invalid
-  /// coupon; the result carries `valid`/`message` (§25).
-  Future<CouponPreview> validateCoupon(String code);
+  /// coupon; the result carries `valid`/`message` (§25). [itemIds] narrows
+  /// the subtotal to the selected cart lines.
+  Future<CouponPreview> validateCoupon(
+    String code, {
+    List<String> itemIds = const [],
+  });
 
   /// Authoritative totals for the current cart: the sale-applied subtotal,
   /// the stacked code discounts, delivery fee and grand total — the same
   /// numbers create_order_from_cart produces at placement.
   Future<OrderTotalsPreview> previewOrderTotals({
     required List<String> couponCodes,
+    List<String> itemIds = const [],
   });
 
   /// Atomic checkout via the create_order_from_cart RPC. Returns the new
-  /// order id; throws [Failure] only (§51 — no partial checkout).
+  /// order id; throws [Failure] only (§51 — no partial checkout). [itemIds]
+  /// places only the selected cart lines; empty means the whole cart.
   Future<String> placeOrder({
     required String addressId,
     required PaymentMethod method,
     required List<String> couponCodes,
     String note = '',
+    List<String> itemIds = const [],
   });
 
   // -------------------------------------------------- QR payment (§6b)

@@ -9,18 +9,21 @@ import 'checkout_controller.dart';
 part 'order_totals_provider.g.dart';
 
 /// Authoritative order totals for the checkout summary: the sale-applied
-/// subtotal plus the manually entered codes. Rebuilt whenever the applied
-/// coupons change; the placement RPC re-validates everything server-side
-/// regardless.
+/// subtotal plus the manually entered codes, scoped to the cart lines ticked
+/// on the cart page (the family key). Rebuilt whenever the applied coupons
+/// change; the placement RPC re-validates everything server-side regardless.
 @riverpod
-Future<OrderTotalsPreview> orderTotalsPreview(Ref ref) async {
+Future<OrderTotalsPreview> orderTotalsPreview(
+  Ref ref,
+  String selectionKey,
+) async {
   // Watch only the applied codes. Watching the whole controller made every
   // note keystroke refetch the preview and flicker the summary; the codes
   // list identity is unchanged by note/address/payment edits.
   final coupons = ref.watch(
-    checkoutControllerProvider.select(
-      (async) => async.value?.coupons ?? const <CouponPreview>[],
-    ),
+    checkoutControllerProvider(
+      selectionKey,
+    ).select((async) => async.value?.coupons ?? const <CouponPreview>[]),
   );
   final codes = coupons
       .where((coupon) => coupon.valid)
@@ -28,5 +31,8 @@ Future<OrderTotalsPreview> orderTotalsPreview(Ref ref) async {
       .toList();
   return ref
       .watch(checkoutRepositoryProvider)
-      .previewOrderTotals(couponCodes: codes);
+      .previewOrderTotals(
+        couponCodes: codes,
+        itemIds: CheckoutController.parseSelection(selectionKey),
+      );
 }

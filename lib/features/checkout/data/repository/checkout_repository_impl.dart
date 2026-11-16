@@ -43,13 +43,16 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .map(CheckoutAddressDto.fromJson)
           .map((dto) => dto.toDomain())
           .toList();
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
 
   @override
-  Future<CheckoutSummary> fetchMySummary() async {
+  Future<CheckoutSummary> fetchMySummary({
+    List<String> itemIds = const [],
+  }) async {
     try {
       final results = await Future.wait([
         _client.from('carts').select('id').eq('user_id', _uid).maybeSingle(),
@@ -57,42 +60,51 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
       ]);
       final cart = results[0];
       final settingsRow = results[1];
-      final deliveryFeeMinor =
-          settingsRow == null ? 0 : PlatformSettingsDto.fromJson(settingsRow).deliveryFeeMinorOrDefault;
+      final deliveryFeeMinor = settingsRow == null
+          ? 0
+          : PlatformSettingsDto.fromJson(settingsRow).deliveryFeeMinorOrDefault;
       if (cart == null) {
-        return CheckoutSummary(items: const [], subtotalMinor: 0, deliveryFeeMinor: deliveryFeeMinor);
+        return CheckoutSummary(
+          items: const [],
+          subtotalMinor: 0,
+          deliveryFeeMinor: deliveryFeeMinor,
+        );
       }
 
-      final rows = await _client
+      final base = _client
           .from('cart_item_details')
           .select(
             'id, cart_id, created_at, quantity, variant_id, variant_name, '
             'product_id, product_name, unit_price_minor, '
             'sale_unit_price_minor, image_storage_path',
           )
-          .eq('cart_id', cart['id'] as String)
-          .order('created_at');
+          .eq('cart_id', cart['id'] as String);
+      // Selection narrowing: only the ticked lines (empty = whole cart).
+      final filtered = itemIds.isEmpty ? base : base.inFilter('id', itemIds);
+      final rows = await filtered.order('created_at');
 
       String? publicUrl(String? storagePath) {
         if (storagePath == null || storagePath.isEmpty) return null;
         // Full http(s) references pass through (seed demo imagery).
         if (storagePath.startsWith('http')) return storagePath;
-        return _client.storage
-            .from('product_images')
-            .getPublicUrl(storagePath);
+        return _client.storage.from('product_images').getPublicUrl(storagePath);
       }
 
       final items = rows.map((row) {
         final dto = CheckoutItemDto.fromJson(row);
         return dto.toDomain(imageUrl: publicUrl(dto.imageStoragePath));
       }).toList();
-      final subtotal = items.fold<int>(0, (sum, item) => sum + item.lineTotalMinor);
+      final subtotal = items.fold<int>(
+        0,
+        (sum, item) => sum + item.lineTotalMinor,
+      );
       return CheckoutSummary(
         items: items,
         subtotalMinor: subtotal,
         deliveryFeeMinor: deliveryFeeMinor,
       );
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -112,7 +124,9 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
       discountMinor: _asInt(map['discount_minor']),
       message: map['message'] as String?,
       name: (map['name'] as String?) ?? '',
-      discountType: CouponDiscountType.fromName(map['discount_type'] as String?),
+      discountType: CouponDiscountType.fromName(
+        map['discount_type'] as String?,
+      ),
       discountValue: _asInt(map['discount_value']),
       minOrderAmountMinor: _asInt(map['min_order_amount_minor']),
       startsAt: _asDate(map['starts_at']),
@@ -123,13 +137,19 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
   }
 
   @override
-  Future<CouponPreview> validateCoupon(String code) async {
+  Future<CouponPreview> validateCoupon(
+    String code, {
+    List<String> itemIds = const [],
+  }) async {
     try {
-      final result =
-          await _client.rpc('validate_coupon', params: {'p_code': code});
+      final result = await _client.rpc(
+        'validate_coupon',
+        params: {'p_code': code, if (itemIds.isNotEmpty) 'p_item_ids': itemIds},
+      );
       final map = Map<String, dynamic>.from(result as Map);
       return _couponFromJson(map, fallbackCode: code);
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -137,19 +157,27 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
   @override
   Future<OrderTotalsPreview> previewOrderTotals({
     required List<String> couponCodes,
+    List<String> itemIds = const [],
   }) async {
     try {
-      final result = await _client.rpc('preview_order_totals',
-          params: {'p_codes': couponCodes});
+      final result = await _client.rpc(
+        'preview_order_totals',
+        params: {
+          'p_codes': couponCodes,
+          if (itemIds.isNotEmpty) 'p_item_ids': itemIds,
+        },
+      );
       final map = Map<String, dynamic>.from(result as Map);
-      final manual = ((map['manual'] as List? ?? const [])
-              .whereType<Map<String, dynamic>>())
-          .map(_couponFromJson)
-          .toList();
-      final rejected = ((map['rejected'] as List? ?? const [])
-              .whereType<Map<String, dynamic>>())
-          .map(_couponFromJson)
-          .toList();
+      final manual =
+          ((map['manual'] as List? ?? const [])
+                  .whereType<Map<String, dynamic>>())
+              .map(_couponFromJson)
+              .toList();
+      final rejected =
+          ((map['rejected'] as List? ?? const [])
+                  .whereType<Map<String, dynamic>>())
+              .map(_couponFromJson)
+              .toList();
       return OrderTotalsPreview(
         manual: manual,
         rejected: rejected,
@@ -158,7 +186,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
         deliveryFeeMinor: _asInt(map['delivery_fee_minor']),
         totalMinor: _asInt(map['total_minor']),
       );
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
@@ -169,25 +198,34 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
     required PaymentMethod method,
     required List<String> couponCodes,
     String note = '',
+    List<String> itemIds = const [],
   }) async {
     try {
-      final orderId = await _client.rpc('create_order_from_cart', params: {
-        'p_address_id': addressId,
-        'p_payment_method': method.wireName,
-        'p_coupon_codes': couponCodes,
-        'p_note': note,
-      });
+      final orderId = await _client.rpc(
+        'create_order_from_cart',
+        params: {
+          'p_address_id': addressId,
+          'p_payment_method': method.wireName,
+          'p_coupon_codes': couponCodes,
+          'p_note': note,
+          if (itemIds.isNotEmpty) 'p_item_ids': itemIds,
+        },
+      );
       return orderId as String;
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
+
   // -------------------------------------------------- QR payment (§6b)
   @override
   Future<String> createPaywayQr({required String orderId}) async {
     try {
-      final response = await _client.functions
-          .invoke('payway-create', body: {'orderId': orderId});
+      final response = await _client.functions.invoke(
+        'payway-create',
+        body: {'orderId': orderId},
+      );
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final qr = data['qrPayload'];
@@ -228,7 +266,8 @@ class CheckoutRepositoryImpl implements ICheckoutRepository {
           .eq('order_id', orderId)
           .maybeSingle();
       return row == null ? null : Map<String, dynamic>.from(row);
-    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+    } catch (error, stackTrace) {
+      // DATA-05: classify, don't guess
       throw mapRepositoryError(error, stackTrace);
     }
   }
