@@ -71,13 +71,18 @@ Verified: a test notification produced `{"sent":1,"failed":0}`.
 - `PushNotificationsService` shows a native local notification via
   `flutter_local_notifications` (channel `order_updates`, high importance,
   swipe-dismissible) with `order_id`/`notification_id` payload.
-- Tapping marks the notification read and routes through `openPushTarget`.
-- If the local plugin cannot initialize, `main.dart` shows a fallback SnackBar with a
-  finite duration + close icon.
+- Every foreground message is **also** mirrored in-app as a SnackBar (6 s,
+  close icon, `View`/`View order` action). The whole card is tappable; either
+  path marks the notification read and routes through `openPushTarget` (order
+  pushes open the order, everything else opens the inbox). The mirror is not a
+  fallback: a muted channel or an un-granted iOS permission would otherwise
+  hide the update entirely.
+- Tapping the native notification marks it read and routes the same way.
 - Android build: `compileSdk` 36 (plugin v22 requires ≥35) and core-library
   desugaring are enabled in `android/app/build.gradle.kts`.
-- iOS still needs `GoogleService-Info.plist` + notification capability; push remains
-  inert there until configured.
+- iOS still needs `GoogleService-Info.plist` + notification capability; push
+  remains inert there until configured (the in-app SnackBar only appears once
+  FCM delivers a foreground message).
 
 ## QA checklist
 

@@ -49,18 +49,30 @@ Future<void> main() async {
     onForeground: (title, body, target, onView) {
       final messenger = appScaffoldMessengerKey.currentState;
       if (messenger == null) return;
+
+      // One handler for the card and the action button: dismiss, mark the
+      // notification read and route it (order pushes open the order, the rest
+      // open the inbox) — all via openPushTarget.
+      void open() {
+        messenger.hideCurrentSnackBar();
+        onView();
+      }
+
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text(body.isEmpty ? title : '$title\n$body'),
-            // Fallback only (native notifications are preferred): finite
-            // duration and an explicit close affordance.
+            // The whole card is the tap target; the action button stays as the
+            // visible affordance.
+            content: InkWell(
+              onTap: open,
+              child: Text(body.isEmpty ? title : '$title\n$body'),
+            ),
             duration: const Duration(seconds: 6),
             showCloseIcon: true,
             action: SnackBarAction(
               label: target.hasOrder ? 'View order' : 'View',
-              onPressed: onView,
+              onPressed: open,
             ),
           ),
         );

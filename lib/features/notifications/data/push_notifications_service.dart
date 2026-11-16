@@ -44,7 +44,8 @@ class PushNotificationsService {
 
   /// Called after the app is mounted so navigation/UI keys are available.
   /// [onOpen] receives the deep-link target; [onForeground] renders the
-  /// in-app banner for a message received while the app is foregrounded.
+  /// in-app SnackBar for a message received while the app is foregrounded
+  /// (shown alongside the native heads-up notification).
   Future<void> start({
     void Function(PushOpenTarget target)? onOpen,
     void Function(
@@ -89,7 +90,7 @@ class PushNotificationsService {
           body: message.notification?.body ?? '',
           target: _targetFor(message),
           onOpen: onOpen,
-          onFallback: onForeground,
+          onForeground: onForeground,
         ),
       );
     }));
@@ -120,8 +121,9 @@ class PushNotificationsService {
   }
 
   /// Foreground messages are not auto-rendered by Android. Show a native
-  /// heads-up notification (dismissible like any system notification) and
-  /// keep the injected SnackBar only as a fallback if the plugin failed.
+  /// heads-up notification (dismissible like any system notification) **and**
+  /// the in-app SnackBar, which is the only guaranteed surface when the local
+  /// plugin or its permission is unavailable.
   Future<void> _initLocalNotifications(
     void Function(PushOpenTarget target)? onOpen,
   ) async {
@@ -175,7 +177,7 @@ class PushNotificationsService {
       String body,
       PushOpenTarget target,
       void Function() onView,
-    )? onFallback,
+    )? onForeground,
   }) async {
     if (_localReady) {
       try {
@@ -195,12 +197,14 @@ class PushNotificationsService {
           ),
           payload: _payloadFor(target),
         );
-        return;
       } catch (error, stackTrace) {
         debugPrint('Local notification failed: $error\n$stackTrace');
       }
     }
-    onFallback?.call(title, body, target, () => _handleOpen(target, onOpen));
+    // Always mirrored in-app: the heads-up can be missed or suppressed (iOS
+    // permission, channel muted), and this is the surface the user taps to
+    // reach the order/inbox.
+    onForeground?.call(title, body, target, () => _handleOpen(target, onOpen));
   }
 
   int _localId(PushOpenTarget target) {
