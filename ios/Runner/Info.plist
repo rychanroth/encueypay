@@ -20,7 +20,7 @@
 		</dict>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>EncueYPay</string>
+	<string>R67</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

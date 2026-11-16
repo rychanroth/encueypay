@@ -74,7 +74,7 @@ class EncueYPayApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'EncueYPay',
+      title: 'R67',
       scaffoldMessengerKey: appScaffoldMessengerKey,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
