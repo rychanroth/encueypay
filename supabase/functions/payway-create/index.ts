@@ -26,6 +26,21 @@ const API_KEY = Deno.env.get('PAYWAY_API_KEY');
 const BASE_URL = (Deno.env.get('PAYWAY_BASE_URL') || 'https://checkout-sandbox.payway.com.kh')
   .replace(/\/+$/, '');
 
+// Browser clients (Flutter web) preflight every POST. The edge runtime does
+// not add CORS headers for us: an unhandled OPTIONS becomes a 405 without
+// Access-Control-Allow-*, so Chrome blocks the call before it reaches PayWay
+// (curl/mobile have no preflight and appear fine).
+const CORS_HEADERS: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+function json(body: unknown, status = 200): Response {
+  return Response.json(body, { status, headers: CORS_HEADERS });
+}
+
 // Canonical hash order from the generate-qr spec.
 const CANONICAL_ORDER = [
   'req_time', 'merchant_id', 'tran_id', 'amount', 'items',
@@ -70,24 +85,30 @@ Deno.serve(async (req) => {
     // Never leak a raw 500: name the failing stage so the app (and we)
     // can see it.
     console.error('payway-create failed', error);
-    return Response.json(
+    return json(
       { configured: true, reason: 'unexpected_error', detail: String(error) },
-      { status: 500 },
+      500,
     );
   }
 });
 
 async function handle(req: Request): Promise<Response> {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   if (req.method !== 'POST') {
-    return new Response('method not allowed', { status: 405 });
+    return new Response('method not allowed', {
+      status: 405,
+      headers: CORS_HEADERS,
+    });
   }
   const { orderId } = await req.json().catch(() => ({}) as { orderId?: string });
   if (!orderId) {
-    return new Response('missing orderId', { status: 400 });
+    return json({ configured: true, reason: 'missing_order_id' }, 400);
   }
 
   if (!MERCHANT_ID || !API_KEY) {
-    return Response.json({ configured: false, reason: 'secrets_missing' });
+    return json({ configured: false, reason: 'secrets_missing' });
   }
 
   const supabase = createClient(
@@ -101,13 +122,13 @@ async function handle(req: Request): Promise<Response> {
     .maybeSingle();
   if (fetchError) {
     console.error('payment lookup failed', fetchError.message);
-    return Response.json(
+    return json(
       { configured: true, reason: 'lookup_failed' },
-      { status: 502 },
+      502,
     );
   }
   if (!payment) {
-    return Response.json({ configured: true, reason: 'no_payment' });
+    return json({ configured: true, reason: 'no_payment' });
   }
   // Only a live order may mint a QR: cancelled/returned/delivered orders are
   // terminal, and generating a payable QR for them would take money the
@@ -117,14 +138,14 @@ async function handle(req: Request): Promise<Response> {
     orderStatus === 'cancelled' ||
     orderStatus === 'returned' ||
     orderStatus === 'delivered') {
-    return Response.json({
+    return json({
       configured: true,
       reason: 'order_not_pending',
       orderStatus: orderStatus ?? null,
     });
   }
   if (payment.method !== 'qr' || payment.status !== 'pending') {
-    return Response.json({
+    return json({
       configured: true,
       reason: payment.status === 'transaction_verified'
         ? 'already_paid'
@@ -173,9 +194,9 @@ async function handle(req: Request): Promise<Response> {
     return null;
   });
   if (response === null) {
-    return Response.json(
+    return json(
       { configured: true, reason: 'payway_unreachable' },
-      { status: 502 },
+      502,
     );
   }
   const contentType = response.headers.get('content-type') ?? '';
@@ -184,9 +205,9 @@ async function handle(req: Request): Promise<Response> {
     // profile likely lacks the QR Payment API service (or is whitelisting).
     const text = await response.text();
     console.error('generate-qr non-JSON response', response.status, text.slice(0, 200));
-    return Response.json(
+    return json(
       { configured: true, reason: 'unexpected_response' },
-      { status: 502 },
+      502,
     );
   }
   const result = await response.json();
@@ -200,12 +221,12 @@ async function handle(req: Request): Promise<Response> {
       .eq('status', 'pending');
     if (updateError) {
       console.error('qr_payload store failed', updateError.message);
-      return Response.json(
+      return json(
         { configured: true, reason: 'store_failed' },
-        { status: 502 },
+        502,
       );
     }
-    return Response.json({ configured: true, qrPayload: qr });
+    return json({ configured: true, qrPayload: qr });
   }
 
   // Documented generate-qr error codes: 1 wrong hash, 6/102 whitelist,
@@ -216,7 +237,7 @@ async function handle(req: Request): Promise<Response> {
     result?.status?.message,
     result?.status?.trace_id,
   );
-  return Response.json({
+  return json({
     configured: true,
     reason: 'payway_error',
     code,

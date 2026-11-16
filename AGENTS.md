@@ -139,7 +139,8 @@ resuming it. If a handoff contradicts this file, this file wins.
   iOS platform config, admin/new-order and promo notifications.
 - **KHQR:** `docs/HANDOFF-KHQR.md` — working end-to-end (hosted functions + PayWay
   callback live, 2026-11-03); hosted sandbox re-verified 2026-11-16 (real QR returned,
-  terminal orders now refused, `service_role` orders grant in `20261116000003`).
+  terminal orders now refused, `service_role` orders grant in `20261116000003`);
+  web `payway-create` CORS fixed 2026-11-17 (OPTIONS/CORS headers).
   Production credentials remain a launch checklist item.
 - **Figma mirror:** **frozen snapshot** — record in `docs/figma/PLAN.md`, pinned ids
   and commits in `docs/figma/manifest.json`. 18 component sets, 30 screens, 9 FigJam

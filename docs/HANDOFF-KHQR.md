@@ -94,6 +94,14 @@ Checkout (method=qr) → RPC create_order_from_cart → payments row (pending)
   `20261116000003` after it made every call answer `lookup_failed`. The app
   now surfaces the function's `reason` instead of collapsing every failure
   into "PayWay service unreachable".
+- **Web CORS fixed 2026-11-17**: Flutter web preflights the invoke, and the
+  function answered `OPTIONS` with `405` and no `Access-Control-Allow-*`
+  headers — Chrome blocked the POST before it reached PayWay, which is why
+  the app showed "PayWay service unreachable" while curl/mobile (no
+  preflight) worked. `payway-create` now answers `OPTIONS` with `204` and
+  every response carries CORS headers; verified preflight `204` + browser
+  POST `200` with a QR. Any function invoked from the web build needs the
+  same OPTIONS/CORS handling.
 - `supabase/config.toml` `[edge_runtime.secrets]` maps the four `PAYWAY_*`
   names to host env vars — **`supabase start` does not read
   `supabase/functions/.env` on its own**; start with:
