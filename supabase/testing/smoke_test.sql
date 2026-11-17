@@ -1,224 +1,279 @@
--- EncueYPay RPC smoke test — run against the local harness DB after
--- migrations. Impersonates users via request.jwt.claims (auth.uid() stub).
--- NOTE: psql does not interpolate :vars inside $$ blocks — values are
--- passed through session settings (set_config / current_setting).
+-- EncueYPay RPC smoke test — single-seller (customer + admin) surface.
+--
+-- Runs against the local harness DB after every migration:
+--   bash supabase/testing/run.sh
+-- Impersonates users via request.jwt.claims (the auth.uid() stub).
+-- NOTE: psql does not interpolate :vars inside $$ blocks — values are passed
+-- through session settings (set_config / current_setting).
 \set ON_ERROR_STOP on
 
 -- ---------------------------------------------------------------- fixtures
 insert into auth.users (id, email, raw_user_meta_data) values
   ('11111111-1111-1111-1111-111111111111', 'cust@test.dev', '{"full_name":"Customer"}'),
-  ('22222222-2222-2222-2222-222222222222', 'biz1@test.dev', '{"full_name":"BizOne"}'),
-  ('33333333-3333-3333-3333-333333333333', 'drv@test.dev',  '{"full_name":"Driver"}'),
-  ('44444444-4444-4444-4444-444444444444', 'adm@test.dev',  '{"full_name":"Admin"}'),
-  ('55555555-5555-5555-5555-555555555555', 'biz2@test.dev', '{"full_name":"BizTwo"}');
+  ('22222222-2222-2222-2222-222222222222', 'other@test.dev', '{"full_name":"Other Customer"}'),
+  ('44444444-4444-4444-4444-444444444444', 'adm@test.dev', '{"full_name":"Admin"}');
 
 DO $$ BEGIN
-  assert (select count(*) from public.users) = 5, 'signup trigger should create 5 app users';
-  assert (select active_role from public.users where id = '11111111-1111-1111-1111-111111111111') = 'customer',
+  assert (select count(*) from public.users) = 3,
+    'signup trigger should create 3 app users';
+  assert (select count(*) from public.users where active_role = 'customer') = 3,
     'new users default to customer';
+  assert (select count(*) from public.users where onboarded_at is not null) = 0,
+    'new customers start un-onboarded';
 END $$;
 
-update public.users set active_role = 'business' where id = '22222222-2222-2222-2222-222222222222';
-update public.users set active_role = 'driver'   where id = '33333333-3333-3333-3333-333333333333';
-update public.users set active_role = 'admin'    where id = '44444444-4444-4444-4444-444444444444';
-update public.users set active_role = 'business' where id = '55555555-5555-5555-5555-555555555555';
+-- Roles are set outside impersonation — the self-change guard blocks them
+-- while auth.uid() is present.
+update public.users set active_role = 'admin'
+ where id = '44444444-4444-4444-4444-444444444444';
 
 update public.platform_settings
-set delivery_fee_minor = 200,
-    platform_commission_percent = 5,
-    driver_commission_percent = 80
-where id = 1;
+   set delivery_fee_minor = 200,
+       platform_commission_percent = 5
+ where id = 1;
 
--- category (admin)
-set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
-select public.create_category('Apparel') as cat \gset
-
--- ---------------------------------------------------------------- business 1
-set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.create_business('Test Business', 'desc') as b1 \gset
-select public.create_product(:'cat', 'T-Shirt', '', 1000,
-  '[{"name":"M/Black","price_minor":1000},{"name":"L/Black","price_minor":1200}]'::jsonb) as p1 \gset
-select public.create_product(:'cat', 'Mug', '', 500, '[]'::jsonb) as p2 \gset
-
-DO $$ BEGIN
-  assert (select count(*) from public.product_variants where product_id = (select id from public.products where name = 'Mug')) = 1,
-    'product without variants gets an auto Default variant';
-END $$;
-
-select public.add_product_variant((select id from public.products where name = 'T-Shirt'), 'XL/Black', 1400) as v_xl \gset
-DO $$ BEGIN
-  assert (select count(*) from public.product_variants where product_id = (select id from public.products where name = 'T-Shirt')) = 3,
-    'add_product_variant appends to an existing product';
-END $$;
-
-select id as variant_m from public.product_variants where name = 'M/Black' \gset
-select pv.id as variant_default from public.product_variants pv
-  join public.products p on p.id = pv.product_id where p.name = 'Mug' \gset
-
--- ---------------------------------------------------------------- business 2
-set request.jwt.claims to '{"sub":"55555555-5555-5555-5555-555555555555"}';
-select public.create_business('Second Shop', 'desc') as b2 \gset
-select public.create_product(:'cat', 'Candle', '', 700, '[]'::jsonb) as p3 \gset
-select pv.id as variant_candle from public.product_variants pv
-  join public.products p on p.id = pv.product_id where p.name = 'Candle' \gset
-
--- ---------------------------------------------------------------- coupon
-set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.create_coupon_promotion('Winter', '', 'percent', 10, 'WELCOME10');
-
--- ---------------------------------------------------------------- customer: cart & checkout
+-- The onboarding write lands on the new column (app does this via update).
 set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
-insert into public.addresses (user_id, label, recipient_name, phone, line1, city)
-values ('11111111-1111-1111-1111-111111111111', 'Home', 'Customer', '0123456789', 'Street 1', 'Phnom Penh');
-select id as addr from public.addresses limit 1 \gset
+update public.users
+   set full_name = 'Customer',
+       phone = '0123456789',
+       onboarded_at = now()
+ where id = '11111111-1111-1111-1111-111111111111';
 
-select public.add_cart_item(:'variant_m', 2);
-select public.add_cart_item(:'variant_default', 1);
-select public.add_cart_item(:'variant_candle', 1);
-select public.add_cart_item(:'variant_m', 1);  -- upsert-increment -> qty 3
+DO $$ BEGIN
+  assert (select onboarded_at from public.users
+           where id = '11111111-1111-1111-1111-111111111111') is not null,
+    'onboarding completion stamps onboarded_at';
+END $$;
+
+-- ---------------------------------------------------------------- catalog (admin)
+set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
+
+select public.create_category('Apparel', null, null) as cat \gset
+insert into public.brands (name, description)
+values ('R67 Home', 'Prototype brand')
+returning id as brand \gset
+
+select public.admin_create_product(
+  :'cat', 'T-Shirt', 'Cotton tee', :'brand', 10,
+  '[{"name":"M","price_minor":1000},{"name":"L","price_minor":1200}]'::jsonb
+) as p_tee \gset
+
+select public.admin_create_product(
+  :'cat', 'Tote Bag', 'Canvas tote', :'brand', 5,
+  '[{"name":"Standard","price_minor":500}]'::jsonb
+) as p_tote \gset
+
+select set_config('smoke.cat', :'cat', false) as _ \gset
+select set_config('smoke.brand', :'brand', false) as _ \gset
+select set_config('smoke.p_tee', :'p_tee', false) as _ \gset
+select set_config('smoke.p_tote', :'p_tote', false) as _ \gset
+
+DO $$ BEGIN
+  assert (select count(*) from public.product_variants
+           where product_id = current_setting('smoke.p_tee')::uuid) = 2,
+    'both explicit variants were created';
+  assert (select base_price_minor from public.products
+           where id = current_setting('smoke.p_tee')::uuid) = 1000,
+    'base price is the cheapest variant';
+
+  -- Explicit variants are required: an empty variant list is rejected.
+  begin
+    perform public.admin_create_product(
+      current_setting('smoke.cat')::uuid, 'No Variants', '', null, 5, '[]'::jsonb);
+    raise exception 'product without variants was allowed';
+  exception when others then
+    if sqlerrm not like '%least one variant%' then raise; end if;
+  end;
+
+  -- Non-admins cannot reach admin RPCs.
+  perform set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111"}', true);
+  begin
+    perform public.admin_create_product(
+      current_setting('smoke.cat')::uuid, 'Hack', '', null, 1,
+      '[{"name":"X","price_minor":100}]'::jsonb);
+    raise exception 'non-admin created a product';
+  exception when others then
+    if sqlerrm not like '%Only admins%' then raise; end if;
+  end;
+  perform set_config('request.jwt.claims', '{"sub":"44444444-4444-4444-4444-444444444444"}', true);
+END $$;
+
+select pv.id as v_tee
+  from public.product_variants pv
+ where pv.product_id = :'p_tee'::uuid and pv.name = 'M' \gset
+select pv.id as v_tote
+  from public.product_variants pv
+ where pv.product_id = :'p_tote'::uuid \gset
+
+select set_config('smoke.v_tee', :'v_tee', false) as _ \gset
+select set_config('smoke.v_tote', :'v_tote', false) as _ \gset
+
+-- ---------------------------------------------------------------- coupon (admin)
+select public.admin_create_coupon(
+  'Welcome', 'WELCOME10', 'percent', 10, 0, null, null
+) as coupon \gset
+select set_config('smoke.coupon', :'coupon', false) as _ \gset
+
+DO $$ BEGIN
+  begin
+    perform public.admin_create_coupon('Bad', 'BAD', 'fixed', 0, 0, null, null);
+    raise exception 'zero-value coupon was allowed';
+  exception when others then
+    if sqlerrm not like '%must be positive%' then raise; end if;
+  end;
+END $$;
+
+-- ---------------------------------------------------------------- cart & selection
+set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
+
+insert into public.addresses (user_id, label, recipient_name, phone, line1, city)
+values ('11111111-1111-1111-1111-111111111111', 'Home', 'Customer',
+        '0123456789', 'Street 1', 'Phnom Penh')
+returning id as addr \gset
+
+select public.add_cart_item(:'v_tee', 2);
+select public.add_cart_item(:'v_tote', 1);
+select public.add_cart_item(:'v_tee', 1);  -- upsert-increment -> qty 3
 
 DO $$ BEGIN
   assert (select quantity from public.cart_items ci
-    join public.product_variants pv on pv.id = ci.product_variant_id
-    where pv.name = 'M/Black') = 3, 'cart upsert should increment to 3';
-END $$;
-
--- subtotal: 1000*3 + 500 + 700 = 4200; biz1 lines = 3500 -> discount 350
-DO $$ BEGIN
-  assert (public.validate_coupon('WELCOME10') ->> 'valid') = 'true', 'coupon should be valid';
+           join public.product_variants pv on pv.id = ci.product_variant_id
+          where pv.id = current_setting('smoke.v_tee')::uuid) = 3,
+    'cart upsert increments the existing line';
   assert ((public.validate_coupon('WELCOME10') ->> 'discount_minor')::int) = 350,
-    'business coupon discounts only that business lines (10% of 3500)';
+    '10% of the 3500 cart';
+  assert ((public.preview_order_totals(array['WELCOME10']) ->> 'total_minor')::int) = 3350,
+    '3500 - 350 + 200 delivery';
 END $$;
 
-select public.create_order_from_cart(:'addr', 'cod', array['WELCOME10']) as order1 \gset
+select ci.id as tee_line
+  from public.cart_items ci
+ where ci.product_variant_id = :'v_tee'::uuid \gset
+select ci.id as tote_line
+  from public.cart_items ci
+ where ci.product_variant_id = :'v_tote'::uuid \gset
+
+select set_config('smoke.tote_line', :'tote_line', false) as _ \gset
+
+-- Checkout only the tote: the ticked-line model is part of the contract.
+select public.create_order_from_cart(
+  :'addr', 'cod', '{}', '', array[:'tote_line']::uuid[]
+) as order1 \gset
 select set_config('smoke.order1', :'order1', false) as _ \gset
 
 DO $$ BEGIN
-  assert (select count(*) from public.cart_items) = 0, 'cart must be cleared';
-  assert (select count(*) from public.business_orders where order_id = current_setting('smoke.order1')::uuid) = 2,
-    'two businesses -> two business orders';
-  assert (select count(*) from public.order_items oi join public.business_orders bo on bo.id = oi.business_order_id
-    where bo.order_id = current_setting('smoke.order1')::uuid) = 3, 'three order items';
-  assert (select amount_minor from public.payments where order_id = current_setting('smoke.order1')::uuid) = 4050,
-    'payment = 4200 - 350 + 200 delivery fee';
-  assert (select status from public.deliveries where order_id = current_setting('smoke.order1')::uuid) = 'available';
-  assert (select count(*) from public.pickup_stops ps join public.deliveries d on d.id = ps.delivery_id
-    where d.order_id = current_setting('smoke.order1')::uuid) = 2, 'one pickup stop per business order';
-  assert (select count(*) from public.order_coupons where order_id = current_setting('smoke.order1')::uuid) = 1,
-    'historical coupon record';
-  assert (select discount_minor from public.orders where id = current_setting('smoke.order1')::uuid) = 350;
+  assert (select count(*) from public.cart_items) = 1,
+    'unselected lines stay in the cart';
+  assert (select stock from public.products
+           where id = current_setting('smoke.p_tote')::uuid) = 4,
+    'only the selected product stock was deducted';
+  assert (select stock from public.products
+           where id = current_setting('smoke.p_tee')::uuid) = 10,
+    'unselected product stock is untouched';
+  assert (select subtotal_minor from public.orders
+           where id = current_setting('smoke.order1')::uuid) = 500;
+  assert (select total_minor from public.orders
+           where id = current_setting('smoke.order1')::uuid) = 700,
+    '500 + 200 delivery';
+  assert (select count(*) from public.order_items
+           where order_id = current_setting('smoke.order1')::uuid) = 1;
+  assert (select amount_minor from public.payments
+           where order_id = current_setting('smoke.order1')::uuid) = 700;
+  assert (select status from public.payments
+           where order_id = current_setting('smoke.order1')::uuid) = 'pending';
 END $$;
 
-select bo.id as bo1 from public.business_orders bo
-  join public.businesses b on b.id = bo.business_id
-  where bo.order_id = :'order1'::uuid and b.name = 'Test Business' \gset
-
--- ---------------------------------------------------------------- business lifecycle
-set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.transition_business_order(:'bo1', 'accepted', null);
-select public.transition_business_order(:'bo1', 'preparing', null);
-select public.transition_business_order(:'bo1', 'ready', null);
-
--- invalid state skip (biz2 owns its pending business order: pending -> preparing skips 'accepted')
-set request.jwt.claims to '{"sub":"55555555-5555-5555-5555-555555555555"}';
+-- A consumed selection is stale and must be rejected.
 DO $$ BEGIN
   begin
-    perform public.transition_business_order(
-      (select bo.id from public.business_orders bo
-       join public.businesses b on b.id = bo.business_id
-       join auth.users au on au.id = b.owner_id
-       where au.email = 'biz2@test.dev'), 'preparing', null);
-    raise exception 'invalid state transition was allowed!';
+    perform public.create_order_from_cart(
+      (select id from public.addresses
+        where user_id = '11111111-1111-1111-1111-111111111111' limit 1),
+      'cod', '{}', '', array[current_setting('smoke.tote_line')::uuid]);
+    raise exception 'stale selection was allowed';
   exception when others then
-    if sqlerrm not like '%Cannot move%' then raise; end if;
+    if sqlerrm not like '%no longer in your cart%' then raise; end if;
   end;
 END $$;
 
--- ---------------------------------------------------------------- driver flow
-set request.jwt.claims to '{"sub":"33333333-3333-3333-3333-333333333333"}';
-select id as delivery1 from public.deliveries where order_id = :'order1'::uuid \gset
-select set_config('smoke.delivery1', :'delivery1', false) as _ \gset
-select public.accept_delivery(:'delivery1');
-select public.complete_pickup_stop(ps.id)
-from public.pickup_stops ps where ps.delivery_id = :'delivery1'::uuid order by ps.sequence;
-select public.start_delivery(:'delivery1');
-select public.mark_delivered(:'delivery1');
-
-DO $$ BEGIN
-  assert (select status from public.deliveries where id = current_setting('smoke.delivery1')::uuid) = 'delivered';
-  assert (select status from public.payments where order_id = (select order_id from public.deliveries where id = current_setting('smoke.delivery1')::uuid)) = 'transaction_verified',
-    'COD collected at delivery';
-  assert (select paid_at from public.payments where order_id = (select order_id from public.deliveries where id = current_setting('smoke.delivery1')::uuid)) is not null;
-  assert (select count(*) from public.notifications where recipient_id = '11111111-1111-1111-1111-111111111111') >= 3,
-    'customer notified (order placed, status, delivery)';
-  assert (select count(*) from public.notifications where recipient_id = '22222222-2222-2222-2222-222222222222') >= 1,
-    'business notified of new order';
-END $$;
-
--- ---------------------------------------------------------------- cancel path
-set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
-select public.add_cart_item(:'variant_m', 2);
-select public.create_order_from_cart(:'addr', 'cod', '{}') as order2 \gset
+-- ---------------------------------------------------------------- order 2 (remaining cart + coupon)
+select public.create_order_from_cart(
+  :'addr', 'cod', array['WELCOME10'], 'Leave at the door'
+) as order2 \gset
 select set_config('smoke.order2', :'order2', false) as _ \gset
-select public.cancel_order(:'order2');
 
 DO $$ BEGIN
-  assert (select status from public.deliveries where order_id = current_setting('smoke.order2')::uuid) = 'cancelled';
-  assert (select count(*) from public.business_orders bo where bo.order_id = current_setting('smoke.order2')::uuid
-    and bo.status = 'cancelled') = 1;
+  assert (select count(*) from public.cart_items) = 0, 'cart must be cleared';
+  assert (select subtotal_minor from public.orders
+           where id = current_setting('smoke.order2')::uuid) = 3000;
+  assert (select discount_minor from public.orders
+           where id = current_setting('smoke.order2')::uuid) = 300;
+  assert (select total_minor from public.orders
+           where id = current_setting('smoke.order2')::uuid) = 2900,
+    '3000 - 300 + 200 delivery';
+  assert (select note from public.orders
+           where id = current_setting('smoke.order2')::uuid) = 'Leave at the door';
+  assert (select count(*) from public.order_coupons
+           where order_id = current_setting('smoke.order2')::uuid) = 1;
+  assert (select discount_minor from public.order_coupons
+           where order_id = current_setting('smoke.order2')::uuid) = 300;
+  assert (select stock from public.products
+           where id = current_setting('smoke.p_tee')::uuid) = 7;
 END $$;
 
--- ---------------------------------------------------------------- reject path (bank transfer + refund)
-select public.add_cart_item(:'variant_m', 1);
-select public.create_order_from_cart(:'addr', 'bank_transfer', '{}') as order3 \gset
-select set_config('smoke.order3', :'order3', false) as _ \gset
-select id as bo3 from public.business_orders where order_id = :'order3'::uuid limit 1 \gset
-select public.submit_payment_proof(:'order3', 'proofs/test.png');
+-- ---------------------------------------------------------------- order lifecycle
+set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
 
 DO $$ BEGIN
-  assert (select status from public.payments where order_id = current_setting('smoke.order3')::uuid) = 'transaction_verified',
-    'prototype: proof verifies immediately';
+  -- Skip a step → rejected.
+  begin
+    perform public.admin_transition_order(
+      current_setting('smoke.order1')::uuid, 'processing', null);
+    raise exception 'invalid transition was allowed';
+  exception when others then
+    if sqlerrm not like '%Cannot transition%' then raise; end if;
+  end;
+
+  -- Cash cannot be recorded before delivery.
+  begin
+    perform public.admin_mark_cod_paid(current_setting('smoke.order1')::uuid);
+    raise exception 'COD was marked paid before delivery';
+  exception when others then
+    if sqlerrm not like '%when the order is delivered%' then raise; end if;
+  end;
 END $$;
 
-set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.transition_business_order(:'bo3', 'rejected', 'Damaged in handling');
+select public.admin_transition_order(:'order1', 'confirmed', null);
+select public.admin_transition_order(:'order1', 'processing', null);
+select public.admin_transition_order(:'order1', 'packed', null);
+select public.admin_transition_order(:'order1', 'shipped', null);
+select public.admin_transition_order(:'order1', 'out_for_delivery', null);
+select public.admin_transition_order(:'order1', 'delivered', null);
+select public.admin_mark_cod_paid(:'order1');
 
 DO $$ BEGIN
-  assert (select status from public.payments where order_id = current_setting('smoke.order3')::uuid) = 'refund_required',
-    'verified transfer -> refund required on rejection';
+  assert (select status from public.orders
+           where id = current_setting('smoke.order1')::uuid) = 'delivered';
+  assert (select status from public.payments
+           where order_id = current_setting('smoke.order1')::uuid) = 'transaction_verified',
+    'cash collected on delivery';
+  assert (select paid_at from public.payments
+           where order_id = current_setting('smoke.order1')::uuid) is not null;
+  assert (select count(*) from public.notifications
+           where recipient_id = '11111111-1111-1111-1111-111111111111') >= 7,
+    'order status + payment notifications reached the customer';
+  assert (select count(*) from public.audit_logs
+           where action = 'admin_transition_order') = 6;
 END $$;
 
--- ---------------------------------------------------------------- returns & reviews (delivered order1)
+-- ---------------------------------------------------------------- reviews (delivered order)
 set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
+
 select oi.id as item1 from public.order_items oi
-  join public.business_orders bo on bo.id = oi.business_order_id
-  join public.businesses b on b.id = bo.business_id
-  where bo.order_id = :'order1'::uuid and b.name = 'Test Business' limit 1 \gset
+ where oi.order_id = :'order1'::uuid limit 1 \gset
 select set_config('smoke.item1', :'item1', false) as _ \gset
 
-select public.request_return(:'order1',
-  jsonb_build_array(jsonb_build_object('order_item_id', :'item1'::uuid, 'quantity', 1, 'reason', 'too small'))) as ret1 \gset
-select set_config('smoke.ret1', :'ret1', false) as _ \gset
-
-DO $$ BEGIN
-  begin
-    perform public.request_return(current_setting('smoke.order1')::uuid, jsonb_build_array(
-      jsonb_build_object('order_item_id', current_setting('smoke.item1')::uuid, 'quantity', 1, 'reason', 'dup')));
-    raise exception 'second pending return was allowed';
-  exception when others then
-    if sqlerrm not like '%already pending%' then raise; end if;
-  end;
-END $$;
-
-set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.process_return(:'ret1', true);
-
-DO $$ BEGIN
-  assert (select status from public.return_requests where id = current_setting('smoke.ret1')::uuid) = 'approved';
-  assert (select status from public.return_items where return_request_id = current_setting('smoke.ret1')::uuid) = 'approved';
-END $$;
-
-set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
 select public.create_review(:'item1', 5, 'Great product');
 
 DO $$ BEGIN
@@ -230,52 +285,109 @@ DO $$ BEGIN
   end;
 END $$;
 
--- ---------------------------------------------------------------- role applications
-select public.submit_role_application('business');
-select public.submit_role_application('driver');  -- replaces pending
+-- ---------------------------------------------------------------- cancel path restores stock
+select public.cancel_order(:'order2', 'Changed my mind');
 
 DO $$ BEGIN
-  assert (select count(*) from public.role_applications
-    where user_id = '11111111-1111-1111-1111-111111111111' and status = 'pending') = 1,
-    'resubmission replaces pending application';
+  assert (select status from public.orders
+           where id = current_setting('smoke.order2')::uuid) = 'cancelled';
+  assert (select cancellation_reason from public.orders
+           where id = current_setting('smoke.order2')::uuid) = 'Changed my mind';
+  assert (select stock from public.products
+           where id = current_setting('smoke.p_tee')::uuid) = 10,
+    'cancellation restores stock';
 END $$;
-
-set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
-select public.review_role_application(
-  (select id from public.role_applications
-   where user_id = '11111111-1111-1111-1111-111111111111' and status = 'pending' limit 1), true, null);
 
 DO $$ BEGIN
-  assert (select active_role from public.users where id = '11111111-1111-1111-1111-111111111111') = 'driver',
-    'approval flips active_role (last submitted application was driver)';
-  assert (select count(*) from public.audit_logs where action = 'role_application.approved') = 1;
+  begin
+    perform public.cancel_order(current_setting('smoke.order1')::uuid, 'late');
+    raise exception 'delivered order was cancelled';
+  exception when others then
+    if sqlerrm not like '%can no longer be cancelled%' then raise; end if;
+  end;
 END $$;
 
--- ---------------------------------------------------------------- negative authorization
+-- ---------------------------------------------------------------- authorization
+set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
+DO $$ BEGIN
+  begin
+    perform public.cancel_order(current_setting('smoke.order2')::uuid, 'not mine');
+    raise exception 'another customer cancelled the order';
+  exception when others then
+    if sqlerrm not like '%Order not found%' then raise; end if;
+  end;
+END $$;
+
 set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
 DO $$ BEGIN
   begin
-    perform public.create_platform_promotion('Hack', '', 'fixed', 100, 'HACK');
-    raise exception 'non-admin created a platform promotion!';
+    update public.users set active_role = 'admin'
+     where id = '11111111-1111-1111-1111-111111111111';
+    raise exception 'self-promotion was allowed';
+  exception when others then
+    if sqlerrm not like '%can only change via role applications%' then raise; end if;
+  end;
+
+  begin
+    perform public.admin_mark_cod_paid(current_setting('smoke.order1')::uuid);
+    raise exception 'non-admin marked cash paid';
+  exception when others then
+    if sqlerrm not like '%Only admins%' then raise; end if;
+  end;
+
+  begin
+    perform public.get_sales_report(current_date, current_date);
+    raise exception 'non-admin read the sales report';
   exception when others then
     if sqlerrm not like '%Only admins%' then raise; end if;
   end;
 END $$;
 
-set request.jwt.claims to '{"sub":"55555555-5555-5555-5555-555555555555"}';
+-- ---------------------------------------------------------------- archived product is not purchasable
+set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
+select public.admin_set_product_archived(:'p_tote', true);
+
+set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
 DO $$ BEGIN
   begin
-    perform public.accept_delivery('00000000-0000-0000-0000-000000000000'::uuid);
-    raise exception 'non-driver accepted a delivery!';
+    perform public.add_cart_item(current_setting('smoke.v_tote')::uuid, 1);
+    raise exception 'archived product was added to the cart';
   exception when others then
-    if sqlerrm not like '%Only drivers%' then raise; end if;
+    if sqlerrm not like '%unavailable%' then raise; end if;
   end;
 END $$;
 
--- ---------------------------------------------------------------- analytics
-set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
-select public.get_business_analytics();
 set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
-select public.get_platform_report();
+select public.admin_set_product_archived(:'p_tote', false);
+
+-- ---------------------------------------------------------------- admin search & reports
+DO $$ BEGIN
+  assert ((public.admin_search_products('Tote', null, null, null, null, null, null, null, null, null, 25, 0) ->> 'total_count')::int) = 1,
+    'admin product search finds the tote';
+  assert ((public.admin_search_orders('T-Shirt', null, null, null, null, null, null, null, null, null, false, false, 'newest', 25, 0) ->> 'total_count')::int) = 1,
+    'admin order search matches the archived-then-live product line';
+  assert ((public.admin_search_orders(null, null, null, array['delivered'], null, null, null, null, null, null, false, false, 'newest', 25, 0) ->> 'total_count')::int) = 1,
+    'delivered filter returns the realized order';
+END $$;
+
+select public.get_admin_kpis() as kpis \gset
+select set_config('smoke.kpis', :'kpis', false) as _ \gset
+select public.get_sales_report(
+  (now() at time zone public.store_timezone())::date,
+  (now() at time zone public.store_timezone())::date
+) as report \gset
+select set_config('smoke.report', :'report', false) as _ \gset
+
+DO $$ BEGIN
+  assert (current_setting('smoke.kpis')::jsonb ->> 'total_orders')::int = 2;
+  assert (current_setting('smoke.kpis')::jsonb ->> 'total_sales_minor')::int = 700,
+    'revenue counts realized orders only';
+
+  assert (current_setting('smoke.report')::jsonb ->> 'total_orders')::int = 2;
+  assert (current_setting('smoke.report')::jsonb ->> 'completed_orders')::int = 1;
+  assert (current_setting('smoke.report')::jsonb ->> 'cancelled_orders')::int = 1;
+  assert (current_setting('smoke.report')::jsonb ->> 'realized_orders')::int = 1;
+  assert (current_setting('smoke.report')::jsonb ->> 'total_sales_minor')::int = 700;
+END $$;
 
 \echo '=== ALL SMOKE TESTS PASSED ==='

@@ -125,7 +125,7 @@ flutter run -d chrome --web-port=8080 \
 - **No `adb reverse`** — the browser and the local stack share the dev
   machine.
 
-## Testing with multiple roles
+## Testing customer and admin
 
 1. **Create users** — either sign up in the app (email/password or Google;
    each new auth user gets an application `users` row with
@@ -136,18 +136,21 @@ flutter run -d chrome --web-port=8080 \
 
    ```sql
    update public.users
-   set active_role = 'business'   -- or 'driver' / 'admin' / 'customer'
-   where id = (select id from auth.users where email = 'biz1@test.dev');
+   set active_role = 'admin'   -- only customer/admin have UI now
+   where id = (select id from auth.users where email = 'admin@test.dev');
    ```
 
+   The legacy `business`/`driver` enum values still exist in Postgres but no
+   surface is mounted for them — the app falls back to the customer tabs.
    The app caches the profile until the next auth event — **sign out and
    sign back in** (or hot-restart) to land on the new role's tab set.
    Note: `public.users` has no email column; join through `auth.users`.
 
-3. **Quickstart happy path** — customer signs up → adds address → browses →
-   cart → checkout (COD or bank transfer) → business accepts/prepares/ready
-   (second account) → driver accepts delivery & completes pickup stops →
-   delivered. Then try cancel, reject, returns, reviews, coupons.
+3. **Quickstart happy path** — admin creates a category, brand and product
+   (explicit variants) → customer adds an address, fills the cart and checks
+   out (COD or KHQR) → admin moves the order through confirmed → processing →
+   packed → shipped → out for delivery → delivered, then records the COD
+   payment. Then try customer cancellation, reviews and coupons.
 
 4. **Local backend verification** (optional, no Supabase account needed):
 
