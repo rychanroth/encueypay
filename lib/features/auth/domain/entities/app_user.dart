@@ -15,6 +15,7 @@ abstract class AppUser with _$AppUser {
     required String fullName,
     String? avatarUrl,
     String? phone,
+    DateTime? onboardedAt,
     @Default(UserRole.customer) UserRole activeRole,
     @Default(AccountStatus.active) AccountStatus accountStatus,
   }) = _AppUser;

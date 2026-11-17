@@ -8,6 +8,7 @@
 abstract final class AppRoutes {
   // Auth — full-screen overlay, outside the shell (ROUTE-03).
   static const login = 'login';
+  static const onboarding = 'onboarding';
 
   // Help & support — top-level overlays so both the cart and the profile
   // can open them without switching tabs.

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AppUser {
 
- String get id; String? get email; String get fullName; String? get avatarUrl; String? get phone; UserRole get activeRole; AccountStatus get accountStatus;
+ String get id; String? get email; String get fullName; String? get avatarUrl; String? get phone; DateTime? get onboardedAt; UserRole get activeRole; AccountStatus get accountStatus;
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $AppUserCopyWith<AppUser> get copyWith => _$AppUserCopyWithImpl<AppUser>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.activeRole, activeRole) || other.activeRole == activeRole)&&(identical(other.accountStatus, accountStatus) || other.accountStatus == accountStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.onboardedAt, onboardedAt) || other.onboardedAt == onboardedAt)&&(identical(other.activeRole, activeRole) || other.activeRole == activeRole)&&(identical(other.accountStatus, accountStatus) || other.accountStatus == accountStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,email,fullName,avatarUrl,phone,activeRole,accountStatus);
+int get hashCode => Object.hash(runtimeType,id,email,fullName,avatarUrl,phone,onboardedAt,activeRole,accountStatus);
 
 @override
 String toString() {
-  return 'AppUser(id: $id, email: $email, fullName: $fullName, avatarUrl: $avatarUrl, phone: $phone, activeRole: $activeRole, accountStatus: $accountStatus)';
+  return 'AppUser(id: $id, email: $email, fullName: $fullName, avatarUrl: $avatarUrl, phone: $phone, onboardedAt: $onboardedAt, activeRole: $activeRole, accountStatus: $accountStatus)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $AppUserCopyWith<$Res>  {
   factory $AppUserCopyWith(AppUser value, $Res Function(AppUser) _then) = _$AppUserCopyWithImpl;
 @useResult
 $Res call({
- String id, String? email, String fullName, String? avatarUrl, String? phone, UserRole activeRole, AccountStatus accountStatus
+ String id, String? email, String fullName, String? avatarUrl, String? phone, DateTime? onboardedAt, UserRole activeRole, AccountStatus accountStatus
 });
 
 
@@ -63,14 +63,15 @@ class _$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = freezed,Object? fullName = null,Object? avatarUrl = freezed,Object? phone = freezed,Object? activeRole = null,Object? accountStatus = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = freezed,Object? fullName = null,Object? avatarUrl = freezed,Object? phone = freezed,Object? onboardedAt = freezed,Object? activeRole = null,Object? accountStatus = null,}) {
   return _then(AppUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
-as String?,activeRole: null == activeRole ? _self.activeRole : activeRole // ignore: cast_nullable_to_non_nullable
+as String?,onboardedAt: freezed == onboardedAt ? _self.onboardedAt : onboardedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,activeRole: null == activeRole ? _self.activeRole : activeRole // ignore: cast_nullable_to_non_nullable
 as UserRole,accountStatus: null == accountStatus ? _self.accountStatus : accountStatus // ignore: cast_nullable_to_non_nullable
 as AccountStatus,
   ));
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? email,  String fullName,  String? avatarUrl,  String? phone,  UserRole activeRole,  AccountStatus accountStatus)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? email,  String fullName,  String? avatarUrl,  String? phone,  DateTime? onboardedAt,  UserRole activeRole,  AccountStatus accountStatus)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,_that.activeRole,_that.accountStatus);case _:
+return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,_that.onboardedAt,_that.activeRole,_that.accountStatus);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? email,  String fullName,  String? avatarUrl,  String? phone,  UserRole activeRole,  AccountStatus accountStatus)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? email,  String fullName,  String? avatarUrl,  String? phone,  DateTime? onboardedAt,  UserRole activeRole,  AccountStatus accountStatus)  $default,) {final _that = this;
 switch (_that) {
 case _AppUser():
-return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,_that.activeRole,_that.accountStatus);case _:
+return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,_that.onboardedAt,_that.activeRole,_that.accountStatus);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? email,  String fullName,  String? avatarUrl,  String? phone,  UserRole activeRole,  AccountStatus accountStatus)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? email,  String fullName,  String? avatarUrl,  String? phone,  DateTime? onboardedAt,  UserRole activeRole,  AccountStatus accountStatus)?  $default,) {final _that = this;
 switch (_that) {
 case _AppUser() when $default != null:
-return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,_that.activeRole,_that.accountStatus);case _:
+return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,_that.onboardedAt,_that.activeRole,_that.accountStatus);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.id,_that.email,_that.fullName,_that.avatarUrl,_that.phone,
 
 
 class _AppUser implements AppUser {
-  const _AppUser({required this.id, this.email, required this.fullName, this.avatarUrl, this.phone, this.activeRole = UserRole.customer, this.accountStatus = AccountStatus.active});
+  const _AppUser({required this.id, this.email, required this.fullName, this.avatarUrl, this.phone, this.onboardedAt, this.activeRole = UserRole.customer, this.accountStatus = AccountStatus.active});
   
 
 @override final  String id;
@@ -221,6 +222,7 @@ class _AppUser implements AppUser {
 @override final  String fullName;
 @override final  String? avatarUrl;
 @override final  String? phone;
+@override final  DateTime? onboardedAt;
 @override@JsonKey() final  UserRole activeRole;
 @override@JsonKey() final  AccountStatus accountStatus;
 
@@ -234,16 +236,16 @@ _$AppUserCopyWith<_AppUser> get copyWith => __$AppUserCopyWithImpl<_AppUser>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.activeRole, activeRole) || other.activeRole == activeRole)&&(identical(other.accountStatus, accountStatus) || other.accountStatus == accountStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppUser&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.onboardedAt, onboardedAt) || other.onboardedAt == onboardedAt)&&(identical(other.activeRole, activeRole) || other.activeRole == activeRole)&&(identical(other.accountStatus, accountStatus) || other.accountStatus == accountStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,email,fullName,avatarUrl,phone,activeRole,accountStatus);
+int get hashCode => Object.hash(runtimeType,id,email,fullName,avatarUrl,phone,onboardedAt,activeRole,accountStatus);
 
 @override
 String toString() {
-  return 'AppUser(id: $id, email: $email, fullName: $fullName, avatarUrl: $avatarUrl, phone: $phone, activeRole: $activeRole, accountStatus: $accountStatus)';
+  return 'AppUser(id: $id, email: $email, fullName: $fullName, avatarUrl: $avatarUrl, phone: $phone, onboardedAt: $onboardedAt, activeRole: $activeRole, accountStatus: $accountStatus)';
 }
 
 
@@ -254,7 +256,7 @@ abstract mixin class _$AppUserCopyWith<$Res> implements $AppUserCopyWith<$Res> {
   factory _$AppUserCopyWith(_AppUser value, $Res Function(_AppUser) _then) = __$AppUserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? email, String fullName, String? avatarUrl, String? phone, UserRole activeRole, AccountStatus accountStatus
+ String id, String? email, String fullName, String? avatarUrl, String? phone, DateTime? onboardedAt, UserRole activeRole, AccountStatus accountStatus
 });
 
 
@@ -271,14 +273,15 @@ class __$AppUserCopyWithImpl<$Res>
 
 /// Create a copy of AppUser
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = freezed,Object? fullName = null,Object? avatarUrl = freezed,Object? phone = freezed,Object? activeRole = null,Object? accountStatus = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = freezed,Object? fullName = null,Object? avatarUrl = freezed,Object? phone = freezed,Object? onboardedAt = freezed,Object? activeRole = null,Object? accountStatus = null,}) {
   return _then(_AppUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
 as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
-as String?,activeRole: null == activeRole ? _self.activeRole : activeRole // ignore: cast_nullable_to_non_nullable
+as String?,onboardedAt: freezed == onboardedAt ? _self.onboardedAt : onboardedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,activeRole: null == activeRole ? _self.activeRole : activeRole // ignore: cast_nullable_to_non_nullable
 as UserRole,accountStatus: null == accountStatus ? _self.accountStatus : accountStatus // ignore: cast_nullable_to_non_nullable
 as AccountStatus,
   ));

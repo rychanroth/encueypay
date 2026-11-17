@@ -143,6 +143,32 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<AppUser> completeCustomerOnboarding({
+    required String fullName,
+    required String phone,
+  }) async {
+    try {
+      final session = _client.auth.currentSession;
+      if (session == null) throw const ServerFailure('Not authenticated');
+      final updated = await _client
+          .from('users')
+          .update({
+            'full_name': fullName,
+            'phone': phone,
+            'onboarded_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', session.user.id)
+          .select('id');
+      if (updated.isEmpty) throw const ServerFailure('Profile unavailable');
+      final user = await _loadAppUser(session);
+      if (user == null) throw const ServerFailure('Profile unavailable');
+      return user;
+    } catch (error, stackTrace) {
+      throw _mapError(error, stackTrace);
+    }
+  }
+
+  @override
   Future<void> signOut() async {
     try {
       await _client.auth.signOut();

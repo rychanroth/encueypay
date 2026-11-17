@@ -32,5 +32,13 @@ abstract interface class IAuthRepository {
   /// Google OAuth — the primary sign-in method (DEPS-04).
   Future<void> signInWithGoogle();
 
+  /// Completes the first-run customer onboarding: writes the (possibly
+  /// corrected) name, the required phone and the `onboarded_at` flag in one
+  /// update, then returns the refreshed [AppUser] for the router.
+  Future<AppUser> completeCustomerOnboarding({
+    required String fullName,
+    required String phone,
+  });
+
   Future<void> signOut();
 }

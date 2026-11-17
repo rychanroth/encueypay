@@ -33,4 +33,13 @@ class AuthController extends _$AuthController {
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).signOut();
   }
+
+  /// Pushes a server-confirmed `users` row update into the session state.
+  ///
+  /// Supabase's auth stream only fires on auth-identity events, so a profile
+  /// write (onboarding completion) must be applied manually; the router's
+  /// redirect listens to this provider and leaves `/onboarding` immediately.
+  void applyUser(AppUser user) {
+    state = AsyncData(user);
+  }
 }

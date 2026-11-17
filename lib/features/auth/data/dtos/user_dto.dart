@@ -12,6 +12,7 @@ class UserDto {
     this.fullName,
     this.avatarUrl,
     this.phone,
+    this.onboardedAt,
     this.activeRole,
     this.accountStatus,
   });
@@ -23,6 +24,7 @@ class UserDto {
   final String? fullName;
   final String? avatarUrl;
   final String? phone;
+  final DateTime? onboardedAt;
   final String? activeRole;
   final String? accountStatus;
 

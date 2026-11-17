@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/domain/customer_onboarding.dart';
 import '../../features/auth/domain/entities/app_user.dart';
 import '../../features/auth/domain/entities/user_role.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/about_screen.dart';
 import '../../features/profile/presentation/screens/help_feedback_screen.dart';
 import '../../features/profile/presentation/screens/help_support_screen.dart';
@@ -63,11 +65,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final isAuthenticated = authAsync.value != null;
       final isLoggingIn = state.matchedLocation == '/login';
+      final isOnboarding = state.matchedLocation == '/onboarding';
+      final needsOnboarding = needsCustomerOnboarding(authAsync.value);
 
       if (!isAuthenticated && !isLoggingIn) {
         return state.namedLocation(AppRoutes.login);
       }
-      if (isAuthenticated && (isLoggingIn || state.matchedLocation == '/')) {
+      // First-run customers see the explainer + profile step before the shell.
+      if (isAuthenticated && needsOnboarding && !isOnboarding) {
+        return state.namedLocation(AppRoutes.onboarding);
+      }
+      if (isAuthenticated &&
+          !needsOnboarding &&
+          (isLoggingIn || isOnboarding || state.matchedLocation == '/')) {
         return state.namedLocation(defaultRouteForRole(role));
       }
       return null;
@@ -79,6 +89,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.login,
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.onboarding,
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
       // Help & support / feedback / about are top-level overlays (like
       // login): both the cart and the profile can open them, and popping

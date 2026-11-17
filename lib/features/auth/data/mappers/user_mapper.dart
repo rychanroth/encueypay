@@ -12,6 +12,7 @@ extension UserDtoX on UserDto {
       fullName: fullName ?? '',
       avatarUrl: avatarUrl,
       phone: phone,
+      onboardedAt: onboardedAt,
       activeRole: UserRole.fromName(activeRole),
       accountStatus: AccountStatus.fromName(accountStatus),
     );

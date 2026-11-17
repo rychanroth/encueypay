@@ -11,6 +11,9 @@ UserDto _$UserDtoFromJson(Map<String, dynamic> json) => UserDto(
   fullName: json['full_name'] as String?,
   avatarUrl: json['avatar_url'] as String?,
   phone: json['phone'] as String?,
+  onboardedAt: json['onboarded_at'] == null
+      ? null
+      : DateTime.parse(json['onboarded_at'] as String),
   activeRole: json['active_role'] as String?,
   accountStatus: json['account_status'] as String?,
 );
@@ -20,6 +23,7 @@ Map<String, dynamic> _$UserDtoToJson(UserDto instance) => <String, dynamic>{
   'full_name': instance.fullName,
   'avatar_url': instance.avatarUrl,
   'phone': instance.phone,
+  'onboarded_at': instance.onboardedAt?.toIso8601String(),
   'active_role': instance.activeRole,
   'account_status': instance.accountStatus,
 };
