@@ -183,6 +183,48 @@ void main() {
     );
   });
 
+  test('category sale covers sub-category products', () {
+    // The server resolves the subtree and puts every covered id in
+    // category_ids; a parent-category sale must price a child product.
+    const sale = ActiveSale(
+      id: 'cat',
+      scope: CatalogSaleScope.category,
+      discountType: CatalogSaleType.percent,
+      discountValue: 25,
+      categoryId: 'parent',
+      categoryIds: ['parent', 'child'],
+    );
+
+    expect(
+      saleForIds(const [sale], categoryId: 'child', priceMinor: 1000)?.id,
+      'cat',
+    );
+    expect(displayPriceMinor(sale, 1000), 750);
+
+    // A sibling outside the subtree is untouched.
+    expect(
+      saleForIds(const [sale], categoryId: 'other', priceMinor: 1000),
+      isNull,
+    );
+
+    // A payload without category_ids still matches the exact category.
+    const exact = ActiveSale(
+      id: 'exact',
+      scope: CatalogSaleScope.category,
+      discountType: CatalogSaleType.percent,
+      discountValue: 10,
+      categoryId: 'parent',
+    );
+    expect(
+      saleForIds(const [exact], categoryId: 'parent', priceMinor: 1000)?.id,
+      'exact',
+    );
+    expect(
+      saleForIds(const [exact], categoryId: 'child', priceMinor: 1000),
+      isNull,
+    );
+  });
+
   test('coupon offer label keeps percent and fixed units distinct', () {
     const percent = CouponPreview(
       code: 'P20',

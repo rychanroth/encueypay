@@ -22,6 +22,9 @@ ActiveSaleDto _$ActiveSaleDtoFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['ends_at'] as String),
       brandId: json['brand_id'] as String?,
       categoryId: json['category_id'] as String?,
+      categoryIds: (json['category_ids'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$ActiveSaleDtoToJson(ActiveSaleDto instance) =>
@@ -36,4 +39,5 @@ Map<String, dynamic> _$ActiveSaleDtoToJson(ActiveSaleDto instance) =>
       'ends_at': instance.endsAt?.toIso8601String(),
       'brand_id': instance.brandId,
       'category_id': instance.categoryId,
+      'category_ids': instance.categoryIds,
     };

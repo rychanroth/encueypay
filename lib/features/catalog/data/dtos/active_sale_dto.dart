@@ -18,6 +18,7 @@ class ActiveSaleDto {
     this.endsAt,
     this.brandId,
     this.categoryId,
+    this.categoryIds,
   });
 
   factory ActiveSaleDto.fromJson(Map<String, dynamic> json) =>
@@ -43,6 +44,10 @@ class ActiveSaleDto {
 
   final String? brandId;
   final String? categoryId;
+
+  /// Category scope covers the subtree: every id the sale applies to,
+  /// resolved server-side by `category_subtree()`.
+  final List<String>? categoryIds;
 
   Map<String, dynamic> toJson() => _$ActiveSaleDtoToJson(this);
 }

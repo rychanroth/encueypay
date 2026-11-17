@@ -375,7 +375,7 @@ class CatalogRepositoryImpl implements ICatalogRepository {
       // in SQL only; the client never re-derives eligibility.
       final rows = await _client.from('active_sales').select(
           'id, name, description, scope, discount_type, discount_value, '
-          'starts_at, ends_at, brand_id, category_id');
+          'starts_at, ends_at, brand_id, category_id, category_ids');
       final sales = <ActiveSale>[];
       for (final row in rows) {
         final sale = ActiveSaleDto.fromJson(

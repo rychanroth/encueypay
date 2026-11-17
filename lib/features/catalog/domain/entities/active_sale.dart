@@ -29,6 +29,10 @@ abstract class ActiveSale with _$ActiveSale {
     DateTime? endsAt,
     String? brandId,
     String? categoryId,
+
+    /// Category scope covers the whole subtree — the ids this sale applies
+    /// to, resolved by SQL (`active_sales.category_ids`).
+    @Default(<String>[]) List<String> categoryIds,
   }) = _ActiveSale;
 
   const ActiveSale._();

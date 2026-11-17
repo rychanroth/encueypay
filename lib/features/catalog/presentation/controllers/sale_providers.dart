@@ -31,8 +31,13 @@ ActiveSale? saleForIds(
     final applies = switch (sale.scope) {
       CatalogSaleScope.platform => true,
       CatalogSaleScope.brand => sale.brandId != null && sale.brandId == brandId,
+      // Category scope covers the subtree: the server hands the client the
+      // ids it covers. Fall back to equality for a payload without
+      // `category_ids` (e.g. a cached/older view).
       CatalogSaleScope.category =>
-        sale.categoryId != null && sale.categoryId == categoryId,
+        sale.categoryIds.isNotEmpty
+            ? categoryId != null && sale.categoryIds.contains(categoryId)
+            : sale.categoryId != null && sale.categoryId == categoryId,
     };
     if (!applies) continue;
     final price = sale.priceMinorFor(priceMinor);

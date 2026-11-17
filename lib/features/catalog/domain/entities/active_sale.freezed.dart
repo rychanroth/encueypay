@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ActiveSale {
 
- String get id; CatalogSaleScope get scope; CatalogSaleType get discountType; int get discountValue; String get name; String get description; DateTime? get startsAt; DateTime? get endsAt; String? get brandId; String? get categoryId;
+ String get id; CatalogSaleScope get scope; CatalogSaleType get discountType; int get discountValue; String get name; String get description; DateTime? get startsAt; DateTime? get endsAt; String? get brandId; String? get categoryId;/// Category scope covers the whole subtree — the ids this sale applies
+/// to, resolved by SQL (`active_sales.category_ids`).
+ List<String> get categoryIds;
 /// Create a copy of ActiveSale
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +28,16 @@ $ActiveSaleCopyWith<ActiveSale> get copyWith => _$ActiveSaleCopyWithImpl<ActiveS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveSale&&(identical(other.id, id) || other.id == id)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveSale&&(identical(other.id, id) || other.id == id)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&const DeepCollectionEquality().equals(other.categoryIds, categoryIds));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,scope,discountType,discountValue,name,description,startsAt,endsAt,brandId,categoryId);
+int get hashCode => Object.hash(runtimeType,id,scope,discountType,discountValue,name,description,startsAt,endsAt,brandId,categoryId,const DeepCollectionEquality().hash(categoryIds));
 
 @override
 String toString() {
-  return 'ActiveSale(id: $id, scope: $scope, discountType: $discountType, discountValue: $discountValue, name: $name, description: $description, startsAt: $startsAt, endsAt: $endsAt, brandId: $brandId, categoryId: $categoryId)';
+  return 'ActiveSale(id: $id, scope: $scope, discountType: $discountType, discountValue: $discountValue, name: $name, description: $description, startsAt: $startsAt, endsAt: $endsAt, brandId: $brandId, categoryId: $categoryId, categoryIds: $categoryIds)';
 }
 
 
@@ -46,7 +48,7 @@ abstract mixin class $ActiveSaleCopyWith<$Res>  {
   factory $ActiveSaleCopyWith(ActiveSale value, $Res Function(ActiveSale) _then) = _$ActiveSaleCopyWithImpl;
 @useResult
 $Res call({
- String id, CatalogSaleScope scope, CatalogSaleType discountType, int discountValue, String name, String description, DateTime? startsAt, DateTime? endsAt, String? brandId, String? categoryId
+ String id, CatalogSaleScope scope, CatalogSaleType discountType, int discountValue, String name, String description, DateTime? startsAt, DateTime? endsAt, String? brandId, String? categoryId, List<String> categoryIds
 });
 
 
@@ -63,7 +65,7 @@ class _$ActiveSaleCopyWithImpl<$Res>
 
 /// Create a copy of ActiveSale
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? name = null,Object? description = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandId = freezed,Object? categoryId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? name = null,Object? description = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandId = freezed,Object? categoryId = freezed,Object? categoryIds = null,}) {
   return _then(ActiveSale(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
@@ -75,7 +77,8 @@ as String,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: c
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
 as String?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,categoryIds: null == categoryIds ? _self.categoryIds : categoryIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -160,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  CatalogSaleScope scope,  CatalogSaleType discountType,  int discountValue,  String name,  String description,  DateTime? startsAt,  DateTime? endsAt,  String? brandId,  String? categoryId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  CatalogSaleScope scope,  CatalogSaleType discountType,  int discountValue,  String name,  String description,  DateTime? startsAt,  DateTime? endsAt,  String? brandId,  String? categoryId,  List<String> categoryIds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ActiveSale() when $default != null:
-return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_that.name,_that.description,_that.startsAt,_that.endsAt,_that.brandId,_that.categoryId);case _:
+return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_that.name,_that.description,_that.startsAt,_that.endsAt,_that.brandId,_that.categoryId,_that.categoryIds);case _:
   return orElse();
 
 }
@@ -181,10 +184,10 @@ return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  CatalogSaleScope scope,  CatalogSaleType discountType,  int discountValue,  String name,  String description,  DateTime? startsAt,  DateTime? endsAt,  String? brandId,  String? categoryId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  CatalogSaleScope scope,  CatalogSaleType discountType,  int discountValue,  String name,  String description,  DateTime? startsAt,  DateTime? endsAt,  String? brandId,  String? categoryId,  List<String> categoryIds)  $default,) {final _that = this;
 switch (_that) {
 case _ActiveSale():
-return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_that.name,_that.description,_that.startsAt,_that.endsAt,_that.brandId,_that.categoryId);case _:
+return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_that.name,_that.description,_that.startsAt,_that.endsAt,_that.brandId,_that.categoryId,_that.categoryIds);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +204,10 @@ return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  CatalogSaleScope scope,  CatalogSaleType discountType,  int discountValue,  String name,  String description,  DateTime? startsAt,  DateTime? endsAt,  String? brandId,  String? categoryId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  CatalogSaleScope scope,  CatalogSaleType discountType,  int discountValue,  String name,  String description,  DateTime? startsAt,  DateTime? endsAt,  String? brandId,  String? categoryId,  List<String> categoryIds)?  $default,) {final _that = this;
 switch (_that) {
 case _ActiveSale() when $default != null:
-return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_that.name,_that.description,_that.startsAt,_that.endsAt,_that.brandId,_that.categoryId);case _:
+return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_that.name,_that.description,_that.startsAt,_that.endsAt,_that.brandId,_that.categoryId,_that.categoryIds);case _:
   return null;
 
 }
@@ -216,7 +219,7 @@ return $default(_that.id,_that.scope,_that.discountType,_that.discountValue,_tha
 
 
 class _ActiveSale extends ActiveSale {
-  const _ActiveSale({required this.id, required this.scope, required this.discountType, required this.discountValue, this.name = '', this.description = '', this.startsAt, this.endsAt, this.brandId, this.categoryId}): super._();
+  const _ActiveSale({required this.id, required this.scope, required this.discountType, required this.discountValue, this.name = '', this.description = '', this.startsAt, this.endsAt, this.brandId, this.categoryId,  List<String> categoryIds = const <String>[]}): _categoryIds = categoryIds,super._();
   
 
 @override final  String id;
@@ -229,6 +232,17 @@ class _ActiveSale extends ActiveSale {
 @override final  DateTime? endsAt;
 @override final  String? brandId;
 @override final  String? categoryId;
+/// Category scope covers the whole subtree — the ids this sale applies
+/// to, resolved by SQL (`active_sales.category_ids`).
+ final  List<String> _categoryIds;
+/// Category scope covers the whole subtree — the ids this sale applies
+/// to, resolved by SQL (`active_sales.category_ids`).
+@override@JsonKey() List<String> get categoryIds {
+  if (_categoryIds is EqualUnmodifiableListView) return _categoryIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_categoryIds);
+}
+
 
 /// Create a copy of ActiveSale
 /// with the given fields replaced by the non-null parameter values.
@@ -240,16 +254,16 @@ _$ActiveSaleCopyWith<_ActiveSale> get copyWith => __$ActiveSaleCopyWithImpl<_Act
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActiveSale&&(identical(other.id, id) || other.id == id)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ActiveSale&&(identical(other.id, id) || other.id == id)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.discountType, discountType) || other.discountType == discountType)&&(identical(other.discountValue, discountValue) || other.discountValue == discountValue)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.brandId, brandId) || other.brandId == brandId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&const DeepCollectionEquality().equals(other._categoryIds, _categoryIds));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,scope,discountType,discountValue,name,description,startsAt,endsAt,brandId,categoryId);
+int get hashCode => Object.hash(runtimeType,id,scope,discountType,discountValue,name,description,startsAt,endsAt,brandId,categoryId,const DeepCollectionEquality().hash(_categoryIds));
 
 @override
 String toString() {
-  return 'ActiveSale(id: $id, scope: $scope, discountType: $discountType, discountValue: $discountValue, name: $name, description: $description, startsAt: $startsAt, endsAt: $endsAt, brandId: $brandId, categoryId: $categoryId)';
+  return 'ActiveSale(id: $id, scope: $scope, discountType: $discountType, discountValue: $discountValue, name: $name, description: $description, startsAt: $startsAt, endsAt: $endsAt, brandId: $brandId, categoryId: $categoryId, categoryIds: $categoryIds)';
 }
 
 
@@ -260,7 +274,7 @@ abstract mixin class _$ActiveSaleCopyWith<$Res> implements $ActiveSaleCopyWith<$
   factory _$ActiveSaleCopyWith(_ActiveSale value, $Res Function(_ActiveSale) _then) = __$ActiveSaleCopyWithImpl;
 @override @useResult
 $Res call({
- String id, CatalogSaleScope scope, CatalogSaleType discountType, int discountValue, String name, String description, DateTime? startsAt, DateTime? endsAt, String? brandId, String? categoryId
+ String id, CatalogSaleScope scope, CatalogSaleType discountType, int discountValue, String name, String description, DateTime? startsAt, DateTime? endsAt, String? brandId, String? categoryId, List<String> categoryIds
 });
 
 
@@ -277,7 +291,7 @@ class __$ActiveSaleCopyWithImpl<$Res>
 
 /// Create a copy of ActiveSale
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? name = null,Object? description = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandId = freezed,Object? categoryId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? scope = null,Object? discountType = null,Object? discountValue = null,Object? name = null,Object? description = null,Object? startsAt = freezed,Object? endsAt = freezed,Object? brandId = freezed,Object? categoryId = freezed,Object? categoryIds = null,}) {
   return _then(_ActiveSale(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
@@ -289,7 +303,8 @@ as String,startsAt: freezed == startsAt ? _self.startsAt : startsAt // ignore: c
 as DateTime?,endsAt: freezed == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,brandId: freezed == brandId ? _self.brandId : brandId // ignore: cast_nullable_to_non_nullable
 as String?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,categoryIds: null == categoryIds ? _self._categoryIds : categoryIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

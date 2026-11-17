@@ -27,6 +27,7 @@ extension ActiveSaleDtoX on ActiveSaleDto {
       endsAt: endsAt,
       brandId: brandId,
       categoryId: categoryId,
+      categoryIds: categoryIds ?? const <String>[],
     );
   }
 }
