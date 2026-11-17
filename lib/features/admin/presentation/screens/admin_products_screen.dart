@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -21,11 +19,15 @@ import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../controllers/admin_categories_controller.dart';
 import '../controllers/admin_products_controller.dart';
+import '../export/export_encoders.dart';
+import '../export/export_format.dart';
+import '../export/export_format_sheet.dart';
+import '../export/xlsx_writer.dart';
 
 /// Admin Products tab (DESIGN.md §5.2.2): inventory manager with server-side
 /// search/filter/sort/paging (parity with the Orders tab), inventory quick
-/// views, a filter sheet, bulk archive/restore, CSV export and the inline
-/// [- Stock +] counters.
+/// views, a filter sheet, bulk archive/restore, multi-format export and the
+/// inline [- Stock +] counters.
 class AdminProductsScreen extends ConsumerStatefulWidget {
   const AdminProductsScreen({super.key});
 
@@ -258,17 +260,31 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
     }
   }
 
-  Future<void> _exportCsv() async {
+  Future<void> _export() async {
+    final format = await showExportFormatSheet(context);
+    if (format == null || !mounted) return;
     try {
       final products = await ref
           .read(adminProductsControllerProvider.notifier)
           .fetchAllForExport();
       if (!mounted) return;
-      final csv = _buildCsv(products);
+      final rows = _buildRows(products);
+      final now = DateTime.now();
+      final bytes = switch (format) {
+        ExportFormat.csv => csvBytes(rows),
+        ExportFormat.xlsx => buildXlsxWorkbook([
+            WorkbookSheet(name: 'Products', rows: rows),
+          ]),
+        ExportFormat.json => jsonBytes({
+            'exportedAt': now.toUtc().toIso8601String(),
+            'count': products.length,
+            'products': rowsToRecords(rows),
+          }),
+      };
       final uri = await FilePicker.saveFile(
-        fileName: 'products_${_stamp(DateTime.now())}.csv',
-        bytes: Uint8List.fromList(utf8.encode('\uFEFF$csv')),
-        mimeType: 'text/csv',
+        fileName: 'products_${exportFileStamp(now)}.${format.extension}',
+        bytes: bytes,
+        mimeType: format.mimeType,
         dialogTitle: 'Export products',
       );
       if (!mounted) return;
@@ -326,9 +342,9 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
               ]
             : [
                 IconButton(
-                  tooltip: 'Export CSV',
+                  tooltip: 'Export products',
                   icon: const Icon(Icons.download_outlined),
-                  onPressed: _exportCsv,
+                  onPressed: _export,
                 ),
                 IconButton(
                   tooltip: 'Select products',
@@ -1378,18 +1394,13 @@ String _date(DateTime value) {
       '${day.day.toString().padLeft(2, '0')}';
 }
 
-String _stamp(DateTime value) =>
-    '${_date(value).replaceAll('-', '')}_'
-    '${value.hour.toString().padLeft(2, '0')}'
-    '${value.minute.toString().padLeft(2, '0')}';
-
 DateTime _day(DateTime value) => DateTime(value.year, value.month, value.day);
 
 bool _isSameDay(DateTime? a, DateTime b) =>
     a != null && a.year == b.year && a.month == b.month && a.day == b.day;
 
-String _buildCsv(List<AdminProductSummary> products) {
-  final rows = <List<String>>[
+List<List<Object?>> _buildRows(List<AdminProductSummary> products) {
+  return [
     ['Name', 'Category', 'Brand', 'Status', 'Price USD', 'Stock', 'Variants'],
     for (final product in products)
       [
@@ -1398,16 +1409,10 @@ String _buildCsv(List<AdminProductSummary> products) {
         product.brandName ?? '',
         product.status.name,
         Money(product.basePriceMinor).format(),
-        '${product.stock}',
+        product.stock,
         product.variantCount == 0 ? 'Single price' : '${product.variantCount}',
       ],
   ];
-  return rows.map((row) => row.map(_csvCell).join(',')).join('\r\n');
-}
-
-String _csvCell(String value) {
-  final escaped = value.replaceAll('"', '""');
-  return RegExp(r'[",\r\n]').hasMatch(escaped) ? '"$escaped"' : escaped;
 }
 
 /// URL codec for the product filters (shareable/deep-linkable state). Kept

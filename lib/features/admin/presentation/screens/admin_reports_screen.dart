@@ -1,14 +1,22 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/domain/failures.dart';
 import '../../../../core/domain/money.dart';
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/theme/app_typography.dart';
+import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../../../core/presentation/widgets/async_value_widget.dart';
 import '../../../../core/presentation/widgets/monogram_image.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_reports_controller.dart';
+import '../export/export_encoders.dart';
+import '../export/export_format.dart';
+import '../export/export_format_sheet.dart';
+import '../export/sales_report_export.dart';
+import '../export/xlsx_writer.dart';
 
 enum _ReportPreset { sevenD, fifteenD, thirtyD, mtd, custom }
 
@@ -61,13 +69,55 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen> {
   static String _day(DateTime value) =>
       value.toLocal().toString().substring(0, 10);
 
+  void _snack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(AppSnackBar(content: Text(message)));
+  }
+
+  Future<void> _export(AdminSalesReport report) async {
+    final format = await showExportFormatSheet(context);
+    if (format == null || !mounted) return;
+    try {
+      final bytes = switch (format) {
+        ExportFormat.csv => csvBytes(SalesReportExport.flatRows(report)),
+        ExportFormat.xlsx =>
+          buildXlsxWorkbook(SalesReportExport.workbook(report)),
+        ExportFormat.json => jsonBytes(SalesReportExport.json(report)),
+      };
+      final uri = await FilePicker.saveFile(
+        fileName: '${SalesReportExport.fileNameStem(report)}'
+            '.${format.extension}',
+        bytes: bytes,
+        mimeType: format.mimeType,
+        dialogTitle: 'Export sales report',
+      );
+      if (!mounted) return;
+      if (uri != null) _snack('Exported sales report.');
+    } catch (error) {
+      _snack(userMessageFor(error is Failure ? error : UnexpectedFailure(error)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final reportAsync = ref.watch(adminReportsControllerProvider(_range));
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reports')),
+      appBar: AppBar(
+        title: const Text('Reports'),
+        actions: [
+          IconButton(
+            tooltip: 'Export report',
+            icon: const Icon(Icons.download_outlined),
+            onPressed: reportAsync.value == null
+                ? null
+                : () => _export(reportAsync.requireValue),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Preset range chips (§5.2.4).

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -19,12 +17,16 @@ import '../../domain/entities/admin.dart';
 import '../controllers/admin_brands_controller.dart';
 import '../controllers/admin_categories_controller.dart';
 import '../controllers/admin_orders_controller.dart';
+import '../export/export_encoders.dart';
+import '../export/export_format.dart';
+import '../export/export_format_sheet.dart';
+import '../export/xlsx_writer.dart';
 import '../widgets/admin_lifecycle_chip.dart';
 
 /// Admin Orders tab (Section 3, spec §8 "manages Orders"): server-side
 /// filtered/sorted/paginated order search with operational quick views,
-/// bulk lifecycle actions and CSV export. The old bare list silently capped
-/// at the newest 50 orders.
+/// bulk lifecycle actions and multi-format export. The old bare list silently
+/// capped at the newest 50 orders.
 class AdminOrdersScreen extends ConsumerStatefulWidget {
   const AdminOrdersScreen({super.key});
 
@@ -273,17 +275,31 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
     }
   }
 
-  Future<void> _exportCsv() async {
+  Future<void> _export() async {
+    final format = await showExportFormatSheet(context);
+    if (format == null || !mounted) return;
     try {
       final orders = await ref
           .read(adminOrdersControllerProvider.notifier)
           .fetchAllForExport();
       if (!mounted) return;
-      final csv = _buildCsv(orders);
+      final rows = _buildRows(orders);
+      final now = DateTime.now();
+      final bytes = switch (format) {
+        ExportFormat.csv => csvBytes(rows),
+        ExportFormat.xlsx => buildXlsxWorkbook([
+            WorkbookSheet(name: 'Orders', rows: rows),
+          ]),
+        ExportFormat.json => jsonBytes({
+            'exportedAt': now.toUtc().toIso8601String(),
+            'count': orders.length,
+            'orders': rowsToRecords(rows),
+          }),
+      };
       final uri = await FilePicker.saveFile(
-        fileName: 'orders_${_stamp(DateTime.now())}.csv',
-        bytes: Uint8List.fromList(utf8.encode('\uFEFF$csv')),
-        mimeType: 'text/csv',
+        fileName: 'orders_${exportFileStamp(now)}.${format.extension}',
+        bytes: bytes,
+        mimeType: format.mimeType,
         dialogTitle: 'Export orders',
       );
       if (!mounted) return;
@@ -334,9 +350,9 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
               ]
             : [
                 IconButton(
-                  tooltip: 'Export CSV',
+                  tooltip: 'Export orders',
                   icon: const Icon(Icons.download_outlined),
-                  onPressed: _exportCsv,
+                  onPressed: _export,
                 ),
                 IconButton(
                   tooltip: 'Select orders',
@@ -1392,18 +1408,13 @@ String _dateTime(DateTime value) {
       '${local.minute.toString().padLeft(2, '0')}';
 }
 
-String _stamp(DateTime value) =>
-    '${_date(value).replaceAll('-', '')}_'
-    '${value.hour.toString().padLeft(2, '0')}'
-    '${value.minute.toString().padLeft(2, '0')}';
-
 DateTime _day(DateTime value) => DateTime(value.year, value.month, value.day);
 
 bool _isSameDay(DateTime? a, DateTime b) =>
     a != null && a.year == b.year && a.month == b.month && a.day == b.day;
 
-String _buildCsv(List<AdminOrderSummary> orders) {
-  final rows = <List<String>>[
+List<List<Object?>> _buildRows(List<AdminOrderSummary> orders) {
+  return [
     [
       'Order ID',
       'Created',
@@ -1450,12 +1461,6 @@ String _buildCsv(List<AdminOrderSummary> orders) {
         ].join('; '),
       ],
   ];
-  return rows.map((row) => row.map(_csvCell).join(',')).join('\r\n');
-}
-
-String _csvCell(String value) {
-  final escaped = value.replaceAll('"', '""');
-  return RegExp(r'[",\r\n]').hasMatch(escaped) ? '"$escaped"' : escaped;
 }
 
 /// URL codec for the order filters (shareable/deep-linkable state). Kept
