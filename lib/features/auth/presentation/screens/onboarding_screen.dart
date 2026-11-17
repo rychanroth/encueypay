@@ -68,7 +68,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final user = ref.watch(authControllerProvider).value;
     final isSaving = ref.watch(onboardingControllerProvider).isLoading;
     final isProfile = _page == _profilePage;
@@ -112,17 +111,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 child: Row(
                   children: [
-                    if (isProfile)
-                      IconButton(
-                        tooltip: 'Back',
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: isSaving
-                            ? null
-                            : () => _goTo(_profilePage - 1),
-                      )
-                    else
-                      const BrandLockup(markSize: 28, wordmarkSize: 20),
-                    const Spacer(),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: isProfile
+                            ? IconButton(
+                                tooltip: 'Back',
+                                icon: const Icon(Icons.arrow_back),
+                                onPressed: isSaving
+                                    ? null
+                                    : () => _goTo(_profilePage - 1),
+                              )
+                            : FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: const BrandLockup(
+                                  markSize: 28,
+                                  wordmarkSize: 20,
+                                ),
+                              ),
+                      ),
+                    ),
                     if (!isProfile)
                       TextButton(
                         onPressed: isSaving ? null : () => _goTo(_profilePage),
@@ -136,86 +145,66 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   controller: _pageController,
                   onPageChanged: (page) => setState(() => _page = page),
                   children: [
-                    const _IntroPage(
-                      visual: CatalogOnboardingVisual(),
-                      eyebrow: 'SHOP LOCAL',
-                      title: 'Everything you need, one storefront',
-                      body:
-                          'Browse curated products from trusted Cambodian '
-                          'brands. Search, compare and save favourites in '
-                          'seconds.',
+                    _OnboardingStep(
+                      content: const _IntroContent(
+                        visual: CatalogOnboardingVisual(),
+                        eyebrow: 'SHOP LOCAL',
+                        title: 'Everything you need, one storefront',
+                        body:
+                            'Browse curated products from trusted Cambodian '
+                            'brands. Search, compare and save favourites in '
+                            'seconds.',
+                      ),
+                      footer: _StepFooter(
+                        page: 0,
+                        isSaving: isSaving,
+                        onNext: isSaving ? null : _next,
+                      ),
                     ),
-                    const _IntroPage(
-                      visual: PaymentOnboardingVisual(),
-                      eyebrow: 'PAY YOUR WAY',
-                      title: 'Scan to pay, or pay on delivery',
-                      body:
-                          'Check out with Bakong KHQR for instant verification, '
-                          'or choose cash on delivery. Every payment shows a '
-                          'clear status.',
+                    _OnboardingStep(
+                      content: const _IntroContent(
+                        visual: PaymentOnboardingVisual(),
+                        eyebrow: 'PAY YOUR WAY',
+                        title: 'Scan to pay, or pay on delivery',
+                        body:
+                            'Check out with Bakong KHQR for instant '
+                            'verification, or choose cash on delivery. Every '
+                            'payment shows a clear status.',
+                      ),
+                      footer: _StepFooter(
+                        page: 1,
+                        isSaving: isSaving,
+                        onNext: isSaving ? null : _next,
+                      ),
                     ),
-                    const _IntroPage(
-                      visual: DeliveryOnboardingVisual(),
-                      eyebrow: 'STAY IN THE LOOP',
-                      title: 'Follow every order to your door',
-                      body:
-                          'Live status from confirmed to delivered, with '
-                          'delivery updates so you always know when to expect '
-                          'your parcel.',
+                    _OnboardingStep(
+                      content: const _IntroContent(
+                        visual: DeliveryOnboardingVisual(),
+                        eyebrow: 'STAY IN THE LOOP',
+                        title: 'Follow every order to your door',
+                        body:
+                            'Live status from confirmed to delivered, with '
+                            'delivery updates so you always know when to '
+                            'expect your parcel.',
+                      ),
+                      footer: _StepFooter(
+                        page: 2,
+                        isSaving: isSaving,
+                        onNext: isSaving ? null : _next,
+                      ),
                     ),
-                    _ProfilePage(
-                      formKey: _formKey,
-                      nameController: _nameController,
-                      phoneController: _phoneController,
-                      onSubmit: isSaving ? null : _complete,
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (var index = 0; index <= _profilePage; index++)
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut,
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.xs / 2,
-                            ),
-                            width: index == _page ? 22 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: index == _page
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.outlineVariant,
-                              borderRadius: AppRadii.brFull,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: isSaving ? null : _next,
-                        child: isSaving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(isProfile ? 'Start shopping' : 'Next'),
+                    _OnboardingStep(
+                      content: _ProfileContent(
+                        formKey: _formKey,
+                        nameController: _nameController,
+                        phoneController: _phoneController,
+                        onSubmit: isSaving ? null : _complete,
+                      ),
+                      footer: _StepFooter(
+                        page: _profilePage,
+                        isProfile: true,
+                        isSaving: isSaving,
+                        onNext: isSaving ? null : _next,
                       ),
                     ),
                   ],
@@ -229,8 +218,110 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-class _IntroPage extends StatelessWidget {
-  const _IntroPage({
+/// Scrolls when the viewport is short, but centers the step (content + CTA)
+/// in the available height when it fits. The CTA lives with its slide, so it
+/// never floats at the bottom of the screen with a dead gap above it.
+class _OnboardingStep extends StatelessWidget {
+  const _OnboardingStep({required this.content, required this.footer});
+
+  final Widget content;
+  final Widget footer;
+
+  @override
+  Widget build(BuildContext context) {
+    const padding = EdgeInsets.fromLTRB(
+      AppSpacing.md,
+      AppSpacing.sm,
+      AppSpacing.md,
+      AppSpacing.md,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minHeight = (constraints.maxHeight - padding.vertical).clamp(
+          0.0,
+          double.infinity,
+        );
+        return SingleChildScrollView(
+          padding: padding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: minHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                content,
+                const SizedBox(height: AppSpacing.lg),
+                footer,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StepFooter extends StatelessWidget {
+  const _StepFooter({
+    required this.page,
+    required this.isSaving,
+    required this.onNext,
+    this.isProfile = false,
+  });
+
+  final int page;
+  final bool isSaving;
+  final bool isProfile;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var index = 0; index <= 3; index++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs / 2,
+                ),
+                width: index == page ? 22 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: index == page
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outlineVariant,
+                  borderRadius: AppRadii.brFull,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: isSaving ? null : onNext,
+            child: isSaving
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(isProfile ? 'Start shopping' : 'Next'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _IntroContent extends StatelessWidget {
+  const _IntroContent({
     required this.visual,
     required this.eyebrow,
     required this.title,
@@ -245,17 +336,12 @@ class _IntroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final visualHeight = (MediaQuery.sizeOf(context).height * 0.36)
-        .clamp(200.0, 330.0)
+    final visualHeight = (MediaQuery.sizeOf(context).height * 0.34)
+        .clamp(190.0, 310.0)
         .toDouble();
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.md,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Center(
           child: ConstrainedBox(
@@ -285,8 +371,8 @@ class _IntroPage extends StatelessWidget {
   }
 }
 
-class _ProfilePage extends StatelessWidget {
-  const _ProfilePage({
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent({
     required this.formKey,
     required this.nameController,
     required this.phoneController,
@@ -304,13 +390,8 @@ class _ProfilePage extends StatelessWidget {
     return AutofillGroup(
       child: Form(
         key: formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Almost there', style: theme.textTheme.headlineLarge),
             const SizedBox(height: AppSpacing.sm),
