@@ -163,6 +163,19 @@ where not exists (
    where pi.product_id = p.id and pi.storage_path = v.storage_path
 );
 
+-- Every variant carries an image too: rows authored without one fall back to
+-- the product's primary image (lowest sort_order), so the variant picker and
+-- the detail carousel never have to borrow a product-only gallery reference.
+update public.product_variants v
+   set image_path = primary_image.storage_path
+  from (
+    select distinct on (product_id) product_id, storage_path
+      from public.product_images
+     order by product_id, sort_order
+  ) primary_image
+ where primary_image.product_id = v.product_id
+   and coalesce(v.image_path, '') = '';
+
 -- ------------------------------------------------------ platform settings
 -- The checkout reads the delivery fee here. QR settlement runs through the
 -- payway-webhook callback (PayWay secrets live in the edge-function env).
