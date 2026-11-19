@@ -21,12 +21,17 @@ class OrderStatusTimeline extends StatefulWidget {
     super.key,
     required this.status,
     this.history = const [],
+    this.showDetails = true,
   });
 
   final OrderStatus status;
 
   /// Lifecycle transitions as logged by the server (`get_order_status_history`).
   final List<OrderStatusEvent> history;
+
+  /// When false the track is dots only (the collapsed customer default);
+  /// when true it adds the space-saving labels and the logged times.
+  final bool showDetails;
 
   static const stages = <(OrderStatus, String)>[
     (OrderStatus.pending, 'Pending'),
@@ -148,6 +153,7 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline>
                   : _StageState.upcoming,
               // Space-saving labels: previous, current, and the final stage.
               showLabel: i == current || i == current - 1 || i == last,
+              showDetails: widget.showDetails,
               time: i <= current
                   ? _changedAt(OrderStatusTimeline.stages[i].$1)
                   : null,
@@ -168,6 +174,7 @@ class _StageColumn extends StatelessWidget {
     required this.isLast,
     required this.state,
     required this.showLabel,
+    required this.showDetails,
     required this.time,
     required this.pulse,
   });
@@ -177,6 +184,7 @@ class _StageColumn extends StatelessWidget {
   final bool isLast;
   final _StageState state;
   final bool showLabel;
+  final bool showDetails;
   final DateTime? time;
   final Animation<double> pulse;
 
@@ -229,64 +237,66 @@ class _StageColumn extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 4),
-            SizedBox(
-              height: 26,
-              child: showLabel
-                  ? Center(
-                      child: Text(
-                        label,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 10,
-                          height: 1.15,
-                          color: state == _StageState.upcoming
-                              ? theme.colorScheme.onSurfaceVariant
-                              : theme.colorScheme.onSurface,
-                          fontWeight: state == _StageState.current
-                              ? FontWeight.w600
-                              : null,
+            if (showDetails) ...[
+              const SizedBox(height: 4),
+              SizedBox(
+                height: 26,
+                child: showLabel
+                    ? Center(
+                        child: Text(
+                          label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10,
+                            height: 1.15,
+                            color: state == _StageState.upcoming
+                                ? theme.colorScheme.onSurfaceVariant
+                                : theme.colorScheme.onSurface,
+                            fontWeight: state == _StageState.current
+                                ? FontWeight.w600
+                                : null,
+                          ),
                         ),
+                      )
+                    : null,
+              ),
+              SizedBox(
+                height: 24,
+                child: time == null
+                    ? null
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _logDate(time!),
+                              maxLines: 1,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 9,
+                                height: 1.1,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _logTime(time!),
+                              maxLines: 1,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 9.5,
+                                height: 1.1,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    )
-                  : null,
-            ),
-            SizedBox(
-              height: 24,
-              child: time == null
-                  ? null
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            _logDate(time!),
-                            maxLines: 1,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 9,
-                              height: 1.1,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            _logTime(time!),
-                            maxLines: 1,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 9.5,
-                              height: 1.1,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
+              ),
+            ],
           ],
         ),
       ),

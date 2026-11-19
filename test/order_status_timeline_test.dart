@@ -55,6 +55,45 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'collapsed track keeps every stage as a dot, no labels or times',
+    (tester) async {
+      final history = [
+        _event(OrderStatus.pending, 9, 0),
+        _event(OrderStatus.confirmed, 9, 5),
+        _event(OrderStatus.processing, 9, 10),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 320,
+                child: OrderStatusTimeline(
+                  status: OrderStatus.processing,
+                  history: history,
+                  showDetails: false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Dots only: no stage names, no log times, still one row.
+      expect(find.text('Confirmed'), findsNothing);
+      expect(find.text('Processing'), findsNothing);
+      expect(find.text('Delivered'), findsNothing);
+      expect(find.text('09:00'), findsNothing);
+      expect(find.text('19 Nov'), findsNothing);
+      // Two earlier stages carry the completed check; the current one pulses.
+      expect(find.byIcon(Icons.check), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('cancelled order shows the notice with its log time', (
     tester,
   ) async {
