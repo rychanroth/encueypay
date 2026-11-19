@@ -30,6 +30,10 @@ abstract interface class IOrdersRepository {
 
   Future<CustomerOrder> fetchOrder(String orderId);
 
+  /// Lifecycle transitions for one order, oldest first, as logged by the
+  /// server (`state_history`). Scoped server-side to the order owner.
+  Future<List<OrderStatusEvent>> fetchStatusHistory(String orderId);
+
   /// Throws [Failure] only; the server decides whether cancellation is
   /// permitted and releases reservations (§12/§50).
   Future<void> cancelOrder(String orderId);

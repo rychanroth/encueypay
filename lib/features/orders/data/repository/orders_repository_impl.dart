@@ -180,6 +180,23 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   }
 
   @override
+  Future<List<OrderStatusEvent>> fetchStatusHistory(String orderId) async {
+    try {
+      final rows = await _client.rpc(
+        'get_order_status_history',
+        params: {'p_order_id': orderId},
+      );
+      return (rows as List)
+          .whereType<Map<String, dynamic>>()
+          .map(OrderStatusEventDto.fromJson)
+          .map((dto) => dto.toDomain())
+          .toList();
+    } catch (error, stackTrace) { // DATA-05: classify, don't guess
+      throw mapRepositoryError(error, stackTrace);
+    }
+  }
+
+  @override
   Future<void> cancelOrder(String orderId) async {
     try {
       await _client.rpc('cancel_order', params: {'p_order_id': orderId});

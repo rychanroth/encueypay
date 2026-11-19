@@ -125,3 +125,16 @@ Map<String, dynamic> _$PaymentJoinDtoToJson(PaymentJoinDto instance) =>
       'status': instance.status,
       'amount_minor': instance.amountMinor,
     };
+
+OrderStatusEventDto _$OrderStatusEventDtoFromJson(Map<String, dynamic> json) =>
+    OrderStatusEventDto(
+      status: json['status'] as String,
+      changedAt: DateTime.parse(json['changed_at'] as String),
+    );
+
+Map<String, dynamic> _$OrderStatusEventDtoToJson(
+  OrderStatusEventDto instance,
+) => <String, dynamic>{
+  'status': instance.status,
+  'changed_at': instance.changedAt.toIso8601String(),
+};

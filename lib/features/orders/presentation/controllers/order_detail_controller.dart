@@ -55,6 +55,18 @@ class OrderDetailController extends _$OrderDetailController {
   }
 }
 
+/// Server-logged lifecycle transitions for the detail screen's exact-status
+/// timeline. Depends on the order provider so a realtime status change
+/// refreshes the timestamps together with the order.
+@riverpod
+class OrderStatusHistoryController extends _$OrderStatusHistoryController {
+  @override
+  Future<List<OrderStatusEvent>> build(String orderId) async {
+    await ref.watch(orderDetailControllerProvider(orderId).future);
+    return ref.watch(ordersRepositoryProvider).fetchStatusHistory(orderId);
+  }
+}
+
 /// Transient action failure for one order detail screen. Kept separate from
 /// the order AsyncValue so a failed cancel/upload never wipes the order.
 @riverpod

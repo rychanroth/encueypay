@@ -32,6 +32,15 @@ extension OrderDtoX on OrderDto {
   }
 }
 
+extension OrderStatusEventDtoX on OrderStatusEventDto {
+  OrderStatusEvent toDomain() {
+    return OrderStatusEvent(
+      status: OrderStatus.fromName(status),
+      changedAt: changedAt,
+    );
+  }
+}
+
 extension OrderItemJoinDtoX on OrderItemJoinDto {
   OrderItemSnapshot toDomain({String? imageUrl}) {
     return OrderItemSnapshot(

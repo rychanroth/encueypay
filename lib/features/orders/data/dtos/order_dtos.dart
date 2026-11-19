@@ -144,3 +144,21 @@ class PaymentJoinDto {
 
   Map<String, dynamic> toJson() => _$PaymentJoinDtoToJson(this);
 }
+
+/// Wire shape of `get_order_status_history` (DATA-01): one lifecycle
+/// transition with its server log timestamp.
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OrderStatusEventDto {
+  const OrderStatusEventDto({
+    required this.status,
+    required this.changedAt,
+  });
+
+  factory OrderStatusEventDto.fromJson(Map<String, dynamic> json) =>
+      _$OrderStatusEventDtoFromJson(json);
+
+  final String status;
+  final DateTime changedAt;
+
+  Map<String, dynamic> toJson() => _$OrderStatusEventDtoToJson(this);
+}

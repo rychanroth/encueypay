@@ -267,6 +267,35 @@ DO $$ BEGIN
            where action = 'admin_transition_order') = 6;
 END $$;
 
+-- ---------------------------------------------------------------- status history
+set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
+DO $$ BEGIN
+  assert (select count(*) from public.get_order_status_history(
+            current_setting('smoke.order1')::uuid)) = 7,
+    'pending seed + six transitions';
+  assert (select status from public.get_order_status_history(
+            current_setting('smoke.order1')::uuid)
+          order by changed_at limit 1) = 'pending',
+    'the initial state is synthesized from orders.created_at';
+  assert (select status from public.get_order_status_history(
+            current_setting('smoke.order1')::uuid)
+          order by changed_at desc limit 1) = 'delivered';
+END $$;
+
+set request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222"}';
+DO $$ BEGIN
+  assert (select count(*) from public.get_order_status_history(
+            current_setting('smoke.order1')::uuid)) = 0,
+    'status history is scoped to the order owner';
+END $$;
+
+set request.jwt.claims to '{"sub":"44444444-4444-4444-4444-444444444444"}';
+DO $$ BEGIN
+  assert (select count(*) from public.get_order_status_history(
+            current_setting('smoke.order1')::uuid)) = 7,
+    'admins can read any order history';
+END $$;
+
 -- ---------------------------------------------------------------- reviews (delivered order)
 set request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111"}';
 

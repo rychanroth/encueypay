@@ -345,6 +345,266 @@ $OrderPaymentCopyWith<$Res>? get payment {
 }
 
 /// @nodoc
+mixin _$OrderStatusEvent {
+
+ OrderStatus get status; DateTime get changedAt;
+/// Create a copy of OrderStatusEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OrderStatusEventCopyWith<OrderStatusEvent> get copyWith => _$OrderStatusEventCopyWithImpl<OrderStatusEvent>(this as OrderStatusEvent, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderStatusEvent&&(identical(other.status, status) || other.status == status)&&(identical(other.changedAt, changedAt) || other.changedAt == changedAt));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,status,changedAt);
+
+@override
+String toString() {
+  return 'OrderStatusEvent(status: $status, changedAt: $changedAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OrderStatusEventCopyWith<$Res>  {
+  factory $OrderStatusEventCopyWith(OrderStatusEvent value, $Res Function(OrderStatusEvent) _then) = _$OrderStatusEventCopyWithImpl;
+@useResult
+$Res call({
+ OrderStatus status, DateTime changedAt
+});
+
+
+
+
+}
+/// @nodoc
+class _$OrderStatusEventCopyWithImpl<$Res>
+    implements $OrderStatusEventCopyWith<$Res> {
+  _$OrderStatusEventCopyWithImpl(this._self, this._then);
+
+  final OrderStatusEvent _self;
+  final $Res Function(OrderStatusEvent) _then;
+
+/// Create a copy of OrderStatusEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? changedAt = null,}) {
+  return _then(OrderStatusEvent(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as OrderStatus,changedAt: null == changedAt ? _self.changedAt : changedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [OrderStatusEvent].
+extension OrderStatusEventPatterns on OrderStatusEvent {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _OrderStatusEvent value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _OrderStatusEvent() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _OrderStatusEvent value)  $default,){
+final _that = this;
+switch (_that) {
+case _OrderStatusEvent():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _OrderStatusEvent value)?  $default,){
+final _that = this;
+switch (_that) {
+case _OrderStatusEvent() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OrderStatus status,  DateTime changedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _OrderStatusEvent() when $default != null:
+return $default(_that.status,_that.changedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OrderStatus status,  DateTime changedAt)  $default,) {final _that = this;
+switch (_that) {
+case _OrderStatusEvent():
+return $default(_that.status,_that.changedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OrderStatus status,  DateTime changedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _OrderStatusEvent() when $default != null:
+return $default(_that.status,_that.changedAt);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _OrderStatusEvent implements OrderStatusEvent {
+  const _OrderStatusEvent({required this.status, required this.changedAt});
+  
+
+@override final  OrderStatus status;
+@override final  DateTime changedAt;
+
+/// Create a copy of OrderStatusEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$OrderStatusEventCopyWith<_OrderStatusEvent> get copyWith => __$OrderStatusEventCopyWithImpl<_OrderStatusEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderStatusEvent&&(identical(other.status, status) || other.status == status)&&(identical(other.changedAt, changedAt) || other.changedAt == changedAt));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,status,changedAt);
+
+@override
+String toString() {
+  return 'OrderStatusEvent(status: $status, changedAt: $changedAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$OrderStatusEventCopyWith<$Res> implements $OrderStatusEventCopyWith<$Res> {
+  factory _$OrderStatusEventCopyWith(_OrderStatusEvent value, $Res Function(_OrderStatusEvent) _then) = __$OrderStatusEventCopyWithImpl;
+@override @useResult
+$Res call({
+ OrderStatus status, DateTime changedAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$OrderStatusEventCopyWithImpl<$Res>
+    implements _$OrderStatusEventCopyWith<$Res> {
+  __$OrderStatusEventCopyWithImpl(this._self, this._then);
+
+  final _OrderStatusEvent _self;
+  final $Res Function(_OrderStatusEvent) _then;
+
+/// Create a copy of OrderStatusEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? changedAt = null,}) {
+  return _then(_OrderStatusEvent(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as OrderStatus,changedAt: null == changedAt ? _self.changedAt : changedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$OrderItemSnapshot {
 
  String get id; String get productId; String get productName; int get unitPriceMinor; int get quantity; int get lineTotalMinor; String? get variantName; int get discountMinor; String? get imageUrl;/// One review per order item (DB unique constraint) — drives the

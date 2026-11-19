@@ -99,6 +99,130 @@ abstract class _$OrderDetailController extends $AsyncNotifier<CustomerOrder> {
   }
 }
 
+/// Server-logged lifecycle transitions for the detail screen's exact-status
+/// timeline. Depends on the order provider so a realtime status change
+/// refreshes the timestamps together with the order.
+
+@ProviderFor(OrderStatusHistoryController)
+final orderStatusHistoryControllerProvider =
+    OrderStatusHistoryControllerFamily._();
+
+/// Server-logged lifecycle transitions for the detail screen's exact-status
+/// timeline. Depends on the order provider so a realtime status change
+/// refreshes the timestamps together with the order.
+final class OrderStatusHistoryControllerProvider
+    extends
+        $AsyncNotifierProvider<
+          OrderStatusHistoryController,
+          List<OrderStatusEvent>
+        > {
+  /// Server-logged lifecycle transitions for the detail screen's exact-status
+  /// timeline. Depends on the order provider so a realtime status change
+  /// refreshes the timestamps together with the order.
+  OrderStatusHistoryControllerProvider._({
+    required OrderStatusHistoryControllerFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'orderStatusHistoryControllerProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$orderStatusHistoryControllerHash();
+
+  @override
+  String toString() {
+    return r'orderStatusHistoryControllerProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  OrderStatusHistoryController create() => OrderStatusHistoryController();
+
+  @override
+  bool operator ==(Object other) {
+    return other is OrderStatusHistoryControllerProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$orderStatusHistoryControllerHash() =>
+    r'e0739d76c17390da549c38e50cede831dd78bc7a';
+
+/// Server-logged lifecycle transitions for the detail screen's exact-status
+/// timeline. Depends on the order provider so a realtime status change
+/// refreshes the timestamps together with the order.
+
+final class OrderStatusHistoryControllerFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          OrderStatusHistoryController,
+          AsyncValue<List<OrderStatusEvent>>,
+          List<OrderStatusEvent>,
+          FutureOr<List<OrderStatusEvent>>,
+          String
+        > {
+  OrderStatusHistoryControllerFamily._()
+    : super(
+        retry: null,
+        name: r'orderStatusHistoryControllerProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Server-logged lifecycle transitions for the detail screen's exact-status
+  /// timeline. Depends on the order provider so a realtime status change
+  /// refreshes the timestamps together with the order.
+
+  OrderStatusHistoryControllerProvider call(String orderId) =>
+      OrderStatusHistoryControllerProvider._(argument: orderId, from: this);
+
+  @override
+  String toString() => r'orderStatusHistoryControllerProvider';
+}
+
+/// Server-logged lifecycle transitions for the detail screen's exact-status
+/// timeline. Depends on the order provider so a realtime status change
+/// refreshes the timestamps together with the order.
+
+abstract class _$OrderStatusHistoryController
+    extends $AsyncNotifier<List<OrderStatusEvent>> {
+  late final _$args = ref.$arg as String;
+  String get orderId => _$args;
+
+  FutureOr<List<OrderStatusEvent>> build(String orderId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<List<OrderStatusEvent>>, List<OrderStatusEvent>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<List<OrderStatusEvent>>,
+                List<OrderStatusEvent>
+              >,
+              AsyncValue<List<OrderStatusEvent>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
 /// Transient action failure for one order detail screen. Kept separate from
 /// the order AsyncValue so a failed cancel/upload never wipes the order.
 

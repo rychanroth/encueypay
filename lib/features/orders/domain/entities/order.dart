@@ -61,6 +61,16 @@ abstract class CustomerOrder with _$CustomerOrder {
   }
 }
 
+/// One recorded lifecycle transition (`state_history`): the state the order
+/// entered and when the server logged it.
+@freezed
+abstract class OrderStatusEvent with _$OrderStatusEvent {
+  const factory OrderStatusEvent({
+    required OrderStatus status,
+    required DateTime changedAt,
+  }) = _OrderStatusEvent;
+}
+
 /// Historical purchase line (§19) — current catalog edits never rewrite it.
 /// [productId] + [imageUrl] ride along for the tappable OrderItemCard
 /// (the image is the product's CURRENT first photo, resolved from the

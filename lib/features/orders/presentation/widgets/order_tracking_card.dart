@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
+import '../controllers/order_detail_controller.dart';
 import 'order_status_timeline.dart';
 
 /// §7C tracking presentation for the order detail screen: the real order
@@ -11,16 +13,16 @@ import 'order_status_timeline.dart';
 /// toggle reveals the exact §7A lifecycle. No courier entity or delivery
 /// estimate exists server-side, so neither is fabricated here — the admin
 /// advances the order and the realtime stream re-renders this card.
-class OrderTrackingCard extends StatefulWidget {
+class OrderTrackingCard extends ConsumerStatefulWidget {
   const OrderTrackingCard({super.key, required this.order});
 
   final CustomerOrder order;
 
   @override
-  State<OrderTrackingCard> createState() => _OrderTrackingCardState();
+  ConsumerState<OrderTrackingCard> createState() => _OrderTrackingCardState();
 }
 
-class _OrderTrackingCardState extends State<OrderTrackingCard> {
+class _OrderTrackingCardState extends ConsumerState<OrderTrackingCard> {
   bool _showExactStatus = false;
 
   CustomerOrder get order => widget.order;
@@ -56,6 +58,10 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final history = ref
+            .watch(orderStatusHistoryControllerProvider(order.id))
+            .value ??
+        const <OrderStatusEvent>[];
     final caption = theme.textTheme.bodySmall
         ?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     return Material(
@@ -101,7 +107,7 @@ class _OrderTrackingCardState extends State<OrderTrackingCard> {
             // presentation for the cancelled callout.
             if (_showExactStatus || !_inFlight) ...[
               const SizedBox(height: AppSpacing.md),
-              OrderStatusTimeline(status: order.status),
+              OrderStatusTimeline(status: order.status, history: history),
             ],
             if (_inFlight)
               Align(
