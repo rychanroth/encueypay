@@ -4,12 +4,13 @@ import '../../../../core/presentation/theme/app_colors.dart';
 import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../domain/entities/order.dart';
 
-/// Horizontal connected stepper for order tracking (DESIGN.md §6.2).
+/// Order tracking timeline (DESIGN.md §6.2).
 ///
-/// All seven lifecycle stages share one row. To keep the labels legible on a
-/// phone only the previous, current and final stages are labelled; the dots
-/// carry the rest. Every stage the order has already reached shows the
-/// server-logged time it entered that state ([OrderStatusEvent]).
+/// Collapsed ([showDetails] false) is a compact one-row track: all seven
+/// lifecycle stages as dots. Expanding it switches to a vertical list where
+/// every stage is named and each stage the order has already reached carries
+/// the server-logged date and time it entered that state
+/// ([OrderStatusEvent]).
 ///
 /// * completed nodes — solid emerald fill with a check icon;
 /// * the active node — pulsing royal dot;
@@ -29,8 +30,8 @@ class OrderStatusTimeline extends StatefulWidget {
   /// Lifecycle transitions as logged by the server (`get_order_status_history`).
   final List<OrderStatusEvent> history;
 
-  /// When false the track is dots only (the collapsed customer default);
-  /// when true it adds the space-saving labels and the logged times.
+  /// False renders the compact horizontal dot track; true the vertical
+  /// named list with transition times.
   final bool showDetails;
 
   static const stages = <(OrderStatus, String)>[
@@ -136,28 +137,85 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline>
       0,
       OrderStatusTimeline.stages.length - 1,
     );
+    if (!widget.showDetails) {
+      return _CompactTrack(current: current, pulse: _pulse);
+    }
+    return _DetailedTrack(
+      current: current,
+      pulse: _pulse,
+      changedAt: _changedAt,
+    );
+  }
+}
+
+enum _StageState { done, current, upcoming }
+
+_StageState _stateFor(int index, int current) => index < current
+    ? _StageState.done
+    : index == current
+    ? _StageState.current
+    : _StageState.upcoming;
+
+Color _nodeColor(ThemeData theme, _StageState state) => switch (state) {
+  _StageState.done => AppColors.accentEmerald,
+  _StageState.current => theme.colorScheme.primary,
+  _StageState.upcoming => theme.colorScheme.onSurfaceVariant,
+};
+
+String _stateLabel(_StageState state) => switch (state) {
+  _StageState.done => 'completed',
+  _StageState.current => 'current',
+  _StageState.upcoming => 'upcoming',
+};
+
+/// Collapsed customer default: one row, seven dots, no labels or times.
+class _CompactTrack extends StatelessWidget {
+  const _CompactTrack({required this.current, required this.pulse});
+
+  final int current;
+  final Animation<double> pulse;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final last = OrderStatusTimeline.stages.length - 1;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < OrderStatusTimeline.stages.length; i++)
+        for (var i = 0; i <= last; i++)
           Expanded(
-            child: _StageColumn(
-              label: OrderStatusTimeline.stages[i].$2,
-              isFirst: i == 0,
-              isLast: i == last,
-              state: i < current
-                  ? _StageState.done
-                  : i == current
-                  ? _StageState.current
-                  : _StageState.upcoming,
-              // Space-saving labels: previous, current, and the final stage.
-              showLabel: i == current || i == current - 1 || i == last,
-              showDetails: widget.showDetails,
-              time: i <= current
-                  ? _changedAt(OrderStatusTimeline.stages[i].$1)
-                  : null,
-              pulse: _pulse,
+            child: Semantics(
+              container: true,
+              label:
+                  '${OrderStatusTimeline.stages[i].$2}, '
+                  '${_stateLabel(_stateFor(i, current))}',
+              child: ExcludeSemantics(
+                child: SizedBox(
+                  height: 26,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _horizontalConnector(
+                          theme,
+                          visible: i > 0,
+                          filled: i <= current,
+                        ),
+                      ),
+                      _StageNode(
+                        state: _stateFor(i, current),
+                        pulse: pulse,
+                        size: 18,
+                      ),
+                      Expanded(
+                        child: _horizontalConnector(
+                          theme,
+                          visible: i < last,
+                          filled: i < current,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
       ],
@@ -165,186 +223,161 @@ class _OrderStatusTimelineState extends State<OrderStatusTimeline>
   }
 }
 
-enum _StageState { done, current, upcoming }
+/// Expanded view: vertical list, every stage named, reached stages timed.
+class _DetailedTrack extends StatelessWidget {
+  const _DetailedTrack({
+    required this.current,
+    required this.pulse,
+    required this.changedAt,
+  });
 
-class _StageColumn extends StatelessWidget {
-  const _StageColumn({
+  final int current;
+  final Animation<double> pulse;
+  final DateTime? Function(OrderStatus status) changedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final last = OrderStatusTimeline.stages.length - 1;
+    return Column(
+      children: [
+        for (var i = 0; i <= last; i++)
+          _DetailedStageRow(
+            label: OrderStatusTimeline.stages[i].$2,
+            state: _stateFor(i, current),
+            isFirst: i == 0,
+            isLast: i == last,
+            time: i <= current
+                ? changedAt(OrderStatusTimeline.stages[i].$1)
+                : null,
+            pulse: pulse,
+          ),
+      ],
+    );
+  }
+}
+
+class _DetailedStageRow extends StatelessWidget {
+  const _DetailedStageRow({
     required this.label,
+    required this.state,
     required this.isFirst,
     required this.isLast,
-    required this.state,
-    required this.showLabel,
-    required this.showDetails,
     required this.time,
     required this.pulse,
   });
 
   final String label;
+  final _StageState state;
   final bool isFirst;
   final bool isLast;
-  final _StageState state;
-  final bool showLabel;
-  final bool showDetails;
   final DateTime? time;
   final Animation<double> pulse;
-
-  static const _nodeSize = 18.0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final nodeColor = switch (state) {
-      _StageState.done => AppColors.accentEmerald,
-      _StageState.current => theme.colorScheme.primary,
-      _StageState.upcoming => theme.colorScheme.onSurfaceVariant,
-    };
-
-    final stateLabel = switch (state) {
-      _StageState.done => 'completed',
-      _StageState.current => 'current',
-      _StageState.upcoming => 'upcoming',
-    };
-
     final timeLabel = time == null ? '' : ', ${_logStamp(time!)}';
 
     return Semantics(
       container: true,
-      label: '$label, $stateLabel$timeLabel',
+      label: '$label, ${_stateLabel(state)}$timeLabel',
       child: ExcludeSemantics(
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
-              height: 26,
-              child: Row(
+              width: 26,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: _connector(
-                      theme,
-                      visible: !isFirst,
-                      filled:
-                          state == _StageState.done ||
-                          state == _StageState.current,
-                    ),
+                  _verticalConnector(
+                    theme,
+                    visible: !isFirst,
+                    filled: state != _StageState.upcoming,
                   ),
-                  _node(theme, nodeColor),
-                  Expanded(
-                    child: _connector(
-                      theme,
-                      visible: !isLast,
-                      filled: state == _StageState.done,
-                    ),
+                  _StageNode(state: state, pulse: pulse),
+                  _verticalConnector(
+                    theme,
+                    visible: !isLast,
+                    filled: state == _StageState.done,
                   ),
                 ],
               ),
             ),
-            if (showDetails) ...[
-              const SizedBox(height: 4),
-              SizedBox(
-                height: 26,
-                child: showLabel
-                    ? Center(
-                        child: Text(
-                          label,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 10,
-                            height: 1.15,
-                            color: state == _StageState.upcoming
-                                ? theme.colorScheme.onSurfaceVariant
-                                : theme.colorScheme.onSurface,
-                            fontWeight: state == _StageState.current
-                                ? FontWeight.w600
-                                : null,
-                          ),
-                        ),
-                      )
-                    : null,
+            const SizedBox(width: AppSpacing.sm + 2),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: state == _StageState.upcoming
+                        ? theme.colorScheme.onSurfaceVariant
+                        : theme.colorScheme.onSurface,
+                    fontWeight: state == _StageState.current
+                        ? FontWeight.w600
+                        : null,
+                  ),
+                ),
               ),
-              SizedBox(
-                height: 24,
-                child: time == null
-                    ? null
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              _logDate(time!),
-                              maxLines: 1,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                fontSize: 9,
-                                height: 1.1,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              _logTime(time!),
-                              maxLines: 1,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                fontSize: 9.5,
-                                height: 1.1,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+            ),
+            if (time != null)
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Text(
+                  _logStamp(time!),
+                  textAlign: TextAlign.right,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
-            ],
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _connector(
-    ThemeData theme, {
-    required bool visible,
-    required bool filled,
-  }) {
-    return Container(
-      height: 2,
-      color: !visible
-          ? Colors.transparent
-          : filled
-          ? AppColors.accentEmerald
-          : theme.colorScheme.outlineVariant,
-    );
-  }
+class _StageNode extends StatelessWidget {
+  const _StageNode({required this.state, required this.pulse, this.size = 22});
 
-  Widget _node(ThemeData theme, Color nodeColor) {
+  final _StageState state;
+  final Animation<double> pulse;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = _nodeColor(theme, state);
     final dot = Container(
-      width: _nodeSize,
-      height: _nodeSize,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: switch (state) {
-          _StageState.done => nodeColor,
-          _StageState.current => nodeColor,
-          _StageState.upcoming => theme.colorScheme.surfaceContainerLowest,
-        },
-        border: Border.all(color: nodeColor, width: 2),
+        color: state == _StageState.upcoming
+            ? theme.colorScheme.surfaceContainerLowest
+            : color,
+        border: Border.all(color: color, width: 2),
       ),
-      child: state == _StageState.done
-          ? const Icon(Icons.check, size: 10, color: Colors.white)
-          : state == _StageState.current
-          ? Center(
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.colorScheme.onPrimary,
-                ),
-              ),
-            )
-          : null,
+      child: switch (state) {
+        _StageState.done => const Icon(
+          Icons.check,
+          size: 13,
+          color: Colors.white,
+        ),
+        _StageState.current => Center(
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.onPrimary,
+            ),
+          ),
+        ),
+        _StageState.upcoming => null,
+      },
     );
 
     if (state != _StageState.current) return dot;
@@ -356,6 +389,37 @@ class _StageColumn extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _horizontalConnector(
+  ThemeData theme, {
+  required bool visible,
+  required bool filled,
+}) {
+  return Container(
+    height: 2,
+    color: !visible
+        ? Colors.transparent
+        : filled
+        ? AppColors.accentEmerald
+        : theme.colorScheme.outlineVariant,
+  );
+}
+
+Widget _verticalConnector(
+  ThemeData theme, {
+  required bool visible,
+  required bool filled,
+}) {
+  return Container(
+    width: 2,
+    height: 14,
+    color: !visible
+        ? Colors.transparent
+        : filled
+        ? AppColors.accentEmerald
+        : theme.colorScheme.outlineVariant,
+  );
 }
 
 String _logTime(DateTime value) {
@@ -384,5 +448,5 @@ String _logDate(DateTime value) {
   return '${local.day} ${_months[local.month - 1]}';
 }
 
-/// Compact local log stamp for accessibility and the cancelled notice.
+/// Compact local log stamp used by the vertical rows and the cancelled notice.
 String _logStamp(DateTime value) => '${_logDate(value)} ${_logTime(value)}';

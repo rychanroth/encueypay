@@ -12,7 +12,7 @@ OrderStatusEvent _event(OrderStatus status, int hour, int minute) {
 }
 
 void main() {
-  testWidgets('exact timeline keeps one row and labels only three stages', (
+  testWidgets('expanded timeline goes vertical with names and log times', (
     tester,
   ) async {
     final history = [
@@ -38,20 +38,30 @@ void main() {
     );
     await tester.pump();
 
-    // Previous, current and final stage keep their labels.
-    expect(find.text('Confirmed'), findsOneWidget);
-    expect(find.text('Processing'), findsOneWidget);
-    expect(find.text('Delivered'), findsOneWidget);
-    // Other stages are dots only, saving the row's width.
-    expect(find.text('Pending'), findsNothing);
-    expect(find.text('Packed'), findsNothing);
-    expect(find.text('Out for Delivery'), findsNothing);
+    // Every stage is named in the expanded list.
+    for (final label in const [
+      'Pending',
+      'Confirmed',
+      'Processing',
+      'Packed',
+      'Shipped',
+      'Out for Delivery',
+      'Delivered',
+    ]) {
+      expect(find.text(label), findsOneWidget);
+    }
 
-    // Reached stages carry the server logout time; future ones do not.
-    expect(find.text('19 Nov'), findsNWidgets(3));
-    expect(find.text('09:00'), findsOneWidget);
-    expect(find.text('09:05'), findsOneWidget);
-    expect(find.text('09:10'), findsOneWidget);
+    // Reached stages carry their server log stamp; future ones do not.
+    expect(find.text('19 Nov 09:00'), findsOneWidget);
+    expect(find.text('19 Nov 09:05'), findsOneWidget);
+    expect(find.text('19 Nov 09:10'), findsOneWidget);
+    expect(find.textContaining('19 Nov'), findsNWidgets(3));
+
+    // The detailed view stacks rows vertically.
+    final pendingTop = tester.getTopLeft(find.text('Pending'));
+    final deliveredTop = tester.getTopLeft(find.text('Delivered'));
+    expect(deliveredTop.dy, greaterThan(pendingTop.dy));
+    expect(deliveredTop.dx, pendingTop.dx);
     expect(tester.takeException(), isNull);
   });
 
