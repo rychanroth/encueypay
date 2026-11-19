@@ -254,6 +254,10 @@ abstract class AdminOrderSummary with _$AdminOrderSummary {
     required int totalMinor,
     required DateTime createdAt,
     required AdminOrderStatus status,
+
+    /// When the order reached the terminal delivered state, derived from the
+    /// `state_history` transition row (orders has no delivered_at column).
+    DateTime? deliveredAt,
     @Default('') String cancellationReason,
     String? paymentMethod,
     String? paymentStatus,

@@ -596,7 +596,25 @@ class AdminRepositoryImpl implements IAdminRepository {
       if (row == null) {
         throw const ServerFailure('Order not found');
       }
-      return _mapOrderRow(AdminOrderRowDto.fromJson(row));
+      // orders has no delivered_at column; the lifecycle trigger records the
+      // delivery instant as a `state_history` transition (DATA-04: the read
+      // model owns the projection).
+      final delivered = await _client
+          .from('state_history')
+          .select('created_at')
+          .eq('entity_type', 'order')
+          .eq('entity_id', orderId)
+          .eq('to_state', 'delivered')
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      final deliveredAt = delivered == null
+          ? null
+          : DateTime.parse(delivered['created_at'] as String);
+      return _mapOrderRow(
+        AdminOrderRowDto.fromJson(row),
+        deliveredAt: deliveredAt,
+      );
     } on Failure {
       rethrow;
     } catch (error, stackTrace) { // DATA-05: classify, don't guess
@@ -604,7 +622,10 @@ class AdminRepositoryImpl implements IAdminRepository {
     }
   }
 
-  AdminOrderSummary _mapOrderRow(AdminOrderRowDto dto) {
+  AdminOrderSummary _mapOrderRow(
+    AdminOrderRowDto dto, {
+    DateTime? deliveredAt,
+  }) {
     // One-to-one embed — a single payment per order (unique order_id).
     final payment = dto.payments;
     return AdminOrderSummary(
@@ -617,6 +638,7 @@ class AdminRepositoryImpl implements IAdminRepository {
       totalMinor: dto.totalMinor,
       createdAt: dto.createdAt,
       status: AdminOrderStatus.fromName(dto.status),
+      deliveredAt: deliveredAt,
       cancellationReason: dto.cancellationReason,
       paymentMethod: payment?.method,
       paymentStatus: payment?.status,

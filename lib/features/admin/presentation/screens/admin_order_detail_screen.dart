@@ -7,6 +7,7 @@ import '../../../../core/presentation/theme/app_dimensions.dart';
 import '../../../../core/presentation/widgets/app_snack_bar.dart';
 import '../../domain/entities/admin.dart';
 import '../controllers/admin_orders_controller.dart';
+import '../widgets/admin_lifecycle_chip.dart';
 import '../widgets/admin_order_item_card.dart';
 
 /// Fulfillment view for one order (Section 3): the one-step lifecycle
@@ -22,6 +23,7 @@ class AdminOrderDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detailProvider = adminOrderDetailControllerProvider(orderId);
     final orderAsync = ref.watch(detailProvider);
+    final loadedOrder = orderAsync.value;
     final theme = Theme.of(context);
 
     ref.listen(detailProvider, (previous, next) {
@@ -34,7 +36,11 @@ class AdminOrderDetailScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Order')),
+      appBar: AppBar(
+        title: Text(
+          loadedOrder == null ? 'Order' : 'Order #${_shortId(loadedOrder.id)}',
+        ),
+      ),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text(userMessageFor(error))),
@@ -107,12 +113,23 @@ class _SummaryCard extends StatelessWidget {
                   child: Text(order.customerName,
                       style: theme.textTheme.titleMedium),
                 ),
-                Text(
-                  order.createdAt.toLocal().toString().split('.').first,
-                  style: theme.textTheme.bodySmall,
+                const SizedBox(width: AppSpacing.sm),
+                AdminLifecycleChip(
+                  wireName: order.status.wireName,
+                  label: _statusLabel(order.status.wireName),
                 ),
               ],
             ),
+            const SizedBox(height: 2),
+            Text(
+              'Order #${_shortId(order.id)} · ${_timestamp(order.createdAt)}',
+              style: theme.textTheme.bodySmall,
+            ),
+            if (order.deliveredAt != null)
+              Text(
+                'Delivered at ${_timestamp(order.deliveredAt!)}',
+                style: theme.textTheme.bodySmall,
+              ),
             const SizedBox(height: 8),
             _Row('Subtotal', Money(order.subtotalMinor).format()),
             _Row('Discount', '-${Money(order.discountMinor).format()}'),
@@ -170,6 +187,18 @@ class _Row extends StatelessWidget {
     );
   }
 }
+
+String _shortId(String id) => id.length <= 8 ? id : id.substring(0, 8);
+
+String _statusLabel(String wireName) {
+  final words = wireName.replaceAll('_', ' ');
+  return words.isEmpty
+      ? words
+      : '${words[0].toUpperCase()}${words.substring(1)}';
+}
+
+String _timestamp(DateTime value) =>
+    value.toLocal().toString().split('.').first;
 
 Future<void> _markCodPaid(
   BuildContext context,
